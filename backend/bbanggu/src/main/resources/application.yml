@@ -5,9 +5,9 @@ spring:
   application:
     name: bbanggu
   datasource:
-    url: jdbc:mysql://localhost:3306/bbanggu?serverTimezone=Asia/Seoul
-    username: ssafy
-    password: ssafy
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
   servlet:
     multipart:
@@ -26,8 +26,8 @@ spring:
   mail:
     host: smtp.gmail.com
     port: 587
-    username: nagum0545@gmail.com
-    password: ignervwducdxnlsu
+    username: ${MAIL_USERNAME}
+    password: ${DB_PASSWORD}
     properties:
       mail:
         smtp:
