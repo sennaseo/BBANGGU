@@ -1,95 +1,59 @@
 import type { Store, Package } from "../types/bakery"
+import { mockBakeryData } from "./bakeryData"
 
 export const mockBestPackages: Package[] = [
   {
-    id: 1,
-    title: "소중한 빵꾸러미",
-    store: "두리주르 진평점",
-    imageUrl:
-      "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/%EB%B9%B5%EC%A7%91%201-bniC4fPEVNBKjNnzhJNUJQoap3MvhM.png",
-    isLiked: false,
+    bread_package_id: 1,
+    bakery_id: 1,
+    bakery_name: "폭신달달 베이커리",
+    bakery_photo_url: "https://example.com/bakery1.jpg",
+    name: "소중한 빵꾸러미",
+    price: 8000,
+    discount_rate: 0.5,
+    quantity: 3,
+    description: "인기 있는 빵 3종으로 구성된 패키지입니다.",
+    created_at: "2024-01-01T00:00:00Z",
+    is_liked: false,
   },
   {
-    id: 2,
-    title: "오후의 빵꾸러미",
-    store: "파리브레드 인동점",
-    imageUrl:
-      "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/%EB%B9%B5%EC%A7%91%202-25f8BlZVlSlxpmPL0euihmY0BBbb95.png",
-    isLiked: true,
+    bread_package_id: 2,
+    bakery_id: 2,
+    bakery_name: "달콤한 빵집",
+    bakery_photo_url: "https://example.com/bakery2.jpg",
+    name: "오후의 빵꾸러미",
+    price: 10000,
+    discount_rate: 0.5,
+    quantity: 4,
+    description: "오후에 즐기기 좋은 빵 4종으로 구성된 패키지입니다.",
+    created_at: "2024-01-01T00:00:00Z",
+    is_liked: true,
   },
   {
-    id: 3,
-    title: "초코초코 꾸러미",
-    store: "두리주르 인동점",
-    imageUrl:
-      "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/%EB%B9%B5%EC%A7%91%203-IgTFklGmI6kCgJmUdFBxO74D7SBWJW.png",
-    isLiked: false,
-  },
-  {
-    id: 4,
-    title: "초코초코 꾸러미",
-    store: "두리주르 인동점",
-    imageUrl:
-      "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/%EB%B9%B5%EC%A7%91%203-IgTFklGmI6kCgJmUdFBxO74D7SBWJW.png",
-    isLiked: false,
-  },
-  {
-    id: 5,
-    title: "소중한 빵꾸러미",
-    store: "두리주르 진평점",
-    imageUrl:
-      "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/%EB%B9%B5%EC%A7%91%201-bniC4fPEVNBKjNnzhJNUJQoap3MvhM.png",
-    isLiked: false,
-  },
-  {
-    id: 6,
-    title: "오후의 빵꾸러미",
-    store: "파리브레드 인동점",
-    imageUrl:
-      "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/%EB%B9%B5%EC%A7%91%202-25f8BlZVlSlxpmPL0euihmY0BBbb95.png",
-    isLiked: false,
+    bread_package_id: 3,
+    bakery_id: 3,
+    bakery_name: "비욘드문",
+    bakery_photo_url: "https://example.com/bakery3.jpg",
+    name: "초코초코 꾸러미",
+    price: 12000,
+    discount_rate: 0.5,
+    quantity: 5,
+    description: "초코 lovers를 위한 빵 5종으로 구성된 패키지입니다.",
+    created_at: "2024-01-01T00:00:00Z",
+    is_liked: false,
   },
 ]
 
-export const mockRecommendedStores: Store[] = [
-  {
-    id: "1",
-    name: "비욘드문",
-    rating: 4.3,
-    reviewCount: 112,
-    distance: "1km",
-    hours: "픽업시간 7:00 ~ 7:30",
-    price: 4000,
-    originalPrice: 8000,
-    imageUrl:
-      "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/%EB%B9%B5%EC%A7%91%204-JfO4HPg5RWXN6ERVGnKFXIHctHOngp.png",
-    isLiked: false,
-  },
-  {
-    id: "2",
-    name: "불란서 제빵소",
-    rating: 4.5,
-    reviewCount: 89,
-    distance: "1.5km",
-    hours: "픽업시간 7:30 ~ 8:00",
-    price: 5000,
-    originalPrice: 10000,
-    imageUrl:
-      "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/%EB%B9%B5%EC%A7%91%205-k8FKHud2dmcBu28loOXyVLODg3sQtg.png",
-    isLiked: true,
-  },
-  {
-    id: "3",
-    name: "불란서 제빵소",
-    rating: 4.5,
-    reviewCount: 89,
-    distance: "1.5km",
-    hours: "픽업시간 7:30 ~ 8:00",
-    price: 5000,
-    originalPrice: 10000,
-    imageUrl:
-      "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/%EB%B9%B5%EC%A7%91%205-k8FKHud2dmcBu28loOXyVLODg3sQtg.png",
-    isLiked: true,
-  },
-]
-
+export const mockRecommendedStores: Store[] = Object.values(mockBakeryData).map((bakery) => ({
+  bakery_id: bakery.bakery_id,
+  name: bakery.name,
+  rating: bakery.reviews.reduce((sum, review) => sum + review.rating, 0) / bakery.reviews.length,
+  review_count: bakery.reviews.length,
+  distance: "1km", // 예시 거리, 실제로는 계산 필요
+  hours: "픽업시간 19:00 ~ 20:30", // 예시 시간, 실제 데이터 필요
+  price: 5000, // 예시 가격, 실제 데이터 필요
+  original_price: 10000, // 예시 원래 가격, 실제 데이터 필요
+  image_url: bakery.photo_url,
+  is_liked: false, // 기본값, 실제로는 사용자별로 다를 수 있음
+  likes_count: bakery.likes_count,
+  reviews: bakery.reviews,
+}))

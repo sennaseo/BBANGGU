@@ -1,4 +1,3 @@
-import React from "react"
 import { useUsermain } from "../../hooks/useUsermain"
 import SearchBar from "../../components/user/usermain/SearchBar"
 import Header from "../../components/user/usermain/Header"
@@ -16,13 +15,12 @@ export default function UserMain() {
     loading,
     error,
     toggleLike,
-    togglePackageLike,
   } = useUsermain()
 
   const navigate = useNavigate()
 
-  const handleStoreClick = (storeId: string) => {
-    navigate(`/bakery/${storeId}`)
+  const handleStoreClick = (bakery_id: number) => {
+    navigate(`/bakery/${bakery_id}`)
   }
 
   if (loading) {
@@ -57,7 +55,7 @@ export default function UserMain() {
         <main className="px-5 pb-20">
           <section className="pt-6 pb-6 relative">
             {/* Background circle */}
-            <div className="absolute right-[-40px] top-5 w-[251px] h-[251px] bg-gradient-to-b from-[#FFDFC1] to-white 0 rounded-full" />
+            <div className="absolute right-[-30px] top-7 w-[251px] h-[251px] bg-gradient-to-b from-[#FFDFC1] to-white 0 rounded-full" />
 
             <div className="relative h-full flex flex-col justify-between">
               <div className="space-y-2 z-10 pb-8">
@@ -78,18 +76,18 @@ export default function UserMain() {
               <div className="relative z-10">
                 <SearchBar value={searchQuery} onChange={setSearchQuery} />
                 {/* Bread icon */}
-                <div className="absolute right-[1vh] top-[-14vh] z-0">
+                <div className="absolute right-[1vh] top-[-130px] z-0">
                   <img
                     src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/%EB%B9%B5%EB%AA%A8%EC%96%91-DlwgBPrBVIJDKfxeSt00fJB57i08V3.png"
                     alt=""
-                    className="w-[20vh] h-[20vh] object-contain"
+                    className="w-[170px] h-[170px] object-contain"
                   />
                 </div>
               </div>
             </div>
           </section>
 
-          <BestPackages packages={bestPackages} onToggleLike={togglePackageLike} />
+          <BestPackages packages={bestPackages} onToggleLike={toggleLike} />
           <RecommendedStores stores={recommendedStores} onToggleLike={toggleLike} onStoreClick={handleStoreClick} />
         </main>
       </ErrorBoundary>

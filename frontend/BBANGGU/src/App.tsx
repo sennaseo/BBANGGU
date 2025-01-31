@@ -15,7 +15,15 @@ function App() {
   return (
     <Router>
       <MobileLayout>
-
+        {/* 개발 중 테스트용 네비게이션 */}
+        {/* <nav className="p-4 bg-gray-100">
+          <Link to="/owner/profile/edit" className="text-blue-500 hover:text-blue-700 mr-4">
+            프로필 수정
+          </Link>
+          <Link to="/owner/settlement/edit" className="text-blue-500 hover:text-blue-700">
+            정산정보 수정
+          </Link>
+        </nav> */}
         <Routes>
           <Route path="/owner/profile/edit" element={<EditProfile />} />
           <Route path="/owner/settlement/edit" element={<EditSettlement />} />

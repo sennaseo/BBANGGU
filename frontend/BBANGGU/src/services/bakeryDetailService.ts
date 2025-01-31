@@ -3,18 +3,18 @@ import { mockBakeryData } from "../mocks/bakeryData"
 import type { BakeryType } from "../types/bakery"
 
 const api = axios.create({
-  baseURL: "https://api.example.com", // Replace with your actual API base URL
+  baseURL: "https://api.example.com",
 })
 
-export async function getBakeryByName(name: string): Promise<BakeryType> {
+export async function getBakeryById(bakery_id: string): Promise<BakeryType> {
   try {
-    // Uncomment the following line when your API is ready
-    // const response = await api.get<BakeryType>(`/bakeries/${name}`)
-    // return response.data
+    // Convert string bakery_id to number
+    const numericBakeryId = Number.parseInt(bakery_id, 10)
 
-    // For now, we'll use the mock data
-    await new Promise((resolve) => setTimeout(resolve, 500)) // Simulate API delay
-    const bakery = Object.values(mockBakeryData).find((b) => b.id === name)
+    // Simulate API delay
+    await new Promise((resolve) => setTimeout(resolve, 500))
+
+    const bakery = mockBakeryData[numericBakeryId]
     if (!bakery) {
       throw new Error("Bakery not found")
     }
