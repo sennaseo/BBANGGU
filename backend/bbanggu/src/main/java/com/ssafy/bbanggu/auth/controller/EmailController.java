@@ -36,7 +36,7 @@ public class EmailController {
 	 * @return 성공 메시지 또는 에러 응답
 	 */
 	@PostMapping("/send")
-	public ResponseEntity<ApiResponse> sendEmail(@RequestBody @Valid EmailRequest request) {
+	public ResponseEntity<ApiResponse> sendEmail(@RequestBody EmailRequest request) {
 		System.out.println("📩 이메일 인증 요청 들어옴: " + request.email());
 		try {
 			emailService.sendAuthenticationCode(request.email());
