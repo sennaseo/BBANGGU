@@ -1,7 +1,12 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  darkMode: ["class"],
-  content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}", "app/**/*.{ts,tsx}", "components/**/*.{ts,tsx}"],
+  darkMode: ["class"], // ✅ 다크 모드 지원 유지
+  content: [
+    "./index.html",
+    "./src/**/*.{js,ts,jsx,tsx}",
+    "app/**/*.{ts,tsx}",
+    "components/**/*.{ts,tsx}"
+  ],
   theme: {
     extend: {
       colors: {
@@ -47,7 +52,8 @@ module.exports = {
     },
   },
   plugins: [
-    "@tailwindcss/animate",
+    require("@tailwindcss/forms"), // ✅ 추가 가능 (선택사항)
+    require("@tailwindcss/typography"), // ✅ 추가 가능 (선택사항)
     ({ addUtilities }) => {
       addUtilities({
         ".scrollbar-hide": {
@@ -60,8 +66,7 @@ module.exports = {
             display: "none",
           },
         },
-      })
+      });
     },
   ],
-}
-
+};
