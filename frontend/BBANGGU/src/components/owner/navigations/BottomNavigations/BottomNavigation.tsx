@@ -36,9 +36,15 @@ function BottomNavigation() {
 
         {/* 분석 */}
         <Link 
+<<<<<<< HEAD
+          to="/owner/analysis" 
+          className={`flex flex-col items-center space-y-1 w-1/3 ${
+            isActive('/owner/analysis') ? 'text-[#FC973B]' : 'text-gray-400'
+=======
           to="/owner/report" 
           className={`flex flex-col items-center space-y-1 w-1/3 ${
             isActive('/owner/report') ? 'text-[#FC973B]' : 'text-gray-400'
+>>>>>>> origin/develop
           }`}
         >
           <ClipboardList className="w-6 h-6" />

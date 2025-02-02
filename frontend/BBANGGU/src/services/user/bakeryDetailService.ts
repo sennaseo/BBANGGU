@@ -1,6 +1,6 @@
 import axios from "axios"
-import { mockBakeryData } from "../mocks/bakeryData"
-import type { BakeryType } from "../types/bakery"
+import { mockBakeries } from "../../mocks/user/bakeryMockData"
+import type { BakeryType } from "../../types/bakery"
 
 const api = axios.create({
   baseURL: "https://api.example.com",
@@ -14,7 +14,7 @@ export async function getBakeryById(bakery_id: string): Promise<BakeryType> {
     // Simulate API delay
     await new Promise((resolve) => setTimeout(resolve, 500))
 
-    const bakery = mockBakeryData[numericBakeryId]
+    const bakery = mockBakeries[numericBakeryId]
     if (!bakery) {
       throw new Error("Bakery not found")
     }

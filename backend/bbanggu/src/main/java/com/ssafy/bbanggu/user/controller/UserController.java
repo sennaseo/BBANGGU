@@ -21,9 +21,16 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
+<<<<<<< HEAD
+@Tag(name = "User", description = "사용자 관련 API")
+@RestController
+@RequestMapping("/user")
+public class UserController { // 사용자 관련 요청을 처리하는 컨트롤러
+=======
 @RestController
 @RequestMapping("/user")
 public class UserController {
+>>>>>>> origin/develop
     private final UserService userService;
     private final EmailService emailAuthService;
 
@@ -38,9 +45,21 @@ public class UserController {
      * @param request 사용자 생성 요청 데이터 (name, email, password, phone_number, user_type)
      * @return 생성된 사용자 정보
      */
+<<<<<<< HEAD
+    @Operation(summary = "회원가입", description = "새로운 사용자를 등록합니다. 이메일 중복 체크 후, 비밀번호는 암호화하여 저장됩니다.")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "201", description = "회원가입 성공"),
+        @ApiResponse(responseCode = "400", description = "입력 데이터 누락 또는 형식 오류"),
+        @ApiResponse(responseCode = "409", description = "이메일 중복 또는 이미 가입된 사용자")
+    })
+    @PostMapping("/register")
+    public ResponseEntity<?> createUser(@Valid @RequestBody CreateUserRequest request, BindingResult result) {
+        // 유효성 검사 실패 시 에러 응답 반환
+=======
     @PostMapping("/register")
     public ResponseEntity<?> createUser(@Valid @RequestBody CreateUserRequest request, BindingResult result) {
         // 회원가입 요청 데이터 검증
+>>>>>>> origin/develop
         if (result.hasErrors()) {
             Map<String, String> errors = new HashMap<>();
             result.getFieldErrors().forEach(error ->
@@ -49,7 +68,14 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
         }
 
+<<<<<<< HEAD
+        // 유효성 검사를 통과한 경우 서비스 호출
         UserResponse response = userService.create(request);
+
+        // 성공 응답 반환
+=======
+        UserResponse response = userService.create(request);
+>>>>>>> origin/develop
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 

@@ -5,8 +5,8 @@ import LoginPage from "./pages/login";
 import SignupPage from "./pages/signup";
 import CustomerSignupPage from "./pages/signup/customer";
 import OwnerSignupPage from "./pages/signup/owner";
-import UserMain from "./pages/user/UserMain";
-import BakeryDetail from "./pages/user/BakeryDetail";
+import UserMain from "./pages/user/main/UserMain";
+import BakeryDetail from "./pages/user/detail/BakeryDetail";
 import EditProfile from "./pages/owner/profile/EditProfile";
 import EditSettlement from "./pages/owner/settlement/EditSettlement";
 import MyPage from "./pages/owner/mypage/MyPage";
@@ -15,6 +15,7 @@ import PickupTime from "./pages/owner/pickup/PickupTime";
 import CustomerSupport from "./pages/owner/support/CustomerSupport";
 import MobileLayout from "./layouts/MobileLayout";
 import ReportPage from "./pages/owner/report"
+import UserReview from "./pages/user/review/UserReview";
 import "./styles/fonts.css";
 import { ProfileProvider } from "./common/context/ProfileContext";
 
@@ -37,6 +38,7 @@ export default function App() {
             {/* 사용자 관련 페이지 */}
             <Route path="/user" element={<UserMain />} />
             <Route path="/bakery/:bakery_id" element={<BakeryDetail />} />
+            <Route path="/bakery/:bakery_id/reviews" element={<UserReview />} />
 
 
             {/* 점주 관련 페이지 */}

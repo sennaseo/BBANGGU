@@ -2,7 +2,10 @@ package com.ssafy.bbanggu.user.dto;
 
 import com.ssafy.bbanggu.user.domain.User;
 
+<<<<<<< HEAD
+=======
 import jakarta.validation.constraints.Email;
+>>>>>>> origin/develop
 import jakarta.validation.constraints.NotBlank;
 
 /**
@@ -12,6 +15,13 @@ import jakarta.validation.constraints.NotBlank;
 public record CreateUserRequest(
 	@NotBlank(message = "The required field 'Name' is missing.")
 	String name,
+<<<<<<< HEAD
+	@NotBlank(message = "The required field 'Email' is missing.")
+	String email,
+	@NotBlank(message = "The required field 'password' is missing.")
+	String password,
+	String phoneNumber,
+=======
 
 	@NotBlank(message = "The required field 'Email' is missing.")
 	@Email(message = "Invalid email format.")
@@ -22,6 +32,7 @@ public record CreateUserRequest(
 
 	String phoneNumber,
 
+>>>>>>> origin/develop
 	@NotBlank(message = "The required field 'userType' is missing.")
 	String userType
 ) {
@@ -32,4 +43,8 @@ public record CreateUserRequest(
 	public User toEntity() {
 		return new User(name, email, null, password, phoneNumber, userType);
 	}
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> origin/develop
