@@ -1,69 +1,42 @@
 import { useState, useEffect } from "react"
 import { fetchBestPackages, fetchRecommendedStores } from "../services/usermainService"
-
-interface Store {
-  id: string
-  name: string
-  rating: number
-  reviewCount: number
-  distance: string
-  hours: string
-  price: number
-  originalPrice: number
-  imageUrl: string
-  isLiked: boolean
-}
-
-interface Package {
-  id: number
-  title: string
-  store: string
-  imageUrl: string
-  isLiked: boolean
-}
+import type { Store, Package } from "../types/bakery"
 
 export function useUsermain() {
   const [searchQuery, setSearchQuery] = useState("")
-
   const [bestPackages, setBestPackages] = useState<Package[]>([])
   const [recommendedStores, setRecommendedStores] = useState<Store[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<Error | null>(null)
 
   useEffect(() => {
-    const isMounted = true
-
-    const loadData = async () => {
+    const fetch = async () => {
       try {
         setLoading(true)
-        const [packagesData, storesData] = await Promise.all([fetchBestPackages(), fetchRecommendedStores()])
-
-        if (isMounted) {
-          setBestPackages(packagesData)
-          setRecommendedStores(storesData.map((store) => ({ ...store, isLiked: false })))
-          setLoading(false)
-        }
-      } catch (err) {
-        if (isMounted) {
-          setError(err instanceof Error ? err : new Error("An error occurred while fetching data"))
-          setLoading(false)
-        }
+        const [bestPackagesData, recommendedStoresData] = await Promise.all([
+          fetchBestPackages(),
+          fetchRecommendedStores(),
+        ])
+        setBestPackages(bestPackagesData)
+        setRecommendedStores(recommendedStoresData)
+      } catch (error) {
+        setError(error as Error)
+      } finally {
+        setLoading(false)
       }
     }
+    fetch()
+  }, []) // searchQuery를 의존성 배열에서 제거
 
-    loadData()
-  }, [])
-
-  const toggleLike = (id: string, isLiked: boolean) => {
-    console.log(`Store ${id} liked state: ${!isLiked}`)
+  const toggleLike = (bakery_id: number, is_liked: boolean) => {
+    console.log(`Store ${bakery_id} liked state: ${!is_liked}`)
     setRecommendedStores((prevStores) =>
-      prevStores.map((store) => (store.id === id ? { ...store, isLiked: !isLiked } : store)),
+      prevStores.map((store) =>
+        store.bakery_id === bakery_id
+          ? { ...store, is_liked: !is_liked, likes_count: is_liked ? store.likes_count - 1 : store.likes_count + 1 }
+          : store,
+      ),
     )
-  }
-
-  const togglePackageLike = (id: number, isLiked: boolean) => {
-    console.log(`Package ${id} liked state: ${!isLiked}`)
-    setBestPackages((prevPackages) => prevPackages.map((pkg) => (pkg.id === id ? { ...pkg, isLiked: !isLiked } : pkg)))
   }
 
   return {
@@ -74,7 +47,6 @@ export function useUsermain() {
     loading,
     error,
     toggleLike,
-    togglePackageLike,
   }
 }
 

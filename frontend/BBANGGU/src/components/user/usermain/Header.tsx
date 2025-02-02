@@ -1,5 +1,4 @@
 import { BellIcon, ShoppingBagIcon } from "@heroicons/react/24/outline"
-import { ChevronRight } from "lucide-react"
 
 export default function Header() {
   return (
