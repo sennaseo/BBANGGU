@@ -10,11 +10,11 @@ import jakarta.validation.constraints.NotBlank;
  */
 public record EmailVerifyRequest(
 
-	@NotBlank(message = "Email cannot be blank.") // 이메일이 비어 있으면 에러 발생
-	@Email(message = "Invalid email format.")     // 이메일 형식(@ 포함) 체크
+	@NotBlank(message = "The required field 'Email' is missing.")
+	@Email(message = "Invalid email format.")
 	String email,
 
-	@NotBlank(message = "Authentication code cannot be blank.") // 인증번호가 비어 있으면 에러 발생
+	@NotBlank(message = "The required field 'authCode' is missing.")
 	String authCode
 
 ) {}

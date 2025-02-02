@@ -1,5 +1,6 @@
 package com.ssafy.bbanggu.auth.service;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -85,7 +86,7 @@ public class EmailService {
 			// 이메일 HTML 본문
 			String htmlContent = """
             <div style="background-color: #f9f5f0; padding: 20px; text-align: center; border-radius: 10px;">
-                <img src='cid:%s' alt="BBANGGU Logo" style="width: 150px; margin-bottom: 20px;">
+                <img src='cid:%s' alt="BBANGGU Logo" style="width: 150px; margin-bottom: 20px; background-color: transparent;">
                 <h2 style="color: #d18b47;">BBANGGU 이메일 인증</h2>
                 <p style="font-size: 16px; color: #333;">
                     안녕하세요! BBANGGU 서비스를 이용해주셔서 감사합니다. <br>
@@ -111,7 +112,7 @@ public class EmailService {
 			helper.setText(htmlContent, true);
 
 			// BBANGGU 로고 첨부
-			ClassPathResource logoResource = new ClassPathResource("static/images/BBANGGU_logo_가로버전.png");
+			ClassPathResource logoResource = new ClassPathResource("static/images/BBANGGU_logo.png");
 			helper.addInline(logoCid, logoResource);
 
 			mailSender.send(message);
@@ -124,21 +125,32 @@ public class EmailService {
 	 * 이메일 인증번호 검증
 	 *
 	 * @param email 이메일 주소
-	 * @param authCode 사용자가 입력한 인증번호
+	 * @param inputCode 사용자가 입력한 인증번호
 	 */
-	public void verifyAuthenticationCode(String email, String authCode) {
-		// 저장된 인증번호 가져오기
-		String storedCode = storeService.getAuthCode(email);
-		if (storedCode == null) {
+	public void verifyAuthenticationCode(String email, String inputCode) {
+		// 이미 사용된 인증번호인지 먼저 확인 (410 GONE)
+		if (storeService.isAuthCodeUsed(email)) {
+			throw new CodeExpiredException("This authentication code has already been used.");
+		}
+
+		// 저장된 인증번호 가져오기 (null이면 401 UNAUTHORIZED)
+		Pair<String, Long> codeData = storeService.getAuthCodeData(email);
+		if(codeData == null) {
+			throw new InvalidCodeException("Invalid authentication code.");
+		}
+
+		// 인증번호가 일치하지 않는 경우 (401 UNAUTHORIZED)
+		if(!codeData.getLeft().equals(inputCode)) {
+			throw new InvalidCodeException("Invalid authentication code.");
+		}
+
+		// 만료된 인증번호인지 확인 (410 GONE)
+		if(System.currentTimeMillis() > codeData.getRight()) {
+			storeService.deleteAuthCode(email); // 만료된 코드 삭제
 			throw new CodeExpiredException("Authentication code has expired.");
 		}
 
-		// 인증번호 검증
-		if (!storedCode.equals(authCode)) {
-			throw new InvalidCodeException("Authentication code is incorrect.");
-		}
-
-		// 인증 완료 후 인증번호 삭제
-		storeService.deleteAuthCode(email);
+		// 인증 성공한 경우, 인증번호를 사용 처리
+		storeService.markAuthCodeAsUsed(email);
 	}
 }

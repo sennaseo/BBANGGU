@@ -10,11 +10,9 @@ import com.ssafy.bbanggu.common.exception.TooManyRequestsException;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 
 import jakarta.validation.Valid;
 
@@ -36,8 +34,13 @@ public class EmailController {
 	 * @return 성공 메시지 또는 에러 응답
 	 */
 	@PostMapping("/send")
-	public ResponseEntity<ApiResponse> sendEmail(@RequestBody EmailRequest request) {
-		System.out.println("📩 이메일 인증 요청 들어옴: " + request.email());
+	public ResponseEntity<ApiResponse> sendEmail(@Valid @RequestBody EmailRequest request, BindingResult result) {
+		if (result.hasErrors()) {
+			String errorMessage = result.getFieldErrors().get(0).getDefaultMessage();
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+				.body(new ApiResponse(400, errorMessage));
+		}
+
 		try {
 			emailService.sendAuthenticationCode(request.email());
 			return ResponseEntity.ok(new ApiResponse(200, "Authentication code sent successfully."));

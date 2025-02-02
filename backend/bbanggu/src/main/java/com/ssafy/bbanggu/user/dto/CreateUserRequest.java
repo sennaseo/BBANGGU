@@ -12,12 +12,16 @@ import jakarta.validation.constraints.NotBlank;
 public record CreateUserRequest(
 	@NotBlank(message = "The required field 'Name' is missing.")
 	String name,
+
 	@NotBlank(message = "The required field 'Email' is missing.")
 	@Email(message = "Invalid email format.")
 	String email,
+
 	@NotBlank(message = "The required field 'password' is missing.")
 	String password,
+
 	String phoneNumber,
+
 	@NotBlank(message = "The required field 'userType' is missing.")
 	String userType
 ) {
