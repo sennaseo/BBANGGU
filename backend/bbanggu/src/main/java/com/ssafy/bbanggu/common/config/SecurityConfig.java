@@ -25,8 +25,8 @@ public class SecurityConfig {
 					"/user/password/reset/confirm",
 					"/swagger-ui/**",
 					"/v3/api-docs/**",
+					"/v3/api-docs/**",
 					"/user/register",
-					"/auth/token/refresh",
 					"/auth/**",
 					"/user/logout"
 				).permitAll() // 공개 API

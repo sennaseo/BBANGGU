@@ -3,6 +3,7 @@ package com.ssafy.bbanggu.user.service;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.ssafy.bbanggu.common.exception.DuplicateEmailException;
 import com.ssafy.bbanggu.common.util.JwtUtil;
 import com.ssafy.bbanggu.user.domain.User;
 import com.ssafy.bbanggu.user.dto.CreateUserRequest;
@@ -42,19 +43,24 @@ public class UserService { // 사용자 관련 비즈니스 로직 처리
      * @return UserResponse 생성된 사용자 정보
      */
     public UserResponse create(CreateUserRequest request) {
-        if (userRepository.existsByEmail(request.email())) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already exists");
-        }
+		// 1. 이메일 중복 여부 검사
+		validateEmailNotExists(request.email());
 
-        // 비밀번호를 암호화한 후 저장
+        // 2. 비밀번호 암호화
         String encodedPassword = passwordEncoder.encode(request.password());
 
-        // 변경된 User 엔티티에 맞게 회원가입 진행
+		// 3. User 엔티티 생성 및 저장 (회원가입)
         User user = User.createNormalUser(request.name(), request.email(), encodedPassword, request.phoneNumber(), request.userType());
         userRepository.save(user);
 
         return UserResponse.from(user);
     }
+
+	private void validateEmailNotExists(String email) {
+		if (userRepository.existsByEmail(email)) {
+			throw new DuplicateEmailException(HttpStatus.CONFLICT, "Email already exists");
+		}
+	}
 
     /**
      * 사용자 삭제 메서드

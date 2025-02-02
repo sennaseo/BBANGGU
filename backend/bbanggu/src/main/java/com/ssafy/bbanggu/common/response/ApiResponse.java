@@ -1,4 +1,4 @@
-package com.ssafy.bbanggu.auth.dto;
+package com.ssafy.bbanggu.common.response;
 
 /**
  * ApiResponse
@@ -6,5 +6,6 @@ package com.ssafy.bbanggu.auth.dto;
  * - 클라이언트에게 JSON 형태로 응답을 제공
  */
 public record ApiResponse(
+	int statusCode,
 	String message
 ) {}

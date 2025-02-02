@@ -10,10 +10,7 @@ import jakarta.validation.constraints.NotBlank;
  * - 입력된 이메일 값을 검증
  */
 public record EmailRequest(
-
-	@NotBlank(message = "Email cannot be blank.") // 이메일이 비어 있으면 안 됨
-	@Email(message = "Invalid email format.")     // 이메일 형식(@ 포함)을 체크
-	@Schema(description = "User's email address", example = "user@example.com")
+	@NotBlank(message = "Email cannot be blank.")
+	@Email(message = "Invalid email format.")
 	String email
-
 ) {}
