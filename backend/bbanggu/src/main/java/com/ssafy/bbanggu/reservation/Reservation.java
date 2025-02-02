@@ -1,5 +1,6 @@
 package com.ssafy.bbanggu.reservation;
 
+import com.ssafy.bbanggu.user.domain.User;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -10,7 +11,6 @@ import java.time.LocalDateTime;
 
 import com.ssafy.bbanggu.bakery.Bakery;
 import com.ssafy.bbanggu.breadpackage.BreadPackage;
-import com.ssafy.bbanggu.user.User;
 
 @Data
 @Builder

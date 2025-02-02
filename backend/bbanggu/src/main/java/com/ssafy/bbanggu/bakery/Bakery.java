@@ -1,10 +1,8 @@
 package com.ssafy.bbanggu.bakery;
 
+import com.ssafy.bbanggu.user.domain.User;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -14,12 +12,12 @@ import com.ssafy.bbanggu.breadpackage.BreadPackage;
 import com.ssafy.bbanggu.favorite.Favorite;
 import com.ssafy.bbanggu.review.Review;
 import com.ssafy.bbanggu.stock.Stock;
-import com.ssafy.bbanggu.user.User;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Getter
 @Entity
 @Table(name = "bakery")
 public class Bakery {
@@ -63,8 +61,8 @@ public class Bakery {
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt; // 삭제일
 
-    @Column(name = "update_at")
-    private LocalDateTime updateAt; // 수정일
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt; // 수정일
 
     // 연관 관계 설정
     @OneToMany(mappedBy = "bakery", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -84,4 +82,21 @@ public class Bakery {
 
     @OneToMany(mappedBy = "bakery", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Favorite> favorites; // 즐겨찾기 목록
+
+	@PrePersist
+	protected void onCreate() {
+		createdAt = LocalDateTime.now();
+		updatedAt = LocalDateTime.now();
+	}
+
+	@PreUpdate
+	protected void onUpdate() {
+		updatedAt = LocalDateTime.now();
+	}
+
+	@PreRemove
+	protected void onDelete() {
+		deletedAt = LocalDateTime.now();
+	}
+
 }

@@ -10,9 +10,21 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.List;
 
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 	private final JwtUtil jwtUtil;
+
+	// 인증이 필요 없는 URL 리스트
+	private static final List<String> EXCLUDED_URLS = List.of(
+		"/auth/email/send",
+		"/auth/email/verify",
+		"/user/login",
+		"/user/register",
+		"/auth/token/refresh",
+		"/swagger-ui",
+		"/v3/api-docs"
+	);
 
 	public JwtAuthenticationFilter(JwtUtil jwtUtil) {
 		this.jwtUtil = jwtUtil;
@@ -21,47 +33,40 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 	@Override
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
 		throws ServletException, IOException {
-		String authorizationHeader = request.getHeader("Authorization");
+		String requestURI = request.getRequestURI();
 
-		System.out.println("Authorization Header: " + authorizationHeader);
+		// 인증이 필요 없는 URL이면 필터링 건너뛰기
+		if (EXCLUDED_URLS.stream().anyMatch(requestURI::startsWith)) {
+			filterChain.doFilter(request, response);
+			return;
+		}
+
+		String authorizationHeader = request.getHeader("Authorization");
 
 		if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
 			String token = authorizationHeader.substring(7);
 
 			try {
-				System.out.println("Extracted Token: " + token);
-
 				if (!jwtUtil.validateToken(token).containsKey("userId")) {
-					System.out.println("Invalid JWT Token (missing userId)");
 					response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 					response.getWriter().write("{\"error\": \"Invalid JWT Token: userId missing\"}");
 					return;
 				}
 
-				System.out.println("JWT Token is valid");
-
 				Authentication authentication = jwtUtil.getAuthentication(token);
 				if (authentication == null) {
-					System.out.println("Failed to retrieve authentication from JWT Token");
 					response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 					response.getWriter().write("{\"error\": \"Invalid JWT authentication\"}");
 					return;
 				}
 
 				SecurityContextHolder.getContext().setAuthentication(authentication);
-				System.out.println("Authentication set in SecurityContext");
-
-				System.out.println("Stored Authentication Object: " + authentication);
-				System.out.println("Stored Principal: " + authentication.getPrincipal());
 
 			} catch (Exception e) {
-				System.out.println("JWT authentication failed: " + e.getMessage());
 				response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 				response.getWriter().write("{\"error\": \"Unauthorized: " + e.getMessage() + "\"}");
 				return;
 			}
-		} else {
-			System.out.println("No Authorization header found or not in Bearer format");
 		}
 
 		filterChain.doFilter(request, response);

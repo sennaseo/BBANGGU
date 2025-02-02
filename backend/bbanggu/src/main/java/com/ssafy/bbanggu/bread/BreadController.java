@@ -87,6 +87,7 @@ public class BreadController {
 
 					breadDto.setBreadCategoryId(breadCategoryIdTemp);
 					breadDto.setBakeryId(bakeryIdTemp);
+					breadDto.setBreadId(bread.getBreadId());
 					breadDto.setName(bread.getName());
 					breadDto.setPrice(bread.getPrice());
 					String imageUrl = bread.getBreadImageUrl();

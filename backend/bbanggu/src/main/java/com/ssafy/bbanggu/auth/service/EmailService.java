@@ -16,7 +16,6 @@ import jakarta.mail.internet.MimeMessage;
 
 @Service
 public class EmailService {
-
 	private final JavaMailSender mailSender;
 	private final InMemoryStoreService storeService;
 
@@ -27,39 +26,44 @@ public class EmailService {
 
 	/**
 	 * 이메일로 인증번호 전송
-	 *
 	 * @param email 이메일 주소
 	 */
 	public void sendAuthenticationCode(String email) {
-		// 요청 제한 확인 (과도한 요청 방지)
+		// 1. 요청 제한 확인 (과도한 요청 방지)
 		if (storeService.isRateLimited(email)) {
 			throw new TooManyRequestsException("Too many requests. Please try again later.");
 		}
 
-		// 인증번호 생성
+		// 2. 인증번호 생성
 		String authCode = generateAuthCode();
 
-		// 이메일 전송
+		// 3. 이메일 전송
 		sendEmail(email, authCode);
 
-		// 인증번호 저장 (10분 후 만료)
-		int CODE_EXPIRE_TIME = 10 * 60;
-		storeService.saveAuthCode(email, authCode, CODE_EXPIRE_TIME);
-
-		// 요청 제한 설정 (1시간 동안 요청 제한)
-		int RATE_LIMIT_EXPIRE_TIME = 60 * 60;
-		storeService.setRateLimit(email, RATE_LIMIT_EXPIRE_TIME);
+		// 4. 인증번호 저장
+		storeAuthCode(email, authCode);
 	}
 
 	/**
 	 * 인증번호 생성
-	 *
 	 * @return 6자리 인증번호
 	 */
 	private String generateAuthCode() {
 		Random random = new Random();
 		int code = random.nextInt(900000) + 100000;
 		return String.valueOf(code);
+	}
+
+	/**
+	 * 인증번호 저장
+	 * : 인증번호는 10분 후 만료되며, 한 번 인증을 받으면 1시간동안 요청이 제한됨
+	 *
+	 * @param email 인증할 이메일
+	 * @param authCode 인증번호
+	 */
+	private void storeAuthCode(String email, String authCode) {
+		storeService.saveAuthCode(email, authCode, 10 * 60);
+		storeService.setRateLimit(email);
 	}
 
 	/**
@@ -93,12 +97,12 @@ public class EmailService {
                 </div>
                 <p>또는 아래 버튼을 눌러 인증을 완료하세요:</p>
                 <a href="http://localhost:8080/auth/email/verify?email=%s&authCode=%s"
-                    style="display: inline-block; padding: 10px 20px; background-color: #d18b47; 
+                    style="display: inline-block; padding: 10px 20px; background-color: #d18b47;
                     color: white; text-decoration: none; border-radius: 5px; font-weight: bold;">
                     인증하기
                 </a>
                 <p style="color: #777; margin-top: 20px;">
-                    인증 코드는 10분 동안 유효합니다. <br> 
+                    인증 코드는 10분 동안 유효합니다. <br>
                     문의 사항이 있으면 <a href="mailto:support@bbanggu.com">support@bbanggu.com</a>으로 연락해 주세요.
                 </p>
             </div>
