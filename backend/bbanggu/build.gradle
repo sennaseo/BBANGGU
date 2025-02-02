@@ -26,6 +26,7 @@ repositories {
 }
 
 dependencies {
+<<<<<<< HEAD
 	// Spring Boot Core Dependencies
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
@@ -62,10 +63,49 @@ dependencies {
 	// Test Dependencies
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.security:spring-security-test'
+=======
+    // Spring Boot Core Dependencies
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.springframework.boot:spring-boot-starter-mail'
+
+    // Hibernate Validator
+    implementation 'org.hibernate.validator:hibernate-validator:8.0.2.Final'
+
+    // Jackson for JSON Processing
+    implementation 'com.fasterxml.jackson.core:jackson-databind'
+
+    // Spring Security Core
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+
+    // SpringDoc OpenAPI (Swagger)
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.0.1'
+
+    // Lombok for Boilerplate Code
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+
+    // Devtools for Hot Reload
+    developmentOnly 'org.springframework.boot:spring-boot-devtools'
+
+    // JWT (Json Web Token)
+    implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
+    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
+
+    // MySQL Connector
+    runtimeOnly 'com.mysql:mysql-connector-j'
+
+    // Test Dependencies
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.security:spring-security-test'
+>>>>>>> origin/develop
 }
 
 tasks.named('test') {
     useJUnitPlatform()
+<<<<<<< HEAD
 }
 
 tasks.withType(JavaCompile) {
@@ -77,4 +117,18 @@ checkstyle {
     configFile = file("${rootDir}/naver-checkstyle-rules.xml")
     // configProperties = ["suppressionFile" : "${rootDir}/naver-checkstyle-suppressions.xml"]  // 예외 설정할 파일이 있다면 작성
     toolVersion = "8.24"  // checkstyle 버전 8.24 이상 선언
+=======
+>>>>>>> origin/develop
 }
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
+
+checkstyle {
+    toolVersion = "8.24"
+    configFile = file("${rootDir}/naver-checkstyle-rules.xml")
+    configProperties = ["suppressionFile": file("${rootDir}/naver-checkstyle-suppressions.xml")] // ✅ Suppression 설정 추가
+    ignoreFailures = true // 오류가 발생해도 빌드가 중단되지 않도록 설정
+}
+

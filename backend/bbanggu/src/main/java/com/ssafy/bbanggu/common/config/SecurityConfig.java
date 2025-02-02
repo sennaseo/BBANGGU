@@ -25,10 +25,18 @@ public class SecurityConfig {
 					"/user/password/reset/confirm",
 					"/swagger-ui/**",
 					"/v3/api-docs/**",
+<<<<<<< HEAD
 					"/user/register",
 					"/auth/token/refresh",
 					"/auth/**",
 					"/user/logout"
+=======
+					"/v3/api-docs/**",
+					"/user/register",
+					"/auth/**",
+					"/user/logout",
+					"/**"
+>>>>>>> origin/develop
 				).permitAll() // 공개 API
 				.requestMatchers("/saving/**").authenticated() // saving API는 인증 필요
 				.anyRequest().authenticated()

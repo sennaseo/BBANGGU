@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { Link } from 'react-router-dom';
 import BottomNavigation from '../../../components/owner/navigations/BottomNavigations/BottomNavigation';
 import defaultProfile from '@/assets/default-profile.jpg';
@@ -6,10 +7,19 @@ import settlementIcon from '@/assets/icons/settlement-icon.svg';
 import qnaIcon from '@/assets/icons/qna-icon.svg';
 import supportIcon from '@/assets/icons/support-icon.svg';
 import { Bell } from 'lucide-react';
+=======
+import { Header } from '../../../components/owner/mypage/Header';
+import { ProfileSection } from '../../../components/owner/mypage/ProfileSection';
+import { MenuList } from '../../../components/owner/mypage/MenuList';
+import { CustomerSupport } from '../../../components/owner/mypage/CustomerSupport';
+import { AccountManagement } from '../../../components/owner/mypage/AccountMagagement';
+import BottomNavigation from '../../../components/owner/navigations/BottomNavigations/BottomNavigation';
+>>>>>>> origin/develop
 
 function MyPage() {
   return (
     <div className="min-h-screen bg-white pb-20">
+<<<<<<< HEAD
       {/* 헤더 */}
       <div className="flex justify-between items-center px-6 h-14">
         <h1 className="text-lg font-medium">마이페이지</h1>
@@ -117,9 +127,20 @@ function MyPage() {
         </div>
       </div>
 
+=======
+      <Header title="마이페이지" />
+      <ProfileSection />
+      <MenuList />
+      <CustomerSupport />
+      <AccountManagement />
+>>>>>>> origin/develop
       <BottomNavigation />
     </div>
   );
 }
 
+<<<<<<< HEAD
 export default MyPage;
+=======
+export default MyPage;
+>>>>>>> origin/develop
