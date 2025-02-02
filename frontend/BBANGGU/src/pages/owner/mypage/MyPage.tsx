@@ -9,10 +9,7 @@ function MyPage() {
   return (
     <div className="min-h-screen bg-white pb-20">
       <Header title="마이페이지" />
-      <ProfileSection 
-        name="권가롱이"
-        description="오늘도 빵과 함께 할기찬 하루 보내세요~"
-      />
+      <ProfileSection />
       <MenuList />
       <CustomerSupport />
       <AccountManagement />
