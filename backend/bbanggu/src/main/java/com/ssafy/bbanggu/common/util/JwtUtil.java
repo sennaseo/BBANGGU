@@ -1,6 +1,7 @@
 package com.ssafy.bbanggu.common.util;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -22,6 +23,9 @@ import java.util.List;
 
 import javax.crypto.SecretKey;
 
+import com.ssafy.bbanggu.common.exception.CustomException;
+import com.ssafy.bbanggu.common.exception.ErrorCode;
+
 @Component
 public class JwtUtil {
 	private final SecretKey secretKey;
@@ -36,6 +40,9 @@ public class JwtUtil {
 	@Value("${jwt.expiration.refresh-token}")
 	private long refreshTokenValidity;
 
+	/**
+	 * Access Token 생성
+	 */
 	public String generateAccessToken(String email, Long userId) {
 		return Jwts.builder()
 			.setSubject(email)
@@ -46,6 +53,9 @@ public class JwtUtil {
 			.compact();
 	}
 
+	/**
+	 * Refresh Token 생성
+	 */
 	public String generateRefreshToken(String email) {
 		return Jwts.builder()
 			.setSubject(email)
@@ -55,21 +65,37 @@ public class JwtUtil {
 			.compact();
 	}
 
-	public String refreshAccessToken(String refreshToken) {
+	/**
+	 * 토큰에서 이메일 추출
+	 */
+	public String extractEmail(String token) {
 		try {
-			// Refresh Token 검증 및 Claims 추출
-			Claims claims = validateToken(refreshToken);
-
-			// 새로운 Access Token 발급
-			String email = claims.getSubject();
-			Long userId = claims.get("userId", Long.class);
-			return generateAccessToken(email, userId);
-
-		} catch (JwtException e) {
-			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid or expired refresh token");
+			return Jwts.parserBuilder()
+				.setSigningKey(secretKey)
+				.build()
+				.parseClaimsJws(token)
+				.getBody()
+				.getSubject();
+		} catch (Exception e) {
+			throw new CustomException(ErrorCode.INVALID_ACCESS_TOKEN);
 		}
 	}
 
+	public String refreshAccessToken(String refreshToken) {
+		Claims claims = validateToken(refreshToken);
+		String email = claims.getSubject();
+		Long userId = claims.get("userId", Long.class);
+
+		if (userId == null) {
+			//throw new CustomException(ErrorCode.INVALID_TOKEN_MISSING_USERID);
+		}
+
+		return generateAccessToken(email, userId);
+	}
+
+	/**
+	 * JWT 토큰 유효성 검증
+	 */
 	public Claims validateToken(String token) {
 		try {
 			return Jwts.parserBuilder()
@@ -77,17 +103,22 @@ public class JwtUtil {
 				.build()
 				.parseClaimsJws(token)
 				.getBody();
+		} catch (ExpiredJwtException e) {
+			throw new CustomException(ErrorCode.TOKEN_EXPIRED); // 🔹 명확한 예외 메시지 설정
 		} catch (JwtException e) {
-			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid or expired token");
+			throw new CustomException(ErrorCode.INVALID_ACCESS_TOKEN); // 🔹 유효하지 않은 토큰 예외
 		}
 	}
 
+	/**
+	 * JWT 토큰에서 사용자 인증 정보 가져오기
+	 */
 	public Authentication getAuthentication(String token) {
 		Claims claims = validateToken(token);
 		Long userId = claims.get("userId", Long.class);
 
 		if (userId == null) {
-			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid token: userId is missing");
+			throw new CustomException(ErrorCode.INVALID_TOKEN_MISSING_USERID);
 		}
 
 		// 🔹 역할(Role)을 기본적으로 USER로 설정

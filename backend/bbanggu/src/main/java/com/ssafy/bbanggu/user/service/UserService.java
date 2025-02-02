@@ -3,7 +3,8 @@ package com.ssafy.bbanggu.user.service;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.ssafy.bbanggu.common.exception.DuplicateEmailException;
+import com.ssafy.bbanggu.common.exception.CustomException;
+import com.ssafy.bbanggu.common.exception.ErrorCode;
 import com.ssafy.bbanggu.common.util.JwtUtil;
 import com.ssafy.bbanggu.user.domain.User;
 import com.ssafy.bbanggu.user.dto.CreateUserRequest;
@@ -11,7 +12,6 @@ import com.ssafy.bbanggu.user.dto.UpdateUserRequest;
 import com.ssafy.bbanggu.user.dto.UserResponse;
 import com.ssafy.bbanggu.user.repository.UserRepository;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -19,16 +19,12 @@ import org.springframework.web.server.ResponseStatusException;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
-import io.jsonwebtoken.Jwts;
 
 @Service
 public class UserService { // 사용자 관련 비즈니스 로직 처리
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
-
-    @Value("${jwt.secret}")
-    private String secretKey;
 
     public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtUtil jwtUtil) {
         this.userRepository = userRepository;
@@ -58,7 +54,7 @@ public class UserService { // 사용자 관련 비즈니스 로직 처리
 
 	private void validateEmailNotExists(String email) {
 		if (userRepository.existsByEmail(email)) {
-			throw new DuplicateEmailException(HttpStatus.CONFLICT, "Email already exists");
+			throw new CustomException(ErrorCode.EMAIL_ALREADY_IN_USE);
 		}
 	}
 
@@ -69,11 +65,11 @@ public class UserService { // 사용자 관련 비즈니스 로직 처리
     public void delete(Long userId) {
         // 사용자 조회
         User user = userRepository.findById(userId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+            .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
         // 이미 삭제된 사용자 처리
         if (user.isDeleted()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User is already deleted");
+            throw new CustomException(ErrorCode.ACCOUNT_DEACTIVATED);
         }
 
         // 논리적 삭제 처리
@@ -91,16 +87,16 @@ public class UserService { // 사용자 관련 비즈니스 로직 처리
     public Map<String, String> login(String email, String password) {
         // 이메일로 사용자 조회
         User user = userRepository.findByEmail(email)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid email or password"));
+			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
         // 논리적으로 삭제된 사용자 처리
         if (user.isDeleted()) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "This account has been deactivated. Please contact support.");
+			throw new CustomException(ErrorCode.ACCOUNT_DEACTIVATED);
         }
 
         // 비밀번호 검증
         if (!passwordEncoder.matches(password, user.getPassword())) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid email or password");
+			throw new CustomException(ErrorCode.INVALID_PASSWORD);
         }
 
         // JWT 토큰 발급
@@ -113,7 +109,6 @@ public class UserService { // 사용자 관련 비즈니스 로직 처리
 
         // 응답 데이터 생성
         Map<String, String> response = new HashMap<>();
-        response.put("message", "Login successful");
         response.put("access_token", accessToken);
         response.put("refresh_token", refreshToken);
 
@@ -122,17 +117,21 @@ public class UserService { // 사용자 관련 비즈니스 로직 처리
 
     /**
      * 로그아웃 처리 메서드
-     *
-     * @param refreshToken 클라이언트에서 전달받은 Refresh Token
+     * @param accessToken 이메일에서 추출한 Access Token
      */
-    public void logout(String refreshToken) {
-        // Refresh Token으로 사용자 검색
-        User user = userRepository.findByRefreshToken(refreshToken)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid or expired refresh token"));
+    public void logout(String accessToken) {
+		// Access Token 검증 및 이메일 추출
+		String email = jwtUtil.extractEmail(accessToken);
+		if (email == null) {
+			throw new CustomException(ErrorCode.INVALID_ACCESS_TOKEN);
+		}
 
-        // Refresh Token 삭제
-        user.clearRefreshToken();
-        userRepository.save(user);
+		// 사용자의 Refresh Token 삭제
+		User user = userRepository.findByEmail(email)
+			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+		user.clearRefreshToken();
+		userRepository.save(user);
     }
 
     /**
@@ -152,7 +151,7 @@ public class UserService { // 사용자 관련 비즈니스 로직 처리
             return jwtUtil.generateAccessToken(email, userId);
 
         } catch (JwtException e) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid or expired refresh token");
+            throw new CustomException(ErrorCode.INVALID_REFRESH_TOKEN);
         }
     }
 
@@ -165,7 +164,7 @@ public class UserService { // 사용자 관련 비즈니스 로직 처리
      */
     public UserResponse update(Long userId, UpdateUserRequest request) {
         User user = userRepository.findById(userId)
-            .orElseThrow(() -> new IllegalArgumentException("User not found"));
+            .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
         user.update(request.name(), request.profilePhotoUrl());
         userRepository.save(user);
         return UserResponse.from(user);
@@ -178,7 +177,7 @@ public class UserService { // 사용자 관련 비즈니스 로직 처리
      */
     public void updatePassword(String email, String newPassword) {
         User user = userRepository.findByEmail(email)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+            .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
         // 비밀번호 암호화 후 저장
         user.setPassword(passwordEncoder.encode(newPassword));

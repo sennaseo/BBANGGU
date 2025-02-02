@@ -4,7 +4,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.ssafy.bbanggu.auth.service.EmailService;
+import com.ssafy.bbanggu.common.exception.CustomException;
+import com.ssafy.bbanggu.common.exception.ErrorCode;
+import com.ssafy.bbanggu.common.response.ApiResponse;
 import com.ssafy.bbanggu.user.dto.CreateUserRequest;
+import com.ssafy.bbanggu.user.dto.LoginRequest;
 import com.ssafy.bbanggu.user.dto.UpdateUserRequest;
 import com.ssafy.bbanggu.user.dto.UserResponse;
 import com.ssafy.bbanggu.user.service.UserService;
@@ -13,12 +17,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
 @RestController
@@ -42,61 +41,61 @@ public class UserController {
     public ResponseEntity<?> createUser(@Valid @RequestBody CreateUserRequest request, BindingResult result) {
         // 회원가입 요청 데이터 검증
         if (result.hasErrors()) {
-            Map<String, String> errors = new HashMap<>();
-            result.getFieldErrors().forEach(error ->
-                errors.put(error.getField(), error.getDefaultMessage())
-            );
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
+            throw new CustomException(ErrorCode.INVALID_REQUEST);
         }
 
         UserResponse response = userService.create(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+
+		Map<String, Object> responseData = new HashMap<>();
+		responseData.put("message", "회원가입이 완료되었습니다.");
+		responseData.put("data", response);
+
+		return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse(201, "CREATED", responseData));
     }
 
     /**
      * 회원탈퇴 API (논리적 삭제)
-     *
      * @param userId 삭제할 사용자 ID
      */
-    @Operation(summary = "회원탈퇴", description = "사용자를 삭제합니다.")
     @DeleteMapping("/{userId}")
     public ResponseEntity<?> deleteUser(@PathVariable Long userId) {
         userService.delete(userId);
-        return ResponseEntity.ok(Map.of("message", "User account deleted successfully."));
+		return ResponseEntity.ok(new ApiResponse(200, "OK", "회원탈퇴가 완료되었습니다."));
     }
 
     /**
      * 로그인 API
-     *
-     * @param email 사용자 이메일
-     * @param password 사용자 비밀번호
      * @return 로그인 성공 시 사용자 정보
      */
-    @Operation(summary = "로그인", description = "사용자가 로그인합니다.")
     @PostMapping("/login")
-    public ResponseEntity<Map<String, String>> login(@RequestParam String email, @RequestParam String password) {
-        Map<String, String> response = userService.login(email, password);
-        return ResponseEntity.ok(response);
+    public ResponseEntity<ApiResponse> login(@Valid @RequestBody LoginRequest request, BindingResult result) {
+		if (result.hasErrors()) {
+			throw new CustomException(ErrorCode.INVALID_REQUEST);
+		}
+
+		Map<String, String> response = userService.login(request.getEmail(), request.getPassword());
+
+		Map<String, Object> responseData = new HashMap<>();
+		responseData.put("message", "로그인이 성공적으로 완료되었습니다.");
+		responseData.put("data", response);
+
+		return ResponseEntity.ok(new ApiResponse(200, "OK", responseData));
     }
 
     /**
      * 로그아웃 API
-     *
      * @param authorizationHeader Authorization 헤더
      */
-    @Operation(summary = "로그아웃", description = "사용자가 로그아웃합니다.")
     @PostMapping("/logout")
     public ResponseEntity<?> logout(@RequestHeader(value = "Authorization", required = false) String authorizationHeader) {
         if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(Map.of("message", "Invalid or missing Authorization header"));
+            throw new CustomException(ErrorCode.MISSING_AUTHORIZATION_HEADER);
         }
 
-        // Bearer 접두사 제거
-        String refreshToken = authorizationHeader.substring(7);
-        userService.logout(refreshToken);
+		String accessToken = authorizationHeader.substring(7);
+		userService.logout(accessToken);
 
-        return ResponseEntity.ok(Map.of("message", "Logout successful"));
+        return ResponseEntity.ok(new ApiResponse(200, "OK", "로그아웃이 완료되었습니다."));
     }
 
     /**
@@ -106,21 +105,15 @@ public class UserController {
      * @param request 사용자 수정 요청 데이터 (name, profile_photo_url)
      * @return 수정된 사용자 정보
      */
-    @Operation(summary = "회원 정보 수정", description = "회원 정보를 수정합니다.")
     @PutMapping("/{userId}")
     public ResponseEntity<?> updateUser(@PathVariable Long userId, @RequestBody UpdateUserRequest request,
         @RequestHeader("Authorization") String authorizationHeader) {
         if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(Map.of("message", "Invalid or missing Authorization header"));
+            throw new CustomException(ErrorCode.INVALID_AUTHORIZATION_HEADER);
         }
 
-        try {
-            UserResponse updatedUser = userService.update(userId, request);
-            return ResponseEntity.ok(Map.of("message", "User information updated successfully", "data", updatedUser));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", e.getMessage()));
-        }
+        UserResponse updatedUser = userService.update(userId, request);
+        return ResponseEntity.ok(new ApiResponse(200, "OK", "로그아웃이 완료되었습니다."));
     }
 
     /**
@@ -129,20 +122,10 @@ public class UserController {
      * @param email 사용자 이메일
      * @return 처리 결과 메시지
      */
-    @Operation(summary = "비밀번호 초기화 요청", description = "사용자의 이메일로 인증 코드를 발송합니다.")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "인증 코드 발송 성공"),
-        @ApiResponse(responseCode = "400", description = "이메일 형식 오류"),
-        @ApiResponse(responseCode = "404", description = "해당 이메일이 존재하지 않음")
-    })
     @PostMapping("/password/reset")
     public ResponseEntity<?> resetPasswordRequest(@RequestParam String email) {
-        try {
-            emailAuthService.sendAuthenticationCode(email);
-            return ResponseEntity.ok(Map.of("message", "Password reset request processed. Please check your email."));
-        } catch (ResponseStatusException e) {
-            return ResponseEntity.status(e.getStatusCode()).body(Map.of("message", e.getReason()));
-        }
+        emailAuthService.sendAuthenticationCode(email);
+		return ResponseEntity.ok(new ApiResponse(200, "OK", "비밀번호 재설정 요청이 처리되었습니다. 이메일을 확인해주세요."));
     }
 
     /**
@@ -153,12 +136,6 @@ public class UserController {
      * @param authCode 인증 코드
      * @return 처리 결과 메시지
      */
-    @Operation(summary = "비밀번호 초기화", description = "사용자의 인증 코드를 확인하고, 새로운 비밀번호를 설정합니다.")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "비밀번호 초기화 성공"),
-        @ApiResponse(responseCode = "400", description = "입력값 오류 또는 인증 실패"),
-        @ApiResponse(responseCode = "404", description = "해당 이메일이 존재하지 않음")
-    })
     @PostMapping("/password/reset/confirm")
     public ResponseEntity<?> resetPasswordConfirm(
         @RequestParam String email,
@@ -166,6 +143,6 @@ public class UserController {
         @RequestParam String authCode) {
         emailAuthService.verifyAuthenticationCode(email, authCode); // 기존 이메일 인증 로직 재사용
         userService.updatePassword(email, newPassword);
-        return ResponseEntity.ok(Map.of("message", "Password successfully reset."));
+        return ResponseEntity.ok(new ApiResponse(200, "OK", "비밀번호가 성공적으로 변경되었습니다."));
     }
 }

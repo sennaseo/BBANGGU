@@ -10,16 +10,22 @@ import com.ssafy.bbanggu.common.response.ApiResponse;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
-	@ExceptionHandler(DuplicateEmailException.class)
-	public ResponseEntity<ApiResponse> handleDuplicateEmailException(DuplicateEmailException e) {
+	@ExceptionHandler(CustomException.class)
+	public ResponseEntity<ApiResponse> handleCustomException(CustomException e) {
 		return ResponseEntity.status(e.getStatus())
-			.body(new ApiResponse(409, e.getMessage()));
+			.body(new ApiResponse(e.getCode(), e.getStatus().name(), e.getMessage()));
 	}
 
 	@ExceptionHandler(ConstraintViolationException.class)
 	public ResponseEntity<ApiResponse> handleValidationException(ConstraintViolationException e) {
-		String errorMessage = e.getMessage().split(":")[1].trim();
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-			.body(new ApiResponse(400, errorMessage));
+			.body(new ApiResponse(400, "Validation Error", e.getMessage()));
 	}
+
+	@ExceptionHandler(Exception.class)
+	public ResponseEntity<ApiResponse> handleGenericException(Exception e) {
+		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+			.body(new ApiResponse(500, "Internal Server Error", e.getMessage()));
+	}
+
 }

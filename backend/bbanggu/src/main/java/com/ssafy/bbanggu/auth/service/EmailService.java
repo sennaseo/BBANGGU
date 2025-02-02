@@ -8,9 +8,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.Random;
 
-import com.ssafy.bbanggu.common.exception.CodeExpiredException;
-import com.ssafy.bbanggu.common.exception.InvalidCodeException;
-import com.ssafy.bbanggu.common.exception.TooManyRequestsException;
+import com.ssafy.bbanggu.common.exception.CustomException;
+import com.ssafy.bbanggu.common.exception.ErrorCode;
 
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
@@ -32,7 +31,7 @@ public class EmailService {
 	public void sendAuthenticationCode(String email) {
 		// 1. 요청 제한 확인 (과도한 요청 방지)
 		if (storeService.isRateLimited(email)) {
-			throw new TooManyRequestsException("Too many requests. Please try again later.");
+			throw new CustomException(ErrorCode.TOO_MANY_REQUESTS);
 		}
 
 		// 2. 인증번호 생성
@@ -63,7 +62,7 @@ public class EmailService {
 	 * @param authCode 인증번호
 	 */
 	private void storeAuthCode(String email, String authCode) {
-		storeService.saveAuthCode(email, authCode, 10 * 60);
+		storeService.saveAuthCode(email, authCode);
 		storeService.setRateLimit(email);
 	}
 
@@ -117,7 +116,7 @@ public class EmailService {
 
 			mailSender.send(message);
 		} catch (MessagingException e) {
-			throw new RuntimeException("Failed to send email", e);
+			throw new CustomException(ErrorCode.EMAIL_SEND_FAILED);
 		}
 	}
 
@@ -128,26 +127,26 @@ public class EmailService {
 	 * @param inputCode 사용자가 입력한 인증번호
 	 */
 	public void verifyAuthenticationCode(String email, String inputCode) {
-		// 이미 사용된 인증번호인지 먼저 확인 (410 GONE)
+		// 이미 사용된 인증번호인지 먼저 확인
 		if (storeService.isAuthCodeUsed(email)) {
-			throw new CodeExpiredException("This authentication code has already been used.");
+			throw new CustomException(ErrorCode.USED_VERIFICATION_CODE);
 		}
 
-		// 저장된 인증번호 가져오기 (null이면 401 UNAUTHORIZED)
+		// 저장된 인증번호 가져오기
 		Pair<String, Long> codeData = storeService.getAuthCodeData(email);
 		if(codeData == null) {
-			throw new InvalidCodeException("Invalid authentication code.");
+			throw new CustomException(ErrorCode.VERIFICATION_CODE_NOT_FOUND);
 		}
 
-		// 인증번호가 일치하지 않는 경우 (401 UNAUTHORIZED)
+		// 인증번호가 일치하지 않는 경우
 		if(!codeData.getLeft().equals(inputCode)) {
-			throw new InvalidCodeException("Invalid authentication code.");
+			throw new CustomException(ErrorCode.INVALID_VERIFICATION_CODE);
 		}
 
 		// 만료된 인증번호인지 확인 (410 GONE)
 		if(System.currentTimeMillis() > codeData.getRight()) {
 			storeService.deleteAuthCode(email); // 만료된 코드 삭제
-			throw new CodeExpiredException("Authentication code has expired.");
+			throw new CustomException(ErrorCode.EXPIRED_VERIFICATION_CODE);
 		}
 
 		// 인증 성공한 경우, 인증번호를 사용 처리

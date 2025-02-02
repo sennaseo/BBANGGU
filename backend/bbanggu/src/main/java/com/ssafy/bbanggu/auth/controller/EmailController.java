@@ -1,14 +1,12 @@
 package com.ssafy.bbanggu.auth.controller;
 
 import com.ssafy.bbanggu.auth.dto.EmailRequest;
+import com.ssafy.bbanggu.common.exception.CustomException;
+import com.ssafy.bbanggu.common.exception.ErrorCode;
 import com.ssafy.bbanggu.common.response.ApiResponse;
 import com.ssafy.bbanggu.auth.dto.EmailVerifyRequest;
-import com.ssafy.bbanggu.common.exception.CodeExpiredException;
 import com.ssafy.bbanggu.auth.service.EmailService;
-import com.ssafy.bbanggu.common.exception.InvalidCodeException;
-import com.ssafy.bbanggu.common.exception.TooManyRequestsException;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
@@ -36,21 +34,11 @@ public class EmailController {
 	@PostMapping("/send")
 	public ResponseEntity<ApiResponse> sendEmail(@Valid @RequestBody EmailRequest request, BindingResult result) {
 		if (result.hasErrors()) {
-			String errorMessage = result.getFieldErrors().get(0).getDefaultMessage();
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-				.body(new ApiResponse(400, errorMessage));
+			throw new CustomException(ErrorCode.INVALID_REQUEST);
 		}
 
-		try {
-			emailService.sendAuthenticationCode(request.email());
-			return ResponseEntity.ok(new ApiResponse(200, "Authentication code sent successfully."));
-		} catch (TooManyRequestsException e) {
-			return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
-				.body(new ApiResponse(429, e.getMessage()));
-		} catch (Exception e) {
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-				.body(new ApiResponse(400, e.getMessage()));
-		}
+		emailService.sendAuthenticationCode(request.email());
+		return ResponseEntity.ok(new ApiResponse(200, "OK", "인증코드가 성공적으로 전송되었습니다."));
 	}
 
 	/**
@@ -61,18 +49,7 @@ public class EmailController {
 	 */
 	@PostMapping("/verify")
 	public ResponseEntity<ApiResponse> verifyEmail(@RequestBody @Valid EmailVerifyRequest request) {
-		try {
-			emailService.verifyAuthenticationCode(request.email(), request.authCode());
-			return ResponseEntity.ok(new ApiResponse(200, "Email verified successfully."));
-		} catch (CodeExpiredException e) {
-			return ResponseEntity.status(HttpStatus.GONE)
-				.body(new ApiResponse(410, e.getMessage()));
-		} catch (InvalidCodeException e) {
-			return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-				.body(new ApiResponse(401, e.getMessage()));
-		} catch (Exception e) {
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-				.body(new ApiResponse(400, "Invalid request."));
-		}
+		emailService.verifyAuthenticationCode(request.email(), request.authCode());
+		return ResponseEntity.ok(new ApiResponse(200, "OK",  "이메일이 확인되었습니다."));
 	}
 }
