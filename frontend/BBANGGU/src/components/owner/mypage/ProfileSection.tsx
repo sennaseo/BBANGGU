@@ -1,17 +1,15 @@
 import { Link } from 'react-router-dom';
 import defaultProfile from '@/assets/default-profile.jpg';
+import { useProfile } from '../../../common/context/ProfileContext';
 
-interface ProfileSectionProps {
-  name: string;
-  description: string;
-}
+export function ProfileSection() {
+  const { profile } = useProfile();
 
-export function ProfileSection({ name, description }: ProfileSectionProps) {
   return (
     <div className="px-6 py-6">
       <div className="flex items-center space-x-4">
         <img
-          src={defaultProfile}
+          src={profile.profileImage || defaultProfile}
           alt="프로필"
           className="w-[60px] h-[60px] rounded-full object-cover bg-gray-100"
           onError={(e) => {
@@ -21,10 +19,10 @@ export function ProfileSection({ name, description }: ProfileSectionProps) {
         />
         <div>
           <h2 className="text-lg font-semibold">
-            {name}
+            {profile.name}
             <span className="text-gray-600 font-normal ml-1">사장님</span>
           </h2>
-          <p className="text-gray-600 text-sm">{description}</p>
+          <p className="text-gray-600 text-sm">{profile.description}</p>
         </div>
       </div>
 
