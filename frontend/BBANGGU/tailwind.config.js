@@ -52,7 +52,6 @@ module.exports = {
     },
   },
   plugins: [
-    require("@tailwindcss/forms"), // ✅ 추가 가능 (선택사항)
     require("@tailwindcss/typography"), // ✅ 추가 가능 (선택사항)
     ({ addUtilities }) => {
       addUtilities({

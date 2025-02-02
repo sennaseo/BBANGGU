@@ -14,11 +14,12 @@ import EditStore from "./pages/owner/store/EditStore";
 import PickupTime from "./pages/owner/pickup/PickupTime";
 import CustomerSupport from "./pages/owner/support/CustomerSupport";
 import MobileLayout from "./layouts/MobileLayout";
+import ReportPage from "./pages/owner/report"
 import "./styles/fonts.css";
 
 export default function App() {
   return (
-    <Router>
+
       <MobileLayout>
         <Routes>
           {/* 기본 라우트 설정 */}
@@ -40,8 +41,9 @@ export default function App() {
           <Route path="/owner/store/edit" element={<EditStore />} />
           <Route path="/owner/pickup-time" element={<PickupTime />} />
           <Route path="/owner/chatbot" element={<CustomerSupport />} />
+          <Route path="/owner/report" element={<ReportPage />} />
         </Routes>
       </MobileLayout>
-    </Router>
+
   );
 }

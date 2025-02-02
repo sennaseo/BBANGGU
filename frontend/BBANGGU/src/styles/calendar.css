@@ -1,0 +1,45 @@
+.rdp {
+    --rdp-cell-size: 45px;
+    margin: 0;
+  }
+  
+  .rdp-caption {
+    font-size: 20px;
+    font-weight: bold;
+    padding: 15px 0;
+  }
+  
+  .rdp-head_cell {
+    font-weight: normal;
+    color: black;
+  }
+  
+  .rdp-button:hover:not([disabled]):not(.rdp-day_selected) {
+    background-color: transparent;
+    color: #ff9f43;
+  }
+  
+  .rdp-day_today {
+    font-weight: normal;
+  }
+  
+  .rdp-button {
+    font-size: 16px;
+  }
+  
+  .rdp-nav_button {
+    font-size: 24px;
+  }
+  
+  .rdp-day_selected:not([disabled]) {
+    background-color: transparent;
+    color: #ff9f43;
+    font-weight: bold;
+  }
+  
+  .rdp-day_selected:hover:not([disabled]) {
+    background-color: transparent;
+    color: #ff9f43;
+  }
+  
+  
