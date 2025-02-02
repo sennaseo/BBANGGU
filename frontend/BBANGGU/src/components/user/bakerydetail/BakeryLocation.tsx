@@ -1,8 +1,8 @@
 import { ChevronDown } from "lucide-react"
-import type { LocationType } from "../../../types/bakery"
+import type { BakeryType } from "../../../types/bakery"
 
 interface BakeryLocationProps {
-  location: LocationType
+  location: BakeryType
 }
 
 export default function BakeryLocation({ location }: BakeryLocationProps) {

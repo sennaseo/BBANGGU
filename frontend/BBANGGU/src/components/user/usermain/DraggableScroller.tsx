@@ -1,5 +1,5 @@
 import { ReactNode, CSSProperties, forwardRef } from 'react';
-import { useDraggable } from '../../../hooks/useDraggable';
+import { useDraggable } from '../../../hooks/user/useDraggable';
 
 type Props = {
     children: ReactNode;

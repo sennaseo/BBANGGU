@@ -1,10 +1,11 @@
-import { useUsermain } from "../../hooks/useUsermain"
-import SearchBar from "../../components/user/usermain/SearchBar"
-import Header from "../../components/user/usermain/Header"
-import BestPackages from "../../components/user/usermain/BestPackages"
-import RecommendedStores from "../../components/user/usermain/RecommendedStores"
-import ErrorBoundary from "../../components/ErrorBoundary"
+import { useUsermain } from "../../../hooks/user/useUsermain"
+import SearchBar from "../../../components/user/usermain/SearchBar"
+import Header from "../../../components/user/usermain/Header"
+import BestPackages from "../../../components/user/usermain/BestPackages"
+import RecommendedStores from "../../../components/user/usermain/RecommendedStores"
+import ErrorBoundary from "../../../components/ErrorBoundary"
 import { useNavigate } from "react-router-dom"
+import { mockBakeries } from "../../../mocks/user/bakeryMockData"
 
 export default function UserMain() {
   const {
@@ -87,7 +88,7 @@ export default function UserMain() {
             </div>
           </section>
 
-          <BestPackages packages={bestPackages} onToggleLike={toggleLike} />
+          <BestPackages packages={bestPackages} bakeries={mockBakeries} onToggleLike={toggleLike} />
           <RecommendedStores stores={recommendedStores} onToggleLike={toggleLike} onStoreClick={handleStoreClick} />
         </main>
       </ErrorBoundary>

@@ -1,10 +1,10 @@
 import { HeartIcon as HeartOutline, StarIcon } from "@heroicons/react/24/outline"
 import { MapPinIcon, ChevronDownIcon, HeartIcon as HeartSolid } from "@heroicons/react/24/solid"
-import type { Store } from "../../../types/bakery"
+import type { BakeryType } from "../../../types/bakery"
 
 interface RecommendedStoresProps {
-  stores: Store[]
-  onToggleLike: (id: number, isLiked: boolean) => void
+  stores: BakeryType[]
+  onToggleLike: (bakery_id: number) => void
   onStoreClick: (id: number) => void
 }
 
@@ -25,7 +25,7 @@ export default function RecommendedStores({ stores, onToggleLike, onStoreClick }
             onClick={() => onStoreClick(store.bakery_id)}
           >
             <img
-              src={store.image_url || "/placeholder.svg"}
+              src={store.photo_url || "/placeholder.svg"}
               alt={store.name}
               className="w-[100px] h-[100px] object-cover rounded-[12px]"
             />
@@ -50,7 +50,7 @@ export default function RecommendedStores({ stores, onToggleLike, onStoreClick }
                     className="w-8 h-8 flex items-center justify-center"
                     onClick={(e) => {
                       e.stopPropagation()
-                      onToggleLike(store.bakery_id, store.is_liked)
+                      onToggleLike(store.bakery_id)
                     }}
                   >
                     {store.is_liked ? (
