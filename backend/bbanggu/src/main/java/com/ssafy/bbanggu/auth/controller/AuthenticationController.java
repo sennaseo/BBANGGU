@@ -11,7 +11,6 @@ import java.util.Map;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
-@Tag(name = "Authentication", description = "인증 관련 API")
 @RestController
 @RequestMapping("/auth")
 public class AuthenticationController {
@@ -28,7 +27,6 @@ public class AuthenticationController {
 	 * @param authorizationHeader 클라이언트에서 전달받은 Refresh Token (Authorization 헤더)
 	 * @return 새로운 Access Token
 	 */
-	@Operation(summary = "Access Token 재발급", description = "Refresh Token을 사용해 새로운 Access Token을 발급합니다.")
 	@PostMapping("/token/refresh")
 	public ResponseEntity<?> refreshAccessToken(
 		@RequestHeader("Authorization") String authorizationHeader) {

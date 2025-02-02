@@ -1,50 +1,72 @@
+export interface UserType {
+  user_id: number
+  username: string
+  profile_image_url: string
+}
+
 export interface BakeryType {
-  id: string
+  bakery_id: number
+  user_id: number
   name: string
-  rating: number
-  reviewCount: number
-  distance: number
-  pickupTime: string
   description: string
-  bannerImage: string
-  logoImage: string
-  location: LocationType
+  business_registration_number: string
+  address_road: string
+  address_detail: string
+  photo_url: string
+  latitude: number
+  longitude: number
+  created_at: string
+  updated_at: string
+  deleted_at?: string
   reviews: ReviewType[]
+  likes_count: number
 }
 
 export interface LocationType {
-  address: string
+  address_road: string
+  address_detail: string
   latitude: number
   longitude: number
 }
 
 export interface ReviewType {
-  id: string
+  review_id: number
+  user_id: number
+  bakery_id: number
   rating: number
   content: string
-  image?: string
-  author: string
-  postedAt: string
+  review_image_url?: string
+  created_at: string
+  deleted_at?: string
 }
 
 export interface Store {
-  id: string
+  bakery_id: number
   name: string
   rating: number
-  reviewCount: number
+  review_count: number
   distance: string
   hours: string
   price: number
-  originalPrice: number
-  imageUrl: string
-  isLiked: boolean
+  original_price: number
+  image_url: string
+  is_liked: boolean
+  likes_count: number
+  reviews: ReviewType[]
 }
 
 export interface Package {
-  id: number
-  title: string
-  store: string
-  imageUrl: string
-  isLiked: boolean
+  bread_package_id: number
+  bakery_id: number
+  bakery_name: string
+  bakery_photo_url: string
+  name: string
+  price: number
+  discount_rate: number
+  quantity: number
+  description: string
+  created_at: string
+  deleted_at?: string
+  is_liked: boolean
 }
 
