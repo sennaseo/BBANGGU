@@ -50,8 +50,16 @@ public class SwaggerConfig {
 	@Bean
 	public GroupedOpenApi echoApi() {
 		return GroupedOpenApi.builder()
-			.group("Echo Sasving API")
+			.group("Echo Saving API")
 			.pathsToMatch("/saving/**")
+			.build();
+	}
+
+	@Bean
+	public GroupedOpenApi bakeryApi(){
+		return GroupedOpenApi.builder()
+			.group("Bakery API")
+			.pathsToMatch("/bakery/**")
 			.build();
 	}
 }

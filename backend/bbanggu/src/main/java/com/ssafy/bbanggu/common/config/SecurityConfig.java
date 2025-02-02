@@ -28,7 +28,8 @@ public class SecurityConfig {
 					"/user/register",
 					"/auth/token/refresh",
 					"/auth/**",
-					"/user/logout"
+					"/user/logout",
+					"/**"
 				).permitAll() // 공개 API
 				.requestMatchers("/saving/**").authenticated() // saving API는 인증 필요
 				.anyRequest().authenticated()
