@@ -6,6 +6,7 @@ package com.ssafy.bbanggu.common.response;
  * - 클라이언트에게 JSON 형태로 응답을 제공
  */
 public record ApiResponse(
-	int statusCode,
-	String message
+	int code,
+	String status,
+	Object message
 ) {}

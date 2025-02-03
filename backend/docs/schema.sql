@@ -22,22 +22,6 @@ USE `bbanggu` ;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `bbanggu`.`user` (
   `user_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
-<<<<<<< HEAD
-  `kakao_id` BIGINT NULL UNIQUE,
-  `email` VARCHAR(255) NOT NULL,
-  `password` VARCHAR(255) NOT NULL,
-  `name` VARCHAR(100) NOT NULL,
-  `phone` VARCHAR(20) NULL DEFAULT NULL,
-  `profile_photo_url` VARCHAR(255) NULL DEFAULT NULL,
-  `user_type` ENUM('USER', 'OWNER', 'ADMIN') NOT NULL DEFAULT 'USER',
-  `refresh_token` VARCHAR(512),
-  `created_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
-  `deleted_at` TIMESTAMP NULL DEFAULT NULL,
-  PRIMARY KEY (`user_id`),
-  UNIQUE INDEX `email` (`email` ASC) VISIBLE,
-  UNIQUE INDEX `phone` (`phone` ASC) VISIBLE)
-ENGINE = InnoDB
-=======
   `email` VARCHAR(255) NOT NULL,
   `password` VARCHAR(255) NOT NULL,
   `name` VARCHAR(255) NOT NULL,
@@ -56,7 +40,6 @@ ENGINE = InnoDB
   UNIQUE INDEX `UK4tp32nb01jmfcirpipti37lfs` (`kakao_id` ASC) VISIBLE)
 ENGINE = InnoDB
 AUTO_INCREMENT = 4
->>>>>>> origin/develop
 DEFAULT CHARACTER SET = utf8mb4
 COLLATE = utf8mb4_0900_ai_ci;
 
@@ -77,12 +60,8 @@ CREATE TABLE IF NOT EXISTS `bbanggu`.`bakery` (
   `longitude` DOUBLE NOT NULL,
   `created_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
   `deleted_at` TIMESTAMP NULL DEFAULT NULL,
-<<<<<<< HEAD
-  `update_at` TIMESTAMP NULL,
-=======
   `update_at` TIMESTAMP NULL DEFAULT NULL,
   `updated_at` DATETIME(6) NULL DEFAULT NULL,
->>>>>>> origin/develop
   PRIMARY KEY (`bakery_id`),
   UNIQUE INDEX `business_registration_number` (`business_registration_number` ASC) VISIBLE,
   INDEX `user_id` (`user_id` ASC) VISIBLE,
@@ -91,10 +70,7 @@ CREATE TABLE IF NOT EXISTS `bbanggu`.`bakery` (
     REFERENCES `bbanggu`.`user` (`user_id`)
     ON DELETE CASCADE)
 ENGINE = InnoDB
-<<<<<<< HEAD
-=======
 AUTO_INCREMENT = 7
->>>>>>> origin/develop
 DEFAULT CHARACTER SET = utf8mb4
 COLLATE = utf8mb4_0900_ai_ci;
 
@@ -103,19 +79,12 @@ COLLATE = utf8mb4_0900_ai_ci;
 -- Table `bbanggu`.`bakery_pickup_timetable`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `bbanggu`.`bakery_pickup_timetable` (
-<<<<<<< HEAD
-=======
   `bakery_pickup_timetable_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
->>>>>>> origin/develop
   `bakery_id` INT UNSIGNED NOT NULL,
   `day_of_week` ENUM('Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday') NOT NULL,
   `start_time` TIME NOT NULL,
   `end_time` TIME NOT NULL,
-<<<<<<< HEAD
-  PRIMARY KEY (`bakery_id`, `day_of_week`),
-=======
   PRIMARY KEY (`bakery_pickup_timetable_id`),
->>>>>>> origin/develop
   INDEX `bakery_id` (`bakery_id` ASC) VISIBLE,
   CONSTRAINT `pickup_time_ibfk_1`
     FOREIGN KEY (`bakery_id`)
@@ -148,11 +117,7 @@ CREATE TABLE IF NOT EXISTS `bbanggu`.`bread` (
   `bread_category_id` INT UNSIGNED NOT NULL,
   `name` VARCHAR(100) NOT NULL,
   `price` INT NOT NULL,
-<<<<<<< HEAD
-  `bread_image_url` VARCHAR(255) NULL,
-=======
   `bread_image_url` VARCHAR(255) NULL DEFAULT NULL,
->>>>>>> origin/develop
   `created_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
   `deleted_at` TIMESTAMP NULL DEFAULT NULL,
   PRIMARY KEY (`bread_id`),
@@ -171,12 +136,6 @@ COLLATE = utf8mb4_0900_ai_ci;
 
 
 -- -----------------------------------------------------
-<<<<<<< HEAD
--- Table `bbanggu`.`echo_saving`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `bbanggu`.`echo_saving` (
-  `echo_saving_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
-=======
 -- Table `bbanggu`.`bread_package`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `bbanggu`.`bread_package` (
@@ -205,7 +164,6 @@ COLLATE = utf8mb4_0900_ai_ci;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `bbanggu`.`echo_saving` (
   `echo_saving_id` BIGINT NOT NULL AUTO_INCREMENT,
->>>>>>> origin/develop
   `user_id` INT UNSIGNED NOT NULL,
   `saved_money` INT NOT NULL DEFAULT '0',
   `reduced_co2e` INT NULL DEFAULT '0',
@@ -225,22 +183,13 @@ COLLATE = utf8mb4_0900_ai_ci;
 -- Table `bbanggu`.`favorite`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `bbanggu`.`favorite` (
-<<<<<<< HEAD
-  `user_id` INT UNSIGNED NOT NULL,
-  `bakery_id` INT UNSIGNED NOT NULL,
-  `created_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
-  `deleted_at` TIMESTAMP NULL DEFAULT NULL,
-  PRIMARY KEY (`user_id`, `bakery_id`),
-  INDEX `bakery_id` (`bakery_id` ASC) VISIBLE,
-=======
-  `favorite_id` INT NOT NULL AUTO_INCREMENT,
+  `favorite_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   `user_id` INT UNSIGNED NOT NULL,
   `bakery_id` INT UNSIGNED NOT NULL,
   `is_liked` TINYINT(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`favorite_id`),
   INDEX `bakery_id` (`bakery_id` ASC) VISIBLE,
   INDEX `favorite_ibfk_1` (`user_id` ASC) VISIBLE,
->>>>>>> origin/develop
   CONSTRAINT `favorite_ibfk_1`
     FOREIGN KEY (`user_id`)
     REFERENCES `bbanggu`.`user` (`user_id`)
@@ -250,34 +199,7 @@ CREATE TABLE IF NOT EXISTS `bbanggu`.`favorite` (
     REFERENCES `bbanggu`.`bakery` (`bakery_id`)
     ON DELETE CASCADE)
 ENGINE = InnoDB
-<<<<<<< HEAD
-DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_0900_ai_ci;
-
-
--- -----------------------------------------------------
--- Table `bbanggu`.`bread_package`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `bbanggu`.`bread_package` (
-  `bread_package_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
-  `bakery_id` INT UNSIGNED NOT NULL,
-  `price` INT UNSIGNED NOT NULL,
-  `discount_rate` FLOAT NOT NULL,
-  `quantity` INT UNSIGNED NOT NULL,
-  `created_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
-  `deleted_at` TIMESTAMP NULL DEFAULT NULL,
-  `name` VARCHAR(100) NULL,
-  `description` VARCHAR(500) NULL,
-  PRIMARY KEY (`bread_package_id`),
-  INDEX `package_ibfk_1` (`bakery_id` ASC) VISIBLE,
-  CONSTRAINT `package_ibfk_1`
-    FOREIGN KEY (`bakery_id`)
-    REFERENCES `bbanggu`.`bakery` (`bakery_id`)
-    ON DELETE CASCADE)
-ENGINE = InnoDB
-=======
 AUTO_INCREMENT = 4
->>>>>>> origin/develop
 DEFAULT CHARACTER SET = utf8mb4
 COLLATE = utf8mb4_0900_ai_ci;
 
@@ -326,11 +248,7 @@ CREATE TABLE IF NOT EXISTS `bbanggu`.`review` (
   `bakery_id` INT UNSIGNED NOT NULL,
   `rating` INT UNSIGNED NOT NULL,
   `content` VARCHAR(1500) NULL DEFAULT NULL,
-<<<<<<< HEAD
-  `review_image_url` VARCHAR(255) NULL,
-=======
   `review_image_url` VARCHAR(255) NULL DEFAULT NULL,
->>>>>>> origin/develop
   `created_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
   `deleted_at` TIMESTAMP NULL DEFAULT NULL,
   PRIMARY KEY (`review_id`),

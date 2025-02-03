@@ -5,9 +5,7 @@ import java.util.UUID;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 /**
  * User 엔티티
@@ -16,6 +14,8 @@ import lombok.Setter;
 @Entity
 @Getter
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class User {
 
 	@Id
@@ -114,6 +114,14 @@ public class User {
 		if (profilePhotoUrl != null) {
 			this.profilePhotoUrl = profilePhotoUrl;
 		}
+	}
+
+	/**
+	 * Refresh Token 업데이트
+	 * @param refreshToken
+	 */
+	public void updateRefreshToken(String refreshToken) {
+		this.refreshToken = refreshToken;
 	}
 
 	/**
