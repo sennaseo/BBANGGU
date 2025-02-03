@@ -1,5 +1,6 @@
 package com.ssafy.bbanggu.breadpackage;
 
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -15,6 +16,7 @@ import com.ssafy.bbanggu.bakery.Bakery;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
+@Transactional
 @Table(name = "bread_package")
 public class BreadPackage {
 
@@ -36,15 +38,15 @@ public class BreadPackage {
     @Column(nullable = false)
     private Integer quantity; // 수량
 
+	@Column(length = 100)
+	private String name; // 패키지 이름
+
+	@Column(length = 500)
+	private String description; // 패키지 설명
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt; // 생성일
 
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt; // 삭제일
-
-    @Column(length = 100)
-    private String name; // 패키지 이름
-
-    @Column(length = 500)
-    private String description; // 패키지 설명
 }
