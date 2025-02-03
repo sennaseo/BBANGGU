@@ -17,15 +17,21 @@ function BottomNavigation() {
         location.pathname === '/owner/settlement/edit'
       );
     }
+    if (path === '/owner/store') {
+      return (
+        location.pathname === '/owner/store' ||
+        location.pathname === '/owner/main'
+      );
+    }
     return location.pathname === path;
   };
 
   return (
     <nav className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[440px] bg-white border-t border-gray-200">
       <div className="flex justify-around items-center h-16">
-        {/* 내 가게 */}
+        {/* 내 가게 링크를 메인 페이지로 변경 */}
         <Link 
-          to="/owner/store" 
+          to="/owner/main" 
           className={`flex flex-col items-center space-y-1 w-1/3 ${
             isActive('/owner/store') ? 'text-[#FC973B]' : 'text-gray-400'
           }`}

@@ -21,6 +21,7 @@ import { ProfileProvider } from "./common/context/ProfileContext";
 import UserMyPage from "./pages/user/mypage/UserMyPage";
 import { ReservationHistory } from "./pages/user/reservation/ReservationHistory"
 import { ReservationDetail } from "./pages/user/reservation/ReservationDetail"
+import OwnerMainPage from "./pages/owner/mainpage/OwnerMainPage";
 
 export default function App() {
   return (
@@ -54,6 +55,7 @@ export default function App() {
             <Route path="/owner/pickup-time" element={<PickupTime />} />
             <Route path="/owner/chatbot" element={<CustomerSupport />} />
             <Route path="/owner/report" element={<ReportPage />} />
+            <Route path="/owner/main" element={<OwnerMainPage />} />
           </Routes>
         </MobileLayout>
       </Router>
