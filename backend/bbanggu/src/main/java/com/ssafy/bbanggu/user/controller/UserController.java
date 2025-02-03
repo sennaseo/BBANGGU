@@ -1,13 +1,11 @@
 package com.ssafy.bbanggu.user.controller;
 
-import static org.springframework.http.ResponseCookie.*;
-
-import java.util.HashMap;
 import java.util.Map;
 
 import com.ssafy.bbanggu.auth.service.EmailService;
 import com.ssafy.bbanggu.common.exception.CustomException;
 import com.ssafy.bbanggu.common.exception.ErrorCode;
+import com.ssafy.bbanggu.common.response.ErrorResponse;
 import com.ssafy.bbanggu.common.response.ApiResponse;
 import com.ssafy.bbanggu.user.dto.CreateUserRequest;
 import com.ssafy.bbanggu.user.dto.LoginRequest;
@@ -19,9 +17,11 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 
 @RestController
@@ -49,23 +49,24 @@ public class UserController {
         }
 
         UserResponse response = userService.create(request);
-
-		Map<String, Object> responseData = new HashMap<>();
-		responseData.put("message", "회원가입이 완료되었습니다.");
-		responseData.put("data", response);
-
-		return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse(201, "CREATED", responseData));
+		return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse("회원가입이 완료되었습니다.", response));
     }
 
     /**
      * 회원탈퇴 API (논리적 삭제)
-     * @param userId 삭제할 사용자 ID
      */
-    @DeleteMapping("/{userId}")
-    public ResponseEntity<?> deleteUser(@PathVariable Long userId) {
-        userService.delete(userId);
-		return ResponseEntity.ok(new ApiResponse(200, "OK", "회원탈퇴가 완료되었습니다."));
-    }
+    @DeleteMapping()
+    public ResponseEntity<?> deleteUser(HttpServletRequest request) {
+		Long userId = (Long) request.getAttribute("userId");
+
+		if (userId == null) {
+			throw new CustomException(ErrorCode.USER_NOT_FOUND);
+		}
+
+		userService.delete(userId);
+		return ResponseEntity.status(HttpStatus.NO_CONTENT)
+			.body(new ApiResponse("회원탈퇴가 성공적으로 완료되었습니다.", null));
+	}
 
     /**
      * 로그인 API
@@ -101,17 +102,27 @@ public class UserController {
 		return ResponseEntity.ok()
 			.header(HttpHeaders.SET_COOKIE, accessTokenCookie.toString())
 			.header(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString())
-			.body(new ApiResponse(200, "OK", "로그인이 성공적으로 완료되었습니다."));
+			.body(new ApiResponse("로그인이 성공적으로 완료되었습니다.", null));
     }
 
     /**
      * 로그아웃 API
      */
     @PostMapping("/logout")
-    public ResponseEntity<?> logout(@CookieValue(name = "refreshToken", required = false) String refreshToken) {
-        if (refreshToken != null) {
-			userService.logout(refreshToken);
+    public ResponseEntity<?> logout(Authentication authentication) {
+        if (authentication == null || authentication.getName() == null) {
+			throw new CustomException(ErrorCode.INVALID_AUTHENTICATION);
 		}
+
+		Long userId;
+		try {
+			String email = authentication.getName();
+			userId = userService.getUserIdByEmail(email);
+		} catch (NumberFormatException e) {
+			throw new CustomException(ErrorCode.USER_NOT_FOUND);
+		}
+
+		userService.logout(userId);
 
 		// ✅ AccessToken & RefreshToken 쿠키 만료시키기
 		ResponseCookie expiredAccessToken = ResponseCookie.from("accessToken", "")
@@ -131,7 +142,7 @@ public class UserController {
         return ResponseEntity.ok()
 			.header(HttpHeaders.SET_COOKIE, expiredAccessToken.toString())
 			.header(HttpHeaders.SET_COOKIE, expiredRefreshToken.toString())
-			.body(new ApiResponse(200, "OK", "로그아웃이 완료되었습니다."));
+			.body(new ApiResponse("로그아웃이 완료되었습니다.", null));
     }
 
     /**
@@ -149,7 +160,7 @@ public class UserController {
         }
 
         UserResponse updatedUser = userService.update(userId, request);
-        return ResponseEntity.ok(new ApiResponse(200, "OK", "로그아웃이 완료되었습니다."));
+        return ResponseEntity.ok(new ApiResponse("로그아웃이 완료되었습니다.", null));
     }
 
     /**
@@ -161,7 +172,7 @@ public class UserController {
     @PostMapping("/password/reset")
     public ResponseEntity<?> resetPasswordRequest(@RequestParam String email) {
         emailAuthService.sendAuthenticationCode(email);
-		return ResponseEntity.ok(new ApiResponse(200, "OK", "비밀번호 재설정 요청이 처리되었습니다. 이메일을 확인해주세요."));
+		return ResponseEntity.ok(new ApiResponse("비밀번호 재설정 요청이 처리되었습니다. 이메일을 확인해주세요.", null));
     }
 
     /**
@@ -179,6 +190,6 @@ public class UserController {
         @RequestParam String authCode) {
         emailAuthService.verifyAuthenticationCode(email, authCode); // 기존 이메일 인증 로직 재사용
         userService.updatePassword(email, newPassword);
-        return ResponseEntity.ok(new ApiResponse(200, "OK", "비밀번호가 성공적으로 변경되었습니다."));
+        return ResponseEntity.ok(new ApiResponse("비밀번호가 성공적으로 변경되었습니다.", null));
     }
 }

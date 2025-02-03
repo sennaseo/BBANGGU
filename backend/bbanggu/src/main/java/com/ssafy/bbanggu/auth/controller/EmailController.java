@@ -38,7 +38,7 @@ public class EmailController {
 		}
 
 		emailService.sendAuthenticationCode(request.email());
-		return ResponseEntity.ok(new ApiResponse(200, "OK", "인증코드가 성공적으로 전송되었습니다."));
+		return ResponseEntity.ok(new ApiResponse("인증코드가 성공적으로 전송되었습니다.", null));
 	}
 
 	/**
@@ -50,6 +50,6 @@ public class EmailController {
 	@PostMapping("/verify")
 	public ResponseEntity<ApiResponse> verifyEmail(@RequestBody @Valid EmailVerifyRequest request) {
 		emailService.verifyAuthenticationCode(request.email(), request.authCode());
-		return ResponseEntity.ok(new ApiResponse(200, "OK",  "이메일이 확인되었습니다."));
+		return ResponseEntity.ok(new ApiResponse("이메일이 확인되었습니다.", null));
 	}
 }

@@ -67,6 +67,9 @@ public class UserService { // 사용자 관련 비즈니스 로직 처리
             throw new CustomException(ErrorCode.ACCOUNT_DEACTIVATED);
         }
 
+		// Refresh Token 삭제
+		user.setRefreshToken(null);
+
         // 논리적 삭제 처리
         user.delete();
         userRepository.save(user);
@@ -113,11 +116,12 @@ public class UserService { // 사용자 관련 비즈니스 로직 처리
     /**
      * 로그아웃: RefreshToken 삭제
      */
-    public void logout(String refreshToken) {
+    public void logout(Long userId) {
 		// 사용자의 Refresh Token 삭제
-		User user = userRepository.findByRefreshToken(refreshToken)
-			.orElseThrow(() -> new CustomException(ErrorCode.INVALID_REFRESH_TOKEN));
+		User user = userRepository.findById(userId)
+			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
+		// ✅ Refresh Token 삭제하여 재로그인 방지
 		user.setRefreshToken(null);
 		userRepository.save(user);
     }
@@ -150,4 +154,10 @@ public class UserService { // 사용자 관련 비즈니스 로직 처리
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
     }
+
+	public Long getUserIdByEmail(String email) {
+		return userRepository.findByEmail(email)
+			.map(User::getUserId)
+			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+	}
 }
