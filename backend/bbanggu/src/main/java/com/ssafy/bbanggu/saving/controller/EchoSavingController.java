@@ -27,11 +27,18 @@ public class EchoSavingController {
 
 	@GetMapping("/test")
 	public ResponseEntity<?> testProtectedApi(Authentication authentication) {
+		// ✅ authentication이 null이면 401 Unauthorized 반환
+		if (authentication == null) {
+			return ResponseEntity.status(401)
+				.body(new com.ssafy.bbanggu.common.response.ApiResponse(401, "Unauthorized", "인증되지 않은 사용자입니다."));
+		}
+
 		// ✅ 현재 인증된 사용자 정보 확인
 		String username = authentication.getName();
 
-		return ResponseEntity.ok(new com.ssafy.bbanggu.common.response.ApiResponse(200, "OK", "보호된 API 요청 성공, \"현재 사용자: " + username));
+		return ResponseEntity.ok(new com.ssafy.bbanggu.common.response.ApiResponse(200, "OK", "보호된 API 요청 성공, 현재 사용자: " + username));
 	}
+
 
 	@Operation(summary = "유저의 누적 탄소 절감량 및 절약 금액 조회", description = "현재 로그인된 유저의 절약 금액 및 탄소 절감량을 조회합니다.")
 	@ApiResponses({
