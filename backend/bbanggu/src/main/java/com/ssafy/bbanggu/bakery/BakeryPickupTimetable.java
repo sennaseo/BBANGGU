@@ -16,12 +16,6 @@ import java.sql.Time;
 @Table(name = "bakery_pickup_timetable")
 public class BakeryPickupTimetable {
 
-<<<<<<< HEAD
-    @Id
-    @ManyToOne
-    @JoinColumn(name = "bakery_id", nullable = false)
-    private Bakery bakery; // 가게 ID
-=======
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "bakery_pickup_timetable_id", columnDefinition = "INT UNSIGNED", nullable = false, updatable = false)
@@ -30,7 +24,6 @@ public class BakeryPickupTimetable {
 	@ManyToOne
 	@JoinColumn(name = "bakery_id", nullable = false)
 	private Bakery bakery; // 가게 ID
->>>>>>> origin/develop
 
     @Enumerated(EnumType.STRING)
     @Column(name = "day_of_week", nullable = false)
