@@ -60,15 +60,39 @@ public class UserController {
      * 회원탈퇴 API (논리적 삭제)
      */
     @DeleteMapping()
-    public ResponseEntity<?> deleteUser(HttpServletRequest request) {
-		Long userId = (Long) request.getAttribute("userId");
-
-		if (userId == null) {
-			throw new CustomException(ErrorCode.USER_NOT_FOUND);
+    public ResponseEntity<?> deleteUser(Authentication authentication) {
+		// ✅ Access Token이 없거나 유효하지 않은 경우 예외 처리
+		if (authentication == null || authentication.getName() == null) {
+			throw new CustomException(ErrorCode.INVALID_ACCESS_TOKEN);
 		}
 
+		// ✅ email 가져오기
+		String email = authentication.getName();
+
+		// ✅ email로 userId 조회
+		Long userId = userService.getUserIdByEmail(email);
+
+		// ✅ 회원 탈퇴 처리 (논리 삭제)
 		userService.delete(userId);
+
+		// ✅ AccessToken & RefreshToken 쿠키 즉시 만료시키기
+		ResponseCookie expiredAccessToken = ResponseCookie.from("accessToken", "")
+			.httpOnly(true)
+			.secure(true)
+			.path("/")
+			.maxAge(0) // 즉시 만료
+			.build();
+
+		ResponseCookie expiredRefreshToken = ResponseCookie.from("refreshToken", "")
+			.httpOnly(true)
+			.secure(true)
+			.path("/")
+			.maxAge(0) // 즉시 만료
+			.build();
+
 		return ResponseEntity.status(HttpStatus.NO_CONTENT)
+			.header(HttpHeaders.SET_COOKIE, expiredAccessToken.toString())
+			.header(HttpHeaders.SET_COOKIE, expiredRefreshToken.toString())
 			.body(new ApiResponse("회원탈퇴가 성공적으로 완료되었습니다.", null));
 	}
 
