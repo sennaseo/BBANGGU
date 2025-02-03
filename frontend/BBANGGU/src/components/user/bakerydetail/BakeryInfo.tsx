@@ -1,7 +1,7 @@
 import { Heart } from "lucide-react"
 import { Link } from "react-router-dom"
 import type { BakeryType } from "../../../types/bakery"
-import { MapPinIcon, StarIcon } from "@heroicons/react/24/solid"
+import { MapPinIcon } from "@heroicons/react/24/solid"
 
 interface BakeryInfoProps {
   bakery: BakeryType
@@ -26,13 +26,9 @@ export default function BakeryInfo({ bakery }: BakeryInfoProps) {
               <span className="text-[13px]">리뷰 보기 &gt;</span>
             </Link>
             <div className="flex gap-3 mt-1">
-              <span className="flex items-center text-[12px] gap-1 text-[#757575] font-light">
-                <StarIcon className="size-3.5 solid fill-[#FFB933] stroke-none" />{" "}
-                {/* Rating would come from reviews */}
-              </span>
               <span className="flex items-center text-[11px] gap-1 text-[#D2D2D2] font-light">
                 <MapPinIcon className="size-3.5" />
-                {/* Distance would need to be calculated */}
+                {bakery.address_road}
               </span>
             </div>
           </div>
@@ -43,10 +39,8 @@ export default function BakeryInfo({ bakery }: BakeryInfoProps) {
       </div>
 
       <div className="flex rounded-lg gap-4 items-center py-4">
-        <h2 className="font-medium text-[14px] text-[#454545]">PICK UP</h2>
-        <p className="text-[12px] font-light text-[#949494]">
-          {/* Pickup time would need to be added to the bakery type */}
-        </p>
+        <h2 className="font-medium text-[14px] text-[#454545]">영업 시간</h2>
+        <p className="text-[12px] font-light text-[#949494]">월-금 09:00-18:00</p>
       </div>
 
       <p className="text-[#747474] text-[11px]">{bakery.description}</p>

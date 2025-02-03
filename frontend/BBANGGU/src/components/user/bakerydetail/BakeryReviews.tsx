@@ -1,7 +1,7 @@
 import { ChevronRight } from "lucide-react"
 import { Link } from "react-router-dom"
 import type { ReviewType } from "../../../types/bakery"
-import { mockUsers } from "../../../mocks/mockUserData"
+import { mockUsers } from "../../../mocks/user/mockUserData"
 
 interface BakeryReviewsProps {
   bakery_id: number
@@ -55,10 +55,10 @@ export default function BakeryReviews({ bakery_id, reviews }: BakeryReviewsProps
                     <div className="flex items-center gap-1.5">
                       <img
                         src={user.profile_image_url || "/placeholder.svg"}
-                        alt={user.username}
+                        alt={user.name}
                         className="w-[27px] h-[27px] rounded-full object-cover"
                       />
-                      <span className="text-[#606060]">{user.username}</span>
+                      <span className="text-[#606060]">{user.name}</span>
                     </div>
                     <span className="text-[#D3D3D3]">{new Date(review.created_at).toLocaleDateString()}</span>
                   </div>
