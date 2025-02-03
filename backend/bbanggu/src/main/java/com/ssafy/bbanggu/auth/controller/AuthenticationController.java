@@ -41,6 +41,6 @@ public class AuthenticationController {
 
 		return ResponseEntity.ok()
 			.header(HttpHeaders.SET_COOKIE, accessTokenCookie.toString())
-			.body(new ApiResponse(200, "OK", "AccessToken 재발급이 성공적으로 완료되었습니다."));
+			.body(new ApiResponse("AccessToken 재발급이 성공적으로 완료되었습니다.", null));
 	}
 }
