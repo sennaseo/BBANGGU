@@ -34,6 +34,7 @@ export const mockBakeries: BakeryType[] = [
       quantity: 3,
       description: "인기 있는 빵 3종으로 구성된 패키지입니다.",
       created_at: "2024-01-01T00:00:00Z",
+      reservations: [],
     },
   },
   {
@@ -68,6 +69,7 @@ export const mockBakeries: BakeryType[] = [
       quantity: 4,
       description: "오후에 즐기기 좋은 빵 4종으로 구성된 패키지입니다.",
       created_at: "2024-01-01T00:00:00Z",
+      reservations: [],
     },
   },
   {
@@ -102,6 +104,7 @@ export const mockBakeries: BakeryType[] = [
       quantity: 5,
       description: "초코 lovers를 위한 빵 5종으로 구성된 패키지입니다.",
       created_at: "2024-01-01T00:00:00Z",
+      reservations: [],
     },
   },
 ]
