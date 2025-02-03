@@ -136,6 +136,7 @@ public class User {
 	 */
 	public void delete() {
 		this.deletedAt = LocalDateTime.now(); // 삭제 시간 설정
+		this.refreshToken = null; // refresh token 삭제
 	}
 
 	/**
