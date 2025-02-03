@@ -8,8 +8,8 @@ public record FavoriteDto(
 ) {
 	public static FavoriteDto from(Favorite favorite) {
 		return new FavoriteDto(
-			favorite.getUserId(),
-			favorite.getBakeryId()
+			favorite.getUser().getUserId(),
+			favorite.getBakery().getBakeryId()
 		);
 	}
 }

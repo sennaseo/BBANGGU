@@ -183,7 +183,7 @@ COLLATE = utf8mb4_0900_ai_ci;
 -- Table `bbanggu`.`favorite`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `bbanggu`.`favorite` (
-  `favorite_id` INT NOT NULL AUTO_INCREMENT,
+  `favorite_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   `user_id` INT UNSIGNED NOT NULL,
   `bakery_id` INT UNSIGNED NOT NULL,
   `is_liked` TINYINT(1) NOT NULL DEFAULT '0',
