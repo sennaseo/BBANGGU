@@ -2,6 +2,7 @@ package com.ssafy.bbanggu.user.controller;
 
 import java.util.Map;
 
+import com.ssafy.bbanggu.auth.security.JwtUtil;
 import com.ssafy.bbanggu.auth.service.EmailService;
 import com.ssafy.bbanggu.common.exception.CustomException;
 import com.ssafy.bbanggu.common.exception.ErrorCode;
@@ -21,6 +22,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 
@@ -29,10 +31,12 @@ import jakarta.validation.Valid;
 public class UserController {
     private final UserService userService;
     private final EmailService emailAuthService;
+	private final JwtUtil jwtUtil;
 
-    public UserController(UserService userService, EmailService emailAuthService) {
+    public UserController(UserService userService, EmailService emailAuthService, JwtUtil jwtUtil) {
         this.userService = userService;
         this.emailAuthService = emailAuthService;
+		this.jwtUtil = jwtUtil;
     }
 
     /**
@@ -109,22 +113,23 @@ public class UserController {
      * 로그아웃 API
      */
     @PostMapping("/logout")
-    public ResponseEntity<?> logout(Authentication authentication) {
-        if (authentication == null || authentication.getName() == null) {
-			throw new CustomException(ErrorCode.INVALID_AUTHENTICATION);
+    public ResponseEntity<?> logout(Authentication authentication,
+		@CookieValue(name = "refreshToken", required = false) String refreshToken) {
+        // ✅ Access Token이 없는 경우 예외처리
+		if (authentication == null || authentication.getName() == null) {
+			throw new CustomException(ErrorCode.INVALID_ACCESS_TOKEN);
 		}
 
-		Long userId;
-		try {
-			String email = authentication.getName();
-			userId = userService.getUserIdByEmail(email);
-		} catch (NumberFormatException e) {
-			throw new CustomException(ErrorCode.USER_NOT_FOUND);
-		}
+		// ✅ email 가져오기
+		String email = authentication.getName();
 
+		// ✅ email로 userId 조회
+		Long userId = userService.getUserIdByEmail(email);
+
+		// ✅ 로그아웃 처리 (Refresh Token 삭제)
 		userService.logout(userId);
 
-		// ✅ AccessToken & RefreshToken 쿠키 만료시키기
+		// ✅ AccessToken & RefreshToken 쿠키 즉시 만료시키기
 		ResponseCookie expiredAccessToken = ResponseCookie.from("accessToken", "")
 			.httpOnly(true)
 			.secure(true)
@@ -139,7 +144,7 @@ public class UserController {
 			.maxAge(0) // 즉시 만료
 			.build();
 
-        return ResponseEntity.ok()
+		return ResponseEntity.ok()
 			.header(HttpHeaders.SET_COOKIE, expiredAccessToken.toString())
 			.header(HttpHeaders.SET_COOKIE, expiredRefreshToken.toString())
 			.body(new ApiResponse("로그아웃이 완료되었습니다.", null));
