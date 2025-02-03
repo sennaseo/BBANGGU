@@ -1,6 +1,7 @@
 package com.ssafy.bbanggu.stock;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
+import java.util.List;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,8 +17,22 @@ import lombok.RequiredArgsConstructor;
 public class StockService {
 	private final StockRepository stockRepository;
 
-	public Stock insertStock(StockDTO stockDto) {
+	public void insertStock(StockDTO stockDto) {
+		stockRepository.save(convertDtoToEntity(stockDto));
+	}
 
+	public void updateStock(StockDTO stockDto) {
+		Stock stock = stockRepository.findById(stockDto.getStockId())
+			.orElseThrow(() -> new RuntimeException("Stock not found"));
+		stock.setQuantity(stock.getQuantity());
+		stock.setBread(stock.getBread());
+	}
+
+	public void deleteStock(long stockId) {
+		stockRepository.deleteById(stockId);
+	}
+
+	private Stock convertDtoToEntity(StockDTO stockDto) {
 		Bakery bakery = Bakery.builder()
 			.bakeryId(stockDto.getBakeryId())
 			.build();
@@ -26,16 +41,15 @@ public class StockService {
 			.breadId(stockDto.getBreadId())
 			.build();
 
-		Stock stock = Stock.builder()
+		return Stock.builder()
 			.bakery(bakery)
 			.bread(bread)
 			.quantity(stockDto.getQuantity())
-			.createdAt(LocalDateTime.now())
+			.date(LocalDate.now())
 			.build();
-
-		return stockRepository.save(stock);
 	}
 
-	public void updateStock(StockDTO stockDto) {
+	public List<Stock> getStockByPeriod(LocalDate startDate, LocalDate endDate) {
+		return null;
 	}
 }
