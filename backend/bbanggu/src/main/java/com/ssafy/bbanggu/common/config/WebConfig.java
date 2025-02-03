@@ -1,4 +1,4 @@
-package com.ssafy.bbanggu.config;
+package com.ssafy.bbanggu.common.config;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;

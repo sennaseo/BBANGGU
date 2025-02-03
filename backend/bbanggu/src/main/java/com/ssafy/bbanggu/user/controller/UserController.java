@@ -1,5 +1,7 @@
 package com.ssafy.bbanggu.user.controller;
 
+import static org.springframework.http.ResponseCookie.*;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -13,7 +15,9 @@ import com.ssafy.bbanggu.user.dto.UpdateUserRequest;
 import com.ssafy.bbanggu.user.dto.UserResponse;
 import com.ssafy.bbanggu.user.service.UserService;
 
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
@@ -73,29 +77,61 @@ public class UserController {
 			throw new CustomException(ErrorCode.INVALID_REQUEST);
 		}
 
-		Map<String, String> response = userService.login(request.getEmail(), request.getPassword());
+		// ✅ UserService에서 로그인 & 토큰 생성
+		Map<String, String> tokens = userService.login(request.getEmail(), request.getPassword());
+		String accessToken = tokens.get("access_token");
+		String refreshToken = tokens.get("refresh_token");
 
-		Map<String, Object> responseData = new HashMap<>();
-		responseData.put("message", "로그인이 성공적으로 완료되었습니다.");
-		responseData.put("data", response);
+		// ✅ AccessToken을 HTTP-Only 쿠키에 저장
+		ResponseCookie accessTokenCookie = ResponseCookie.from("accessToken", accessToken)
+			.httpOnly(true) // XSS 공격 방지
+			.secure(true) // HTTPS 환경에서만 사용 (로컬 개발 시 false 가능)
+			.path("/") // 모든 API 요청에서 쿠키 전송 가능
+			.maxAge(30 * 60) // 30분 유지
+			.build();
 
-		return ResponseEntity.ok(new ApiResponse(200, "OK", responseData));
+		// ✅ RefreshToken을 HTTP-Only 쿠키에 저장
+		ResponseCookie refreshTokenCookie = ResponseCookie.from("refreshToken", refreshToken)
+			.httpOnly(true)
+			.secure(true)
+			.path("/")
+			.maxAge(7 * 24 * 60 * 60)
+			.build();
+
+		return ResponseEntity.ok()
+			.header(HttpHeaders.SET_COOKIE, accessTokenCookie.toString())
+			.header(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString())
+			.body(new ApiResponse(200, "OK", "로그인이 성공적으로 완료되었습니다."));
     }
 
     /**
      * 로그아웃 API
-     * @param authorizationHeader Authorization 헤더
      */
     @PostMapping("/logout")
-    public ResponseEntity<?> logout(@RequestHeader(value = "Authorization", required = false) String authorizationHeader) {
-        if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
-            throw new CustomException(ErrorCode.MISSING_AUTHORIZATION_HEADER);
-        }
+    public ResponseEntity<?> logout(@CookieValue(name = "refreshToken", required = false) String refreshToken) {
+        if (refreshToken != null) {
+			userService.logout(refreshToken);
+		}
 
-		String accessToken = authorizationHeader.substring(7);
-		userService.logout(accessToken);
+		// ✅ AccessToken & RefreshToken 쿠키 만료시키기
+		ResponseCookie expiredAccessToken = ResponseCookie.from("accessToken", "")
+			.httpOnly(true)
+			.secure(true)
+			.path("/")
+			.maxAge(0) // 즉시 만료
+			.build();
 
-        return ResponseEntity.ok(new ApiResponse(200, "OK", "로그아웃이 완료되었습니다."));
+		ResponseCookie expiredRefreshToken = ResponseCookie.from("refreshToken", "")
+			.httpOnly(true)
+			.secure(true)
+			.path("/")
+			.maxAge(0) // 즉시 만료
+			.build();
+
+        return ResponseEntity.ok()
+			.header(HttpHeaders.SET_COOKIE, expiredAccessToken.toString())
+			.header(HttpHeaders.SET_COOKIE, expiredRefreshToken.toString())
+			.body(new ApiResponse(200, "OK", "로그아웃이 완료되었습니다."));
     }
 
     /**

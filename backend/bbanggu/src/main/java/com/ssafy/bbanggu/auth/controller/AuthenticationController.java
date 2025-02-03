@@ -1,8 +1,12 @@
 package com.ssafy.bbanggu.auth.controller;
 
+import com.ssafy.bbanggu.auth.service.AuthenticationService;
+import com.ssafy.bbanggu.common.response.ApiResponse;
 import com.ssafy.bbanggu.user.service.UserService;
 
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,34 +18,29 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RestController
 @RequestMapping("/auth")
 public class AuthenticationController {
+	private final AuthenticationService authService;
 
-	private final UserService userService;
-
-	public AuthenticationController(UserService userService) {
-		this.userService = userService;
+	public AuthenticationController(AuthenticationService authService) {
+		this.authService = authService;
 	}
 
 	/**
-	 * Refresh Token을 사용하여 새로운 Access Token을 발급
-	 *
-	 * @param authorizationHeader 클라이언트에서 전달받은 Refresh Token (Authorization 헤더)
-	 * @return 새로운 Access Token
+	 * AccessToken 재발급 API
 	 */
 	@PostMapping("/token/refresh")
-	public ResponseEntity<?> refreshAccessToken(
-		@RequestHeader("Authorization") String authorizationHeader) {
-		System.out.println("authorizationHeader: " + authorizationHeader);
-		if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
-			return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-				.body(Map.of("message", "Invalid or missing Authorization header"));
-		}
+	public ResponseEntity<ApiResponse> refresh(@CookieValue("refreshToken") String refreshToken) {
+		String newAccessToken = authService.refreshAccessToken(refreshToken);
 
-		// Bearer 접두사 제거
-		String refreshToken = authorizationHeader.substring(7);
+		// 새로운 AccessToken 쿠키 설정
+		ResponseCookie accessTokenCookie = ResponseCookie.from("accessToken", newAccessToken)
+			.httpOnly(true)
+			.secure(true)
+			.path("/")
+			.maxAge(30 * 60)
+			.build();
 
-		// Access Token 재발급
-		String newAccessToken = userService.refreshAccessToken(refreshToken);
-
-		return ResponseEntity.ok(Map.of("access_token", newAccessToken));
+		return ResponseEntity.ok()
+			.header(HttpHeaders.SET_COOKIE, accessTokenCookie.toString())
+			.body(new ApiResponse(200, "OK", "AccessToken 재발급이 성공적으로 완료되었습니다."));
 	}
 }

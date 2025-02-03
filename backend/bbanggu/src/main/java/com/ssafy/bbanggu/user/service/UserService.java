@@ -5,20 +5,15 @@ import java.util.Map;
 
 import com.ssafy.bbanggu.common.exception.CustomException;
 import com.ssafy.bbanggu.common.exception.ErrorCode;
-import com.ssafy.bbanggu.common.util.JwtUtil;
+import com.ssafy.bbanggu.auth.security.JwtUtil;
 import com.ssafy.bbanggu.user.domain.User;
 import com.ssafy.bbanggu.user.dto.CreateUserRequest;
 import com.ssafy.bbanggu.user.dto.UpdateUserRequest;
 import com.ssafy.bbanggu.user.dto.UserResponse;
 import com.ssafy.bbanggu.user.repository.UserRepository;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
-
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.JwtException;
 
 @Service
 public class UserService { // 사용자 관련 비즈니스 로직 처리
@@ -99,60 +94,32 @@ public class UserService { // 사용자 관련 비즈니스 로직 처리
 			throw new CustomException(ErrorCode.INVALID_PASSWORD);
         }
 
-        // JWT 토큰 발급
+        // ✅ JWT 토큰 생성
         String accessToken = jwtUtil.generateAccessToken(email, user.getUserId());
         String refreshToken = jwtUtil.generateRefreshToken(email);
 
-        // Refresh Token 저장
+        // ✅ Refresh Token을 DB 저장
         user.setRefreshToken(refreshToken);
         userRepository.save(user);
 
-        // 응답 데이터 생성
-        Map<String, String> response = new HashMap<>();
-        response.put("access_token", accessToken);
-        response.put("refresh_token", refreshToken);
+        // ✅ 응답 데이터 생성
+        Map<String, String> tokens = new HashMap<>();
+		tokens.put("access_token", accessToken);
+		tokens.put("refresh_token", refreshToken);
 
-        return response;
+        return tokens;
     }
 
     /**
-     * 로그아웃 처리 메서드
-     * @param accessToken 이메일에서 추출한 Access Token
+     * 로그아웃: RefreshToken 삭제
      */
-    public void logout(String accessToken) {
-		// Access Token 검증 및 이메일 추출
-		String email = jwtUtil.extractEmail(accessToken);
-		if (email == null) {
-			throw new CustomException(ErrorCode.INVALID_ACCESS_TOKEN);
-		}
-
+    public void logout(String refreshToken) {
 		// 사용자의 Refresh Token 삭제
-		User user = userRepository.findByEmail(email)
-			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+		User user = userRepository.findByRefreshToken(refreshToken)
+			.orElseThrow(() -> new CustomException(ErrorCode.INVALID_REFRESH_TOKEN));
 
-		user.clearRefreshToken();
+		user.setRefreshToken(null);
 		userRepository.save(user);
-    }
-
-    /**
-     * Access Token 재발급 메서드
-     *
-     * @param refreshToken 클라이언트에서 전달받은 Refresh Token
-     * @return 새로운 Access Token
-     */
-    public String refreshAccessToken(String refreshToken) {
-        try {
-            // Refresh Token 검증
-            Claims claims = jwtUtil.validateToken(refreshToken);
-
-            // 새로운 Access Token 발급
-            String email = claims.getSubject();
-            Long userId = claims.get("userId", Long.class); // 클레임에서 userId 추출
-            return jwtUtil.generateAccessToken(email, userId);
-
-        } catch (JwtException e) {
-            throw new CustomException(ErrorCode.INVALID_REFRESH_TOKEN);
-        }
     }
 
     /**

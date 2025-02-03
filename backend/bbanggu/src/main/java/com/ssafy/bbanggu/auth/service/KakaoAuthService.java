@@ -2,10 +2,9 @@ package com.ssafy.bbanggu.auth.service;
 
 import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
 
 import com.ssafy.bbanggu.auth.dto.KakaoUserInfo;
-import com.ssafy.bbanggu.common.util.JwtUtil;
+import com.ssafy.bbanggu.auth.security.JwtUtil;
 import com.ssafy.bbanggu.user.domain.User;
 import com.ssafy.bbanggu.user.repository.UserRepository;
 
