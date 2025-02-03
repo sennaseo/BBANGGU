@@ -26,10 +26,10 @@ import lombok.NoArgsConstructor;
 @Table(name = "stock")
 public class Stock {
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "stock_id")
-	private Long stockId; // 재고 ID
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "stock_id", columnDefinition = "INT UNSIGNED")
+    private Long stockId; // 재고 ID
 
 	@ManyToOne
 	@JoinColumn(name = "bakery_id", nullable = false)

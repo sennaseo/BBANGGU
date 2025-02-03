@@ -1,5 +1,6 @@
 package com.ssafy.bbanggu.review;
 
+import com.ssafy.bbanggu.user.domain.User;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -9,7 +10,6 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 import com.ssafy.bbanggu.bakery.Bakery;
-import com.ssafy.bbanggu.user.User;
 
 @Data
 @Builder
@@ -21,7 +21,7 @@ public class Review {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "review_id")
+    @Column(name = "review_id", columnDefinition = "INT UNSIGNED")
     private Long reviewId; // 리뷰 ID
 
     @ManyToOne

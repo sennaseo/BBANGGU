@@ -1,5 +1,6 @@
 package com.ssafy.bbanggu.bakery;
 
+import com.ssafy.bbanggu.user.domain.User;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -7,8 +8,6 @@ import lombok.NoArgsConstructor;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
-
-import com.ssafy.bbanggu.user.User;
 
 @Data
 @Builder
@@ -20,7 +19,7 @@ public class Settlement {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "settlement_id")
+    @Column(name = "settlement_id", columnDefinition = "INT UNSIGNED")
     private Long settlementId; // 정산 ID
 
     @OneToOne

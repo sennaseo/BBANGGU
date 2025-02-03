@@ -20,7 +20,7 @@ public class BreadPackage {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "bread_package_id")
+    @Column(name = "bread_package_id", columnDefinition = "INT UNSIGNED")
     private Long packageId; // 패키지 ID
 
     @ManyToOne

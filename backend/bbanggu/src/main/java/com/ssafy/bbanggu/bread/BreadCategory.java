@@ -17,7 +17,7 @@ public class BreadCategory {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "bread_category_id")
+    @Column(name = "bread_category_id", columnDefinition = "INT UNSIGNED")
     private Long breadCategoryId; // 빵 카테고리 ID
 
     @Column(nullable = false, length = 100)

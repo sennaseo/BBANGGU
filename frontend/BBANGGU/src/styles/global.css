@@ -1,0 +1,44 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --app-height: 100%;
+}
+
+html,
+body {
+  @apply overflow-hidden fixed inset-0;
+  height: var(--app-height);
+  overscroll-behavior-y: none;
+  -webkit-overflow-scrolling: touch;
+  -webkit-tap-highlight-color: transparent;
+  background-color: #f5f5f5;
+}
+
+#root {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
+}
+
+/* Remove tap highlight on interactive elements */
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+/* Disable text selection */
+.select-none {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Disable pull-to-refresh */
+body {
+  overscroll-behavior-y: none;
+}
+
