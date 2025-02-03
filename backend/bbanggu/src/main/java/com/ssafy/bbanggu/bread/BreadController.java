@@ -90,7 +90,6 @@ public class BreadController {
 					breadDto.setBreadId(bread.getBreadId());
 					breadDto.setName(bread.getName());
 					breadDto.setPrice(bread.getPrice());
-					breadDto.setBreadId(bread.getBreadId());
 					String imageUrl = bread.getBreadImageUrl();
 					if (imageUrl != null && !imageUrl.isEmpty()) {
 						breadDto.setBreadImageUrl(imageUrl.replace("\\", "/"));

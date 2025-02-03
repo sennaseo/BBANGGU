@@ -117,6 +117,14 @@ public class User {
 	}
 
 	/**
+	 * Refresh Token 업데이트
+	 * @param refreshToken
+	 */
+	public void updateRefreshToken(String refreshToken) {
+		this.refreshToken = refreshToken;
+	}
+
+	/**
 	 * Refresh Token 삭제 메서드
 	 */
 	public void clearRefreshToken() {

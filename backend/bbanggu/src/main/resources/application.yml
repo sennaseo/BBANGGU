@@ -2,12 +2,14 @@ server:
   error:
     include-stacktrace: never
 spring:
+  config:
+    import: optional:file:.env[.properties]
   application:
     name: bbanggu
   datasource:
-    url: jdbc:mysql://localhost:3306/bbanggu?serverTimezone=Asia/Seoul
-    username: ssafy
-    password: ssafy
+    url: jdbc:mysql://localhost:3306/${DB_NAME}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
   servlet:
     multipart:
@@ -15,7 +17,7 @@ spring:
       max-file-size: 10MB
       max-request-size: 10MB
   jpa:
-    # database-platform: org.hibernate.dialect.MySQLDialect
+    # database-platform: org.hibernate.dialect.MySQL8Dialect
     hibernate:
       ddl-auto: update
     properties:
@@ -26,8 +28,8 @@ spring:
   mail:
     host: smtp.gmail.com
     port: 587
-    username: nagum0545@gmail.com
-    password: ignervwducdxnlsu
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
     properties:
       mail:
         smtp:
@@ -44,14 +46,14 @@ logging:
     org.springframework.security: DEBUG
 
 kakao:
-  client-id: "3c52d7dbef8a4ac5ae57d0e59653b6a4"
-  redirect-uri: "http://localhost:8080/oauth/kakao/callback"
+  client-id: ${KAKAO_CLIENT_ID}
+  redirect-uri: ${KAKAO_REDIRECT_URI}
   api-url:
     token: https://kauth.kakao.com/oauth/token
     user-info: https://kapi.kakao.com/v2/user/me
 
 jwt:
-  secret: WW91clNlY3VyZVJhbmRvbUtleTEyMzQ1
+  secret: ${JWT_SECRET}
   expiration:
     access-token: 900000  # 15분 (밀리초)
     refresh-token: 86400000 # 24시간 (밀리초)

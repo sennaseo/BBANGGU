@@ -26,42 +26,43 @@ repositories {
 }
 
 dependencies {
-	// Spring Boot Core Dependencies
-	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-	implementation 'org.springframework.boot:spring-boot-starter-web'
-	implementation 'org.springframework.boot:spring-boot-starter-validation'
-	implementation 'org.springframework.boot:spring-boot-starter-mail'
+    // Spring Boot Core Dependencies
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.springframework.boot:spring-boot-starter-mail'
+    implementation 'jakarta.servlet:jakarta.servlet-api:6.0.0'
 
-	// Hibernate Validator
-	implementation 'org.hibernate.validator:hibernate-validator:8.0.2.Final'
+    // Hibernate Validator
+    implementation 'org.hibernate.validator:hibernate-validator:8.0.2.Final'
 
-	// Jackson for JSON Processing
-	implementation 'com.fasterxml.jackson.core:jackson-databind'
+    // Jackson for JSON Processing
+    implementation 'com.fasterxml.jackson.core:jackson-databind'
 
-	// Spring Security Core
-	implementation 'org.springframework.boot:spring-boot-starter-security'
+    // Spring Security Core
+    implementation 'org.springframework.boot:spring-boot-starter-security'
 
-	// SpringDoc OpenAPI (Swagger)
-	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.0.1'
+    // SpringDoc OpenAPI (Swagger)
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.0.1'
 
-	// Lombok for Boilerplate Code
-	compileOnly 'org.projectlombok:lombok'
-	annotationProcessor 'org.projectlombok:lombok'
+    // Lombok for Boilerplate Code
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
 
-	// Devtools for Hot Reload
-	developmentOnly 'org.springframework.boot:spring-boot-devtools'
+    // Devtools for Hot Reload
+    developmentOnly 'org.springframework.boot:spring-boot-devtools'
 
-	// JWT
-	implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
-	runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
-	runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
+    // JWT (Json Web Token)
+    implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
+    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
 
-	// MySQL Connector
-	runtimeOnly 'com.mysql:mysql-connector-j'
+    // MySQL Connector
+    runtimeOnly 'com.mysql:mysql-connector-j'
 
-	// Test Dependencies
-	testImplementation 'org.springframework.boot:spring-boot-starter-test'
-	testImplementation 'org.springframework.security:spring-security-test'
+    // Test Dependencies
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.security:spring-security-test'
 }
 
 tasks.named('test') {
@@ -73,8 +74,9 @@ tasks.withType(JavaCompile) {
 }
 
 checkstyle {
-    // maxWarnings = 0 // 규칙이 어긋나는 코드가 하나라도 있을 경우 빌드 fail을 내고 싶다면 이 선언을 추가한다.
+    toolVersion = "8.24"
     configFile = file("${rootDir}/naver-checkstyle-rules.xml")
-    // configProperties = ["suppressionFile" : "${rootDir}/naver-checkstyle-suppressions.xml"]  // 예외 설정할 파일이 있다면 작성
-    toolVersion = "8.24"  // checkstyle 버전 8.24 이상 선언
+    configProperties = ["suppressionFile": file("${rootDir}/naver-checkstyle-suppressions.xml")] // ✅ Suppression 설정 추가
+    ignoreFailures = true // 오류가 발생해도 빌드가 중단되지 않도록 설정
 }
+

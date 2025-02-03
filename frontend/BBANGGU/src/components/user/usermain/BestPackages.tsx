@@ -1,23 +1,19 @@
-import { HeartIcon, ChevronRightIcon } from "@heroicons/react/24/outline"
-import { HeartIcon as HeartIconSolid } from "@heroicons/react/24/solid"
-import { useRef } from "react"
+import { HeartIcon as HeartOutline, ChevronRightIcon } from "@heroicons/react/24/outline"
+import { HeartIcon as HeartSolid } from "@heroicons/react/24/solid"
+import { useRef, useMemo } from "react"
 import DraggableScroller from "./DraggableScroller"
-
-interface Package {
-  id: number
-  title: string
-  store: string
-  imageUrl: string
-  isLiked: boolean
-}
+import type { PackageType, BakeryType } from "../../../types/bakery"
+import { useNavigate } from "react-router-dom"
 
 interface BestPackagesProps {
-  packages: Package[]
-  onToggleLike: (id: number, isLiked: boolean) => void
+  packages: PackageType[]
+  bakeries: BakeryType[]
+  onToggleLike: (bakery_id: number) => void
 }
 
-export default function BestPackages({ packages, onToggleLike }: BestPackagesProps) {
+export default function BestPackages({ packages, bakeries, onToggleLike }: BestPackagesProps) {
   const scrollRef = useRef<HTMLDivElement>(null)
+  const navigate = useNavigate()
 
   const scroll = () => {
     if (scrollRef.current) {
@@ -30,6 +26,13 @@ export default function BestPackages({ packages, onToggleLike }: BestPackagesPro
     }
   }
 
+  const handlePackageClick = (bakery_id: number) => {
+    navigate(`/bakery/${bakery_id}`)
+  }
+
+  // Sort packages by price (descending order) and memoize the result
+  const sortedPackages = useMemo(() => [...packages].sort((a, b) => b.price - a.price), [packages])
+
   return (
     <section className="mb-8 relative">
       <div className="flex items-center justify-between mb-4">
@@ -38,32 +41,42 @@ export default function BestPackages({ packages, onToggleLike }: BestPackagesPro
           <ChevronRightIcon className="w-5 h-5" />
         </button>
       </div>
-      {/* 스크롤바 */}
       <DraggableScroller ref={scrollRef} className="flex gap-4 overflow-x-scroll scrollbar-hide -mx-5 px-5">
-        {packages.map((pkg) => (
-          <div key={pkg.id} className="flex-none w-[130px] text-center">
-            <div className="relative aspect-square mb-2">
-              <img
-                src={pkg.imageUrl || "/placeholder.svg"}
-                alt={pkg.title}
-                className="w-full h-full object-cover rounded-[12px]"
-              />
-              <button
-                className="absolute right-2 bottom-2 p-1.5 rounded-full bg-white/80 backdrop-blur-sm
-                          hover:bg-white transition-colors"
-                onClick={() => onToggleLike(pkg.id, pkg.isLiked)}
-              >
-                {pkg.isLiked ? (
-                  <HeartIconSolid className="w-5 h-5 text-[#fc973b]" />
-                ) : (
-                  <HeartIcon className="w-5 h-5 text-[#B4B4B4]" />
-                )}
-              </button>
+        {sortedPackages.map((pkg) => {
+          const bakery = bakeries.find((b) => b.bakery_id === pkg.bakery_id)
+          if (!bakery) return null
+
+          return (
+            <div
+              key={`package-${pkg.bread_package_id}`}
+              className="flex-none w-[130px] text-center cursor-pointer"
+              onClick={() => handlePackageClick(pkg.bakery_id)}
+            >
+              <div className="relative aspect-square mb-2">
+                <img
+                  src={bakery.photo_url || "/placeholder.svg"}
+                  alt={bakery.name}
+                  className="w-full h-full object-cover rounded-[12px]"
+                />
+                <button
+                  className="absolute right-2 bottom-2 p-1.5 rounded-full bg-white/80 backdrop-blur-sm hover:bg-white transition-colors"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    onToggleLike(pkg.bakery_id)
+                  }}
+                >
+                  {bakery.is_liked ? (
+                    <HeartSolid className="w-5 h-5 text-[#fc973b]" />
+                  ) : (
+                    <HeartOutline className="w-5 h-5 text-[#B4B4B4]" />
+                  )}
+                </button>
+              </div>
+              <h3 className="font-medium text-[16px] text-[#454545] font-semibold mb-1 line-clamp-1">{pkg.name}</h3>
+              <p className="text-[12px] text-[#B4B4B4] line-clamp-1">{bakery.name}</p>
             </div>
-            <h3 className="font-medium text-[16px] text-[#454545] font-semibold mb-1 line-clamp-1">{pkg.title}</h3>
-            <p className="text-[12px] text-[#B4B4B4] line-clamp-1">{pkg.store}</p>
-          </div>
-        ))}
+          )
+        })}
       </DraggableScroller>
     </section>
   )
