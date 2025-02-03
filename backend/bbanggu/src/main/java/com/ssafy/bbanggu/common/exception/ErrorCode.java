@@ -35,6 +35,8 @@ public enum ErrorCode {
 	INVALID_TOKEN_MISSING_USERID(4002, HttpStatus.UNAUTHORIZED, "JWT 토큰에 userId 정보가 없습니다."),
 	TOKEN_EXPIRED(4003, HttpStatus.UNAUTHORIZED, "토큰이 만료되었습니다."),
 	TOKEN_VERIFICATION_FAILED(4004, HttpStatus.UNAUTHORIZED, "토큰 검증에 실패하였습니다."),
+	INVALID_AUTHENTICATION(4005, HttpStatus.FORBIDDEN, "잘못된 인증 정보입니다."),
+	REFRESH_TOKEN_NOT_FOUND(4006, HttpStatus.BAD_REQUEST, "Refresh Token이 존재하지 않습니다."),
 
 	// ✅ 로그아웃 관련 예외 (4500번대)
 	LOGOUT_FAILED(4500, HttpStatus.BAD_REQUEST, "로그아웃 처리 중 오류가 발생했습니다."),
