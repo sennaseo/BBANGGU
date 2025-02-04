@@ -95,7 +95,7 @@ export function ReservationList({ reservations = [] }: ReservationListProps) {
           )}
           {data.length > 1 && (
             <button
-              onClick={() => navigate('/reservations')}
+              onClick={() => navigate('/user/reservations')}
               className="w-full text-[#B4B4B4] font-regular text-sm bg-white rounded-xl shadow-md py-[8px] border-t border-dashed border-gray-200"
             >
               진행중인 주문 내역 보기

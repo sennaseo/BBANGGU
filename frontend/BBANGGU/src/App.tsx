@@ -19,8 +19,8 @@ import UserReview from "./pages/user/review/UserReview";
 import "./styles/fonts.css";
 import { ProfileProvider } from "./common/context/ProfileContext";
 import UserMyPage from "./pages/user/mypage/UserMyPage";
-import { ReservationHistory } from "./pages/user/reservation/ReservationHistory"
-import { ReservationDetail } from "./pages/user/reservation/ReservationDetail"
+import { ReservationHistory } from "./pages/user/mypage/reservation/ReservationHistory"
+import { ReservationDetail } from "./pages/user/mypage/reservation/ReservationDetail"
 import OwnerMainPage from "./pages/owner/mainpage/OwnerMainPage";
 import  { UserPayment } from "./pages/user/payment/UserPayment"
 
@@ -42,11 +42,11 @@ export default function App() {
 
             {/* 사용자 관련 페이지 */}
             <Route path="/user" element={<UserMain />} />
-            <Route path="/bakery/:bakery_id" element={<BakeryDetail />} />
-            <Route path="/bakery/:bakery_id/reviews" element={<UserReview />} />
-            <Route path="/:user_id/mypage" element={<UserMyPage />} />
-            <Route path="/reservations" element={<ReservationHistory />} />
-            <Route path="/reservation/:reservation_id" element={<ReservationDetail />} />
+            <Route path="/user/bakery/:bakery_id" element={<BakeryDetail />} />
+            <Route path="/user/bakery/:bakery_id/reviews" element={<UserReview />} />
+            <Route path="/user/:user_id/mypage" element={<UserMyPage />} />
+            <Route path="/user/reservations" element={<ReservationHistory />} />
+            <Route path="/user/reservation/:reservation_id" element={<ReservationDetail />} />
             <Route path="/user/payment" element={<UserPayment />} />
 
             {/* 점주 관련 페이지 */}
