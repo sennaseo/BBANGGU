@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useCustomerSort } from '../../../hooks/owner/useCustomerSort';
 import { BreadPackageHeader } from './components/BreadPackageHeader';
 import { BreadPackageInfo } from './components/BreadPackageInfo';
+import { ReviewSection } from './components/ReviewSection';
 import { CustomerList } from './components/CustomerList';
 import BottomNavigation from '../../../components/owner/navigations/BottomNavigations/BottomNavigation';
 
@@ -15,6 +16,8 @@ interface Customer {
 }
 
 const OwnerMainPage: React.FC = () => {
+  const [activeTab, setActiveTab] = useState<'package' | 'review'>('package');
+
   const initialCustomers: Customer[] = [
     { id: 1, name: '서유민', email: 'youmin77@naver.com', paymentTime: '19:15', isPickedUp: false, breadCount: 1 },
     { id: 2, name: '신은찬', email: 'youmin77@naver.com', paymentTime: '19:20', isPickedUp: false, breadCount: 1 },
@@ -24,6 +27,30 @@ const OwnerMainPage: React.FC = () => {
     { id: 6, name: '김휘동', email: 'youmin77@naver.com', paymentTime: '19:40', isPickedUp: false, breadCount: 1 },
   ];
 
+  const reviewData = {
+    stats: {
+      average: 5.0,
+      total: 125,
+      distribution: {
+        5: 1232,
+        4: 13,
+        3: 2,
+        2: 1,
+        1: 3
+      }
+    },
+    reviews: [
+      {
+        id: 1,
+        userName: "하얀",
+        rating: 5,
+        content: "매번 맛나게 먹고있습니다 정말좋습니다!!",
+        date: "47분전",
+        imageUrl: "/path/to/image.jpg"
+      },
+    ]
+  };
+
   const { 
     customers, 
     sortByPaymentTime, 
@@ -31,17 +58,54 @@ const OwnerMainPage: React.FC = () => {
     handleSort 
   } = useCustomerSort(initialCustomers);
 
+  const handleTabChange = (tab: 'package' | 'review') => {
+    setActiveTab(tab);
+  };
+
   return (
     <div className="pb-16">
       <div className="p-4">
         <BreadPackageHeader />
-        <BreadPackageInfo />
-        <CustomerList 
-          customers={customers}
-          sortByPaymentTime={sortByPaymentTime}
-          onTogglePickup={togglePickup}
-          onSort={handleSort}
-        />
+        <div className="flex mb-6">
+          <div className="flex flex-1 mx-1 border-b">
+            <button 
+              className={`flex-1 py-2 ${
+                activeTab === 'package' 
+                  ? 'border-b-2 border-[#FC973B] text-[#333333] font-bold'
+                  : 'text-gray-400'
+              }`}
+              onClick={() => handleTabChange('package')}
+            >
+              빵꾸러미
+            </button>
+            <button 
+              className={`flex-1 py-2 ${
+                activeTab === 'review'
+                  ? 'border-b-2 border-[#FC973B] text-[#333333] font-bold'
+                  : 'text-gray-400'
+              }`}
+              onClick={() => handleTabChange('review')}
+            >
+              리뷰
+            </button>
+          </div>
+        </div>
+        {activeTab === 'package' ? (
+          <>
+            <BreadPackageInfo />
+            <CustomerList 
+              customers={customers}
+              sortByPaymentTime={sortByPaymentTime}
+              onTogglePickup={togglePickup}
+              onSort={handleSort}
+            />
+          </>
+        ) : (
+          <ReviewSection 
+            stats={reviewData.stats}
+            reviews={reviewData.reviews}
+          />
+        )}
       </div>
       <BottomNavigation />
     </div>
