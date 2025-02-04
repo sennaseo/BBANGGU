@@ -18,6 +18,11 @@ import ReportPage from "./pages/owner/report"
 import UserReview from "./pages/user/review/UserReview";
 import "./styles/fonts.css";
 import { ProfileProvider } from "./common/context/ProfileContext";
+import UserMyPage from "./pages/user/mypage/UserMyPage";
+import { ReservationHistory } from "./pages/user/reservation/ReservationHistory"
+import { ReservationDetail } from "./pages/user/reservation/ReservationDetail"
+import OwnerMainPage from "./pages/owner/mainpage/OwnerMainPage";
+import  { UserPayment } from "./pages/user/payment/UserPayment"
 
 export default function App() {
   return (
@@ -39,7 +44,10 @@ export default function App() {
             <Route path="/user" element={<UserMain />} />
             <Route path="/bakery/:bakery_id" element={<BakeryDetail />} />
             <Route path="/bakery/:bakery_id/reviews" element={<UserReview />} />
-
+            <Route path="/:user_id/mypage" element={<UserMyPage />} />
+            <Route path="/reservations" element={<ReservationHistory />} />
+            <Route path="/reservation/:reservation_id" element={<ReservationDetail />} />
+            <Route path="/user/payment" element={<UserPayment />} />
 
             {/* 점주 관련 페이지 */}
             <Route path="/owner/profile/edit" element={<EditProfile />} />
@@ -49,9 +57,11 @@ export default function App() {
             <Route path="/owner/pickup-time" element={<PickupTime />} />
             <Route path="/owner/chatbot" element={<CustomerSupport />} />
             <Route path="/owner/report" element={<ReportPage />} />
+            <Route path="/owner/main" element={<OwnerMainPage />} />
           </Routes>
         </MobileLayout>
       </Router>
+
     </ProfileProvider>
 
   );

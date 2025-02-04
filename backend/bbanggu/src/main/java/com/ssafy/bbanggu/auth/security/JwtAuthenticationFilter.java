@@ -14,15 +14,22 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
+import com.ssafy.bbanggu.common.exception.CustomException;
+import com.ssafy.bbanggu.common.exception.ErrorCode;
+import com.ssafy.bbanggu.user.domain.User;
+import com.ssafy.bbanggu.user.repository.UserRepository;
+
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
 	private final JwtUtil jwtUtil;
 	private final UserDetailsService userDetailsService;
+	private final UserRepository userRepository;
 
-	public JwtAuthenticationFilter(JwtUtil jwtUtil, UserDetailsService userDetailsService) {
+	public JwtAuthenticationFilter(JwtUtil jwtUtil, UserDetailsService userDetailsService, UserRepository userRepository) {
 		this.jwtUtil = jwtUtil;
 		this.userDetailsService = userDetailsService;
+		this.userRepository = userRepository;
 	}
 
 	@Override
@@ -44,12 +51,21 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
 		// ✅ 2. 토큰이 유효하고, SecurityContext에 인증 정보가 없으면 인증 진행
 		if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+			User user = userRepository.findByEmail(email)
+				.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
 			UserDetails userDetails = this.userDetailsService.loadUserByUsername(email);
 
 			if (jwtUtil.validateToken(token)) {
-				JwtAuthenticationToken authentication = new JwtAuthenticationToken(userDetails, userDetails.getAuthorities());
+				Long userId = user.getUserId();
+
+				JwtAuthenticationToken authentication = new JwtAuthenticationToken(userDetails, userDetails.getAuthorities(), userId);
 				authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+
+				// ✅ SecurityContext에 userId를 저장하도록 변경
+				authentication.setAuthenticated(true);
 				SecurityContextHolder.getContext().setAuthentication(authentication);
+				request.setAttribute("userId", userId); // ✅ 요청 속성에 userId 추가
 			}
 		}
 

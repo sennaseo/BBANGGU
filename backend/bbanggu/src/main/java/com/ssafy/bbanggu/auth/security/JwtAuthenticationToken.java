@@ -5,11 +5,13 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Collection;
 
+import lombok.Getter;
+
 public class JwtAuthenticationToken extends AbstractAuthenticationToken {
 
 	private final UserDetails principal;
 
-	public JwtAuthenticationToken(UserDetails principal, Collection<? extends GrantedAuthority> authorities) {
+	public JwtAuthenticationToken(UserDetails principal, Collection<? extends GrantedAuthority> authorities, Long userId) {
 		super(authorities);
 		this.principal = principal;
 		setAuthenticated(true); // 🔥 인증된 사용자로 설정

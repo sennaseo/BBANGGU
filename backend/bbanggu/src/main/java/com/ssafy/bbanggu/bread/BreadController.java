@@ -19,16 +19,13 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import lombok.RequiredArgsConstructor;
+
 @RestController
 @RequestMapping("/bread")
+@RequiredArgsConstructor
 public class BreadController {
-
 	private final BreadService breadService;
-
-	public BreadController(BreadService breadService) {
-		super();
-		this.breadService = breadService;
-	}
 
 	// 빵 정보 등록
 	@PostMapping(value = "", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
