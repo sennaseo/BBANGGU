@@ -23,6 +23,9 @@ public enum ErrorCode {
 
 	// ✅ 가게 관련 예외 (2000번대)
 
+	// ✅ 빵 관련 예외 (2100번대)
+
+
 	// ✅ 이메일 인증 관련 예외 (3000번대)
 	EMAIL_SEND_FAILED(3000, HttpStatus.INTERNAL_SERVER_ERROR, "이메일 전송에 실패하였습니다."),
 	TOO_MANY_REQUESTS(3001, HttpStatus.TOO_MANY_REQUESTS, "너무 많은 요청을 보냈습니다. 나중에 다시 시도하세요."),
