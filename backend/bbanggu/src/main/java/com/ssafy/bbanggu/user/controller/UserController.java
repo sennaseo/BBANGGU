@@ -18,6 +18,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
@@ -31,12 +32,10 @@ import jakarta.validation.Valid;
 public class UserController {
     private final UserService userService;
     private final EmailService emailAuthService;
-	private final JwtUtil jwtUtil;
 
-    public UserController(UserService userService, EmailService emailAuthService, JwtUtil jwtUtil) {
+    public UserController(UserService userService, EmailService emailAuthService) {
         this.userService = userService;
         this.emailAuthService = emailAuthService;
-		this.jwtUtil = jwtUtil;
     }
 
     /**
@@ -176,20 +175,25 @@ public class UserController {
 
     /**
      * 회원 정보 수정 API
-     *
-     * @param userId 수정할 회원의 ID
-     * @param request 사용자 수정 요청 데이터 (name, profile_photo_url)
-     * @return 수정된 사용자 정보
      */
-    @PutMapping("/{userId}")
-    public ResponseEntity<?> updateUser(@PathVariable Long userId, @RequestBody UpdateUserRequest request,
-        @RequestHeader("Authorization") String authorizationHeader) {
-        if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
-            throw new CustomException(ErrorCode.INVALID_AUTHORIZATION_HEADER);
-        }
+    @PatchMapping("/update")
+    public ResponseEntity<?> updateUser(Authentication authentication,
+		@RequestBody Map<String, Object> updates) {
+		// ✅ Access Token이 없는 경우 예외 처리
+		if (authentication == null || authentication.getName() == null) {
+			throw new CustomException(ErrorCode.INVALID_ACCESS_TOKEN);
+		}
 
-        UserResponse updatedUser = userService.update(userId, request);
-        return ResponseEntity.ok(new ApiResponse("로그아웃이 완료되었습니다.", null));
+		// ✅ email 가져오기
+		String email = authentication.getName();
+
+		// ✅ email로 userId 조회
+		Long userId = userService.getUserIdByEmail(email);
+
+		// ✅ 변경할 필드만 업데이트
+		userService.update(userId, updates);
+
+		return ResponseEntity.ok(new ApiResponse("회원 정보가 성공적으로 수정되었습니다.", null));
     }
 
     /**
@@ -200,9 +204,24 @@ public class UserController {
      */
     @PostMapping("/password/reset")
     public ResponseEntity<?> resetPasswordRequest(@RequestParam String email) {
-        emailAuthService.sendAuthenticationCode(email);
-		return ResponseEntity.ok(new ApiResponse("비밀번호 재설정 요청이 처리되었습니다. 이메일을 확인해주세요.", null));
+		System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+		// 이메일 형식 검증
+		if (!isValidEmail(email)) {
+			throw new CustomException(ErrorCode.INVALID_EMAIL);
+		}
+
+		try {
+			emailAuthService.sendAuthenticationCode(email);
+			return ResponseEntity.ok(new ApiResponse("비밀번호 재설정 요청이 처리되었습니다. 이메일을 확인해주세요.", null));
+		} catch (CustomException e) {
+			return ResponseEntity.status(e.getStatus())
+				.body(new ApiResponse(e.getMessage(), null));
+		}
     }
+
+	private boolean isValidEmail(String email) {
+		return email != null && email.matches("^[A-Za-z0-9+_.-]+@(.+)$");
+	}
 
     /**
      * 비밀번호 초기화 및 변경 API
@@ -217,8 +236,22 @@ public class UserController {
         @RequestParam String email,
         @RequestParam String newPassword,
         @RequestParam String authCode) {
-        emailAuthService.verifyAuthenticationCode(email, authCode); // 기존 이메일 인증 로직 재사용
-        userService.updatePassword(email, newPassword);
-        return ResponseEntity.ok(new ApiResponse("비밀번호가 성공적으로 변경되었습니다.", null));
+		// 비밀번호 유효성 검사
+		if (!isValidPassword(newPassword)) {
+			return ResponseEntity.badRequest().body(new ApiResponse("비밀번호는 8자 이상이며, 숫자 및 특수문자를 포함해야 합니다.", null));
+		}
+
+		try {
+			emailAuthService.verifyAuthenticationCode(email, authCode);
+			userService.updatePassword(email, newPassword);
+			return ResponseEntity.ok(new ApiResponse("비밀번호가 성공적으로 변경되었습니다.", null));
+		} catch (CustomException e) {
+			return ResponseEntity.status(e.getStatus())
+				.body(new ApiResponse(e.getMessage(), null));
+		}
     }
+
+	private boolean isValidPassword(String password) {
+		return password != null && password.length() >= 8 && password.matches(".*[!@#$%^&*].*") && password.matches(".*\\d.*");
+	}
 }

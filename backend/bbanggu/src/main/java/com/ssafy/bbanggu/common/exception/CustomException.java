@@ -7,6 +7,7 @@ import lombok.Getter;
 @Getter
 public class CustomException extends RuntimeException {
 	private int code;
+	@Getter
 	private final HttpStatus status;
 	private final String message;
 
