@@ -26,13 +26,14 @@ public enum ErrorCode {
 	// ✅ 이메일 인증 관련 예외 (3000번대)
 	EMAIL_SEND_FAILED(3000, HttpStatus.INTERNAL_SERVER_ERROR, "이메일 전송에 실패하였습니다."),
 	TOO_MANY_REQUESTS(3001, HttpStatus.TOO_MANY_REQUESTS, "너무 많은 요청을 보냈습니다. 나중에 다시 시도하세요."),
-	INVALID_VERIFICATION_CODE(3002, HttpStatus.BAD_REQUEST, "잘못된 인증 코드입니다."),
+	INVALID_VERIFICATION_CODE(3002, HttpStatus.UNAUTHORIZED, "인증번호가 일치하지 않습니다. 다시 확인해주세요."),
 	EXPIRED_VERIFICATION_CODE(3003, HttpStatus.GONE, "인증 코드가 만료되었습니다."),
 	USED_VERIFICATION_CODE(3004, HttpStatus.GONE, "이미 사용된 인증 코드입니다."),
 	EMAIL_ALREADY_VERIFIED(3005, HttpStatus.CONFLICT, "이미 인증된 이메일입니다."),
 	VERIFICATION_CODE_NOT_FOUND(3006, HttpStatus.NOT_FOUND, "해당 이메일의 인증 코드가 존재하지 않습니다."),
 	INVALID_EMAIL(3007, HttpStatus.BAD_REQUEST, "유효하지 않은 이메일 형식입니다."),
 	EMAIL_NOT_FOUND(3008, HttpStatus.NOT_FOUND, "존재하지 않는 이메일입니다."),
+	INVALID_AUTH_CODE_FORMAT(3009, HttpStatus.BAD_REQUEST, "유효하지 않은 인증번호 형식입니다."),
 
 	// ✅ JWT 관련 예외 (4000번대)
 	INVALID_ACCESS_TOKEN(4000, HttpStatus.UNAUTHORIZED, "유효하지 않은 Access Token 입니다."),

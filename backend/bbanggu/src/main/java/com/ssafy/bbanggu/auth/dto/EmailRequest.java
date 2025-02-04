@@ -10,8 +10,8 @@ import lombok.Getter;
  * - 입력된 이메일 값을 검증
  */
 public record EmailRequest(
-	@NotBlank(message = "The required field 'Email' is missing.")
-	@Email(message = "Invalid email format.")
+	@NotBlank(message = "필수 입력란인 Email 필드가 입력되지 않았습니다.")
+	@Email(message = "유효하지 않은 이메일 형식입니다.")
 	@Getter
 	String email
 ) {}
