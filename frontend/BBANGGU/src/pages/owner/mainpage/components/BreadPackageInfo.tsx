@@ -5,13 +5,6 @@ import { OWNER_CONSTANTS } from '../../../../constants/owner';
 export const BreadPackageInfo = () => {
   return (
     <>
-      <div className="flex mb-6">
-        <div className="flex flex-1 mx-1 border-b">
-          <button className="flex-1 py-2 border-b-2 border-[#FC973B] text-[#333333] font-bold">빵꾸러미</button>
-          <button className="flex-1 py-2 text-gray-400">리뷰</button>
-        </div>
-      </div>
-
       <h2 className="text-[20px] font-bold mb-4">빵꾸러미 정보</h2>
 
       <div className="bg-[#F9F9F9] rounded-[10px] p-4 mb-6 mx-auto border border-[#FC973B] w-[400px] h-[251px] flex-shrink-0">
