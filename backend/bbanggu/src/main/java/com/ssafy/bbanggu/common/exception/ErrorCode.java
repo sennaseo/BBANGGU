@@ -19,6 +19,7 @@ public enum ErrorCode {
 	PASSWORD_RESET_FAILED(1007, HttpStatus.BAD_REQUEST, "비밀번호 초기화에 실패했습니다."),
 	PHONE_NUMBER_ALREADY_EXISTS(1008, HttpStatus.CONFLICT, "이미 사용 중인 전화번호입니다."),
 	SAME_AS_OLD_PASSWORD(1009, HttpStatus.BAD_REQUEST, "이전 비밀번호와 동일한 비밀번호는 사용하실 수 없습니다."),
+	INVALIE_PASSWORD(1010, HttpStatus.BAD_REQUEST, "비밀번호는 8자 이상이어야 합니다."),
 
 	// ✅ 가게 관련 예외 (2000번대)
 
@@ -31,6 +32,7 @@ public enum ErrorCode {
 	EMAIL_ALREADY_VERIFIED(3005, HttpStatus.CONFLICT, "이미 인증된 이메일입니다."),
 	VERIFICATION_CODE_NOT_FOUND(3006, HttpStatus.NOT_FOUND, "해당 이메일의 인증 코드가 존재하지 않습니다."),
 	INVALID_EMAIL(3007, HttpStatus.BAD_REQUEST, "유효하지 않은 이메일 형식입니다."),
+	EMAIL_NOT_FOUND(3008, HttpStatus.NOT_FOUND, "존재하지 않는 이메일입니다."),
 
 	// ✅ JWT 관련 예외 (4000번대)
 	INVALID_ACCESS_TOKEN(4000, HttpStatus.UNAUTHORIZED, "유효하지 않은 Access Token 입니다."),

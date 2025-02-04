@@ -180,4 +180,11 @@ public class UserService { // 사용자 관련 비즈니스 로직 처리
 			.map(User::getUserId)
 			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 	}
+
+	/**
+	 * 이메일이 DB에 존재하는지 확인
+	 */
+	public boolean existsByEmail(String email) {
+		return userRepository.existsByEmail(email);
+	}
 }

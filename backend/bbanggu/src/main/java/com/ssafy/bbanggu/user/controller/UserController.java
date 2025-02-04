@@ -2,15 +2,14 @@ package com.ssafy.bbanggu.user.controller;
 
 import java.util.Map;
 
-import com.ssafy.bbanggu.auth.security.JwtUtil;
+import com.ssafy.bbanggu.auth.dto.EmailRequest;
 import com.ssafy.bbanggu.auth.service.EmailService;
 import com.ssafy.bbanggu.common.exception.CustomException;
 import com.ssafy.bbanggu.common.exception.ErrorCode;
-import com.ssafy.bbanggu.common.response.ErrorResponse;
 import com.ssafy.bbanggu.common.response.ApiResponse;
 import com.ssafy.bbanggu.user.dto.CreateUserRequest;
 import com.ssafy.bbanggu.user.dto.LoginRequest;
-import com.ssafy.bbanggu.user.dto.UpdateUserRequest;
+import com.ssafy.bbanggu.user.dto.PasswordResetConfirmRequest;
 import com.ssafy.bbanggu.user.dto.UserResponse;
 import com.ssafy.bbanggu.user.service.UserService;
 
@@ -18,13 +17,10 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
-import io.jsonwebtoken.JwtException;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 
 @RestController
@@ -198,20 +194,15 @@ public class UserController {
 
     /**
      * 비밀번호 초기화 요청 API
-     *
-     * @param email 사용자 이메일
-     * @return 처리 결과 메시지
      */
     @PostMapping("/password/reset")
-    public ResponseEntity<?> resetPasswordRequest(@RequestParam String email) {
-		System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-		// 이메일 형식 검증
-		if (!isValidEmail(email)) {
-			throw new CustomException(ErrorCode.INVALID_EMAIL);
+    public ResponseEntity<?> resetPasswordRequest(@Valid @RequestBody EmailRequest request) {
+		if (!userService.existsByEmail(request.getEmail())) {
+			throw new CustomException(ErrorCode.EMAIL_NOT_FOUND);
 		}
 
 		try {
-			emailAuthService.sendAuthenticationCode(email);
+			emailAuthService.sendAuthenticationCode(request.getEmail());
 			return ResponseEntity.ok(new ApiResponse("비밀번호 재설정 요청이 처리되었습니다. 이메일을 확인해주세요.", null));
 		} catch (CustomException e) {
 			return ResponseEntity.status(e.getStatus())
@@ -219,39 +210,17 @@ public class UserController {
 		}
     }
 
-	private boolean isValidEmail(String email) {
-		return email != null && email.matches("^[A-Za-z0-9+_.-]+@(.+)$");
-	}
-
     /**
      * 비밀번호 초기화 및 변경 API
-     *
-     * @param email 사용자 이메일
-     * @param newPassword 새로운 비밀번호
-     * @param authCode 인증 코드
      * @return 처리 결과 메시지
      */
     @PostMapping("/password/reset/confirm")
-    public ResponseEntity<?> resetPasswordConfirm(
-        @RequestParam String email,
-        @RequestParam String newPassword,
-        @RequestParam String authCode) {
-		// 비밀번호 유효성 검사
-		if (!isValidPassword(newPassword)) {
-			return ResponseEntity.badRequest().body(new ApiResponse("비밀번호는 8자 이상이며, 숫자 및 특수문자를 포함해야 합니다.", null));
+	public ResponseEntity<?> resetPasswordConfirm(@Valid @RequestBody PasswordResetConfirmRequest request) {
+		if (request.getNewPassword().length() < 8) {
+			throw new CustomException(ErrorCode.INVALIE_PASSWORD);
 		}
 
-		try {
-			emailAuthService.verifyAuthenticationCode(email, authCode);
-			userService.updatePassword(email, newPassword);
-			return ResponseEntity.ok(new ApiResponse("비밀번호가 성공적으로 변경되었습니다.", null));
-		} catch (CustomException e) {
-			return ResponseEntity.status(e.getStatus())
-				.body(new ApiResponse(e.getMessage(), null));
-		}
-    }
-
-	private boolean isValidPassword(String password) {
-		return password != null && password.length() >= 8 && password.matches(".*[!@#$%^&*].*") && password.matches(".*\\d.*");
+		userService.updatePassword(request.getEmail(), request.getNewPassword()); // 비밀번호 업데이트
+		return ResponseEntity.ok(new ApiResponse("비밀번호가 성공적으로 변경되었습니다.", null));
 	}
 }
