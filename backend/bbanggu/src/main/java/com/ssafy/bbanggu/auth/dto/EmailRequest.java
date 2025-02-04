@@ -2,6 +2,7 @@ package com.ssafy.bbanggu.auth.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import lombok.Getter;
 
 /**
  * EmailRequest
@@ -11,5 +12,6 @@ import jakarta.validation.constraints.NotBlank;
 public record EmailRequest(
 	@NotBlank(message = "The required field 'Email' is missing.")
 	@Email(message = "Invalid email format.")
+	@Getter
 	String email
 ) {}
