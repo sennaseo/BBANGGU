@@ -128,17 +128,32 @@ public class UserService { // 사용자 관련 비즈니스 로직 처리
 
     /**
      * 사용자 정보 수정
-     *
-     * @param userId 수정할 사용자 ID
-     * @param request 수정 요청 데이터
-     * @return UserResponse 수정된 사용자 정보
      */
-    public UserResponse update(Long userId, UpdateUserRequest request) {
-        User user = userRepository.findById(userId)
-            .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
-        user.update(request.name(), request.profilePhotoUrl());
-        userRepository.save(user);
-        return UserResponse.from(user);
+    public void update(Long userId, Map<String, Object> updates) {
+		User user = userRepository.findById(userId)
+			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+		// ✅ 이미 탈퇴한 사용자 처리
+		if (user.isDeleted()) {
+			throw new CustomException(ErrorCode.ACCOUNT_DEACTIVATED);
+		}
+
+		// ✅ 특정 필드만 변경 가능하도록 처리
+		updates.forEach((key, value) -> {
+			switch (key) {
+				case "name" -> user.setName((String) value);
+				case "phoneNumber" -> {
+					if (userRepository.existsByPhoneNumber((String) value)) {
+						throw new CustomException(ErrorCode.PHONE_NUMBER_ALREADY_EXISTS);
+					}
+					user.setPhoneNumber((String) value);
+				}
+				case "profileImage" -> user.setProfilePhotoUrl((String) value);
+				default -> throw new CustomException(ErrorCode.INVALID_REQUEST);
+			}
+		});
+
+		userRepository.save(user);
     }
 
     /**
@@ -150,6 +165,11 @@ public class UserService { // 사용자 관련 비즈니스 로직 처리
         User user = userRepository.findByEmail(email)
             .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
+		// 새로운 비밀번호가 기존 비밀번호와 동일한지 검증
+		if (passwordEncoder.matches(newPassword, user.getPassword())) {
+			throw new CustomException(ErrorCode.SAME_AS_OLD_PASSWORD);
+		}
+
         // 비밀번호 암호화 후 저장
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
@@ -159,5 +179,12 @@ public class UserService { // 사용자 관련 비즈니스 로직 처리
 		return userRepository.findByEmail(email)
 			.map(User::getUserId)
 			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+	}
+
+	/**
+	 * 이메일이 DB에 존재하는지 확인
+	 */
+	public boolean existsByEmail(String email) {
+		return userRepository.existsByEmail(email);
 	}
 }

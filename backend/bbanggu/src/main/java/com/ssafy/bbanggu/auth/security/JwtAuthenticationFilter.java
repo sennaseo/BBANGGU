@@ -1,5 +1,7 @@
 package com.ssafy.bbanggu.auth.security;
 
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -7,12 +9,14 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Arrays;
 
 import com.ssafy.bbanggu.common.exception.CustomException;
 import com.ssafy.bbanggu.common.exception.ErrorCode;
@@ -36,52 +40,72 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
 		throws ServletException, IOException {
 
+		System.out.println("🔥 JwtAuthenticationFilter 실행됨! 요청 URL: " + request.getRequestURI());
+
 		// ✅ 1. 쿠키에서 JWT 추출
-		String token = getTokenFromCookies(request);
-		String email = null;
+		String accessToken = getTokenFromCookies(request, "accessToken");
+		String refreshToken = getTokenFromCookies(request, "refreshToken");
 
-		if (token != null) {
-			try {
-				email = jwtUtil.getEmailFromToken(token);
-			} catch (Exception e) {
-				response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "잘못된 JWT 토큰입니다.");
-				return;
-			}
-		}
+		if (accessToken != null && jwtUtil.validateToken(accessToken)) {
+			// ✅ Access Token이 유효한 경우 SecurityContext에 인증 정보 설정
+			System.out.println("✅ 유효한 AccessToken 감지!");
+			setAuthenticationFromToken(accessToken, request);
+		} else if (refreshToken != null && jwtUtil.validateToken(refreshToken)) {
+			// ✅ Access Token이 만료된 경우, Refresh Token을 검증하여 새 Access Token 발급
+			System.out.println("♻️ RefreshToken을 사용하여 새로운 AccessToken 발급!");
+			String email = jwtUtil.getEmailFromToken(refreshToken);
+			Long userId = jwtUtil.getUserIdFromToken(refreshToken); // ✅ userId 추출 추가
 
-		// ✅ 2. 토큰이 유효하고, SecurityContext에 인증 정보가 없으면 인증 진행
-		if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-			User user = userRepository.findByEmail(email)
-				.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+			// ✅ 새 Access Token 발급
+			String newAccessToken = jwtUtil.generateAccessToken(email, userId);
+			response.addHeader(HttpHeaders.SET_COOKIE, createAccessTokenCookie(newAccessToken)); // ✅ 쿠키에 저장
 
-			UserDetails userDetails = this.userDetailsService.loadUserByUsername(email);
-
-			if (jwtUtil.validateToken(token)) {
-				Long userId = user.getUserId();
-
-				JwtAuthenticationToken authentication = new JwtAuthenticationToken(userDetails, userDetails.getAuthorities(), userId);
-				authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-
-				// ✅ SecurityContext에 userId를 저장하도록 변경
-				authentication.setAuthenticated(true);
-				SecurityContextHolder.getContext().setAuthentication(authentication);
-				request.setAttribute("userId", userId); // ✅ 요청 속성에 userId 추가
-			}
+			// ✅ Refresh Token을 통해 인증 정보 설정
+			setAuthenticationFromToken(newAccessToken, request);
+		} else {
+			System.out.println("❌ AccessToken과 RefreshToken이 유효하지 않음! SecurityContext 초기화!");
+			SecurityContextHolder.clearContext();
 		}
 
 		// ✅ 3. 필터 체인 계속 진행
 		chain.doFilter(request, response);
 	}
 
+	private String createAccessTokenCookie(String newAccessToken) {
+		return ResponseCookie.from("accessToken", newAccessToken)
+			.httpOnly(true)
+			.secure(true)
+			.path("/")
+			.maxAge(30 * 60) // ✅ 30분 유지
+			.build()
+			.toString();
+	}
+
 	// 🔥 쿠키에서 accessToken 찾는 메서드 추가!
-	private String getTokenFromCookies(HttpServletRequest request) {
+	private String getTokenFromCookies(HttpServletRequest request, String tokenName) {
 		if (request.getCookies() == null) return null;
 
-		for (Cookie cookie : request.getCookies()) {
-			if (cookie.getName().equals("accessToken")) {
-				return cookie.getValue();
-			}
-		}
-		return null;
+		return Arrays.stream(request.getCookies())
+			.filter(cookie -> cookie.getName().equals(tokenName))
+			.map(Cookie::getValue)
+			.findFirst()
+			.orElse(null);
 	}
+
+	private void setAuthenticationFromToken(String token, HttpServletRequest request) {
+		String email = jwtUtil.getEmailFromToken(token);
+		Long userId = jwtUtil.getUserIdFromToken(token);
+
+		User user = userRepository.findByEmail(email)
+			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+		UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+
+		JwtAuthenticationToken authentication = new JwtAuthenticationToken(userDetails, userDetails.getAuthorities(), userId);
+		authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+
+		// ✅ SecurityContextHolder에 인증 정보 저장
+		SecurityContextHolder.getContext().setAuthentication(authentication);
+	}
+
 }

@@ -3,6 +3,7 @@ package com.ssafy.bbanggu.common.config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -24,9 +25,9 @@ public class SecurityConfig {
 	}
 
 	@Bean
-	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+	public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtAuthenticationFilter jwtAuthenticationFilter) throws Exception {
 		http
-			.csrf(csrf -> csrf.disable()) // CSRF 비활성화
+			.csrf(csrf -> csrf.disable()) // ✅ CSRF 보호 비활성화
 			.authorizeHttpRequests(authz -> authz
 				.requestMatchers(
 					"/oauth/kakao/**",
@@ -37,17 +38,18 @@ public class SecurityConfig {
 					"/v3/api-docs/**",
 					"/user/register",
 					"/auth/**",
-					"/user/logout",
-					"/**"
-				).permitAll() // 공개 API
-				.requestMatchers("/saving/**").authenticated() // saving API는 인증 필요
+					"/user/logout"
+				).permitAll() // ✅ 공개 API
+				.requestMatchers("/saving/**", "/user/update").authenticated() // ✅ 인증이 필요한 API
 				.anyRequest().authenticated()
 			)
-			.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class) // JWT 필터 추가
-			.formLogin(form -> form.disable()); // formLogin() 비활성화
+			.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class) // ✅ JWT 필터 추가
+			.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // ✅ 세션 사용 안 함 (JWT만 사용)
+			.formLogin(form -> form.disable()); // ✅ formLogin() 비활성화
 
 		return http.build();
 	}
+
 
 	@Bean
 	public PasswordEncoder passwordEncoder() {

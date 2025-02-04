@@ -89,6 +89,16 @@ public class JwtUtil {
 		}
 	}
 
+	public Long getUserIdFromToken(String token) {
+		Claims claims = Jwts.parserBuilder()
+			.setSigningKey(secretKey)
+			.build()
+			.parseClaimsJws(token)
+			.getBody();
+
+		return claims.get("userId", Long.class);
+	}
+
 	/**
 	 * JWT 토큰 유효성 검증
 	 */

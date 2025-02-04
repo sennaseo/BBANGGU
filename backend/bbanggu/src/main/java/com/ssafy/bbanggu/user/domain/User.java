@@ -30,6 +30,7 @@ public class User {
 
 	@NotNull
 	@Column(nullable = false)
+	@Setter
 	private String name;
 
 	@NotNull
@@ -42,6 +43,7 @@ public class User {
 	private String password;
 
 	@Column
+	@Setter
 	private String phoneNumber;
 
 	@NotNull
@@ -49,6 +51,7 @@ public class User {
 	private String userType;
 
 	@Column
+	@Setter
 	private String profilePhotoUrl;
 
 	@Setter
@@ -146,5 +149,4 @@ public class User {
 	public boolean isDeleted() {
 		return this.deletedAt != null;
 	}
-
 }
