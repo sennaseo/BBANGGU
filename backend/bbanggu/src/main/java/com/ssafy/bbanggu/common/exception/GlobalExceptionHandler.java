@@ -22,7 +22,7 @@ public class GlobalExceptionHandler {
 	@ExceptionHandler(ConstraintViolationException.class)
 	public ResponseEntity<ErrorResponse> handleValidationException(ConstraintViolationException e) {
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-			.body(new ErrorResponse(400, "Validation Error", e.getMessage()));
+			.body(new ErrorResponse(400, "Validation Error", "잘못된 형식의 요청입니다."));
 	}
 
 	@ExceptionHandler(Exception.class)
@@ -33,7 +33,8 @@ public class GlobalExceptionHandler {
 
 	@ExceptionHandler(MethodArgumentNotValidException.class)
 	public ResponseEntity<ErrorResponse> handleValidationExceptions(MethodArgumentNotValidException e) {
-		return ResponseEntity.badRequest().body(new ErrorResponse(400, "Validation Error", "잘못된 형식의 요청입니다."));
+		return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+			.body(new ErrorResponse(400, "Validation Error", "잘못된 형식의 요청입니다."));
 	}
 
 }

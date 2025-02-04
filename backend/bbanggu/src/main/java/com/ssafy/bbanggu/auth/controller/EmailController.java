@@ -6,6 +6,7 @@ import com.ssafy.bbanggu.common.exception.ErrorCode;
 import com.ssafy.bbanggu.common.response.ApiResponse;
 import com.ssafy.bbanggu.auth.dto.EmailVerifyRequest;
 import com.ssafy.bbanggu.auth.service.EmailService;
+import com.ssafy.bbanggu.common.response.ErrorResponse;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -50,6 +51,6 @@ public class EmailController {
 	@PostMapping("/verify")
 	public ResponseEntity<ApiResponse> verifyEmail(@RequestBody @Valid EmailVerifyRequest request) {
 		emailService.verifyAuthenticationCode(request.email(), request.authCode());
-		return ResponseEntity.ok(new ApiResponse("이메일이 확인되었습니다.", null));
+		return ResponseEntity.ok(new ApiResponse("이메일 인증이 완료되었습니다.", null));
 	}
 }

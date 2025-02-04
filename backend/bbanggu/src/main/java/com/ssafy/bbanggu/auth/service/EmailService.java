@@ -127,29 +127,34 @@ public class EmailService {
 	 * @param inputCode 사용자가 입력한 인증번호
 	 */
 	public void verifyAuthenticationCode(String email, String inputCode) {
-		// 이미 사용된 인증번호인지 먼저 확인
+		// 1. 인증번호 형식 검증 (6자리 숫자 여부)
+		if (!inputCode.matches("^[0-9]{6}$")) {
+			throw new CustomException(ErrorCode.INVALID_AUTH_CODE_FORMAT); // 🔥 형식이 맞지 않음
+		}
+
+		// 2. 이미 사용된 인증번호인지 확인
 		if (storeService.isAuthCodeUsed(email)) {
 			throw new CustomException(ErrorCode.USED_VERIFICATION_CODE);
 		}
 
-		// 저장된 인증번호 가져오기
+		// 3. 저장된 인증번호 가져오기
 		Pair<String, Long> codeData = storeService.getAuthCodeData(email);
-		if(codeData == null) {
+		if (codeData == null) {
 			throw new CustomException(ErrorCode.VERIFICATION_CODE_NOT_FOUND);
 		}
 
-		// 인증번호가 일치하지 않는 경우
-		if(!codeData.getLeft().equals(inputCode)) {
-			throw new CustomException(ErrorCode.INVALID_VERIFICATION_CODE);
-		}
-
-		// 만료된 인증번호인지 확인 (410 GONE)
-		if(System.currentTimeMillis() > codeData.getRight()) {
-			storeService.deleteAuthCode(email); // 만료된 코드 삭제
+		// 4. 만료된 인증번호인지 확인 (✅ 시간 초과된 경우에만 삭제)
+		if (System.currentTimeMillis() > codeData.getRight()) {
+			storeService.deleteAuthCode(email); // 인증번호 만료 시에만 삭제
 			throw new CustomException(ErrorCode.EXPIRED_VERIFICATION_CODE);
 		}
 
-		// 인증 성공한 경우, 인증번호를 사용 처리
+		// 5. 인증번호가 일치하지 않는 경우 (✅ 삭제하지 않고 예외만 발생)
+		if (!codeData.getLeft().equals(inputCode)) {
+			throw new CustomException(ErrorCode.INVALID_VERIFICATION_CODE);
+		}
+
+		// 6. 인증 성공한 경우, 인증번호를 사용 처리
 		storeService.markAuthCodeAsUsed(email);
 	}
 }
