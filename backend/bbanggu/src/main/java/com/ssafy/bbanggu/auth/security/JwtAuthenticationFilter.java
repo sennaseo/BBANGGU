@@ -65,6 +65,23 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 		} else {
 			System.out.println("❌ AccessToken과 RefreshToken이 유효하지 않음! SecurityContext 초기화!");
 			SecurityContextHolder.clearContext();
+
+			// ✅ JSON 응답 직접 반환 (Spring Security 기본 `401` 처리 방지)
+			response.setContentType("application/json");
+			response.setCharacterEncoding("UTF-8");
+			response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+
+			String jsonResponse = """
+        {
+            "code": 401,
+            "status": "UNAUTHORIZED",
+            "message": "Access Token이 유효하지 않습니다."
+        }
+        """;
+
+			response.getWriter().write(jsonResponse);
+			response.getWriter().flush();
+			return;
 		}
 
 		// ✅ 3. 필터 체인 계속 진행
@@ -99,6 +116,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 		User user = userRepository.findByEmail(email)
 			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
+		System.out.println("🔑 인증 객체 생성! 사용자: " + user.getEmail());
+
 		UserDetails userDetails = userDetailsService.loadUserByUsername(email);
 
 		JwtAuthenticationToken authentication = new JwtAuthenticationToken(userDetails, userDetails.getAuthorities(), userId);
@@ -106,6 +125,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
 		// ✅ SecurityContextHolder에 인증 정보 저장
 		SecurityContextHolder.getContext().setAuthentication(authentication);
+		System.out.println("✅ SecurityContextHolder에 인증 객체 저장 완료!");
 	}
 
 }
