@@ -1,7 +1,8 @@
 interface SubmitButtonProps {
-    text: string;
+    text: string | JSX.Element;
     disabled?: boolean;
     className?: string;
+    onClick?: () => void;
   }
   
   export function SubmitButton({ 
