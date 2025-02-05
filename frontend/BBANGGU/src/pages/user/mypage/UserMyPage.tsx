@@ -2,11 +2,12 @@ import { useUserMypage } from "../../../hooks/user/useUserMypage"
 import { TicketShape } from "../../../components/user/mypage/TicketShape"
 import { MenuGrid } from "../../../components/user/mypage/MenuGrid"
 import { StatsCards } from "../../../components/user/mypage/StatsCards"
-import { Bell, Wallet } from "lucide-react"
-import { useParams } from "react-router-dom"
+import { Bell, Settings } from "lucide-react"
+import { useParams, useNavigate } from "react-router-dom"
 
 export default function UserMyPage() {
   const { user_id } = useParams<{ user_id: string }>()
+  const navigate = useNavigate()
   const { user, currentReservation, latestEchoSave, isLoading, error } = useUserMypage(user_id!)
 
   if (isLoading) {
@@ -27,8 +28,10 @@ export default function UserMyPage() {
         <h1 className="text-xl font-bold text-[#333333]">마이페이지</h1>
         <div className="flex gap-4">
           <Bell className="w-6 h-6 text-[#333333]" />
-
-          <Wallet className="w-6 h-6 text-333333" />
+          <Settings 
+            className="w-6 h-6 text-333333 cursor-pointer" 
+            onClick={() => navigate('/user/mypage/edit')}
+          />
         </div>
       </header>
 
@@ -37,7 +40,12 @@ export default function UserMyPage() {
           <TicketShape reservations={currentReservation} userData={user} />
           <MenuGrid />
           <StatsCards echoSave={latestEchoSave} />
-          <button className="w-full text-center bg-[#F9F9F9] py-4 font-bold text-[14px] text-[#454545] shadow-md">나의 절약 리포트 {">"}</button>
+          <button 
+            onClick={() => navigate('/user/mypage/save-report')}
+            className="w-full text-center bg-[#F9F9F9] py-4 font-bold text-[14px] text-[#454545] shadow-md"
+          >
+            나의 절약 리포트 {">"}
+          </button>
         </div>
 
         <div className="mt-auto py-6 space-y-4">

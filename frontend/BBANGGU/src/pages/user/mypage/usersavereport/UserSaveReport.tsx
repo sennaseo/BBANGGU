@@ -1,0 +1,81 @@
+import { ChevronLeft } from "lucide-react"
+import { useNavigate } from "react-router-dom"
+
+export function UserSaveReport() {
+  const navigate = useNavigate()
+
+  return (
+    <div className="min-h-screen bg-white">
+      {/* 헤더 */}
+      <div className="flex items-center justify-between p-5 relative border-b border-gray-100">
+        <button onClick={() => navigate(-1)}>
+          <ChevronLeft className="w-6 h-6" />
+        </button>
+        <h1 className="text-xl font-bold absolute left-1/2 -translate-x-1/2">나의 절약 리포트</h1>
+        <div className="w-6"></div>
+      </div>
+
+      {/* 총 절약 금액 */}
+      <div className="bg-whtie text-center py-12 mx">
+        <div className="w-[120px] h-[120px] bg-white/20 rounded-full border border-[#FC973B] mx-auto mb-4 flex items-center justify-center">
+          <img src="/src/assets/tdesign_money.png" alt="절약 금액" className="w-16 h-16" />
+        </div>
+        <h2 className="text-[#333333] text-lg mb-2 font-bold">총 절약 금액</h2>
+        <p className="text-[#FC973B] text-4xl font-bold">52,000원</p>
+        <p className="text-[#333333] text-sm mt-2">제고 할인으로 현명하게 절약했어요!</p>
+      </div>
+
+      {/* 절약 상세 정보 */}
+      <div className="p-5 grid grid-cols-2 gap-4">
+        <div className="bg-[#F9F9F9] rounded-xl p-4 shadow-md">
+          <div className="text-center mb-2">
+            <img src="/src/assets/tree.png" alt="탄소 배출 감소" className="w-12 h-12 mx-auto mb-2" />
+            <h3 className="text-sm text-[#666666]">탄소 배출 감소</h3>
+          </div>
+          <p className="text-center font-bold text-xl text-[#333333]">2.5kg</p>
+        </div>
+
+        <div className="bg-[#F9F9F9] rounded-xl p-4 shadow-md">
+          <div className="text-center mb-2">
+            <img src="/src/assets/bread.png" alt="음식물 낭비 감소" className="w-12 h-12 mx-auto mb-2" />
+            <h3 className="text-sm text-[#666666]">음식물 낭비 감소</h3>
+          </div>
+          <p className="text-center font-bold text-xl text-[#333333]">3.2kg</p>
+        </div>
+
+        <div className="bg-[#F9F9F9] rounded-xl p-4 shadow-md">
+          <div className="text-center mb-2">
+            <img src="/src/assets/car.png" alt="주행거리 감소" className="w-12 h-12 mx-auto mb-2" />
+
+            <h3 className="text-sm text-[#666666]">주행거리 감소</h3>
+          </div>
+          <p className="text-center font-bold text-xl text-[#333333]">8.5km</p>
+        </div>
+
+        <div className="bg-[#F9F9F9] rounded-xl p-4 shadow-md">
+          <div className="text-center mb-2">
+            <img src="/src/assets/shower.png" alt="샤워물 절약" className="w-12 h-12 mx-auto mb-2" />
+
+            <h3 className="text-sm text-[#666666]">샤워물 절약</h3>
+          </div>
+          <p className="text-center font-bold text-xl text-[#333333]">4L</p>
+        </div>
+      </div>
+
+      <p className="text-center text-sm text-[#666666] mt-4 px-5">
+        지구를 위한 당신의 현명한 소비가<br />
+        더 나은 미래를 만듭니다
+      </p>
+
+      {/* 빵꾸리미 둘러보기 버튼 */}
+      <div className="p-5 mt-4">
+        <button 
+          onClick={() => navigate('/user')}
+          className="w-full bg-[#fc973b] text-white py-4 rounded-full font-medium"
+        >
+          빵꾸러미 둘러보기
+        </button>
+      </div>
+    </div>
+  )
+} 
