@@ -1,12 +1,19 @@
 package com.ssafy.bbanggu.auth.dto;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
 /**
  * 카카오 사용자 정보 DTO
  */
-public record KakaoUserInfo(String kakaoId, String nickname, String email) {
-	public KakaoUserInfo(String kakaoId, String nickname, String email) {
-		this.kakaoId = kakaoId;
-		this.nickname = nickname;
-		this.email = (email == null || email.isBlank()) ? "kakao_" + kakaoId + "@bbanggu.com" : email;
-	}
+@Getter
+@AllArgsConstructor
+@NoArgsConstructor
+public class KakaoUserInfo {
+	private String kakaoId;
+	private String email;
+	private String nickname;
+	private String profileImage;
 }
+

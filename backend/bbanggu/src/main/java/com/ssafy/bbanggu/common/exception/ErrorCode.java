@@ -21,6 +21,10 @@ public enum ErrorCode {
 	SAME_AS_OLD_PASSWORD(1009, HttpStatus.BAD_REQUEST, "이전 비밀번호와 동일한 비밀번호는 사용하실 수 없습니다."),
 	INVALIE_PASSWORD(1010, HttpStatus.BAD_REQUEST, "비밀번호는 8자 이상이어야 합니다."),
 
+	// ✅ kakao 인증 관련 예외(1500번대)
+	KAKAO_AUTH_FAILED(1501, HttpStatus.BAD_REQUEST, "카카오 인증에 실패하였습니다."),
+	KAKAO_USER_INFO_FAILED(1502, HttpStatus.BAD_REQUEST, "카카오 사용자 정보 요청에 실패하였습니다."),
+
 	// ✅ 가게 관련 예외 (2000번대)
 
 	// ✅ 빵 관련 예외 (2100번대)

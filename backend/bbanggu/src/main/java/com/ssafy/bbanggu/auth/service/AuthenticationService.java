@@ -2,6 +2,7 @@ package com.ssafy.bbanggu.auth.service;
 
 import org.springframework.stereotype.Service;
 
+import com.ssafy.bbanggu.auth.dto.JwtToken;
 import com.ssafy.bbanggu.auth.security.JwtUtil;
 import com.ssafy.bbanggu.common.exception.CustomException;
 import com.ssafy.bbanggu.common.exception.ErrorCode;
@@ -39,11 +40,11 @@ public class AuthenticationService {
 		}
 
 		// 4️⃣ Refresh Token 사용 후 즉시 폐기 (보안 강화)
-		String newRefreshToken = jwtUtil.generateRefreshToken(email);
-		user.setRefreshToken(newRefreshToken);
+		JwtToken newToken = jwtUtil.generateToken(email, user.getUserId());
+		user.setRefreshToken(newToken.getRefreshToken());
 		userRepository.save(user);
 
 		// 5️⃣ 새로운 AccessToken 발급
-		return jwtUtil.generateAccessToken(email, user.getUserId());
+		return newToken.getAccessToken();
 	}
 }
