@@ -25,7 +25,6 @@ public enum ErrorCode {
 
 	// ✅ 빵 관련 예외 (2100번대)
 
-
 	// ✅ 이메일 인증 관련 예외 (3000번대)
 	EMAIL_SEND_FAILED(3000, HttpStatus.INTERNAL_SERVER_ERROR, "이메일 전송에 실패하였습니다."),
 	TOO_MANY_REQUESTS(3001, HttpStatus.TOO_MANY_REQUESTS, "너무 많은 요청을 보냈습니다. 나중에 다시 시도하세요."),
@@ -45,7 +44,9 @@ public enum ErrorCode {
 	TOKEN_EXPIRED(4003, HttpStatus.UNAUTHORIZED, "토큰이 만료되었습니다."),
 	TOKEN_VERIFICATION_FAILED(4004, HttpStatus.UNAUTHORIZED, "토큰 검증에 실패하였습니다."),
 	INVALID_AUTHENTICATION(4005, HttpStatus.FORBIDDEN, "잘못된 인증 정보입니다."),
-	REFRESH_TOKEN_NOT_FOUND(4006, HttpStatus.BAD_REQUEST, "Refresh Token이 존재하지 않습니다."),
+	REFRESH_TOKEN_NOT_FOUND(4006, HttpStatus.UNAUTHORIZED, "Refresh Token이 존재하지 않습니다."),
+	EXPIRED_TOKEN(4007, HttpStatus.UNAUTHORIZED, "토큰이 만료되었습니다."),
+	TOKEN_THEFT_DETECTED(4008, HttpStatus.FORBIDDEN, "토큰 탈취가 의심됩니다."),
 
 	// ✅ 로그아웃 관련 예외 (4500번대)
 	LOGOUT_FAILED(4500, HttpStatus.BAD_REQUEST, "로그아웃 처리 중 오류가 발생했습니다."),

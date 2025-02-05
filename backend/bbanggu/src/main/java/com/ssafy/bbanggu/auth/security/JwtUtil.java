@@ -68,8 +68,10 @@ public class JwtUtil {
 		try {
 			Jwts.parserBuilder().setSigningKey(secretKey).build().parseClaimsJws(token);
 			return true;
-		} catch (JwtException | IllegalArgumentException e) {
-			return false;
+		} catch (ExpiredJwtException e) {
+			throw new CustomException(ErrorCode.EXPIRED_VERIFICATION_CODE);
+		} catch (JwtException e) {
+			throw new CustomException(ErrorCode.INVALID_REFRESH_TOKEN);
 		}
 	}
 
@@ -77,16 +79,12 @@ public class JwtUtil {
 	 * 토큰에서 이메일 추출
 	 */
 	public String getEmailFromToken(String token) {
-		try {
-			return Jwts.parserBuilder()
-				.setSigningKey(secretKey)
-				.build()
-				.parseClaimsJws(token)
-				.getBody()
-				.getSubject();
-		} catch (Exception e) {
-			throw new CustomException(ErrorCode.INVALID_ACCESS_TOKEN);
-		}
+		return Jwts.parserBuilder()
+			.setSigningKey(secretKey)
+			.build()
+			.parseClaimsJws(token)
+			.getBody()
+			.getSubject();
 	}
 
 	public Long getUserIdFromToken(String token) {
@@ -98,43 +96,4 @@ public class JwtUtil {
 
 		return claims.get("userId", Long.class);
 	}
-
-	/**
-	 * JWT 토큰 유효성 검증
-	 */
-	// public Claims validateToken(String token) {
-	// 	try {
-	// 		return Jwts.parserBuilder()
-	// 			.setSigningKey(secretKey)
-	// 			.build()
-	// 			.parseClaimsJws(token)
-	// 			.getBody();
-	// 	} catch (ExpiredJwtException e) {
-	// 		throw new CustomException(ErrorCode.TOKEN_EXPIRED); // 🔹 명확한 예외 메시지 설정
-	// 	} catch (JwtException e) {
-	// 		throw new CustomException(ErrorCode.INVALID_ACCESS_TOKEN); // 🔹 유효하지 않은 토큰 예외
-	// 	}
-	// }
-
-	/**
-	 * JWT 토큰에서 사용자 인증 정보 가져오기
-	 */
-	// public Authentication getAuthentication(String token) {
-	// 	Claims claims = validateToken(token);
-	// 	Long userId = claims.get("userId", Long.class);
-	//
-	// 	if (userId == null) {
-	// 		throw new CustomException(ErrorCode.INVALID_TOKEN_MISSING_USERID);
-	// 	}
-	//
-	// 	// 🔹 역할(Role)을 기본적으로 USER로 설정
-	// 	List<GrantedAuthority> authorities = Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER"));
-	//
-	// 	// 🔹 SecurityContext에 저장할 Authentication 객체 생성
-	// 	Authentication authentication = new UsernamePasswordAuthenticationToken(String.valueOf(userId), null, authorities);
-	//
-	// 	System.out.println("Generated Authentication with userId: " + userId);
-	// 	return authentication;
-	// }
-
 }
