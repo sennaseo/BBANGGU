@@ -1,85 +1,149 @@
 package com.ssafy.bbanggu.auth.service;
 
-import java.util.Map;
 import java.util.Optional;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.ssafy.bbanggu.auth.dto.JwtToken;
+import com.ssafy.bbanggu.auth.dto.KakaoTokenResponse;
 import com.ssafy.bbanggu.auth.dto.KakaoUserInfo;
 import com.ssafy.bbanggu.auth.security.JwtUtil;
+import com.ssafy.bbanggu.common.config.KakaoConfig;
+import com.ssafy.bbanggu.common.exception.CustomException;
+import com.ssafy.bbanggu.common.exception.ErrorCode;
 import com.ssafy.bbanggu.user.domain.User;
 import com.ssafy.bbanggu.user.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestTemplate;
 
 @Service
 @RequiredArgsConstructor
 public class KakaoAuthService {
 
+	@Value("${kakao.api-url.user-info}")
+	private String kakaoUserInfoUrl;
+	@Value("${kakao.api-url.token}")
+	private String kakaoTokenUrl;
+
+	private final RestTemplate restTemplate;
 	private final UserRepository userRepository;
 	private final JwtUtil jwtUtil;
-	private final KakaoOAuth2 kakaoOAuth2;
-
-	@Value("${kakao.client-id}")
-	private String kakaoClientId;
-
-	@Value("${kakao.redirect-uri}")
-	private String kakaoRedirectUri;
-
-	private static final String KAKAO_AUTH_URL = "https://kauth.kakao.com/oauth/authorize";
+	private final KakaoConfig kakaoConfig;
 
 	/**
-	 * 🔹 카카오 로그인 URL 생성
+	 * ✅ 1. 카카오 로그인 URL 생성 (Redirect)
 	 */
 	public String getKakaoLoginUrl() {
-		return KAKAO_AUTH_URL
-			+ "?client_id=" + kakaoClientId
-			+ "&redirect_uri=" + kakaoRedirectUri
-			+ "&response_type=code"
-			+ "&prompt=login";  // 🔹 로그인 창 강제 표시
+		return kakaoConfig.getAuthUri() +
+			"?client_id=" + kakaoConfig.getClientId() +
+			"&redirect_uri=" + kakaoConfig.getRedirectUri() +
+			"&response_type=code";
 	}
 
 	/**
-	 * 🔹 카카오 로그인 처리 (인증 코드 -> 사용자 정보 조회 -> JWT 발급)
+	 * ✅ 2. Kakao 인증 코드 → Access Token 요청
 	 */
-	public Map<String, String> kakaoLogin(String authCode) {
-		KakaoUserInfo kakaoUserInfo = kakaoOAuth2.getUserInfo(authCode);
-		System.out.println("카카오 사용자 정보: " + kakaoUserInfo);
+	private String getKakaoAccessToken(String authCode) {
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
-		String kakaoId = kakaoUserInfo.kakaoId();
-		String email = kakaoUserInfo.email();
-		String nickname = kakaoUserInfo.nickname();
+		MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+		params.add("grant_type", "authorization_code");
+		params.add("client_id", kakaoConfig.getClientId());
+		params.add("redirect_uri", kakaoConfig.getRedirectUri());
+		params.add("code", authCode);
 
-		// 🔹 기존 사용자 확인 (kakao_id 기준)
-		Optional<User> existingUser = userRepository.findByKakaoId(kakaoId);
+		HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
 
-		if (existingUser.isEmpty() && email != null && !email.isBlank()) {
-			existingUser = userRepository.findByEmail(email);
+		try {
+			ResponseEntity<KakaoTokenResponse> response = restTemplate.postForEntity(kakaoTokenUrl, request, KakaoTokenResponse.class);
+			return response.getBody().getAccessToken();
+		} catch (Exception e) {
+			throw new CustomException(ErrorCode.KAKAO_AUTH_FAILED);
 		}
+	}
 
-		User user;
-		if (existingUser.isPresent()) {
-			user = existingUser.get();
-			System.out.println("기존 회원 로그인: " + user.getEmail());
-		} else {
-			// 🔹 신규 카카오 회원 생성
-			user = User.createKakaoUser(kakaoId, nickname);
-			userRepository.save(user);
-			System.out.println("신규 회원 가입: " + user.getEmail());
+	/**
+	 * ✅ 3. Kakao Access Token → 사용자 정보 조회
+	 */
+	private KakaoUserInfo getKakaoUserInfo(String kakaoAccessToken) {
+		HttpHeaders headers = new HttpHeaders();
+		headers.set("Authorization", "Bearer " + kakaoAccessToken);
+
+		HttpEntity<Void> request = new HttpEntity<>(headers);
+
+		try {
+			ResponseEntity<JsonNode> response = restTemplate.exchange(kakaoUserInfoUrl, HttpMethod.GET, request, JsonNode.class);
+			JsonNode jsonNode = response.getBody();
+
+			String kakaoId = jsonNode.get("id").asText();
+			String nickname = jsonNode.path("properties").path("nickname").asText();
+			String email = jsonNode.path("kakao_account").path("email").asText();
+			String profileImage = jsonNode.path("properties").path("profile_image").asText();
+
+			return new KakaoUserInfo(kakaoId, email, nickname, profileImage);
+		} catch (Exception e) {
+			throw new CustomException(ErrorCode.KAKAO_USER_INFO_FAILED);
 		}
+	}
 
-		// JWT 토큰 발급
-		String accessToken = jwtUtil.generateAccessToken(user.getEmail(), user.getUserId());
-		String refreshToken = jwtUtil.generateRefreshToken(user.getEmail());
+	/**
+	 * ✅ 4. 로그인 or 회원가입 처리 후 JWT 발급
+	 */
+	//@Transactional
+	public JwtToken handleKakaoLogin(String authCode) {
+		try {
+			// ✅ 1. 카카오 토큰 요청
+			String kakaoAccessToken = getKakaoAccessToken(authCode);
+			System.out.println("✅ 카카오 액세스 토큰: " + kakaoAccessToken);
 
-		user.setRefreshToken(refreshToken);
-		userRepository.save(user);
-		System.out.println("JWT Access Token 발급: " + accessToken);
+			// ✅ 2. 카카오 사용자 정보 요청
+			KakaoUserInfo kakaoUserInfo = getKakaoUserInfo(kakaoAccessToken);
+			System.out.println("✅ 카카오 사용자 정보: " + kakaoUserInfo);
 
-		return Map.of(
-			"message", "Login successful",
-			"access_token", accessToken,
-			"refresh_token", refreshToken
-		);
+			// ✅ 3. DB에서 사용자 조회 (`kakaoId` 기준으로 검증!)
+			User user = userRepository.findByKakaoId(kakaoUserInfo.getKakaoId())
+				.orElseGet(() -> {
+					System.out.println("✅ 신규 카카오 사용자 회원가입: " + kakaoUserInfo.getEmail());
+					return registerNewKakaoUser(kakaoUserInfo);
+				});
+
+			// ✅ 4. JWT 발급
+			JwtToken jwtToken = jwtUtil.generateToken(user.getEmail(), user.getUserId());
+			System.out.println("✅ JWT 발급 완료: " + jwtToken);
+
+			// ✅ 5. Refresh Token 저장 (즉시 반영)
+			user.setRefreshToken(jwtToken.getRefreshToken());
+			userRepository.saveAndFlush(user); // 🔥 즉시 DB 반영
+
+			return jwtToken;
+
+		} catch (Exception e) {
+			System.err.println("❌ 카카오 로그인 중 오류 발생: " + e.getMessage());
+			e.printStackTrace();
+			throw new CustomException(ErrorCode.KAKAO_AUTH_FAILED);
+		}
+	}
+
+	/**
+	 * ✅ 5. Kakao 사용자 회원가입 (최초 로그인 시)
+	 */
+	private User registerNewKakaoUser(KakaoUserInfo userInfo) {
+		// User 엔티티의 정적 메서드 활용 (가독성 & 유지보수성 향상)
+		User newUser = User.createKakaoUser(userInfo.getEmail(), userInfo.getNickname());
+
+		newUser.setProfilePhotoUrl(userInfo.getProfileImage()); // ✅ 프로필 이미지 설정
+
+		return userRepository.save(newUser);
 	}
 }

@@ -40,7 +40,8 @@ public class SecurityConfig {
 					"/v3/api-docs/**",
 					"/user/register",
 					"/auth/**",
-					"/user/logout"
+					"/user/logout",
+					"/favicon.ico"
 				).permitAll() // ✅ 공개 API
 				.requestMatchers("/saving/**", "/user/update").authenticated() // ✅ 인증이 필요한 API
 				.anyRequest().authenticated()
