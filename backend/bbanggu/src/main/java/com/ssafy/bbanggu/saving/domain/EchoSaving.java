@@ -1,43 +1,46 @@
 package com.ssafy.bbanggu.saving.domain;
 
+import com.ssafy.bbanggu.user.domain.User;
 import jakarta.persistence.*;
 import lombok.*;
+
 import java.time.LocalDateTime;
 
-import com.ssafy.bbanggu.user.domain.User;
-
-@Entity
+/**
+ * 유저의 탄소 절감량 및 절약 금액을 저장하는 엔티티
+ */
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Entity
+@Table(name = "echo_saving")
 public class EchoSaving {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long echoSavingId;
+	@Column(name = "echo_saving_id")
+	private Long id;
 
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "user_id", nullable = false)
+	@OneToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "user_id", nullable = false, unique = true)
 	private User user;
 
-	@Column(nullable = false)
+	@Column(name = "saved_money", nullable = false)
 	private int savedMoney;
 
-	@Column(nullable = false)
+	@Column(name = "reduced_co2e", nullable = false)
 	private int reducedCo2e;
 
-	@Column(nullable = false, updatable = false)
-	private LocalDateTime createdAt;
+	@Column(name = "created_at", nullable = false, updatable = false)
+	private LocalDateTime createdAt = LocalDateTime.now();
 
-	@Column(nullable = false)
-	private LocalDateTime updatedAt;
+	@Column(name = "updated_at", nullable = false)
+	private LocalDateTime updatedAt = LocalDateTime.now();
 
 	@Builder
 	public EchoSaving(User user, int savedMoney, int reducedCo2e) {
 		this.user = user;
 		this.savedMoney = savedMoney;
 		this.reducedCo2e = reducedCo2e;
-		this.createdAt = LocalDateTime.now();
-		this.updatedAt = LocalDateTime.now();
 	}
 
 	public void update(int savedMoney, int reducedCo2e) {
