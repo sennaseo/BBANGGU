@@ -27,7 +27,7 @@ export default function BestPackages({ packages, bakeries, onToggleLike }: BestP
   }
 
   const handlePackageClick = (bakery_id: number) => {
-    navigate(`/bakery/${bakery_id}`)
+    navigate(`/user/bakery/${bakery_id}`)
   }
 
   // Sort packages by price (descending order) and memoize the result

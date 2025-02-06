@@ -4,6 +4,7 @@ import { MenuGrid } from "../../../components/user/mypage/MenuGrid"
 import { StatsCards } from "../../../components/user/mypage/StatsCards"
 import { Bell, Settings } from "lucide-react"
 import { useParams, useNavigate } from "react-router-dom"
+import UserBottomNavigation from "../../../components/user/navigations/bottomnavigation/UserBottomNavigation"
 
 export default function UserMyPage() {
   const { user_id } = useParams<{ user_id: string }>()
@@ -23,7 +24,7 @@ export default function UserMyPage() {
   }
 
   return (
-    <div className="min-h-screen bg-f9f9f9">
+    <div className="min-h-screen bg-f9f9f9 pb-[60px]">
       <header className="flex justify-between items-center px-5 pb-10 pt-10">
         <h1 className="text-xl font-bold text-[#333333]">마이페이지</h1>
         <div className="flex gap-4">
@@ -60,7 +61,7 @@ export default function UserMyPage() {
 
 
       </main>
-
+      <UserBottomNavigation />
     </div>
   )
 }
