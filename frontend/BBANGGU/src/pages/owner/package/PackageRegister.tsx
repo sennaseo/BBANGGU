@@ -311,10 +311,15 @@ const PackageRegister: React.FC = () => {
           </div>
         </div>
 
+        {/* 하단 버튼 */}
         <div className="mt-auto pt-4">
           <button
-            className="w-full bg-[#FC973B] text-white py-4 rounded-[8px] text-[16px] font-medium"
-            onClick={() => navigate('/owner/package/complete')}
+            className={`w-full py-4 rounded-[8px] text-[16px] font-medium
+              ${packageCount > 0 
+                ? 'bg-[#FC973B] text-white hover:bg-[#e88934] transition-colors' 
+                : 'bg-[#D7C5B5] text-white cursor-not-allowed'}`}
+            onClick={() => navigate('/owner/package/sales-setting')}
+            disabled={packageCount === 0}
           >
             다음
           </button>

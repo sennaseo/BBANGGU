@@ -188,12 +188,19 @@ const PackagePreview: React.FC = () => {
               직접 추가
             </button>
           </div>
+
+          {/* 경고 메시지 */}
         </div>
 
         <div className="p-4 mb-8 sticky bottom-0 bg-white">
-          <p className="text-center text-[14px] text-gray-600 mb-4">
-            재고 설정이 완료되면 빵꾸러미를 만들러 가요 :)
-          </p>
+          <div className="text-center mb-4">
+            <p className="text-[14px] text-[#FC973B] mb-1">
+              마지막으로 한 번만 더 확인해주세요!
+            </p>
+            <p className="text-[14px] text-gray-600">
+              이후에는 수정이 어려울 수 있어요.
+            </p>
+          </div>
 
           <button
             className="w-full bg-[#FC973B] text-white py-4 rounded-[8px] text-[16px] font-medium"
