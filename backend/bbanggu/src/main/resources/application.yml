@@ -10,7 +10,7 @@ spring:
   application:
     name: bbanggu
   datasource:
-    url: jdbc:mysql://localhost:3306/${DB_NAME}
+    url: jdbc:mysql://13.124.56.79:3306/${DB_NAME}
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
