@@ -25,6 +25,7 @@ import { UserEditProfile } from "./pages/user/mypage/editprofile/editprofile"
 import OwnerMainPage from "./pages/owner/mainpage/OwnerMainPage";
 import  { UserPayment } from "./pages/user/payment/UserPayment"
 import { UserSaveReport } from "./pages/user/mypage/usersavereport/UserSaveReport"
+import { Notification } from "./pages/user/mypage/notification/Notification"
 
 
 export default function App() {
@@ -50,6 +51,7 @@ export default function App() {
             <Route path="/user/:user_id/mypage" element={<UserMyPage />} />
             <Route path="/user/mypage/edit" element={<UserEditProfile />} />
             <Route path="/user/mypage/save-report" element={<UserSaveReport />} />
+            <Route path="/user/mypage/notifications" element={<Notification />} />
             <Route path="/user/reservations" element={<ReservationHistory />} />
             <Route path="/user/reservation/:reservation_id" element={<ReservationDetail />} />
             <Route path="/user/payment" element={<UserPayment />} />
