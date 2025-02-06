@@ -25,49 +25,49 @@ import  { UserPayment } from "./pages/user/payment/UserPayment"
 import PackageGuide from './pages/owner/package/PackageGuide';
 import PackageAnalysis from './pages/owner/package/PackageAnalysis';
 import PackagePreview from './pages/owner/package/PackagePreview';
+import { RecoilRoot } from 'recoil';
 
 export default function App() {
   return (
+    <RecoilRoot>
+      <ProfileProvider>
+        <Router>
+          <MobileLayout>
+            <Routes>
+              {/* 기본 라우트 설정 */}
+              <Route path="/" element={<Navigate to="/onboarding" replace />} />
+              <Route path="/onboarding" element={<OnboardingPage />} />
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/signup" element={<SignupPage />} />
+              <Route path="/signup/customer" element={<CustomerSignupPage />} />
+              <Route path="/signup/owner" element={<OwnerSignupPage />} />
 
-    <ProfileProvider>
-      <Router>
-        <MobileLayout>
-          <Routes>
-            {/* 기본 라우트 설정 */}
-            <Route path="/" element={<Navigate to="/onboarding" replace />} />
-            <Route path="/onboarding" element={<OnboardingPage />} />
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/signup" element={<SignupPage />} />
-            <Route path="/signup/customer" element={<CustomerSignupPage />} />
-            <Route path="/signup/owner" element={<OwnerSignupPage />} />
 
+              {/* 사용자 관련 페이지 */}
+              <Route path="/user" element={<UserMain />} />
+              <Route path="/user/bakery/:bakery_id" element={<BakeryDetail />} />
+              <Route path="/user/bakery/:bakery_id/reviews" element={<UserReview />} />
+              <Route path="/user/:user_id/mypage" element={<UserMyPage />} />
+              <Route path="/user/reservations" element={<ReservationHistory />} />
+              <Route path="/user/reservation/:reservation_id" element={<ReservationDetail />} />
+              <Route path="/user/payment" element={<UserPayment />} />
 
-            {/* 사용자 관련 페이지 */}
-            <Route path="/user" element={<UserMain />} />
-            <Route path="/user/bakery/:bakery_id" element={<BakeryDetail />} />
-            <Route path="/user/bakery/:bakery_id/reviews" element={<UserReview />} />
-            <Route path="/user/:user_id/mypage" element={<UserMyPage />} />
-            <Route path="/user/reservations" element={<ReservationHistory />} />
-            <Route path="/user/reservation/:reservation_id" element={<ReservationDetail />} />
-            <Route path="/user/payment" element={<UserPayment />} />
-
-            {/* 점주 관련 페이지 */}
-            <Route path="/owner/profile/edit" element={<EditProfile />} />
-            <Route path="/owner/settlement/edit" element={<EditSettlement />} />
-            <Route path="/owner/mypage" element={<MyPage />} />
-            <Route path="/owner/store/edit" element={<EditStore />} />
-            <Route path="/owner/pickup-time" element={<PickupTime />} />
-            <Route path="/owner/chatbot" element={<CustomerSupport />} />
-            <Route path="/owner/report" element={<ReportPage />} />
-            <Route path="/owner/main" element={<OwnerMainPage />} />
-            <Route path="/owner/package/guide" element={<PackageGuide />} />
-            <Route path="/owner/package/analysis" element={<PackageAnalysis />} />
-            <Route path="/owner/package/preview" element={<PackagePreview />} />
-          </Routes>
-        </MobileLayout>
-      </Router>
-
-    </ProfileProvider>
-
+              {/* 점주 관련 페이지 */}
+              <Route path="/owner/profile/edit" element={<EditProfile />} />
+              <Route path="/owner/settlement/edit" element={<EditSettlement />} />
+              <Route path="/owner/mypage" element={<MyPage />} />
+              <Route path="/owner/store/edit" element={<EditStore />} />
+              <Route path="/owner/pickup-time" element={<PickupTime />} />
+              <Route path="/owner/chatbot" element={<CustomerSupport />} />
+              <Route path="/owner/report" element={<ReportPage />} />
+              <Route path="/owner/main" element={<OwnerMainPage />} />
+              <Route path="/owner/package/guide" element={<PackageGuide />} />
+              <Route path="/owner/package/analysis" element={<PackageAnalysis />} />
+              <Route path="/owner/package/preview" element={<PackagePreview />} />
+            </Routes>
+          </MobileLayout>
+        </Router>
+      </ProfileProvider>
+    </RecoilRoot>
   );
 }
