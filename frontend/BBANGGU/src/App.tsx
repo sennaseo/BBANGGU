@@ -30,11 +30,13 @@ import PackageAnalysis from './pages/owner/package/PackageAnalysis';
 import PackagePreview from './pages/owner/package/PackagePreview';
 import FavoriteBakery from "./pages/user/favorite/FavoriteBakery";
 import UserCustomerSupport from "./pages/user/mypage/support/CustomerSupport";
-
+import PackageLoading from './pages/owner/package/PackageLoading';
+import PackageRegister from './pages/owner/package/PackageRegister';
+import { RecoilRoot } from 'recoil';
 
 export default function App() {
   return (
-
+    <RecoilRoot>
     <ProfileProvider>
       <Router>
         <MobileLayout>
@@ -62,23 +64,24 @@ export default function App() {
             <Route path="/user/payment" element={<UserPayment />} />
             <Route path="/user/:user_id/favorite" element={<FavoriteBakery />} />
 
-            {/* 점주 관련 페이지 */}
-            <Route path="/owner/profile/edit" element={<EditProfile />} />
-            <Route path="/owner/settlement/edit" element={<EditSettlement />} />
-            <Route path="/owner/mypage" element={<MyPage />} />
-            <Route path="/owner/store/edit" element={<EditStore />} />
-            <Route path="/owner/pickup-time" element={<PickupTime />} />
-            <Route path="/owner/chatbot" element={<CustomerSupport />} />
-            <Route path="/owner/report" element={<ReportPage />} />
-            <Route path="/owner/main" element={<OwnerMainPage />} />
-            <Route path="/owner/package/guide" element={<PackageGuide />} />
-            <Route path="/owner/package/analysis" element={<PackageAnalysis />} />
-            <Route path="/owner/package/preview" element={<PackagePreview />} />
-          </Routes>
-        </MobileLayout>
-      </Router>
-
-    </ProfileProvider>
-
+              {/* 점주 관련 페이지 */}
+              <Route path="/owner/profile/edit" element={<EditProfile />} />
+              <Route path="/owner/settlement/edit" element={<EditSettlement />} />
+              <Route path="/owner/mypage" element={<MyPage />} />
+              <Route path="/owner/store/edit" element={<EditStore />} />
+              <Route path="/owner/pickup-time" element={<PickupTime />} />
+              <Route path="/owner/chatbot" element={<CustomerSupport />} />
+              <Route path="/owner/report" element={<ReportPage />} />
+              <Route path="/owner/main" element={<OwnerMainPage />} />
+              <Route path="/owner/package/guide" element={<PackageGuide />} />
+              <Route path="/owner/package/analysis" element={<PackageAnalysis />} />
+              <Route path="/owner/package/preview" element={<PackagePreview />} />
+              <Route path="/owner/package/loading" element={<PackageLoading />} />
+              <Route path="/owner/package/register" element={<PackageRegister />} />
+            </Routes>
+          </MobileLayout>
+        </Router>
+      </ProfileProvider>
+    </RecoilRoot>
   );
 }

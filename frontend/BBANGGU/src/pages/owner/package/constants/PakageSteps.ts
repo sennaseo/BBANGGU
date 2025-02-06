@@ -2,11 +2,12 @@ export const PACKAGE_STEPS = {
   GUIDE: 1,
   CAMERA: 2,
   PREVIEW: 3,
-  DETAILS: 4,
-  CONFIRM: 5,
+  REGISTER: 4,
+  DETAILS: 5,
+  CONFIRM: 6,
 } as const;
 
-export const TOTAL_PACKAGE_STEPS = 5;
+export const TOTAL_PACKAGE_STEPS = 6;
 
 export const STEP_TITLES = {
   [PACKAGE_STEPS.GUIDE]: '촬영 가이드',
