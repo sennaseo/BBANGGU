@@ -3,6 +3,7 @@ package com.ssafy.bbanggu.user.service;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.ssafy.bbanggu.auth.dto.JwtToken;
 import com.ssafy.bbanggu.common.exception.CustomException;
 import com.ssafy.bbanggu.common.exception.ErrorCode;
 import com.ssafy.bbanggu.auth.security.JwtUtil;
@@ -98,17 +99,16 @@ public class UserService { // 사용자 관련 비즈니스 로직 처리
         }
 
         // ✅ JWT 토큰 생성
-        String accessToken = jwtUtil.generateAccessToken(email, user.getUserId());
-        String refreshToken = jwtUtil.generateRefreshToken(email);
+		JwtToken Token = jwtUtil.generateToken(email, user.getUserId());
 
         // ✅ Refresh Token을 DB 저장
-        user.setRefreshToken(refreshToken);
+        user.setRefreshToken(Token.getRefreshToken());
         userRepository.save(user);
 
         // ✅ 응답 데이터 생성
         Map<String, String> tokens = new HashMap<>();
-		tokens.put("access_token", accessToken);
-		tokens.put("refresh_token", refreshToken);
+		tokens.put("access_token", Token.getAccessToken());
+		tokens.put("refresh_token", Token.getRefreshToken());
 
         return tokens;
     }
@@ -179,5 +179,12 @@ public class UserService { // 사용자 관련 비즈니스 로직 처리
 		return userRepository.findByEmail(email)
 			.map(User::getUserId)
 			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+	}
+
+	/**
+	 * 이메일이 DB에 존재하는지 확인
+	 */
+	public boolean existsByEmail(String email) {
+		return userRepository.existsByEmail(email);
 	}
 }

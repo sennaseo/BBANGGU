@@ -1,4 +1,8 @@
+import { useNavigate } from 'react-router-dom';
+
 export function MenuGrid() {
+  const navigate = useNavigate();
+
   const menuItems = [
     {
       icon: (
@@ -10,6 +14,7 @@ export function MenuGrid() {
         </svg>
       ),
       label: "주문 내역",
+      path: "/user/mypage/reservations"
     },
     {
       icon: (
@@ -21,6 +26,7 @@ export function MenuGrid() {
         </svg>
       ),
       label: "관심 뱃찌",
+      path: "/user/101/favorite"
     },
     {
       icon: (
@@ -32,6 +38,7 @@ export function MenuGrid() {
         </svg>
       ),
       label: "나의 리뷰",
+      path: "/user/reviews"
     },
     {
       icon: (
@@ -55,17 +62,21 @@ export function MenuGrid() {
         </svg>
       ),
       label: "고객센터",
+      path: "/user/mypage/user-customer-support"
     },
   ]
 
   return (
     <div className="grid grid-cols-4 gap-4">
       {menuItems.map((item, index) => (
-        <button key={index} className="flex flex-col items-center justify-center bg-[#F9F9F9] rounded-xl py-4 space-y-2 shadow-md">
+        <button 
+          key={index} 
+          className="flex flex-col items-center justify-center bg-[#F9F9F9] rounded-xl py-4 space-y-2 shadow-md"
+          onClick={() => navigate(item.path)}
+        >
           {item.icon}
           <span className="text-xs font-medium text-[#333333]">{item.label}</span>
         </button>
-
       ))}
     </div>
   )
