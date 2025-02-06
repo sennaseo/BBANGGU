@@ -21,10 +21,13 @@ public enum ErrorCode {
 	SAME_AS_OLD_PASSWORD(1009, HttpStatus.BAD_REQUEST, "이전 비밀번호와 동일한 비밀번호는 사용하실 수 없습니다."),
 	INVALIE_PASSWORD(1010, HttpStatus.BAD_REQUEST, "비밀번호는 8자 이상이어야 합니다."),
 
+	// ✅ kakao 인증 관련 예외(1500번대)
+	KAKAO_AUTH_FAILED(1501, HttpStatus.BAD_REQUEST, "카카오 인증에 실패하였습니다."),
+	KAKAO_USER_INFO_FAILED(1502, HttpStatus.BAD_REQUEST, "카카오 사용자 정보 요청에 실패하였습니다."),
+
 	// ✅ 가게 관련 예외 (2000번대)
 
 	// ✅ 빵 관련 예외 (2100번대)
-
 
 	// ✅ 이메일 인증 관련 예외 (3000번대)
 	EMAIL_SEND_FAILED(3000, HttpStatus.INTERNAL_SERVER_ERROR, "이메일 전송에 실패하였습니다."),
@@ -45,7 +48,9 @@ public enum ErrorCode {
 	TOKEN_EXPIRED(4003, HttpStatus.UNAUTHORIZED, "토큰이 만료되었습니다."),
 	TOKEN_VERIFICATION_FAILED(4004, HttpStatus.UNAUTHORIZED, "토큰 검증에 실패하였습니다."),
 	INVALID_AUTHENTICATION(4005, HttpStatus.FORBIDDEN, "잘못된 인증 정보입니다."),
-	REFRESH_TOKEN_NOT_FOUND(4006, HttpStatus.BAD_REQUEST, "Refresh Token이 존재하지 않습니다."),
+	REFRESH_TOKEN_NOT_FOUND(4006, HttpStatus.UNAUTHORIZED, "Refresh Token이 존재하지 않습니다."),
+	EXPIRED_TOKEN(4007, HttpStatus.UNAUTHORIZED, "토큰이 만료되었습니다."),
+	TOKEN_THEFT_DETECTED(4008, HttpStatus.FORBIDDEN, "토큰 탈취가 의심됩니다."),
 
 	// ✅ 로그아웃 관련 예외 (4500번대)
 	LOGOUT_FAILED(4500, HttpStatus.BAD_REQUEST, "로그아웃 처리 중 오류가 발생했습니다."),

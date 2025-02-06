@@ -1,4 +1,3 @@
-import React from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import OnboardingPage from "./pages/onboarding";
 import LoginPage from "./pages/login";
@@ -26,7 +25,9 @@ import OwnerMainPage from "./pages/owner/mainpage/OwnerMainPage";
 import  { UserPayment } from "./pages/user/payment/UserPayment"
 import { UserSaveReport } from "./pages/user/mypage/usersavereport/UserSaveReport"
 import { Notification } from "./pages/user/mypage/notification/Notification"
-
+import PackageGuide from './pages/owner/package/PackageGuide';
+import PackageAnalysis from './pages/owner/package/PackageAnalysis';
+import PackagePreview from './pages/owner/package/PackagePreview';
 
 export default function App() {
   return (
@@ -65,6 +66,9 @@ export default function App() {
             <Route path="/owner/chatbot" element={<CustomerSupport />} />
             <Route path="/owner/report" element={<ReportPage />} />
             <Route path="/owner/main" element={<OwnerMainPage />} />
+            <Route path="/owner/package/guide" element={<PackageGuide />} />
+            <Route path="/owner/package/analysis" element={<PackageAnalysis />} />
+            <Route path="/owner/package/preview" element={<PackagePreview />} />
           </Routes>
         </MobileLayout>
       </Router>

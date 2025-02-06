@@ -87,8 +87,9 @@ public class KakaoOAuth2 {
 			String kakaoId = jsonNode.get("id").asText();
 			String nickname = jsonNode.path("properties").path("nickname").asText();
 			String email = jsonNode.path("kakao_account").path("email").asText();
+			String profileImage = jsonNode.path("properties").path("profile_image").asText();
 
-			return new KakaoUserInfo(kakaoId, nickname, email);
+			return new KakaoUserInfo(kakaoId, nickname, email, profileImage);
 		} catch (Exception e) {
 			throw new RuntimeException("Failed to fetch Kakao user info", e);
 		}

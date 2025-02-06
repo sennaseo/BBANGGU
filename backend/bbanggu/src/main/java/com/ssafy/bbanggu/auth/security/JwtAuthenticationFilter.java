@@ -39,8 +39,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 	@Override
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
 		throws ServletException, IOException {
+		String requestURI = request.getRequestURI();
+		System.out.println("🔥 JwtAuthenticationFilter 실행됨! 요청 URL: " + requestURI);
 
-		System.out.println("🔥 JwtAuthenticationFilter 실행됨! 요청 URL: " + request.getRequestURI());
+		// ✅ 특정 URL에서는 필터를 실행하지 않도록 예외 처리
+		if (requestURI.startsWith("/auth/kakao/login") || requestURI.startsWith("/oauth/kakao") || requestURI.equals("/favicon.ico")) {
+			// System.out.println("🚀 카카오 로그인 URL 요청 - JWT 필터 건너뜀!");
+			chain.doFilter(request, response);
+			return;
+		}
 
 		// ✅ 1. 쿠키에서 JWT 추출
 		String accessToken = getTokenFromCookies(request, "accessToken");
@@ -57,7 +64,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 			Long userId = jwtUtil.getUserIdFromToken(refreshToken); // ✅ userId 추출 추가
 
 			// ✅ 새 Access Token 발급
-			String newAccessToken = jwtUtil.generateAccessToken(email, userId);
+			String newAccessToken = jwtUtil.generateToken(email, userId).getAccessToken();
 			response.addHeader(HttpHeaders.SET_COOKIE, createAccessTokenCookie(newAccessToken)); // ✅ 쿠키에 저장
 
 			// ✅ Refresh Token을 통해 인증 정보 설정
@@ -65,6 +72,23 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 		} else {
 			System.out.println("❌ AccessToken과 RefreshToken이 유효하지 않음! SecurityContext 초기화!");
 			SecurityContextHolder.clearContext();
+
+			// ✅ JSON 응답 직접 반환 (Spring Security 기본 `401` 처리 방지)
+			response.setContentType("application/json");
+			response.setCharacterEncoding("UTF-8");
+			response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+
+			String jsonResponse = """
+        {
+            "code": 401,
+            "status": "UNAUTHORIZED",
+            "message": "Access Token이 유효하지 않습니다."
+        }
+        """;
+
+			response.getWriter().write(jsonResponse);
+			response.getWriter().flush();
+			return;
 		}
 
 		// ✅ 3. 필터 체인 계속 진행
@@ -99,6 +123,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 		User user = userRepository.findByEmail(email)
 			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
+		System.out.println("🔑 인증 객체 생성! 사용자: " + user.getEmail());
+
 		UserDetails userDetails = userDetailsService.loadUserByUsername(email);
 
 		JwtAuthenticationToken authentication = new JwtAuthenticationToken(userDetails, userDetails.getAuthorities(), userId);
@@ -106,6 +132,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
 		// ✅ SecurityContextHolder에 인증 정보 저장
 		SecurityContextHolder.getContext().setAuthentication(authentication);
+		System.out.println("✅ SecurityContextHolder에 인증 객체 저장 완료!");
 	}
 
 }
