@@ -23,6 +23,7 @@ import { ReservationHistory } from "./pages/user/reservation/ReservationHistory"
 import { ReservationDetail } from "./pages/user/reservation/ReservationDetail"
 import OwnerMainPage from "./pages/owner/mainpage/OwnerMainPage";
 import  { UserPayment } from "./pages/user/payment/UserPayment"
+import { MapPage } from "./pages/user/map/MapPage";
 
 export default function App() {
   return (
@@ -48,6 +49,7 @@ export default function App() {
             <Route path="/reservations" element={<ReservationHistory />} />
             <Route path="/reservation/:reservation_id" element={<ReservationDetail />} />
             <Route path="/user/payment" element={<UserPayment />} />
+            <Route path="/user/map" element={<MapPage />} />
 
             {/* 점주 관련 페이지 */}
             <Route path="/owner/profile/edit" element={<EditProfile />} />
