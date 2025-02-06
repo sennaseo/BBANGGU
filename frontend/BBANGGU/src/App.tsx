@@ -28,6 +28,8 @@ import { Notification } from "./pages/user/mypage/notification/Notification"
 import PackageGuide from './pages/owner/package/PackageGuide';
 import PackageAnalysis from './pages/owner/package/PackageAnalysis';
 import PackagePreview from './pages/owner/package/PackagePreview';
+import PackageLoading from './pages/owner/package/PackageLoading';
+import PackageRegister from './pages/owner/package/PackageRegister';
 import { RecoilRoot } from 'recoil';
 
 export default function App() {
@@ -45,36 +47,17 @@ export default function App() {
               <Route path="/signup/customer" element={<CustomerSignupPage />} />
               <Route path="/signup/owner" element={<OwnerSignupPage />} />
 
-
-            {/* 사용자 관련 페이지 */}
-            <Route path="/user" element={<UserMain />} />
-            <Route path="/user/bakery/:bakery_id" element={<BakeryDetail />} />
-            <Route path="/user/bakery/:bakery_id/reviews" element={<UserReview />} />
-            <Route path="/user/:user_id/mypage" element={<UserMyPage />} />
-            <Route path="/user/mypage/edit" element={<UserEditProfile />} />
-            <Route path="/user/mypage/save-report" element={<UserSaveReport />} />
-            <Route path="/user/mypage/notifications" element={<Notification />} />
-            <Route path="/user/reservations" element={<ReservationHistory />} />
-            <Route path="/user/reservation/:reservation_id" element={<ReservationDetail />} />
-            <Route path="/user/payment" element={<UserPayment />} />
-
-            {/* 점주 관련 페이지 */}
-            <Route path="/owner/profile/edit" element={<EditProfile />} />
-            <Route path="/owner/settlement/edit" element={<EditSettlement />} />
-            <Route path="/owner/mypage" element={<MyPage />} />
-            <Route path="/owner/store/edit" element={<EditStore />} />
-            <Route path="/owner/pickup-time" element={<PickupTime />} />
-            <Route path="/owner/chatbot" element={<CustomerSupport />} />
-            <Route path="/owner/report" element={<ReportPage />} />
-            <Route path="/owner/main" element={<OwnerMainPage />} />
-            <Route path="/owner/package/guide" element={<PackageGuide />} />
-            <Route path="/owner/package/analysis" element={<PackageAnalysis />} />
-            <Route path="/owner/package/preview" element={<PackagePreview />} />
-          </Routes>
-        </MobileLayout>
-      </Router>
-
-    </ProfileProvider>
+              {/* 사용자 관련 페이지 */}
+              <Route path="/user" element={<UserMain />} />
+              <Route path="/user/bakery/:bakery_id" element={<BakeryDetail />} />
+              <Route path="/user/bakery/:bakery_id/reviews" element={<UserReview />} />
+              <Route path="/user/:user_id/mypage" element={<UserMyPage />} />
+              <Route path="/user/mypage/edit" element={<UserEditProfile />} />
+              <Route path="/user/mypage/save-report" element={<UserSaveReport />} />
+              <Route path="/user/mypage/notifications" element={<Notification />} />
+              <Route path="/user/reservations" element={<ReservationHistory />} />
+              <Route path="/user/reservation/:reservation_id" element={<ReservationDetail />} />
+              <Route path="/user/payment" element={<UserPayment />} />
 
               {/* 점주 관련 페이지 */}
               <Route path="/owner/profile/edit" element={<EditProfile />} />
@@ -88,6 +71,8 @@ export default function App() {
               <Route path="/owner/package/guide" element={<PackageGuide />} />
               <Route path="/owner/package/analysis" element={<PackageAnalysis />} />
               <Route path="/owner/package/preview" element={<PackagePreview />} />
+              <Route path="/owner/package/loading" element={<PackageLoading />} />
+              <Route path="/owner/package/register" element={<PackageRegister />} />
             </Routes>
           </MobileLayout>
         </Router>
