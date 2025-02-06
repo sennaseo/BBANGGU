@@ -4,6 +4,7 @@ import { useState } from "react"
 import { Bell, User } from "lucide-react"
 import { MapView } from "../../../components/user/map/MapView"
 import { StoreCard } from "../../../components/user/map/StoreCard"
+import UserBottomNavigation from "../../../components/user/navigations/bottomnavigation/UserBottomNavigation"
 
 interface StoreInfo {
   id: string
@@ -70,6 +71,7 @@ export function MapPage() {
 
       {/* Store Card */}
       <StoreCard isVisible={!!selectedStore} store={selectedStore} />
+      <UserBottomNavigation/>
     </div>
   )
 }

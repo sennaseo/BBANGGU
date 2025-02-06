@@ -1,4 +1,8 @@
-export function PaymentComplete() {
+interface PaymentCompleteProps {
+  onConfirm: () => void;
+}
+
+export function PaymentComplete({ onConfirm }: PaymentCompleteProps) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen px-5">
         <img
@@ -12,9 +16,7 @@ export function PaymentComplete() {
           <br />이 음식은 더 이상 버려지지 않게 되었어요!
         </p>
         <button
-          onClick={() => {
-            /* Navigate to home */
-          }}
+          onClick={onConfirm}
           className="fixed bottom-6 left-6 right-6 max-w-[430px] mx-auto bg-[#FF9F43] text-white py-4 rounded-xl"
         >
           홈으로

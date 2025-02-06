@@ -48,7 +48,7 @@ export default function ReviewCard({ review }: ReviewCardProps) {
         <img
           src={review.review_image_url || "/placeholder.svg"}
           alt="Review"
-          className="w-full h-[200px] object-cover rounded-lg mb-3"
+          className="w-full h-[200px] object-cover rounded-xl mb-3"
         />
       )}
       <p className="text-[15px] leading-relaxed text-[#333333]">{review.content}</p>

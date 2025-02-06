@@ -31,7 +31,7 @@ export default function UserBottomNavigation() {
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-white border-t">
+    <nav className="fixed bottom-0 left-1/2 -translate-x-1/2 bg-white border-t max-w-[440px] w-full">
       <div className="max-w-screen-sm mx-auto">
         <div className="flex justify-around items-center h-16">
           {navigationItems.map((item) => (
