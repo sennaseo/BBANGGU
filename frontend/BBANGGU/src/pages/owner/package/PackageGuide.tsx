@@ -9,31 +9,26 @@ import Header from '../../../components/owner/header/Header';
 const PackageGuide: React.FC = () => {
   const navigate = useNavigate();
 
-  const handleBack = () => {
-    navigate(-1);
-  };
-
   const handleStartRegister = () => {
-    console.log('버튼 클릭됨'); // 디버깅용 로그
     navigate('/owner/package/analysis');
   };
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
-      {/* 기존 헤더 마크업을 Header 컴포넌트로 교체 */}
       <Header 
-        title="빵꾸러미 촬영하는 법" 
-        onBack={handleBack}
+        title="촬영 가이드" 
+        onBack={() => navigate(-1)}
       />
-
-      {/* 프로그레스 바 */}
-      <ProgressBar 
-        currentStep={PACKAGE_STEPS.GUIDE} 
-        totalSteps={TOTAL_PACKAGE_STEPS}
-      />
+      
+      <div className="mt-4">
+        <ProgressBar 
+          currentStep={PACKAGE_STEPS.GUIDE} 
+          totalSteps={TOTAL_PACKAGE_STEPS}
+        />
+      </div>
 
       {/* 메인 컨텐츠 */}
-      <div className="flex-1 px-4">
+      <div className="flex-1 flex flex-col p-4 overflow-y-auto">
         {/* 설명 텍스트 */}
         <div className="mt-4 text-center">
           <p className="text-base text-gray-600">
@@ -68,15 +63,15 @@ const PackageGuide: React.FC = () => {
             <p className="text-gray-700">전체 트레이가 잘 보이게 촬영해주세요</p>
           </div>
         </div>
-      </div>
 
-      {/* 하단 버튼 */}
-      <div className="p-4">
-        <SubmitButton
-          text={<span className="font-bold">재고 찍으러 가기</span>}
-          onClick={handleStartRegister}
-          className="w-full"
-        />
+        {/* 하단 버튼 */}
+        <div className="mt-auto pt-4">
+          <SubmitButton
+            text={<span className="font-bold">재고 찍으러 가기</span>}
+            onClick={handleStartRegister}
+            className="w-full"
+          />
+        </div>
       </div>
     </div>
   );
