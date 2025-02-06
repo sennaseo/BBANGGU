@@ -14,8 +14,8 @@ const PackageGuide: React.FC = () => {
   };
 
   const handleStartRegister = () => {
-    // TODO: 실제 등록 페이지로 이동하는 로직 추가
-    navigate('/owner/package/register');
+    console.log('버튼 클릭됨'); // 디버깅용 로그
+    navigate('/owner/package/analysis');
   };
 
   return (
