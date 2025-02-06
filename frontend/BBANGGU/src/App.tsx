@@ -28,6 +28,8 @@ import { Notification } from "./pages/user/mypage/notification/Notification"
 import PackageGuide from './pages/owner/package/PackageGuide';
 import PackageAnalysis from './pages/owner/package/PackageAnalysis';
 import PackagePreview from './pages/owner/package/PackagePreview';
+import FavoriteBakery from "./pages/user/favorite/FavoriteBakery";
+import UserCustomerSupport from "./pages/user/mypage/support/CustomerSupport";
 import PackageLoading from './pages/owner/package/PackageLoading';
 import PackageRegister from './pages/owner/package/PackageRegister';
 import { RecoilRoot } from 'recoil';
@@ -35,29 +37,32 @@ import { RecoilRoot } from 'recoil';
 export default function App() {
   return (
     <RecoilRoot>
-      <ProfileProvider>
-        <Router>
-          <MobileLayout>
-            <Routes>
-              {/* 기본 라우트 설정 */}
-              <Route path="/" element={<Navigate to="/onboarding" replace />} />
-              <Route path="/onboarding" element={<OnboardingPage />} />
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/signup" element={<SignupPage />} />
-              <Route path="/signup/customer" element={<CustomerSignupPage />} />
-              <Route path="/signup/owner" element={<OwnerSignupPage />} />
+    <ProfileProvider>
+      <Router>
+        <MobileLayout>
+          <Routes>
+            {/* 기본 라우트 설정 */}
+            <Route path="/" element={<Navigate to="/onboarding" replace />} />
+            <Route path="/onboarding" element={<OnboardingPage />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/signup" element={<SignupPage />} />
+            <Route path="/signup/customer" element={<CustomerSignupPage />} />
+            <Route path="/signup/owner" element={<OwnerSignupPage />} />
 
-              {/* 사용자 관련 페이지 */}
-              <Route path="/user" element={<UserMain />} />
-              <Route path="/user/bakery/:bakery_id" element={<BakeryDetail />} />
-              <Route path="/user/bakery/:bakery_id/reviews" element={<UserReview />} />
-              <Route path="/user/:user_id/mypage" element={<UserMyPage />} />
-              <Route path="/user/mypage/edit" element={<UserEditProfile />} />
-              <Route path="/user/mypage/save-report" element={<UserSaveReport />} />
-              <Route path="/user/mypage/notifications" element={<Notification />} />
-              <Route path="/user/reservations" element={<ReservationHistory />} />
-              <Route path="/user/reservation/:reservation_id" element={<ReservationDetail />} />
-              <Route path="/user/payment" element={<UserPayment />} />
+
+            {/* 사용자 관련 페이지 */}
+            <Route path="/user" element={<UserMain />} />
+            <Route path="/user/bakery/:bakery_id" element={<BakeryDetail />} />
+            <Route path="/user/bakery/:bakery_id/reviews" element={<UserReview />} />
+            <Route path="/user/:user_id/mypage" element={<UserMyPage />} />
+            <Route path="/user/mypage/edit" element={<UserEditProfile />} />
+            <Route path="/user/mypage/user-customer-support" element={<UserCustomerSupport />} />
+            <Route path="/user/mypage/save-report" element={<UserSaveReport />} />
+            <Route path="/user/mypage/notifications" element={<Notification />} />
+            <Route path="/user/mypage/reservations" element={<ReservationHistory />} />
+            <Route path="/user/mypage/reservation/:reservation_id" element={<ReservationDetail />} />
+            <Route path="/user/payment" element={<UserPayment />} />
+            <Route path="/user/:user_id/favorite" element={<FavoriteBakery />} />
 
               {/* 점주 관련 페이지 */}
               <Route path="/owner/profile/edit" element={<EditProfile />} />
