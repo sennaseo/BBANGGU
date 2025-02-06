@@ -1,17 +1,20 @@
 package com.ssafy.bbanggu.breadpackage;
 
-import com.ssafy.bbanggu.bakery.Bakery;
-import com.ssafy.bbanggu.bakery.BakeryRepository;
-import com.ssafy.bbanggu.breadpackage.dto.BreadPackageDto;
-import lombok.RequiredArgsConstructor;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
-import java.util.Optional;
-import java.util.*;
-import java.util.stream.Collectors;
+import com.ssafy.bbanggu.bakery.Bakery;
+import com.ssafy.bbanggu.bakery.BakeryRepository;
+import com.ssafy.bbanggu.breadpackage.dto.BreadPackageDto;
+import com.ssafy.bbanggu.common.exception.CustomException;
+import com.ssafy.bbanggu.common.exception.ErrorCode;
 
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -70,10 +73,27 @@ public class BreadPackageService {
 	}
 
 	// 베이커리 별 기간별 빵 패키지 조회
-	public List<BreadPackageDto> getPackagesByBakeryAndDate(Long bakeryId, LocalDateTime startDate, LocalDateTime endDate) {
-		List<BreadPackage> breadPackages = breadPackageRepository.findByBakery_BakeryIdAndCreatedAtBetweenAndDeletedAtIsNull(bakeryId, startDate, endDate);
+	public List<BreadPackageDto> getPackagesByBakeryAndDate(Long bakeryId, LocalDateTime startDate,
+		LocalDateTime endDate) {
+		List<BreadPackage> breadPackages = breadPackageRepository.findByBakery_BakeryIdAndCreatedAtBetweenAndDeletedAtIsNull(
+			bakeryId, startDate, endDate);
 		return breadPackages.stream()
 			.map(BreadPackageDto::from)
 			.collect(Collectors.toList());
+	}
+
+	public int updateBreadPackage(long packageId, int quantity) {
+		BreadPackage breadPackage = breadPackageRepository.findById(packageId).orElse(null);
+		if (breadPackage == null) {
+			throw new CustomException(ErrorCode.BREAD_PACKAGE_NOT_FOUND);
+		}
+		int updatedQuantity = breadPackage.getQuantity() + quantity;
+		System.out.println("updatedQuantity: " + updatedQuantity);
+		if (updatedQuantity < 0) {
+			throw new CustomException(ErrorCode.BREAD_PACKAGE_QUANTITY_CONFLICT);
+		}
+		breadPackage.setQuantity(updatedQuantity);
+		breadPackageRepository.save(breadPackage);
+		return updatedQuantity;
 	}
 }
