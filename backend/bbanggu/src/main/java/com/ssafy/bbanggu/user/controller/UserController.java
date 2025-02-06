@@ -3,6 +3,7 @@ package com.ssafy.bbanggu.user.controller;
 import java.util.Map;
 
 import com.ssafy.bbanggu.auth.dto.EmailRequest;
+import com.ssafy.bbanggu.auth.dto.JwtToken;
 import com.ssafy.bbanggu.auth.service.EmailService;
 import com.ssafy.bbanggu.common.exception.CustomException;
 import com.ssafy.bbanggu.common.exception.ErrorCode;
@@ -36,12 +37,7 @@ public class UserController {
         this.emailAuthService = emailAuthService;
     }
 
-    /**
-     * 회원가입 API
-     *
-     * @param request 사용자 생성 요청 데이터 (name, email, password, phone_number, user_type)
-     * @return 생성된 사용자 정보
-     */
+    // ✅ 회원가입
     @PostMapping("/register")
     public ResponseEntity<?> createUser(@Valid @RequestBody CreateUserRequest request, BindingResult result) {
         // 회원가입 요청 데이터 검증
@@ -93,10 +89,7 @@ public class UserController {
 			.body(new ApiResponse("회원탈퇴가 성공적으로 완료되었습니다.", null));
 	}
 
-    /**
-     * 로그인 API
-     * @return 로그인 성공 시 사용자 정보
-     */
+    // ✅ 로그인
     @PostMapping("/login")
     public ResponseEntity<ApiResponse> login(@Valid @RequestBody LoginRequest request, BindingResult result) {
 		if (result.hasErrors()) {
@@ -104,9 +97,9 @@ public class UserController {
 		}
 
 		// ✅ UserService에서 로그인 & 토큰 생성
-		Map<String, String> tokens = userService.login(request.getEmail(), request.getPassword());
-		String accessToken = tokens.get("access_token");
-		String refreshToken = tokens.get("refresh_token");
+		JwtToken tokens = userService.login(request.getEmail(), request.getPassword());
+		String accessToken = tokens.getAccessToken();
+		String refreshToken = tokens.getRefreshToken();
 
 		// ✅ AccessToken을 HTTP-Only 쿠키에 저장
 		ResponseCookie accessTokenCookie = ResponseCookie.from("accessToken", accessToken)
@@ -134,8 +127,7 @@ public class UserController {
      * 로그아웃 API
      */
     @PostMapping("/logout")
-    public ResponseEntity<?> logout(Authentication authentication,
-		@CookieValue(name = "refreshToken", required = false) String refreshToken) {
+    public ResponseEntity<?> logout(Authentication authentication) {
         // ✅ Access Token이 없는 경우 예외처리
 		if (authentication == null || authentication.getName() == null) {
 			throw new CustomException(ErrorCode.INVALID_ACCESS_TOKEN);

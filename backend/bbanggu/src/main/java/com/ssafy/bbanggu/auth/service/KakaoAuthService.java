@@ -1,12 +1,10 @@
 package com.ssafy.bbanggu.auth.service;
 
-import java.util.Optional;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.ssafy.bbanggu.auth.dto.JwtToken;
 import com.ssafy.bbanggu.auth.dto.KakaoTokenResponse;
 import com.ssafy.bbanggu.auth.dto.KakaoUserInfo;
-import com.ssafy.bbanggu.auth.security.JwtUtil;
+import com.ssafy.bbanggu.auth.security.JwtTokenProvider;
 import com.ssafy.bbanggu.common.config.KakaoConfig;
 import com.ssafy.bbanggu.common.exception.CustomException;
 import com.ssafy.bbanggu.common.exception.ErrorCode;
@@ -37,7 +35,7 @@ public class KakaoAuthService {
 
 	private final RestTemplate restTemplate;
 	private final UserRepository userRepository;
-	private final JwtUtil jwtUtil;
+	private final JwtTokenProvider jwtUtil;
 	private final KakaoConfig kakaoConfig;
 
 	/**
@@ -119,7 +117,7 @@ public class KakaoAuthService {
 				});
 
 			// ✅ 4. JWT 발급
-			JwtToken jwtToken = jwtUtil.generateToken(user.getEmail(), user.getUserId());
+			JwtToken jwtToken = new JwtToken(jwtUtil.createAccessToken(user.getEmail()), jwtUtil.createRefreshToken(user.getEmail()));
 			System.out.println("✅ JWT 발급 완료: " + jwtToken);
 
 			// ✅ 5. Refresh Token 저장 (즉시 반영)

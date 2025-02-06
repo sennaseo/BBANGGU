@@ -1,16 +1,12 @@
 package com.ssafy.bbanggu.saving.dto;
 
 import lombok.Builder;
-import lombok.Getter;
 
-@Getter
-public class SavingResponse {
-	private int reducedCo2e;
-	private int savedMoney;
-
+public record SavingResponse(
+	int savedMoney,
+	int reducedCo2e
+) {
 	@Builder
-	public SavingResponse(int reducedCo2e, int savedMoney) {
-		this.reducedCo2e = reducedCo2e;
-		this.savedMoney = savedMoney;
+	public SavingResponse {
 	}
 }

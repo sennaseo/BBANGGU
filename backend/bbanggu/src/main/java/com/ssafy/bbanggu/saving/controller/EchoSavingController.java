@@ -1,17 +1,19 @@
 package com.ssafy.bbanggu.saving.controller;
 
+import java.util.Map;
+
 import com.ssafy.bbanggu.common.exception.CustomException;
 import com.ssafy.bbanggu.common.exception.ErrorCode;
+import com.ssafy.bbanggu.common.response.ApiResponse;
 import com.ssafy.bbanggu.saving.dto.SavingResponse;
 import com.ssafy.bbanggu.saving.dto.TotalSavingResponse;
 import com.ssafy.bbanggu.saving.dto.UpdateSavingRequest;
 import com.ssafy.bbanggu.saving.service.EchoSavingService;
-import lombok.RequiredArgsConstructor;
+import com.ssafy.bbanggu.user.service.UserService;
 
-import com.ssafy.bbanggu.common.response.ApiResponse;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -20,58 +22,53 @@ import org.springframework.web.bind.annotation.*;
 public class EchoSavingController {
 
 	private final EchoSavingService echoSavingService;
+	private final UserService userService;
 
 	@GetMapping
-	public ResponseEntity<SavingResponse> getUserSaving() {
-		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-		if (authentication == null || !authentication.isAuthenticated()) {
-			throw new CustomException(ErrorCode.USER_NOT_FOUND);
+	public ResponseEntity<ApiResponse> getUserSaving(Authentication authentication) {
+		// ✅ Access Token이 없는 경우 예외처리
+		if (authentication == null || authentication.getName() == null) {
+			throw new CustomException(ErrorCode.INVALID_ACCESS_TOKEN);
 		}
 
-		Object principal = authentication.getPrincipal();
-		Long userId = null;
+		// ✅ email 가져오기
+		String email = authentication.getName();
 
-		if (principal instanceof String) { // Principal이 String인지 확인
-			try {
-				userId = Long.parseLong((String) principal); // String → Long 변환
-			} catch (NumberFormatException e) {
-				throw new CustomException(ErrorCode.ACCOUNT_DEACTIVATED);
-			}
-		} else {
-			System.out.println("Unexpected Principal type: " + principal);
-			return ResponseEntity.status(403).build();
-		}
+		// ✅ email로 userId 조회
+		Long userId = userService.getUserIdByEmail(email);
 
-		return ResponseEntity.ok(echoSavingService.getUserSaving(userId));
+		SavingResponse response = echoSavingService.getUserSaving(userId);
+		return ResponseEntity.ok(new ApiResponse("사용자의 절약 정보 조회 성공", response));
 	}
 
-	// 누적 탄소 절감량 및 절약 금액 갱신
 	@PostMapping
-	public ResponseEntity<?> updateUserSaving(
-		@RequestBody UpdateSavingRequest request) {
-
-		// SecurityContext에서 userId 직접 추출
-		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-		if (authentication == null || authentication.getPrincipal() == null) {
-			return ResponseEntity.status(401).body("{\"message\": \"Unauthorized user\"}");
+	public ResponseEntity<ApiResponse> updateUserSaving(Authentication authentication,
+		@RequestBody Map<String, Object> updates) {
+		// ✅ Access Token이 없는 경우 예외 처리
+		if (authentication == null || authentication.getName() == null) {
+			throw new CustomException(ErrorCode.INVALID_ACCESS_TOKEN);
 		}
 
-		Long userId;
-		try {
-			userId = Long.valueOf(authentication.getPrincipal().toString());
-		} catch (NumberFormatException e) {
-			return ResponseEntity.status(401).body("{\"message\": \"Invalid user ID\"}");
+		// ✅ email 가져오기
+		String email = authentication.getName();
+
+		// ✅ email로 userId 조회
+		Long userId = userService.getUserIdByEmail(email);
+
+		// ✅ 필수 필드 검증
+		if (!updates.containsKey("reduce_co2e") || !updates.containsKey("saved_money")) {
+			throw new CustomException(ErrorCode.MISSING_REQUIRED_FIELDS);
 		}
 
+		// ✅ 정보 갱신
+		UpdateSavingRequest request = new UpdateSavingRequest((int) updates.get("reduce_co2e"), (int) updates.get("saved_money"));
 		echoSavingService.updateUserSaving(userId, request);
-		return ResponseEntity.ok().body("{\"message\": \"Saving data updated successfully.\"}");
+		return ResponseEntity.ok(new ApiResponse("절약 정보 갱신 성공", null));
 	}
 
-	// 전체 유저의 누적 탄소 절감량 및 절약 금액 조회
 	@GetMapping("/all")
-	public ResponseEntity<TotalSavingResponse> getTotalSaving() {
+	public ResponseEntity<ApiResponse> getTotalSaving() {
 		TotalSavingResponse response = echoSavingService.getTotalSaving();
-		return ResponseEntity.ok(response);
+		return ResponseEntity.ok(new ApiResponse("전체 절약 정보 조회 성공", response));
 	}
 }
