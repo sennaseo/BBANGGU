@@ -23,6 +23,7 @@ import { ReservationDetail } from "./pages/user/mypage/reservation/ReservationDe
 import { UserEditProfile } from "./pages/user/mypage/editprofile/editprofile"
 import OwnerMainPage from "./pages/owner/mainpage/OwnerMainPage";
 import  { UserPayment } from "./pages/user/payment/UserPayment"
+import { MapPage } from "./pages/user/map/MapPage";
 import { UserSaveReport } from "./pages/user/mypage/usersavereport/UserSaveReport"
 import { Notification } from "./pages/user/mypage/notification/Notification"
 import PackageGuide from './pages/owner/package/PackageGuide';
@@ -33,6 +34,7 @@ import UserCustomerSupport from "./pages/user/mypage/support/CustomerSupport";
 import PackageLoading from './pages/owner/package/PackageLoading';
 import PackageRegister from './pages/owner/package/PackageRegister';
 import { RecoilRoot } from 'recoil';
+
 
 export default function App() {
   return (
@@ -62,7 +64,9 @@ export default function App() {
             <Route path="/user/mypage/reservations" element={<ReservationHistory />} />
             <Route path="/user/mypage/reservation/:reservation_id" element={<ReservationDetail />} />
             <Route path="/user/payment" element={<UserPayment />} />
+            <Route path="/user/map" element={<MapPage />} />
             <Route path="/user/:user_id/favorite" element={<FavoriteBakery />} />
+
 
               {/* 점주 관련 페이지 */}
               <Route path="/owner/profile/edit" element={<EditProfile />} />
