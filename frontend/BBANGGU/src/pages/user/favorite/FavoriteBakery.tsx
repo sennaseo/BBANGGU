@@ -4,6 +4,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { HeartIcon } from "lucide-react"
 import { mockUsers } from '../../../mocks/user/mockUserData';
 import { MapPinIcon } from "@heroicons/react/24/solid";
+import UserBottomNavigation from '../../../components/user/navigations/bottomnavigation/UserBottomNavigation';
 
 export const FavoriteBakery = () => {
   const [favorites, setFavorites] = useState<FavoriteBakeryType[]>([]);
@@ -71,9 +72,11 @@ export const FavoriteBakery = () => {
             빵꾸러미 찾아보기
           </button>
         </div>
+        <UserBottomNavigation />
       </div>
     );
   }
+
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
@@ -148,8 +151,10 @@ export const FavoriteBakery = () => {
           ))}
         </div>
       </div>
+      <UserBottomNavigation />
     </div>
   );
 };
+
 
 export default FavoriteBakery;

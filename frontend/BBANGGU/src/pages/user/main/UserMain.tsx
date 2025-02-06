@@ -6,7 +6,7 @@ import RecommendedStores from "../../../components/user/usermain/RecommendedStor
 import ErrorBoundary from "../../../components/ErrorBoundary"
 import { useNavigate } from "react-router-dom"
 import { mockBakeries } from "../../../mocks/user/bakeryMockData"
-
+import UserBottomNavigation from "../../../components/user/navigations/bottomnavigation/UserBottomNavigation"
 export default function UserMain() {
   const {
     searchQuery,
@@ -21,7 +21,7 @@ export default function UserMain() {
   const navigate = useNavigate()
 
   const handleStoreClick = (bakery_id: number) => {
-    navigate(`/bakery/${bakery_id}`)
+    navigate(`/user/bakery/${bakery_id}`)
   }
 
   if (loading) {
@@ -91,8 +91,10 @@ export default function UserMain() {
           <BestPackages packages={bestPackages} bakeries={mockBakeries} onToggleLike={toggleLike} />
           <RecommendedStores stores={recommendedStores} onToggleLike={toggleLike} onStoreClick={handleStoreClick} />
         </main>
+        <UserBottomNavigation />
       </ErrorBoundary>
     </div>
   )
 }
+
 
