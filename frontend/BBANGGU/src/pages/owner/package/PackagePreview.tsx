@@ -197,7 +197,7 @@ const PackagePreview: React.FC = () => {
 
           <button
             className="w-full bg-[#FC973B] text-white py-4 rounded-[8px] text-[16px] font-medium"
-            onClick={() => navigate('/owner/package/details')}
+            onClick={() => navigate('/owner/package/loading')}
           >
             빵꾸러미 만들러 가기
           </button>
