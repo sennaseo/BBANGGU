@@ -16,6 +16,7 @@ export function ReservationDetail() {
   const { reservation_id } = useParams<{ reservation_id: string }>()
   const mapRef = useRef<HTMLDivElement>(null);
   const [isLocationExpanded, setIsLocationExpanded] = useState(false);
+  const [showCancelModal, setShowCancelModal] = useState(false);
 
   // URL 파라미터로 전달된 reservation_id로 예약 찾기
   const reservation = mockReservations.find(
@@ -129,18 +130,19 @@ export function ReservationDetail() {
 
       {/* 티켓 모양 카드 */}
       <div className="mx-5">
-        <div className="rounded-xl">
+        <div>
           {/* 상단 주황색 섹션 */}
-          <div className="bg-[#fc973b] p-5 text-white rounded-xl shadow-md">
-            <div className="inline-block px-3 py-1 bg-white/20 rounded-full text-sm mb-2">
-              {statusMap[reservation.status]}
-            </div>
-            <div className="text-xl font-bold">{bakery.name}</div>
-            <div className="mt-2 text-sm">
-              {pickupTime.date} {pickupTime.time} ~ {parseInt(pickupTime.time.split(':')[0]) + 1}:00 방문
+          <div className="bg-[#fc973b] text-white rounded-xl shadow-md">
+            <div className="flex flex-col gap-2 p-5">
+              <div className="inline-block px-3 py-1 bg-white/20 rounded-full text-sm w-fit">
+                {statusMap[reservation.status]}
+              </div>
+              <div className="text-xl font-bold leading-tight">{bakery.name}</div>
+              <div className="text-sm">
+                {pickupTime.date} {pickupTime.time} ~ {parseInt(pickupTime.time.split(':')[0]) + 1}:00 방문
+              </div>
             </div>
           </div>
-
 
           {/* 주문 내역 섹션 */}
           <div className="bg-[#F9F9F9] p-5 rounded-xl border-t border-dashed border-gray-200 shadow-md">
@@ -210,9 +212,40 @@ export function ReservationDetail() {
         <div className="fixed bottom-0 left-0 right-0 p-5 bg-[#F9F9F9] max-w-[440px] mx-auto">
           <button 
             className="w-full bg-[#fc973b] text-white py-4 rounded-xl font-medium"
+            onClick={() => setShowCancelModal(true)}
           >
             취소하기
           </button>
+        </div>
+      )}
+
+      {/* 취소 확인 모달 */}
+      {showCancelModal && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl mx-5 w-full max-w-[320px] px-4 py-4">
+            <div className="px-5 pt-3 pb-5 text-center">
+              <h3 className="text-lg font-bold text-[#333333] mb-2">주문을 취소하시겠습니까?</h3>
+              <p className="text-sm text-[#666666]">취소된 주문은 되돌릴 수 없습니다.</p>
+            </div>
+            <div className="flex">
+              <button
+                className="flex-1 p-3 font-medium bg-[#fc973b] text-white rounded-full"
+                onClick={() => setShowCancelModal(false)}
+              >
+                돌아가기
+              </button>
+              <button
+                className="flex-1 p-3 text-[#666666] font-medium"
+                onClick={() => {
+                  // TODO: 취소 로직 구현
+                  setShowCancelModal(false);
+                  navigate(-1);
+                }}
+              >
+                취소하기
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
