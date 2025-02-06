@@ -86,4 +86,5 @@ export interface FavoriteBakeryType {
   bakery_id: number
   created_at: string
   deleted_at?: string
+  bakery?: BakeryType
 }
