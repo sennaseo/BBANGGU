@@ -1,8 +1,15 @@
 import React from 'react';
 import defaultBakeryImage from '../../../../assets/images/bakery/onwer_default_header_img.png';
 import cameraIcon from '../../../../assets/images/bakery/owner_camera_icon.svg';
+import { useNavigate } from 'react-router-dom';
 
 export const BreadPackageHeader = () => {
+  const navigate = useNavigate();
+
+  const handleCameraClick = () => {
+    navigate('/owner/package/guide');
+  };
+
   return (
     <div className="relative mb-6 w-[400px] h-[220px] flex-shrink-0 mx-auto">
       <img 
@@ -21,7 +28,16 @@ export const BreadPackageHeader = () => {
           </p>
         </div>
         <div className="absolute top-1/2 left-[240px] transform -translate-y-1/2">
-          <div className="relative flex flex-col items-center justify-center w-[100px] h-[100px] bg-black/40 rounded-[12px]">
+          <div 
+            onClick={handleCameraClick}
+            className="relative flex flex-col items-center justify-center w-[100px] h-[100px] 
+            bg-black/40 rounded-[12px] cursor-pointer 
+            hover:bg-black/50 
+            active:bg-black/60 
+            active:scale-95 
+            transition-all duration-200
+            touch-manipulation select-none"
+          >
             <div className="absolute top-0 left-0 w-[25px] h-[25px] border-t-[3px] border-l-[3px] border-[#FC973B] rounded-tl-[15px]" />
             <div className="absolute top-0 right-0 w-[25px] h-[25px] border-t-[3px] border-r-[3px] border-[#FC973B] rounded-tr-[15px]" />
             <div className="absolute bottom-0 left-0 w-[25px] h-[25px] border-b-[3px] border-l-[3px] border-[#FC973B] rounded-bl-[15px]" />

@@ -1,9 +1,13 @@
 package com.ssafy.bbanggu.auth.controller;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 
+import com.ssafy.bbanggu.auth.dto.JwtToken;
 import com.ssafy.bbanggu.auth.service.KakaoAuthService;
+import com.ssafy.bbanggu.common.exception.CustomException;
+import com.ssafy.bbanggu.common.response.ApiResponse;
 
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -20,25 +24,33 @@ public class KakaoAuthController {
 	private final KakaoAuthService kakaoAuthService;
 
 	/**
-	 * 🔹 카카오 로그인 페이지로 리다이렉트
+	 * ✅ 1. 카카오 로그인 요청 (Redirect)
+	 * - 클라이언트가 이 API를 호출하면, Kakao OAuth 로그인 페이지로 리다이렉트됨.
 	 */
 	@GetMapping("/login")
-	public ResponseEntity<Void> kakaoLogin(HttpServletResponse response) throws IOException {
-		String kakaoAuthUrl = kakaoAuthService.getKakaoLoginUrl();
-		System.out.println("카카오 로그인 URL: " + kakaoAuthUrl);
-
-		// 클라이언트를 카카오 로그인 페이지로 리디렉트
-		response.sendRedirect(kakaoAuthUrl);
-		return ResponseEntity.status(HttpStatus.FOUND).build(); // 302 리디렉션 응답
+	public ResponseEntity<ApiResponse> redirectToKakaoLogin() {
+		String redirectUrl = kakaoAuthService.getKakaoLoginUrl();
+		return ResponseEntity.ok(new ApiResponse("카카오 로그인 URL 생성", redirectUrl));
 	}
 
 
 	/**
-	 * 🔹 카카오 로그인 콜백 API (카카오에서 인증 코드 받음)
+	 * ✅ 2. 카카오 로그인 Callback
+	 * - Kakao 인증 후 리다이렉트되는 API.
+	 * - authorizationCode를 받아 Kakao Access Token 요청 → 사용자 정보 조회 → JWT 발급 후 반환
 	 */
 	@GetMapping("/callback")
-	public ResponseEntity<Map<String, String>> kakaoCallback(@RequestParam("code") String authCode) {
-		Map<String, String> tokenResponse = kakaoAuthService.kakaoLogin(authCode);
-		return ResponseEntity.ok(tokenResponse);
+	public ResponseEntity<ApiResponse> kakaoLogin(@RequestParam("code") String authCode) {
+		try {
+			JwtToken jwtToken = kakaoAuthService.handleKakaoLogin(authCode);
+
+			Map<String, String> tokenData = new HashMap<>();
+			tokenData.put("accessToken", jwtToken.getAccessToken());
+			tokenData.put("refreshToken", jwtToken.getRefreshToken());
+
+			return ResponseEntity.ok(new ApiResponse("카카오 로그인 성공", jwtToken));
+		} catch (CustomException e) {
+			return ResponseEntity.status(e.getStatus()).body(new ApiResponse(e.getMessage(), null));
+		}
 	}
 }

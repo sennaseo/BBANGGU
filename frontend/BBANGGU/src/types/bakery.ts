@@ -68,7 +68,7 @@ export interface ReservationType {
   pickup_at: string
   created_at: string
   cancelled_at?: string
-  status: "cancelled" | "completed"
+  status: "pending" | "cancelled" | "completed"
 }
 
 export interface EchoSaveType {
@@ -86,4 +86,5 @@ export interface FavoriteBakeryType {
   bakery_id: number
   created_at: string
   deleted_at?: string
+  bakery?: BakeryType
 }
