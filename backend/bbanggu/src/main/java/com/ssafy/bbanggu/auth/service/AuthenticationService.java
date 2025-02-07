@@ -1,10 +1,7 @@
 package com.ssafy.bbanggu.auth.service;
 
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
 
-import com.ssafy.bbanggu.auth.dto.JwtToken;
 import com.ssafy.bbanggu.auth.security.JwtTokenProvider;
 import com.ssafy.bbanggu.common.exception.CustomException;
 import com.ssafy.bbanggu.common.exception.ErrorCode;

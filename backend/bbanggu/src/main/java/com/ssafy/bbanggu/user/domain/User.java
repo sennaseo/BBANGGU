@@ -3,6 +3,8 @@ package com.ssafy.bbanggu.user.domain;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+import org.hibernate.annotations.CreationTimestamp;
+
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
@@ -11,11 +13,13 @@ import lombok.*;
  * User 엔티티
  * 데이터베이스의 'user' 테이블과 매핑되며, 사용자 정보를 관리
  */
+@Data
 @Entity
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Table(name = "user")
 public class User {
 
 	@Id
@@ -57,6 +61,10 @@ public class User {
 	@Setter
 	@Column(length = 512)
 	private String refreshToken;
+
+	@CreationTimestamp
+	@Column(name = "created_at", updatable = false)
+	private LocalDateTime createAt;
 
 	@Column(name = "deleted_at")
 	private LocalDateTime deletedAt;

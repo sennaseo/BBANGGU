@@ -27,12 +27,15 @@ public enum ErrorCode {
 	KAKAO_USER_INFO_FAILED(1502, HttpStatus.BAD_REQUEST, "카카오 사용자 정보 요청에 실패하였습니다."),
 
 	// ✅ 가게 관련 예외 (2000번대)
+	NUMBER_ALREADY_IN_USE(2000, HttpStatus.CONFLICT, "이미 존재하는 사업자 등록 번호입니다."),
+	STORENAME_ALREADY_IN_USE(2001, HttpStatus.CONFLICT, "이미 존재하는 가게 이름입니다."),
 
 	// ✅ 빵 관련 예외 (2100번대)
 
 	// ✅ 빵꾸머리 관련 예외 (2200번대)
 	BREAD_PACKAGE_NOT_FOUND(2200, HttpStatus.NOT_FOUND, "빵꾸러미를 찾을 수 없습니다."),
 	BREAD_PACKAGE_QUANTITY_CONFLICT(2001, HttpStatus.CONFLICT, "빵꾸러미가 부족합니다."),
+
 	// ✅ 이메일 인증 관련 예외 (3000번대)
 	EMAIL_SEND_FAILED(3000, HttpStatus.INTERNAL_SERVER_ERROR, "이메일 전송에 실패하였습니다."),
 	TOO_MANY_REQUESTS(3001, HttpStatus.TOO_MANY_REQUESTS, "너무 많은 요청을 보냈습니다. 나중에 다시 시도하세요."),
