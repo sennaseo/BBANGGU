@@ -38,8 +38,7 @@ public class ReservationService {
 		Reservation createdReservation = reservationRepository.save(reservation);
 		return createdReservation.getReservationId();
 	}
-
-
+	
 
 	public void makePayment(){
 
