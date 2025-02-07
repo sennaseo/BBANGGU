@@ -71,7 +71,11 @@ export function MapPage() {
 
       {/* Store Card */}
       <StoreCard isVisible={!!selectedStore} store={selectedStore} />
-      <UserBottomNavigation/>
+      <div className="fixed bottom-0 left-0 right-0 z-10">
+        <div className="max-w-[430px] mx-auto">
+          <UserBottomNavigation/>
+        </div>
+      </div>
     </div>
   )
 }
