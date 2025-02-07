@@ -56,7 +56,7 @@ export function ReservationList({ reservations = [] }: ReservationListProps) {
       <div 
         key={reservation.reservation_id} 
         className="p-4 text-white"
-        onClick={() => navigate(`/reservations/${reservation.reservation_id}`)}
+        onClick={() => navigate(`/user/mypage/reservations/${reservation.reservation_id}`)}
       >
         <div className="flex justify-between items-center mb-1">
           <div className="flex items-center gap-[14px]">
@@ -95,7 +95,7 @@ export function ReservationList({ reservations = [] }: ReservationListProps) {
           )}
           {data.length > 1 && (
             <button
-              onClick={() => navigate('/user/reservations')}
+              onClick={() => navigate('/user/mypage/reservations')}
               className="w-full text-[#B4B4B4] font-regular text-sm bg-white rounded-xl shadow-md py-[8px] border-t border-dashed border-gray-200"
             >
               진행중인 주문 내역 보기

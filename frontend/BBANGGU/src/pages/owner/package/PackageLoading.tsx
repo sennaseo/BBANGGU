@@ -1,22 +1,23 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import breadLoading from '../../../assets/images/bakery/bread_loading.gif';
+import breadLoading from '../../../assets/images/bakery/cat.gif';
+import breadLoading2 from '../../../assets/images/bakery/wrote.gif';
 
 const PackageLoading: React.FC = () => {
   const navigate = useNavigate();
 
   return (
     <div 
-      className="h-[100vh] bg-white flex flex-col cursor-pointer" 
+      className="h-[100vh] bg-[#FDFCFB] flex flex-col cursor-pointer" 
       onClick={() => navigate('/owner/package/register')}
     >
       <div className="flex-1 flex flex-col items-center justify-center p-4">
         {/* 빵 로딩 애니메이션 */}
-        <div className="mb-16">
+        <div className="mb-10">
           <img 
             src={breadLoading} 
             alt="bread loading" 
-            className="w-[240px]"
+            className="w-[250px]"
           />
         </div>
 
@@ -26,12 +27,11 @@ const PackageLoading: React.FC = () => {
         </div>
 
         {/* 안내 메시지 */}
-        <p className="text-[18px] text-gray-900 font-medium mb-2">
-          빵 꾸러미를 조합하고 있습니다
-        </p>
-        <p className="text-[14px] text-gray-600">
-          잠시만 기다려주세요
-        </p>
+        <img 
+            src={breadLoading2} 
+            alt="bread loading" 
+            className="w-[250px]"
+          />
       </div>
     </div>
   );

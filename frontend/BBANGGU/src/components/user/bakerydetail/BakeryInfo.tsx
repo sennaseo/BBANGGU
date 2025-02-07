@@ -20,7 +20,7 @@ export default function BakeryInfo({ bakery }: BakeryInfoProps) {
           <div>
             <h1 className="text-[20px] font-bold">{bakery.name}</h1>
             <Link
-              to={`/bakery/${bakery.bakery_id}/reviews`}
+              to={`/user/bakery/${bakery.bakery_id}/reviews`}
               className="mt-1 flex items-center gap-2 text-[#7D7D7D] hover:text-gray-900"
             >
               <span className="text-[13px]">리뷰 보기 &gt;</span>

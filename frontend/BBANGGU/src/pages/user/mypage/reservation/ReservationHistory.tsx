@@ -56,7 +56,7 @@ export function ReservationHistory() {
     return (
       <button 
         className="mb-3 w-full text-left"
-        onClick={() => navigate(`/user/reservation/${reservation.reservation_id}`)}
+        onClick={() => navigate(`/user/mypage/reservation/${reservation.reservation_id}`)}
       >
         <div className="w-full bg-gray-50 rounded-xl p-4 relative shadow-md">
           <div className="flex flex-col gap-1 mb-1">
