@@ -10,7 +10,7 @@ spring:
   application:
     name: bbanggu
   datasource:
-    url: jdbc:mysql://13.124.56.79:3306/${DB_NAME}
+    url: jdbc:mysql://127.0.0.1:3306/${DB_NAME}
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -49,6 +49,9 @@ logging:
     org.springframework.security: DEBUG
 
 kakao:
+  api:
+    key: ${REST_API_KEY}
+    url: https://dapi.kakao.com/v2/local/search/address.json
   client-id: ${KAKAO_CLIENT_ID}
   redirect-uri: ${KAKAO_REDIRECT_URI}
   auth-uri: https://kauth.kakao.com/oauth/authorize

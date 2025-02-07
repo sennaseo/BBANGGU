@@ -7,8 +7,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.concurrent.ConcurrentHashMap;
 
-import com.ssafy.bbanggu.common.exception.CodeExpiredException;
-
 /**
  * InMemoryStoreService
  * : 이메일 인증번호와 요청 제한을 관리하는 메모리 기반 저장소

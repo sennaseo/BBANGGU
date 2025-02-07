@@ -2,7 +2,6 @@ package com.ssafy.bbanggu.favorite;
 
 import com.ssafy.bbanggu.bakery.Bakery;
 import com.ssafy.bbanggu.bakery.dto.BakeryDto;
-import com.ssafy.bbanggu.bakery.BakeryService;
 import com.ssafy.bbanggu.favorite.dto.FavoriteDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

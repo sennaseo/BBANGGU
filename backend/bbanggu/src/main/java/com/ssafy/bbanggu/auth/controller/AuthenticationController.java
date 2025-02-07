@@ -1,33 +1,25 @@
 package com.ssafy.bbanggu.auth.controller;
 
 import com.ssafy.bbanggu.auth.security.JwtTokenProvider;
-import com.ssafy.bbanggu.auth.service.AuthenticationService;
 import com.ssafy.bbanggu.common.exception.CustomException;
 import com.ssafy.bbanggu.common.exception.ErrorCode;
 import com.ssafy.bbanggu.common.response.ApiResponse;
 import com.ssafy.bbanggu.user.domain.User;
 import com.ssafy.bbanggu.user.repository.UserRepository;
-import com.ssafy.bbanggu.user.service.UserService;
 
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Map;
 import java.util.Optional;
 
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
 public class AuthenticationController {
-	private final AuthenticationService authService;
 	private final JwtTokenProvider jwtTokenProvider;
 	private final UserRepository userRepository;
 
