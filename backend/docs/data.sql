@@ -1,5 +1,5 @@
 INSERT INTO user (
-    user_id, kakao_id, email, password, name, phone, profile_photo_url, user_type, refresh_token, created_at, deleted_at
+    user_id, kakao_id, email, password, name, phone, profile_image_url, user_type, refresh_token, created_at, deleted_at
 ) VALUES
 (101, 1234567890123456, 'user101@example.com', 'password123', 'Alice Kim', '010-1234-5678', 
  'https://example.com/user101.jpg', 'OWNER', 'refresh_token_101', NOW(), NULL),
@@ -22,8 +22,8 @@ INSERT INTO bread_category (
 
 INSERT INTO bakery (
     bakery_id, user_id, name, description, business_registration_number,
-    address_road, address_detail, photo_url, latitude, longitude,
-    created_at, deleted_at, update_at
+    address_road, address_detail, bakery_image_url, latitude, longitude,
+    created_at, deleted_at, updated_at
 ) VALUES
 (1, 101, 'Sweet Bread', 'A cozy bakery with fresh pastries.', '123-45-67890',
  '123 Main St, Seoul', 'Suite 101', 'https://example.com/bakery1.jpg', 37.5665, 126.9780,
@@ -40,6 +40,12 @@ INSERT INTO bakery (
 (5, 105, 'Flour Power', 'Freshly baked goods with organic ingredients.', '567-89-01234',
  '202 Maple St, Daejeon', 'Corner of Main Square', 'https://example.com/bakery5.jpg', 36.3504, 127.3845,
  NOW(), NULL, NOW());
+ 
+ INSERT INTO bread (bread_id, bakery_id, bread_category_id, name, price, bread_image_url, created_at, deleted_at)
+VALUES
+(1, 1, 1, 'Sourdough', 5000, 'https://example.com/images/sourdough.jpg', NOW(), NULL),
+(2, 1, 2, 'Croissant', 3000, 'https://example.com/images/croissant.jpg', NOW(), NULL),
+(3, 1, 3, 'Baguette', 4000, 'https://example.com/images/baguette.jpg', NOW(), NULL);
 
  INSERT INTO stock (bakery_id, bread_id, quantity, date) VALUES (1, 1, 1, '2024-01-02'), (1, 1, 1, '2024-01-03'), (1, 3, 3, '2024-01-04'), (1, 2, 5, '2024-01-04'),
  (1, 1, 3, '2024-01-04'), (1, 2, 1, '2024-01-05'), (1, 3, 4, '2024-01-05'), (1, 3, 5, '2024-01-06'), (1, 3, 2, '2024-01-06'), (1, 3, 2, '2024-01-07'),
@@ -163,4 +169,4 @@ INSERT INTO bakery (
  select * from bread;
  select * from stock;
  select * from bread_category;
- 
+ select * from bread_package;
