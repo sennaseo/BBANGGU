@@ -20,6 +20,7 @@ public enum ErrorCode {
 	PHONE_NUMBER_ALREADY_EXISTS(1008, HttpStatus.CONFLICT, "이미 사용 중인 전화번호입니다."),
 	SAME_AS_OLD_PASSWORD(1009, HttpStatus.BAD_REQUEST, "이전 비밀번호와 동일한 비밀번호는 사용하실 수 없습니다."),
 	INVALIE_PASSWORD(1010, HttpStatus.BAD_REQUEST, "비밀번호는 8자 이상이어야 합니다."),
+	UNAUTHORIZED_USER(1011, HttpStatus.UNAUTHORIZED, "인증이 필요한 사용자입니다."),
 
 	// ✅ kakao 인증 관련 예외(1500번대)
 	KAKAO_AUTH_FAILED(1501, HttpStatus.BAD_REQUEST, "카카오 인증에 실패하였습니다."),
@@ -29,6 +30,9 @@ public enum ErrorCode {
 
 	// ✅ 빵 관련 예외 (2100번대)
 
+	// ✅ 빵꾸머리 관련 예외 (2200번대)
+	BREAD_PACKAGE_NOT_FOUND(2200, HttpStatus.NOT_FOUND, "빵꾸러미를 찾을 수 없습니다."),
+	BREAD_PACKAGE_QUANTITY_CONFLICT(2001, HttpStatus.CONFLICT, "빵꾸러미가 부족합니다."),
 	// ✅ 이메일 인증 관련 예외 (3000번대)
 	EMAIL_SEND_FAILED(3000, HttpStatus.INTERNAL_SERVER_ERROR, "이메일 전송에 실패하였습니다."),
 	TOO_MANY_REQUESTS(3001, HttpStatus.TOO_MANY_REQUESTS, "너무 많은 요청을 보냈습니다. 나중에 다시 시도하세요."),
@@ -51,6 +55,12 @@ public enum ErrorCode {
 	REFRESH_TOKEN_NOT_FOUND(4006, HttpStatus.UNAUTHORIZED, "Refresh Token이 존재하지 않습니다."),
 	EXPIRED_TOKEN(4007, HttpStatus.UNAUTHORIZED, "토큰이 만료되었습니다."),
 	TOKEN_THEFT_DETECTED(4008, HttpStatus.FORBIDDEN, "토큰 탈취가 의심됩니다."),
+	INCORRECT_TOKEN_FORMAT(4009, HttpStatus.BAD_REQUEST, "JWT 토큰 형식이 잘못되었습니다."),
+	REFRESH_TOKEN_NOT_EXIST(4010, HttpStatus.UNAUTHORIZED, "쿠키에 Refresh Token이 없습니다."),
+	NOT_MATCHED_AUTH_INFO(4011, HttpStatus.UNAUTHORIZED, "인증정보가 일치하지 않습니다."),
+
+	// ✅ 요청, 응답 관련 예외 (4100번대)
+	MISSING_REQUIRED_FIELDS(4100, HttpStatus.BAD_REQUEST, "필수 입력란이 누락되었습니다."),
 
 	// ✅ 로그아웃 관련 예외 (4500번대)
 	LOGOUT_FAILED(4500, HttpStatus.BAD_REQUEST, "로그아웃 처리 중 오류가 발생했습니다."),

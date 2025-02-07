@@ -6,10 +6,9 @@ import java.util.Map;
 import com.ssafy.bbanggu.auth.dto.JwtToken;
 import com.ssafy.bbanggu.common.exception.CustomException;
 import com.ssafy.bbanggu.common.exception.ErrorCode;
-import com.ssafy.bbanggu.auth.security.JwtUtil;
+import com.ssafy.bbanggu.auth.security.JwtTokenProvider;
 import com.ssafy.bbanggu.user.domain.User;
 import com.ssafy.bbanggu.user.dto.CreateUserRequest;
-import com.ssafy.bbanggu.user.dto.UpdateUserRequest;
 import com.ssafy.bbanggu.user.dto.UserResponse;
 import com.ssafy.bbanggu.user.repository.UserRepository;
 
@@ -20,12 +19,12 @@ import org.springframework.stereotype.Service;
 public class UserService { // 사용자 관련 비즈니스 로직 처리
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final JwtUtil jwtUtil;
+    private final JwtTokenProvider jwtTokenProvider;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtUtil jwtUtil) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtTokenProvider jwtTokenProvider) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
-        this.jwtUtil = jwtUtil;
+        this.jwtTokenProvider = jwtTokenProvider;
     }
 
     /**
@@ -83,32 +82,39 @@ public class UserService { // 사용자 관련 비즈니스 로직 처리
      * @param password 사용자 비밀번호
      * @return UserResponse 로그인 성공 시 사용자 정보
      */
-    public Map<String, String> login(String email, String password) {
+    public JwtToken login(String email, String password) {
         // 이메일로 사용자 조회
         User user = userRepository.findByEmail(email)
 			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+		System.out.println("이메일로 사용자 조회 완료");
 
         // 논리적으로 삭제된 사용자 처리
         if (user.isDeleted()) {
 			throw new CustomException(ErrorCode.ACCOUNT_DEACTIVATED);
         }
+		System.out.println("현재 사용자는 회원탈퇴를 하지 않음");
 
         // 비밀번호 검증
         if (!passwordEncoder.matches(password, user.getPassword())) {
 			throw new CustomException(ErrorCode.INVALID_PASSWORD);
         }
+		System.out.println("사용자가 입력한 이메일과 비밀번호가 일치함");
 
         // ✅ JWT 토큰 생성
-		JwtToken Token = jwtUtil.generateToken(email, user.getUserId());
+		String accessToken = jwtTokenProvider.createAccessToken(email);
+		String refreshToken = jwtTokenProvider.createRefreshToken(email);
+		System.out.println("토큰 생성 완료");
 
         // ✅ Refresh Token을 DB 저장
-        user.setRefreshToken(Token.getRefreshToken());
+        user.setRefreshToken(refreshToken);
         userRepository.save(user);
+		System.out.println("refresh token 데이터베이스에 저장 완료");
 
         // ✅ 응답 데이터 생성
-        Map<String, String> tokens = new HashMap<>();
-		tokens.put("access_token", Token.getAccessToken());
-		tokens.put("refresh_token", Token.getRefreshToken());
+        // Map<String, String> tokens = new HashMap<>();
+		// tokens.put("access_token", Token.getAccessToken());
+		// tokens.put("refresh_token", Token.getRefreshToken());
+		JwtToken tokens = new JwtToken(accessToken, refreshToken);
 
         return tokens;
     }

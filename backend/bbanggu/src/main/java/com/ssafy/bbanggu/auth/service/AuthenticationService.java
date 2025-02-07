@@ -1,9 +1,11 @@
 package com.ssafy.bbanggu.auth.service;
 
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
 
 import com.ssafy.bbanggu.auth.dto.JwtToken;
-import com.ssafy.bbanggu.auth.security.JwtUtil;
+import com.ssafy.bbanggu.auth.security.JwtTokenProvider;
 import com.ssafy.bbanggu.common.exception.CustomException;
 import com.ssafy.bbanggu.common.exception.ErrorCode;
 import com.ssafy.bbanggu.user.domain.User;
@@ -15,22 +17,17 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class AuthenticationService {
 	private final UserRepository userRepository;
-	private final JwtUtil jwtUtil;
+	private final JwtTokenProvider jwtTokenProvider;
 
-	/**
-	 * Access Token 재발급
-	 *
-	 * @param refreshToken 클라이언트에서 전달받은 Refresh Token
-	 * @return 새로운 Access Token
-	 */
-	public String refreshAccessToken(String refreshToken) {
-		// 1️⃣ Refresh Token 유효성 검증
-		if (!jwtUtil.validateToken(refreshToken)) {
+	// ✅ Refresh Token 재발급 (Access Token 새로 생성)
+	public String[] reissueAccessToken(String refreshToken) {
+		// 1️⃣ Refresh Token 검증
+		if (!jwtTokenProvider.validateToken(refreshToken)) {
 			throw new CustomException(ErrorCode.INVALID_REFRESH_TOKEN);
 		}
 
 		// 2️⃣ Refresh Token에서 이메일 추출
-		String email = jwtUtil.getEmailFromToken(refreshToken);
+		String email = jwtTokenProvider.getEmailFromToken(refreshToken);
 		User user = userRepository.findByEmail(email)
 			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
@@ -39,12 +36,18 @@ public class AuthenticationService {
 			throw new CustomException(ErrorCode.TOKEN_THEFT_DETECTED);
 		}
 
+		String[] tokens = new String[2]; // access, refresh token을 담아줄 배열 생성
+
 		// 4️⃣ Refresh Token 사용 후 즉시 폐기 (보안 강화)
-		JwtToken newToken = jwtUtil.generateToken(email, user.getUserId());
-		user.setRefreshToken(newToken.getRefreshToken());
+		String newRefreshToken = jwtTokenProvider.createRefreshToken(email);
+		user.setRefreshToken(newRefreshToken);
 		userRepository.save(user);
+		tokens[0] = newRefreshToken;
 
 		// 5️⃣ 새로운 AccessToken 발급
-		return newToken.getAccessToken();
+		String newAccessToken = jwtTokenProvider.createAccessToken(email);
+		tokens[1] = newAccessToken;
+
+		return tokens;
 	}
 }
