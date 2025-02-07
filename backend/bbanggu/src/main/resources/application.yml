@@ -64,3 +64,7 @@ jwt:
   expiration:
     access-token: 900000  # 15분 (밀리초)
     refresh-token: 604800000 # 7일 (밀리초)
+
+toss:
+  payments:
+    api-key: ${TOSS_API_KEY}
