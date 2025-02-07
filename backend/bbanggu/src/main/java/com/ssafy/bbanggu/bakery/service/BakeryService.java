@@ -1,7 +1,15 @@
-package com.ssafy.bbanggu.bakery;
+package com.ssafy.bbanggu.bakery.service;
 
+import com.ssafy.bbanggu.bakery.Bakery;
+import com.ssafy.bbanggu.bakery.BakeryRepository;
 import com.ssafy.bbanggu.bakery.dto.BakeryDto;
 import com.ssafy.bbanggu.bakery.dto.BakeryLocationDto;
+import com.ssafy.bbanggu.common.exception.CustomException;
+import com.ssafy.bbanggu.common.exception.ErrorCode;
+import com.ssafy.bbanggu.user.domain.User;
+import com.ssafy.bbanggu.user.repository.UserRepository;
+
+import jdk.swing.interop.SwingInterOpUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,6 +23,8 @@ import java.util.stream.Collectors;
 public class BakeryService {
 
 	private final BakeryRepository bakeryRepository;
+	private final GeoService geoService;
+	private final UserRepository userRepository;
 
 	// 삭제되지 않은 모든 가게 조회
 	@Transactional(readOnly = true)
@@ -37,11 +47,33 @@ public class BakeryService {
 
 	// 가게 추가
 	@Transactional
-	public BakeryDto save(Bakery bakery) {
-		validateDuplicateBakery(bakery.getName(), bakery.getBusinessRegistrationNumber(), null);
+	public BakeryDto createBakery(BakeryDto bakeryDto) {
+		validateDuplicateBakery(bakeryDto.name(), bakeryDto.businessRegistrationNumber(), null);
 
-		bakery.setCreatedAt(LocalDateTime.now());
-		bakery.setUpdatedAt(LocalDateTime.now());
+		// 사용자 조회 (userId로 User 찾기)
+		User user = userRepository.findById(bakeryDto.userId())
+			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+		// 전체 주소 문자열 생성 (도로명주소 + 상세주소)
+		String fullAddress = bakeryDto.addressRoad() + " " + bakeryDto.addressDetail();
+
+		// 주소 기반 위경도 가져오기
+		double[] latLng = geoService.getLatLngFromAddress(fullAddress);
+		double latitude = latLng[0];
+		double longitude = latLng[1];
+
+		// Dto -> Entity 변환
+		Bakery bakery = Bakery.builder()
+				.name(bakeryDto.name())
+				.description(bakeryDto.description())
+				.photoUrl(bakeryDto.photoUrl())
+				.addressRoad(bakeryDto.addressRoad())
+				.addressDetail(bakeryDto.addressDetail())
+				.businessRegistrationNumber(bakeryDto.businessRegistrationNumber())
+				.latitude(latitude)
+				.longitude(longitude)
+				.user(user)
+				.build();
 
 		Bakery savedBakery = bakeryRepository.save(bakery);
 		return BakeryDto.from(savedBakery);
@@ -103,20 +135,15 @@ public class BakeryService {
 
 	// 중복 체크
 	private void validateDuplicateBakery(String name, String businessRegistrationNumber, Long bakeryId) {
-		if (bakeryId == null) {
-			if (bakeryRepository.existsByBusinessRegistrationNumber(businessRegistrationNumber)) {
-				throw new IllegalArgumentException("이미 존재하는 사업자 등록 번호입니다.");
-			}
-			if (bakeryRepository.existsByName(name)) {
-				throw new IllegalArgumentException("이미 존재하는 가게 이름입니다.");
-			}
-		} else {
-			if (bakeryRepository.existsByBusinessRegistrationNumberAndBakeryIdNot(businessRegistrationNumber, bakeryId)) {
-				throw new IllegalArgumentException("이미 존재하는 사업자 등록 번호입니다.");
-			}
-			if (bakeryRepository.existsByNameAndBakeryIdNot(name, bakeryId)) {
-				throw new IllegalArgumentException("이미 존재하는 가게 이름입니다.");
-			}
+		boolean existsByName = bakeryRepository.existsByName(name);
+		boolean existsByBusinessRegistrationNumber = bakeryRepository.existsByBusinessRegistrationNumber(businessRegistrationNumber);
+
+		if (existsByName) {
+			throw new CustomException(ErrorCode.STORENAME_ALREADY_IN_USE);
+		}
+
+		if (existsByBusinessRegistrationNumber) {
+			throw new CustomException(ErrorCode.NUMBER_ALREADY_IN_USE);
 		}
 	}
 
