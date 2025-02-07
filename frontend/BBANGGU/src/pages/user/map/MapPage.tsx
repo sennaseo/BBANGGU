@@ -65,8 +65,10 @@ export function MapPage() {
       </header>
 
       {/* Map Container */}
-      <main className="flex-1 mt-[116px]">
-        <MapView onMarkerClick={handleMarkerClick} />
+      <main className="flex-1 mt-[116px] relative w-full h-full">
+        <div className="absolute inset-0">
+          <MapView onMarkerClick={handleMarkerClick} />
+        </div>
       </main>
 
       {/* Store Card */}
