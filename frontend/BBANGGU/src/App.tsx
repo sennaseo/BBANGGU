@@ -35,6 +35,8 @@ import PackageLoading from './pages/owner/package/PackageLoading';
 import PackageRegister from './pages/owner/package/PackageRegister';
 import { RecoilRoot } from 'recoil';
 import PackageSalesSetting from './pages/owner/package/PackageSalesSetting';
+import KakaoMap from './components/KakaoMap'
+import PackageSettingPage from './pages/owner/package/PackageSettingPage';
 
 
 export default function App() {
@@ -84,6 +86,7 @@ export default function App() {
               <Route path="/owner/package/loading" element={<PackageLoading />} />
               <Route path="/owner/package/register" element={<PackageRegister />} />
               <Route path="/owner/package/sales-setting" element={<PackageSalesSetting />} />
+              <Route path="/owner/package/setting" element={<PackageSettingPage />} />
             </Routes>
           </MobileLayout>
         </Router>

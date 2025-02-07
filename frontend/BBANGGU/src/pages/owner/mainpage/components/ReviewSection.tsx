@@ -19,8 +19,25 @@ interface Review {
 }
 
 interface ReviewSectionProps {
-  stats: ReviewStats;
-  reviews: Review[];
+  stats: {
+    average: number;
+    total: number;
+    distribution: {
+      5: number;
+      4: number;
+      3: number;
+      2: number;
+      1: number;
+    };
+  };
+  reviews: {
+    id: number;
+    userName: string;
+    rating: number;
+    content: string;
+    date: string;
+    imageUrl: string;
+  }[];
 }
 
 // 더미 데이터 수정
@@ -62,8 +79,7 @@ const testData = {
   ]
 };
 
-export const ReviewSection = () => {
-  const stats = testData.stats;
+export const ReviewSection: React.FC<ReviewSectionProps> = ({ stats, reviews }) => {
   const [activeFilter, setActiveFilter] = useState<'all' | 'photo'>('all');
   const [sortBy, setSortBy] = useState<'latest' | 'rating'>('latest');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
