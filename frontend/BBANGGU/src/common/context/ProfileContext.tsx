@@ -1,6 +1,8 @@
+/* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import { updateProfile } from './ProfileActions';
 
-interface Profile {
+export interface Profile {
   name: string;
   description: string;
   profileImage: string | null;
@@ -20,23 +22,21 @@ const DEFAULT_PROFILE = {
 };
 
 export function ProfileProvider({ children }: { children: ReactNode }) {
-  // localStorage에서 저장된 프로필을 가져오거나, 없으면 기본값 사용
   const [profile, setProfile] = useState<Profile>(() => {
     const savedProfile = localStorage.getItem('userProfile');
     return savedProfile ? JSON.parse(savedProfile) : DEFAULT_PROFILE;
   });
 
-  // profile이 변경될 때마다 localStorage에 저장
   useEffect(() => {
     localStorage.setItem('userProfile', JSON.stringify(profile));
   }, [profile]);
 
-  const updateProfile = (newProfile: Partial<Profile>) => {
-    setProfile(prev => ({ ...prev, ...newProfile }));
+  const handleUpdateProfile = (newProfile: Partial<Profile>) => {
+    setProfile(prev => updateProfile(prev, newProfile));
   };
 
   return (
-    <ProfileContext.Provider value={{ profile, updateProfile }}>
+    <ProfileContext.Provider value={{ profile, updateProfile: handleUpdateProfile }}>
       {children}
     </ProfileContext.Provider>
   );

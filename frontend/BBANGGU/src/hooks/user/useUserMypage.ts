@@ -29,7 +29,7 @@ export function useUserMypage(userId: string) {
     }
 
     fetchUserData()
-  }, [])
+  }, [userId])
 
   return {
     user,

@@ -12,7 +12,7 @@ interface NameEmailStepProps {
   onSubmit: () => void
 }
 
-export function NameEmailStep({ formData, onChange, onEmailVerification, onSubmit }: NameEmailStepProps) {
+export function NameEmailStep({ formData, onChange, onEmailVerification }: NameEmailStepProps) {
   const isEmailValid = formData.email.includes("@") && formData.email.includes(".")
 
   return (

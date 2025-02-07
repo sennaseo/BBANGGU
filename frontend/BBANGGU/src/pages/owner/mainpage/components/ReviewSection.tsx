@@ -1,23 +1,6 @@
 import React, { useState } from 'react';
 import { ChevronDownIcon } from '@heroicons/react/24/solid';
 
-interface ReviewStats {
-  average: number;
-  total: number;
-  distribution: {
-    [key: number]: number;
-  };
-}
-
-interface Review {
-  id: number;
-  userName: string;
-  rating: number;
-  content: string;
-  date: string;
-  imageUrl?: string;
-}
-
 interface ReviewSectionProps {
   stats: {
     average: number;
@@ -79,7 +62,7 @@ const testData = {
   ]
 };
 
-export const ReviewSection: React.FC<ReviewSectionProps> = ({ stats, reviews }) => {
+export const ReviewSection: React.FC<ReviewSectionProps> = ({ stats }) => {
   const [activeFilter, setActiveFilter] = useState<'all' | 'photo'>('all');
   const [sortBy, setSortBy] = useState<'latest' | 'rating'>('latest');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -137,12 +120,12 @@ export const ReviewSection: React.FC<ReviewSectionProps> = ({ stats, reviews }) 
                 <div 
                   className="absolute h-[6px] bg-[#FC973B] rounded-full"
                   style={{
-                    width: `${Math.min((stats.distribution[rating] / stats.total) * 120, 100)}%`
+                    width: `${Math.min((stats.distribution[rating as keyof typeof stats.distribution] / stats.total) * 120, 100)}%`
                   }}
                 />
               </div>
               <div className="w-[36px] text-xs text-gray-400 text-right">
-                {stats.distribution[rating]}
+                {stats.distribution[rating as keyof typeof stats.distribution]}
               </div>
             </div>
           ))}

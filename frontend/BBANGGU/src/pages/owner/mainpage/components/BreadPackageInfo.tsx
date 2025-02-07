@@ -1,6 +1,4 @@
-import React from 'react';
 import breadPackageIcon from '../../../../assets/images/bakery/bread_pakage.svg';
-import { OWNER_CONSTANTS } from '../../../../constants/owner';
 
 export const BreadPackageInfo = () => {
   return (

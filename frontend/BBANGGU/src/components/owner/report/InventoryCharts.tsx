@@ -30,10 +30,28 @@ const weeklyData = [
 
 const COLORS = ["#FC973B", "#FFB777", "#FFD7B5", "#FFE4CC", "#FFF1E6"]
 
-const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, index, name }: any) => {
-  const radius = innerRadius + (outerRadius - innerRadius) * 0.6
-  const x = cx + radius * Math.cos(-midAngle * (Math.PI / 180))
-  const y = cy + radius * Math.sin(-midAngle * (Math.PI / 180))
+interface CustomizedLabelProps {
+  cx: number;
+  cy: number;
+  midAngle: number;
+  innerRadius: number;
+  outerRadius: number;
+  percent: number;
+  name: string;
+}
+
+const renderCustomizedLabel = ({
+  cx,
+  cy,
+  midAngle,
+  innerRadius,
+  outerRadius,
+  percent,
+  name,
+}: CustomizedLabelProps) => {
+  const radius = innerRadius + (outerRadius - innerRadius) * 0.6;
+  const x = cx + radius * Math.cos(-midAngle * (Math.PI / 180));
+  const y = cy + radius * Math.sin(-midAngle * (Math.PI / 180));
 
   return (
     <text x={x} y={y} fill="black" textAnchor="middle" dominantBaseline="middle" fontSize="12">
@@ -42,8 +60,8 @@ const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, per
       </tspan>
       <tspan x={x} dy="1.4em">{`${(percent * 100).toFixed(0)}%`}</tspan>
     </text>
-  )
-}
+  );
+};
 
 export function InventoryCharts() {
   const [activeTab, setActiveTab] = useState<"daily" | "weekly" | "monthly">("daily")

@@ -1,10 +1,10 @@
-import axios from "axios"
+// import axios from "axios"
 import { mockBakeries } from "../../mocks/user/bakeryMockData"
 import type { BakeryType } from "../../types/bakery"
 
-const api = axios.create({
-  baseURL: "https://api.example.com",
-})
+// const api = axios.create({
+//   baseURL: "https://api.example.com",
+// })
 
 export async function getBakeryById(bakery_id: string): Promise<BakeryType> {
   try {
