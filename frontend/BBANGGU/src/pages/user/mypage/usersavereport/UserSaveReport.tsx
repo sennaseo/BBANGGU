@@ -1,4 +1,4 @@
-import { ChevronLeft, Trees } from "lucide-react"
+import { ChevronLeft } from "lucide-react"
 import { useNavigate } from "react-router-dom"
 
 export function UserSaveReport() {

@@ -22,9 +22,6 @@ export function PasswordStep({ formData, onChange }: PasswordStepProps) {
     setShowConfirmPassword(!showConfirmPassword)
   }
 
-  const isPasswordValid = formData.password.length >= 8
-  const doPasswordsMatch = formData.password === formData.confirmPassword
-
   return (
     <div className="space-y-6">
       <InputField

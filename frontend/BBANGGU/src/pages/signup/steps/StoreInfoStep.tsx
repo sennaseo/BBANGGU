@@ -13,8 +13,17 @@ interface StoreInfoStepProps {
 
 declare global {
   interface Window {
-    daum: any
+    daum: {
+      Postcode: new (options: { oncomplete: (data: PostcodeData) => void }) => { open: () => void };
+    };
   }
+}
+
+interface PostcodeData {
+  roadAddress: string;
+  bname: string;
+  buildingName: string;
+  apartment: string;
 }
 
 export function StoreInfoStep({ formData, onChange }: StoreInfoStepProps) {
@@ -58,7 +67,7 @@ export function StoreInfoStep({ formData, onChange }: StoreInfoStepProps) {
     }
 
     new window.daum.Postcode({
-      oncomplete: (data: any) => {
+      oncomplete: (data: PostcodeData) => {
         const roadAddr = data.roadAddress
         let extraRoadAddr = ""
 
@@ -95,6 +104,7 @@ export function StoreInfoStep({ formData, onChange }: StoreInfoStepProps) {
       <div className="space-y-2">
         <label className="block text-[15px] font-medium">가게 주소</label>
         <InputField
+          label="가게 주소"
           name="storeAddress"
           value={formData.storeAddress}
           onChange={onChange}
@@ -104,6 +114,7 @@ export function StoreInfoStep({ formData, onChange }: StoreInfoStepProps) {
           readOnly
         />
         <InputField
+          label="세부 주소"
           name="storeAddressDetail"
           value={formData.storeAddressDetail}
           onChange={onChange}

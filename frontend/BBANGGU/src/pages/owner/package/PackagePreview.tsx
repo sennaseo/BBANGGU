@@ -21,7 +21,7 @@ const PackagePreview: React.FC = () => {
         { id: 3, name: '케이크', count: 1, price: 3500, status: 'confirmed' },
       ]);
     }
-  }, []);
+  }, [items.length, setItems]);
 
   const handleEdit = (id: number) => {
     setItems(prevItems =>

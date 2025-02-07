@@ -1,10 +1,10 @@
-import axios from "axios"
+// import axios from "axios"
 import type { BakeryType, PackageType } from "../../types/bakery"
 import { mockBakeries } from "../../mocks/user/bakeryMockData"
 
-const api = axios.create({
-  baseURL: "https://api.example.com", // Replace with your actual API base URL
-})
+// const api = axios.create({
+//   baseURL: "https://api.example.com", // Replace with your actual API base URL
+// })
 
 export async function fetchBestPackages(): Promise<PackageType[]> {
   try {

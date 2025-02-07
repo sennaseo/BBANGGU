@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { IoArrowBack } from 'react-icons/io5';
 import BottomNavigation from '../../../components/owner/navigations/BottomNavigations/BottomNavigation';
 

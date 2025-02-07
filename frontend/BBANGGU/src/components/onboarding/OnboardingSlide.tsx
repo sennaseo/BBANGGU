@@ -5,7 +5,7 @@ interface OnboardingSlideProps {
   isActive: boolean
 }
 
-export const OnboardingSlide = ({ slide, isActive }: OnboardingSlideProps) => {
+export const OnboardingSlide = ({ slide }: OnboardingSlideProps) => {
   return (
     <div className="w-full h-full flex flex-col items-center justify-center px-6 pb-32 select-none">
       <div className="relative w-48 h-48 mb-12">

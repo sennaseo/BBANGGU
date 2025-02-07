@@ -5,7 +5,11 @@ import './index.css'
 
 declare global {
   interface Window {
-    kakao: any;
+    kakao: {
+      maps: {
+        load: (callback: () => void) => void;
+      };
+    };
   }
 }
 
@@ -26,7 +30,8 @@ const loadKakaoMapScript = () => {
 
 loadKakaoMapScript()
   .then(() => {
-    ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
+    const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
+    root.render(
       <React.StrictMode>
         <App />
       </React.StrictMode>

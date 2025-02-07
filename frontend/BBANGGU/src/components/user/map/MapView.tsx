@@ -1,4 +1,3 @@
-import { useEffect, useRef } from 'react';
 import { Map, MapMarker } from "react-kakao-maps-sdk"
 
 interface MapViewProps {

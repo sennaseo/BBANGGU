@@ -1,20 +1,13 @@
 import { ChevronLeft, ChevronDown, ChevronUp } from "lucide-react"
 import { useNavigate, useParams } from "react-router-dom"
-import { useEffect, useRef, useState } from "react"
+import { useState } from "react"
 import { mockReservations } from "../../../../mocks/user/reservationMockData"
 import { mockBakeries } from "../../../../mocks/user/bakeryMockData"
 // import { Map } from "./Map" // 지도 컴포넌트는 별도로 구현 필요
 
-declare global {
-  interface Window {
-    kakao: any;
-  }
-}
-
 export function ReservationDetail() {
   const navigate = useNavigate()
   const { reservation_id } = useParams<{ reservation_id: string }>()
-  const mapRef = useRef<HTMLDivElement>(null);
   const [isLocationExpanded, setIsLocationExpanded] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
 
@@ -58,64 +51,6 @@ export function ReservationDetail() {
   };
 
   const pickupTime = formatDate(reservation.reserved_pickup_time);
-
-
-  useEffect(() => {
-    // 카카오맵 로드
-    const loadKakaoMap = async () => {
-      if (typeof window !== "undefined" && mapRef.current) {
-        const { kakao } = window;
-        
-        // SDK 로드
-        await new Promise<void>((resolve) => {
-          if (!kakao.maps) {
-            kakao.maps.load(() => resolve());
-          } else {
-            resolve();
-          }
-        });
-
-        // 지도 생성
-        const options = {
-          center: new kakao.maps.LatLng(bakery.latitude, bakery.longitude),
-          level: 3
-        };
-        
-        const map = new kakao.maps.Map(mapRef.current, options);
-
-        // 마커 생성
-        const markerPosition = new kakao.maps.LatLng(
-          bakery.latitude,
-          bakery.longitude
-        );
-
-        // 마커 이미지 설정
-        const imageSrc = "https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker_red.png";
-        const imageSize = new kakao.maps.Size(64, 69);
-        const imageOption = { offset: new kakao.maps.Point(27, 69) };
-
-        const markerImage = new kakao.maps.MarkerImage(
-          imageSrc,
-          imageSize,
-          imageOption
-        );
-
-        const marker = new kakao.maps.Marker({
-          position: markerPosition,
-          image: markerImage
-        });
-
-        // 마커를 지도에 표시
-        marker.setMap(map);
-
-        // 지도 컨트롤 추가
-        const zoomControl = new kakao.maps.ZoomControl();
-        map.addControl(zoomControl, kakao.maps.ControlPosition.RIGHT);
-      }
-    };
-
-    loadKakaoMap();
-  }, [bakery.latitude, bakery.longitude]);
 
   return (
     <div className="flex flex-col min-h-screen bg-[#F9F9F9] pb-[80px] relative max-w-[480px] mx-auto">

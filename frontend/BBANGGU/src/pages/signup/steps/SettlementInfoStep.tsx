@@ -13,7 +13,7 @@ interface SettlementInfoStepProps {
   onSubmit: () => void
 }
 
-export function SettlementInfoStep({ formData, onChange, onSubmit }: SettlementInfoStepProps) {
+export function SettlementInfoStep({ formData, onChange}: SettlementInfoStepProps) {
   const [imagePreview, setImagePreview] = useState<string | null>(null)
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {

@@ -1,6 +1,4 @@
-import React from 'react';
 import { Customer } from '../../../../types/owner';
-import { OWNER_CONSTANTS } from '../../../../constants/owner';
 
 interface CustomerListProps {
   customers: Customer[];

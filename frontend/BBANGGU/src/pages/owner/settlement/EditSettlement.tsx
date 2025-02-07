@@ -1,11 +1,10 @@
-import { useState } from 'react';
 import { IoArrowBack } from 'react-icons/io5';
 import BottomNavigation from '../../../components/owner/navigations/BottomNavigations/BottomNavigation';
 
 function EditSettlement() {
   const handleBack = () => {
     // 뒤로가기 처리
-    console.log('뒤로가기');
+    window.history.back();
   };
 
   const handleSubmit = (e: React.FormEvent) => {

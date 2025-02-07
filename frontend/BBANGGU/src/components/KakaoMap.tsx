@@ -59,10 +59,12 @@ function KakaoMap() {
 
     loadKakaoMap();
 
-    // cleanup 함수 추가
+    // cleanup 함수에서 mapContainer.current를 안전하게 사용하기 위해 변수에 복사
+    const currentMapContainer = mapContainer.current;
+
     return () => {
-      if (mapContainer.current) {
-        mapContainer.current.innerHTML = '';
+      if (currentMapContainer) {
+        currentMapContainer.innerHTML = '';
       }
     };
   }, []);

@@ -9,7 +9,7 @@ import { mockReviews } from "../../../mocks/user/reviewMockData"
 
 export default function BakeryDetail() {
   const { bakery_id } = useParams<{ bakery_id: string }>()
-  const parsedBakeryId = bakery_id ? Number.parseInt(bakery_id, 10) : undefined
+  // const parsedBakeryId = bakery_id ? Number.parseInt(bakery_id, 10) : undefined
   const { bakery, isLoading, error } = useBakeryDetail(bakery_id)
   const bakeryReviews = mockReviews.filter((review) => review.bakery_id === bakery?.bakery_id)
 

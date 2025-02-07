@@ -35,7 +35,6 @@ import PackageLoading from './pages/owner/package/PackageLoading';
 import PackageRegister from './pages/owner/package/PackageRegister';
 import { RecoilRoot } from 'recoil';
 import PackageSalesSetting from './pages/owner/package/PackageSalesSetting';
-import KakaoMap from './components/KakaoMap'
 import PackageSettingPage from './pages/owner/package/PackageSettingPage';
 
 
