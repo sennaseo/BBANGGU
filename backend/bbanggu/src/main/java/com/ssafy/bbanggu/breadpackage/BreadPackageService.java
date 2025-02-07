@@ -74,7 +74,7 @@ public class BreadPackageService {
 
 	// 베이커리 별 기간별 빵 패키지 조회
 	public List<BreadPackageDto> getPackagesByBakeryAndDate(Long bakeryId, LocalDateTime startDate,
-		LocalDateTime endDate) {
+															LocalDateTime endDate) {
 		List<BreadPackage> breadPackages = breadPackageRepository.findByBakery_BakeryIdAndCreatedAtBetweenAndDeletedAtIsNull(
 			bakeryId, startDate, endDate);
 		return breadPackages.stream()
@@ -95,5 +95,13 @@ public class BreadPackageService {
 		breadPackage.setQuantity(updatedQuantity);
 		breadPackageRepository.save(breadPackage);
 		return updatedQuantity;
+	}
+
+	public int getBreadPackageQuantity(long breadPackageId) {
+		BreadPackage breadPackage = breadPackageRepository.findById(breadPackageId).orElse(null);
+		if (breadPackage == null) {
+			return -1;
+		}
+		return breadPackage.getQuantity();
 	}
 }

@@ -65,13 +65,19 @@ export function MapPage() {
       </header>
 
       {/* Map Container */}
-      <main className="flex-1 mt-[116px]">
-        <MapView onMarkerClick={handleMarkerClick} />
+      <main className="flex-1 mt-[116px] relative w-full h-full">
+        <div className="absolute inset-0">
+          <MapView onMarkerClick={handleMarkerClick} />
+        </div>
       </main>
 
       {/* Store Card */}
       <StoreCard isVisible={!!selectedStore} store={selectedStore} />
-      <UserBottomNavigation/>
+      <div className="fixed bottom-0 left-0 right-0 z-10">
+        <div className="max-w-[430px] mx-auto">
+          <UserBottomNavigation/>
+        </div>
+      </div>
     </div>
   )
 }

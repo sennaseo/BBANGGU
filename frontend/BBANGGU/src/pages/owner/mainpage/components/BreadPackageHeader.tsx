@@ -10,6 +10,10 @@ export const BreadPackageHeader = () => {
     navigate('/owner/package/guide');
   };
 
+  const handleManualRegister = () => {
+    navigate('/owner/package/setting');
+  };
+
   return (
     <div className="relative mb-6 w-[400px] h-[220px] flex-shrink-0 mx-auto">
       <img 
@@ -52,7 +56,13 @@ export const BreadPackageHeader = () => {
           </div>
         </div>
         <div className="absolute bottom-4 right-4">
-          <span className="text-white text-xs">수기로 등록하기 ›</span>
+          <button 
+            onClick={handleManualRegister}
+            className="text-white text-xs hover:text-[#FC973B] transition-colors duration-200 
+              active:scale-95 touch-manipulation select-none"
+          >
+            수기로 등록하기 ›
+          </button>
         </div>
       </div>
     </div>

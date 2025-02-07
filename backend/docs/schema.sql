@@ -5,13 +5,6 @@ SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION';
 
 -- -----------------------------------------------------
--- Schema mydb
--- -----------------------------------------------------
--- -----------------------------------------------------
--- Schema bbanggu
--- -----------------------------------------------------
-
--- -----------------------------------------------------
 -- Schema bbanggu
 -- -----------------------------------------------------
 CREATE SCHEMA IF NOT EXISTS `bbanggu` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci ;
@@ -31,8 +24,6 @@ CREATE TABLE IF NOT EXISTS `bbanggu`.`user` (
   `created_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
   `deleted_at` TIMESTAMP NULL DEFAULT NULL,
   `kakao_id` VARCHAR(50) NULL DEFAULT NULL,
-  `phone_number` VARCHAR(255) NULL DEFAULT NULL,
-  `profile_photo_url` VARCHAR(255) NULL DEFAULT NULL,
   `refresh_token` VARCHAR(512) NULL DEFAULT NULL,
   PRIMARY KEY (`user_id`),
   UNIQUE INDEX `email` (`email` ASC) VISIBLE,
@@ -53,15 +44,14 @@ CREATE TABLE IF NOT EXISTS `bbanggu`.`bakery` (
   `name` VARCHAR(100) NOT NULL,
   `description` VARCHAR(1500) NULL DEFAULT NULL,
   `business_registration_number` VARCHAR(50) NOT NULL,
+  `bakery_image_url` VARCHAR(255) NULL DEFAULT NULL,
   `address_road` VARCHAR(255) NOT NULL,
   `address_detail` VARCHAR(150) NOT NULL,
-  `photo_url` VARCHAR(255) NULL DEFAULT NULL,
   `latitude` DOUBLE NOT NULL,
   `longitude` DOUBLE NOT NULL,
   `created_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
   `deleted_at` TIMESTAMP NULL DEFAULT NULL,
-  `update_at` TIMESTAMP NULL DEFAULT NULL,
-  `updated_at` DATETIME(6) NULL DEFAULT NULL,
+  `updated_at` TIMESTAMP NULL DEFAULT NULL,
   PRIMARY KEY (`bakery_id`),
   UNIQUE INDEX `business_registration_number` (`business_registration_number` ASC) VISIBLE,
   INDEX `user_id` (`user_id` ASC) VISIBLE,
@@ -141,13 +131,14 @@ COLLATE = utf8mb4_0900_ai_ci;
 CREATE TABLE IF NOT EXISTS `bbanggu`.`bread_package` (
   `bread_package_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   `bakery_id` INT UNSIGNED NOT NULL,
+  `name` VARCHAR(100) NULL DEFAULT NULL,
   `price` INT UNSIGNED NOT NULL,
   `discount_rate` FLOAT NOT NULL,
   `quantity` INT UNSIGNED NOT NULL,
+  `description` VARCHAR(500) NULL DEFAULT NULL,
+  `pending` INT NOT NULL DEFAULT 0,
   `created_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
   `deleted_at` TIMESTAMP NULL DEFAULT NULL,
-  `name` VARCHAR(100) NULL DEFAULT NULL,
-  `description` VARCHAR(500) NULL DEFAULT NULL,
   PRIMARY KEY (`bread_package_id`),
   INDEX `package_ibfk_1` (`bakery_id` ASC) VISIBLE,
   CONSTRAINT `package_ibfk_1`
