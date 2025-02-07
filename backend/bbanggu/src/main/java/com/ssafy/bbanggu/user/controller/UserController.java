@@ -169,6 +169,15 @@ public class UserController {
     @PatchMapping("/update")
     public ResponseEntity<?> updateUser(Authentication authentication,
 		@RequestBody Map<String, Object> updates) {
+		// ✅ 현재 사용자의 권한 확인
+		log.info("🔍 현재 인증 객체: {}", authentication);
+		if (authentication != null) {
+			log.info("🔍 현재 사용자: {}", authentication.getName());
+			log.info("🔍 현재 권한: {}", authentication.getAuthorities());
+		} else {
+			log.warn("❌ authentication이 null입니다. 인증되지 않은 요청!");
+		}
+
 		// ✅ Access Token이 없는 경우 예외 처리
 		if (authentication == null || authentication.getName() == null) {
 			throw new CustomException(ErrorCode.INVALID_ACCESS_TOKEN);

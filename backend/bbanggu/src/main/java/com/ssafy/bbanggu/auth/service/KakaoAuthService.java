@@ -45,8 +45,7 @@ public class KakaoAuthService {
 		return kakaoConfig.getAuthUri() +
 			"?client_id=" + kakaoConfig.getClientId() +
 			"&redirect_uri=" + kakaoConfig.getRedirectUri() +
-			"&response_type=code" +
-			"&prompt=login"; // 항상 로그인 페이지를 띄우도록 설정
+			"&response_type=code";
 	}
 
 	/**
@@ -139,7 +138,7 @@ public class KakaoAuthService {
 	 */
 	private User registerNewKakaoUser(KakaoUserInfo userInfo) {
 		// User 엔티티의 정적 메서드 활용 (가독성 & 유지보수성 향상)
-		User newUser = User.createKakaoUser(userInfo.getKakaoId(), userInfo.getNickname());
+		User newUser = User.createKakaoUser(userInfo.getEmail(), userInfo.getNickname());
 
 		newUser.setProfilePhotoUrl(userInfo.getProfileImage()); // ✅ 프로필 이미지 설정
 

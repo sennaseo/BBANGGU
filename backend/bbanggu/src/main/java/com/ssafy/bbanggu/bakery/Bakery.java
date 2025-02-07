@@ -34,7 +34,7 @@ public class Bakery {
     @Column(nullable = false, length = 100)
     private String name; // 가게 이름
 
-    @Column(length = 1500, nullable = true)
+    @Column(length = 1500)
     private String description; // 가게 설명
 
     @Column(name = "business_registration_number", nullable = false, unique = true, length = 50)
@@ -46,7 +46,7 @@ public class Bakery {
     @Column(name = "address_detail", nullable = false, length = 150)
     private String addressDetail; // 상세 주소
 
-    @Column(name = "photo_url", length = 255, nullable = true)
+    @Column(name = "photo_url", length = 255)
     private String photoUrl; // 사진 URL
 
     @Column(nullable = false)
@@ -97,22 +97,6 @@ public class Bakery {
 	@PreRemove
 	protected void onDelete() {
 		deletedAt = LocalDateTime.now();
-	}
-
-	// ✅ Builder 패턴 확인 (description, photoUrl 포함해야 함)
-	@Builder
-	public Bakery(String name, String description, String businessRegistrationNumber,
-		String addressRoad, String addressDetail, String photoUrl,
-		double latitude, double longitude, User user) {
-		this.name = name;
-		this.description = description;
-		this.businessRegistrationNumber = businessRegistrationNumber;
-		this.addressRoad = addressRoad;
-		this.addressDetail = addressDetail;
-		this.photoUrl = photoUrl;
-		this.latitude = latitude;
-		this.longitude = longitude;
-		this.user = user;
 	}
 
 }

@@ -2,20 +2,16 @@ package com.ssafy.bbanggu.bakery;
 
 import com.ssafy.bbanggu.bakery.dto.BakeryDto;
 import com.ssafy.bbanggu.bakery.dto.BakeryLocationDto;
-import com.ssafy.bbanggu.bakery.service.BakeryService;
-import com.ssafy.bbanggu.common.response.ApiResponse;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-import jakarta.validation.Valid;
-
 @RestController
 @RequestMapping("/bakery")
 public class BakeryController {
+
 	private final BakeryService bakeryService;
 
 	public BakeryController(BakeryService bakeryService) {
@@ -31,9 +27,9 @@ public class BakeryController {
 
 	// 가게 추가
 	@PostMapping
-	public ResponseEntity<?> createBakery(@RequestBody @Valid BakeryDto bakery) {
-		BakeryDto createdBakery = bakeryService.createBakery(bakery);
-		return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse("가게 등록이 완료되었습니다.", createdBakery));
+	public ResponseEntity<BakeryDto> createBakery(@RequestBody Bakery bakery) {
+		BakeryDto createdBakery = bakeryService.save(bakery);
+		return ResponseEntity.status(HttpStatus.CREATED).body(createdBakery);
 	}
 
 	// 가게 상세 조회

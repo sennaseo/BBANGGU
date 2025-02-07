@@ -94,4 +94,17 @@ public class JwtTokenProvider {
 		}
 	}
 
+
+	/**
+	 * ✅ 토큰에서 User ID 추출
+	 */
+	// public Long getUserIdFromToken(String token) {
+	// 	Claims claims = Jwts.parserBuilder()
+	// 		.setSigningKey(secretKey)
+	// 		.build()
+	// 		.parseClaimsJws(token)
+	// 		.getBody();
+	//
+	// 	return claims.get("userId", Long.class);
+	// }
 }

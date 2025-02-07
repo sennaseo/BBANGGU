@@ -34,8 +34,7 @@ public class SecurityConfig {
 					"/user/register",
 					"/auth/**",
 					"/favicon.ico",
-					"/saving/all",
-					"/bakery"
+					"/saving/all"
 				).permitAll() // ✅ 공개 API
 				.anyRequest().authenticated()
 			)
