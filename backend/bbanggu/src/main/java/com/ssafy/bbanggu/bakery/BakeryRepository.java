@@ -30,7 +30,9 @@ public interface BakeryRepository extends JpaRepository<Bakery, Long> {
 
 	Page<Bakery> findAllByDeletedAtIsNull(Pageable pageable);
 
-	@Query("SELECT b FROM Bakery b WHERE LOWER(b.name) LIKE LOWER(CONCAT('%', :keyword, '%')) AND b.deletedAt IS NULL")
+	@Query("SELECT b FROM Bakery b WHERE (LOWER(b.name) LIKE LOWER(CONCAT('%', :keyword, '%')) "
+		+ "OR LOWER(b.addressRoad) LIKE LOWER(CONCAT('%', :keyword, '%')) "
+		+ "OR LOWER(b.description) LIKE LOWER(CONCAT('%', :keyword, '%'))) AND b.deletedAt IS NULL")
 	Page<Bakery> searchByKeyword(@Param("keyword") String keyword, Pageable pageable);
 	Page<Bakery> findByNameContainingAndDeletedAtIsNull(String keyword, Pageable pageable);
 

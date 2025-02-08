@@ -20,7 +20,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -34,22 +36,68 @@ public class BakeryService {
 
 	// 삭제되지 않은 모든 가게 조회
 	@Transactional(readOnly = true)
-	public Page<BakeryDetailDto> getAllBakeries(String sortBy, String sortOrder, Pageable pageable) {
+	public List<BakeryDetailDto> getAllBakeries(String sortBy, String sortOrder, Pageable pageable, double userLat, double userLng) {
 		Sort.Direction direction = sortOrder.equalsIgnoreCase("asc") ? Sort.Direction.ASC : Sort.Direction.DESC;
-		Pageable sortedPageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(direction, sortBy));
 
-		return bakeryRepository.findAllByDeletedAtIsNull(sortedPageable)
-			.map(BakeryDetailDto::from);
+		// ✅ 1. JPA에서 SQL 정렬 & 페이징 적용 (distance가 아닌 경우)
+		if (!"distance".equals(sortBy)) {
+			Pageable sortedPageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(direction, sortBy));
+			return bakeryRepository.findAllByDeletedAtIsNull(sortedPageable)
+				.stream()
+				.map(bakery -> {
+					double distance = calculateDistance(userLat, userLng, bakery.getLatitude(), bakery.getLongitude());
+					return BakeryDetailDto.from(bakery, distance);
+				})
+				.collect(Collectors.toList());
+		}
+
+		// ✅ 2. distance 정렬이 필요한 경우: JPA는 단순 조회, Java에서 정렬 후 페이징
+		List<BakeryDetailDto> bakeries = bakeryRepository.findAllByDeletedAtIsNull(pageable)
+			.stream()
+			.map(bakery -> {
+				double distance = calculateDistance(userLat, userLng, bakery.getLatitude(), bakery.getLongitude());
+				return BakeryDetailDto.from(bakery, distance);
+			})
+			.collect(Collectors.toList());
+
+		// 🚀 Java에서 distance 기준으로 정렬
+		if ("asc".equalsIgnoreCase(sortOrder)) {
+			bakeries.sort(Comparator.comparing(BakeryDetailDto::distance));
+		} else {
+			bakeries.sort(Comparator.comparing(BakeryDetailDto::distance).reversed());
+		}
+
+		// 🚀 Java에서 수동 페이징 적용
+		int start = (int) pageable.getOffset();
+		int end = Math.min((start + pageable.getPageSize()), bakeries.size());
+		return bakeries.subList(start, end);
 	}
+
 
 	// ID로 가게 조회
 	@Transactional(readOnly = true)
-	public BakeryDetailDto findById(Long id) {
+	public BakeryDetailDto findById(Long id, double userLat, double userLng) {
 		Bakery bakery = bakeryRepository.findByBakeryIdAndDeletedAtIsNull(id); // 삭제되지 않은 것만;
 		if (bakery == null) {
 			throw new CustomException(ErrorCode.BAKERY_NOT_FOUND);
 		}
-		return BakeryDetailDto.from(bakery);
+
+		// ✅ 사용자 위치 기반 거리 계산
+		double distance = calculateDistance(userLat, userLng, bakery.getLatitude(), bakery.getLongitude());
+		return BakeryDetailDto.from(bakery, distance);
+	}
+
+	private double calculateDistance(double lat1, double lng1, double lat2, double lng2) {
+		final int R = 6371; // 지구 반지름 (단위: km)
+
+		double dLat = Math.toRadians(lat2 - lat1);
+		double dLng = Math.toRadians(lng2 - lng1);
+		double a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+				Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) *
+				Math.sin(dLng / 2) * Math.sin(dLng / 2);
+		double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+		return Math.round(R * c * 10) / 10.0; // 거리 반환 (km, 소수점 첫째 자리까지 반올림)
 	}
 
 	// 가게 추가
@@ -151,13 +199,16 @@ public class BakeryService {
 
 	// 키워드로 가게 검색 (삭제된 가게 제외)
 	@Transactional(readOnly = true)
-	public Page<BakeryDto> searchByKeyword(String keyword, Pageable pageable) {
+	public Page<BakeryDetailDto> searchByKeyword(String keyword, Pageable pageable, double userLat, double userLng) {
 		if (keyword == null || keyword.trim().isEmpty()) {
-			throw new IllegalArgumentException("검색어를 입력해주세요.");
+			throw new CustomException(ErrorCode.NO_KEYWORD_ENTERED);
 		}
 
-		return bakeryRepository.searchByKeyword(keyword, pageable) // 삭제된 가게 제외
-			.map(BakeryDto::from);
+		return bakeryRepository.searchByKeyword(keyword, pageable)
+			.map(bakery -> {
+				double distance = calculateDistance(userLat, userLng, bakery.getLatitude(), bakery.getLongitude());
+				return BakeryDetailDto.from(bakery, distance);
+			});
 	}
 
 	// 중복 체크
