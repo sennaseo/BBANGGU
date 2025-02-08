@@ -10,7 +10,7 @@ public record UserResponse(
 	Long userId,
 	String name,
 	String email,
-	String phoneNumber,
+	String phone,
 	String userType,
 	String profilePhotoUrl
 ) {
@@ -25,7 +25,7 @@ public record UserResponse(
 			user.getUserId(),
 			user.getName(),
 			user.getEmail(),
-			user.getPhoneNumber(),
+			user.getPhone(),
 			user.getUserType(),
 			user.getProfilePhotoUrl()
 		);

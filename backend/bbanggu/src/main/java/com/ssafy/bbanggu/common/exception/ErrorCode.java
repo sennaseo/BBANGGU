@@ -10,7 +10,7 @@ import lombok.RequiredArgsConstructor;
 public enum ErrorCode {
 	// ✅ 사용자 관련 예외 (1000번대)
 	INVALID_REQUEST(1000, HttpStatus.BAD_REQUEST, "잘못된 요청입니다."),
-	USER_NOT_FOUND(1001, HttpStatus.UNAUTHORIZED, "해당 사용자를 찾을 수 없습니다."),
+	USER_NOT_FOUND(1001, HttpStatus.NOT_FOUND, "해당 사용자를 찾을 수 없습니다."),
 	INVALID_PASSWORD(1002, HttpStatus.UNAUTHORIZED, "비밀번호가 올바르지 않습니다."),
 	ACCOUNT_DEACTIVATED(1003, HttpStatus.FORBIDDEN, "이 계정은 비활성화(탈퇴)되었습니다."),
 	INVALID_AUTHORIZATION_HEADER(1004, HttpStatus.UNAUTHORIZED, "유효하지 않은 Authorization 헤더입니다."),
@@ -28,7 +28,9 @@ public enum ErrorCode {
 
 	// ✅ 가게 관련 예외 (2000번대)
 	NUMBER_ALREADY_IN_USE(2000, HttpStatus.CONFLICT, "이미 존재하는 사업자 등록 번호입니다."),
-	STORENAME_ALREADY_IN_USE(2001, HttpStatus.CONFLICT, "이미 존재하는 가게 이름입니다."),
+	BAKERY_NAME_ALREADY_IN_USE(2001, HttpStatus.CONFLICT, "이미 존재하는 가게 이름입니다."),
+	BAKERY_NOT_FOUND(2002, HttpStatus.NOT_FOUND, "가게를 찾을 수 없습니다."),
+	NO_PERMISSION_TO_EDIT_BAKERY(2003, HttpStatus.FORBIDDEN, "해당 가게를 수정할 권한이 없습니다."),
 
 	// ✅ 빵 관련 예외 (2100번대)
 

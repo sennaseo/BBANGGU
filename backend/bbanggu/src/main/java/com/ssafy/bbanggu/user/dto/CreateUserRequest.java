@@ -20,7 +20,7 @@ public record CreateUserRequest(
 	@NotBlank(message = "The required field 'password' is missing.")
 	String password,
 
-	String phoneNumber,
+	String phone,
 
 	@NotBlank(message = "The required field 'userType' is missing.")
 	String userType
@@ -30,6 +30,6 @@ public record CreateUserRequest(
 	 * @return User 엔티티 객체
 	 */
 	public User toEntity() {
-		return new User(name, email, null, password, phoneNumber, userType);
+		return new User(name, email, null, password, phone, userType);
 	}
 }
