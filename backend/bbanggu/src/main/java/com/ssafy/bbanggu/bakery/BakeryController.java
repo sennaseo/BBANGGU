@@ -79,9 +79,12 @@ public class BakeryController {
 
 	// 키워드로 가게 검색
 	@GetMapping("/search")
-	public ResponseEntity<List<BakeryDto>> searchBakeries(@RequestParam String keyword) {
-		List<BakeryDto> bakeries = bakeryService.searchByKeyword(keyword);
-		return ResponseEntity.ok(bakeries);
+	public ResponseEntity<ApiResponse> searchBakeries(
+		@RequestParam String keyword,
+		@PageableDefault(size = 10) Pageable pageable
+	) {
+		Page<BakeryDto> bakeries = bakeryService.searchByKeyword(keyword, pageable);
+		return ResponseEntity.ok().body(new ApiResponse("검색 결과 조회에 성공하였습니다.", bakeries));
 	}
 
 	// 모든 가게의 좌표 조회

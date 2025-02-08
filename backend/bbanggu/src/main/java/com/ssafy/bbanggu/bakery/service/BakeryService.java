@@ -151,15 +151,13 @@ public class BakeryService {
 
 	// 키워드로 가게 검색 (삭제된 가게 제외)
 	@Transactional(readOnly = true)
-	public List<BakeryDto> searchByKeyword(String keyword) {
+	public Page<BakeryDto> searchByKeyword(String keyword, Pageable pageable) {
 		if (keyword == null || keyword.trim().isEmpty()) {
 			throw new IllegalArgumentException("검색어를 입력해주세요.");
 		}
 
-		return bakeryRepository.findByNameContainingAndDeletedAtIsNull(keyword) // 삭제된 가게 제외
-			.stream()
-			.map(BakeryDto::from)
-			.collect(Collectors.toList());
+		return bakeryRepository.searchByKeyword(keyword, pageable) // 삭제된 가게 제외
+			.map(BakeryDto::from);
 	}
 
 	// 중복 체크
