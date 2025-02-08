@@ -16,7 +16,8 @@ public class PaymentService {
 	@Value("${toss.payments.api-key}")
 	private String tossApiKey;
 
-	public void check(String orderId, String paymentKey, int amount) {
+	public ResponseEntity<String> check(String orderId, String paymentKey, int amount) {
+		// 토스에 결제 검증 요청
 		RestTemplate restTemplate = new RestTemplate();
 		HttpHeaders headers = new HttpHeaders();
 		headers.setBasicAuth(tossApiKey, "");
@@ -24,12 +25,26 @@ public class PaymentService {
 		requestBody.put("amount", amount);
 		requestBody.put("orderId", orderId);
 		requestBody.put("paymentKey", paymentKey);
+		HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
+
+		// response 객체 반환
+		return restTemplate.exchange(
+			"https://api.tosspayments.com/v1/payments/confirm",
+			HttpMethod.POST, entity, String.class);
+	}
+
+	public ResponseEntity<String> cancelPayment(String orderId, String cancelReason) {
+		RestTemplate restTemplate = new RestTemplate();
+		HttpHeaders headers = new HttpHeaders();
+		headers.setBasicAuth(tossApiKey, "");
+		Map<String, Object> requestBody = new HashMap<>();
+		requestBody.put("cancelReason", cancelReason);
 
 		HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
-		ResponseEntity<TossPaymentResponseDto> response = restTemplate.exchange(
-			"https://api.tosspayments.com/v1/payments/confirm",
-			HttpMethod.POST, entity, TossPaymentResponseDto.class);
-
-
+		ResponseEntity<String> response = restTemplate.exchange(
+			"https://api.tosspayments.com/v1/payments/" + orderId + "/cancel",
+			HttpMethod.POST, entity, String.class);
+		return response;
 	}
+
 }

@@ -211,7 +211,7 @@ CREATE TABLE IF NOT EXISTS `bbanggu`.`reservation` (
   `created_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
   `cancelled_at` TIMESTAMP NULL DEFAULT NULL,
   `status` VARCHAR(45) NOT NULL,
-  `orderId` VARCHAR(50) NOT NULL,
+  `order_id` VARCHAR(50) NOT NULL,
   PRIMARY KEY (`reservation_id`),
   INDEX `user_id` (`user_id` ASC) VISIBLE,
   INDEX `bakery_id` (`bakery_id` ASC) VISIBLE,
