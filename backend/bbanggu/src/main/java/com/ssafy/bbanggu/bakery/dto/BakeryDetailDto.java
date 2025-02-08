@@ -5,7 +5,7 @@ import com.ssafy.bbanggu.bakery.Bakery;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
-public record BakeryDto(
+public record BakeryDetailDto(
 	Long bakeryId,
 	@NotNull(message = "사용자 ID는 필수 입력 값입니다.")
 	Long userId,
@@ -18,10 +18,12 @@ public record BakeryDto(
 	String addressRoad,
 	@NotBlank(message = "상세 주소는 필수 입력 값입니다.")
 	String addressDetail,
-	String photoUrl
+	String photoUrl,
+	Double latitude,
+	Double longitude
 ) {
-	public static BakeryDto from(Bakery bakery) {
-		return new BakeryDto(
+	public static BakeryDetailDto from(Bakery bakery) {
+		return new BakeryDetailDto(
 			bakery.getBakeryId(),
 			bakery.getUser().getUserId(),
 			bakery.getName(),
@@ -29,7 +31,9 @@ public record BakeryDto(
 			bakery.getBusinessRegistrationNumber(),
 			bakery.getAddressRoad(),
 			bakery.getAddressDetail(),
-			bakery.getPhotoUrl()
+			bakery.getPhotoUrl(),
+			bakery.getLatitude(),
+			bakery.getLongitude()
 		);
 	}
 }

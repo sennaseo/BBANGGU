@@ -1,6 +1,5 @@
 package com.ssafy.bbanggu.user.service;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import com.ssafy.bbanggu.auth.dto.JwtToken;
@@ -37,11 +36,16 @@ public class UserService { // 사용자 관련 비즈니스 로직 처리
 		// 1. 이메일 중복 여부 검사
 		validateEmailNotExists(request.email());
 
-        // 2. 비밀번호 암호화
+		// 2. 전화번호 중복 확인
+		if (userRepository.existsByPhone(request.phone())) {
+			throw new CustomException(ErrorCode.PHONE_NUMBER_ALREADY_EXISTS);
+		}
+
+        // 3. 비밀번호 암호화
         String encodedPassword = passwordEncoder.encode(request.password());
 
-		// 3. User 엔티티 생성 및 저장 (회원가입)
-        User user = User.createNormalUser(request.name(), request.email(), encodedPassword, request.phoneNumber(), request.userType());
+		// 4. User 엔티티 생성 및 저장 (회원가입)
+        User user = User.createNormalUser(request.name(), request.email(), encodedPassword, request.phone(), request.userType());
         userRepository.save(user);
 
         return UserResponse.from(user);
@@ -148,11 +152,11 @@ public class UserService { // 사용자 관련 비즈니스 로직 처리
 		updates.forEach((key, value) -> {
 			switch (key) {
 				case "name" -> user.setName((String) value);
-				case "phoneNumber" -> {
-					if (userRepository.existsByPhoneNumber((String) value)) {
+				case "phone" -> {
+					if (userRepository.existsByPhone((String) value)) {
 						throw new CustomException(ErrorCode.PHONE_NUMBER_ALREADY_EXISTS);
 					}
-					user.setPhoneNumber((String) value);
+					user.setPhone((String) value);
 				}
 				case "profileImage" -> user.setProfilePhotoUrl((String) value);
 				default -> throw new CustomException(ErrorCode.INVALID_REQUEST);

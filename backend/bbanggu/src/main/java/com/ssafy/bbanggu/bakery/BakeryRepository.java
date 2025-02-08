@@ -1,5 +1,7 @@
 package com.ssafy.bbanggu.bakery;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -23,6 +25,8 @@ public interface BakeryRepository extends JpaRepository<Bakery, Long> {
 	List<Bakery> findByDeletedAtIsNull();
 
 	Bakery findByBakeryIdAndDeletedAtIsNull(Long id);
+
+	Page<Bakery> findAllByDeletedAtIsNull(Pageable pageable);
 
 	List<Bakery> findByNameContainingAndDeletedAtIsNull(String keyword);
 

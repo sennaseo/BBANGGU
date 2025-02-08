@@ -48,7 +48,7 @@ public class User {
 
 	@Column
 	@Setter
-	private String phoneNumber;
+	private String phone;
 
 	@NotNull
 	@Column(nullable = false)
@@ -75,15 +75,15 @@ public class User {
 	 * @param name 사용자 이름
 	 * @param email 사용자 이메일
 	 * @param password 사용자 비밀번호
-	 * @param phoneNumber 사용자 전화번호
+	 * @param phone 사용자 전화번호
 	 * @param userType 사용자 유형
 	 */
-	public User(String name, String email, String kakaoId, String password, String phoneNumber, String userType) {
+	public User(String name, String email, String kakaoId, String password, String phone, String userType) {
 		this.name = name;
 		this.email = email;
 		this.kakaoId = kakaoId;
 		this.password = password;
-		this.phoneNumber = phoneNumber;
+		this.phone = phone;
 		this.userType = userType;
 	}
 
@@ -93,12 +93,12 @@ public class User {
 	 * @param name 사용자 이름
 	 * @param email 사용자 이메일
 	 * @param password 암호화된 비밀번호
-	 * @param phoneNumber 사용자 전화번호
+	 * @param phone 사용자 전화번호
 	 * @param userType 사용자 유형
 	 * @return User 객체
 	 */
-	public static User createNormalUser(String name, String email, String password, String phoneNumber, String userType) {
-		return new User(name, email, null, password, phoneNumber, userType);
+	public static User createNormalUser(String name, String email, String password, String phone, String userType) {
+		return new User(name, email, null, password, phone, userType);
 	}
 
 	/**
@@ -110,36 +110,6 @@ public class User {
 	 */
 	public static User createKakaoUser(String kakaoId, String nickname) {
 		return new User(nickname, "kakao_" + kakaoId + "@bbanggu.com", kakaoId, UUID.randomUUID().toString(), null, "USER");
-	}
-
-	/**
-	 * 사용자 정보 수정 메서드
-	 *
-	 * @param name 변경할 사용자 이름
-	 * @param profilePhotoUrl 변경할 프로필 사진 URL
-	 */
-	public void update(String name, String profilePhotoUrl) {
-		if (name != null) {
-			this.name = name;
-		}
-		if (profilePhotoUrl != null) {
-			this.profilePhotoUrl = profilePhotoUrl;
-		}
-	}
-
-	/**
-	 * Refresh Token 업데이트
-	 * @param refreshToken
-	 */
-	public void updateRefreshToken(String refreshToken) {
-		this.refreshToken = refreshToken;
-	}
-
-	/**
-	 * Refresh Token 삭제 메서드
-	 */
-	public void clearRefreshToken() {
-		this.refreshToken = null;
 	}
 
 	/**

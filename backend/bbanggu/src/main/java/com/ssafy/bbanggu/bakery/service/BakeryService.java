@@ -2,6 +2,7 @@ package com.ssafy.bbanggu.bakery.service;
 
 import com.ssafy.bbanggu.bakery.Bakery;
 import com.ssafy.bbanggu.bakery.BakeryRepository;
+import com.ssafy.bbanggu.bakery.dto.BakeryDetailDto;
 import com.ssafy.bbanggu.bakery.dto.BakeryDto;
 import com.ssafy.bbanggu.bakery.dto.BakeryLocationDto;
 import com.ssafy.bbanggu.common.exception.CustomException;
@@ -9,13 +10,18 @@ import com.ssafy.bbanggu.common.exception.ErrorCode;
 import com.ssafy.bbanggu.user.domain.User;
 import com.ssafy.bbanggu.user.repository.UserRepository;
 
-import jdk.swing.interop.SwingInterOpUtils;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -28,21 +34,22 @@ public class BakeryService {
 
 	// 삭제되지 않은 모든 가게 조회
 	@Transactional(readOnly = true)
-	public List<BakeryDto> findAll() {
-		return bakeryRepository.findByDeletedAtIsNull() // 삭제되지 않은 가게만 조회
-			.stream()
-			.map(BakeryDto::from)
-			.collect(Collectors.toList());
+	public Page<BakeryDetailDto> getAllBakeries(String sortBy, String sortOrder, Pageable pageable) {
+		Sort.Direction direction = sortOrder.equalsIgnoreCase("asc") ? Sort.Direction.ASC : Sort.Direction.DESC;
+		Pageable sortedPageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(direction, sortBy));
+
+		return bakeryRepository.findAllByDeletedAtIsNull(sortedPageable)
+			.map(BakeryDetailDto::from);
 	}
 
 	// ID로 가게 조회
 	@Transactional(readOnly = true)
-	public BakeryDto findById(Long id) {
+	public BakeryDetailDto findById(Long id) {
 		Bakery bakery = bakeryRepository.findByBakeryIdAndDeletedAtIsNull(id); // 삭제되지 않은 것만;
 		if (bakery == null) {
-			throw new IllegalArgumentException("가게를 찾을 수 없습니다. ID: " + id);
+			throw new CustomException(ErrorCode.BAKERY_NOT_FOUND);
 		}
-		return BakeryDto.from(bakery);
+		return BakeryDetailDto.from(bakery);
 	}
 
 	// 가게 추가
@@ -54,11 +61,8 @@ public class BakeryService {
 		User user = userRepository.findById(bakeryDto.userId())
 			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
-		// 전체 주소 문자열 생성 (도로명주소 + 상세주소)
-		String fullAddress = bakeryDto.addressRoad() + " " + bakeryDto.addressDetail();
-
 		// 주소 기반 위경도 가져오기
-		double[] latLng = geoService.getLatLngFromAddress(fullAddress);
+		double[] latLng = getLatitudeLongitude(bakeryDto.addressRoad(), bakeryDto.addressDetail());
 		double latitude = latLng[0];
 		double longitude = latLng[1];
 
@@ -79,28 +83,53 @@ public class BakeryService {
 		return BakeryDto.from(savedBakery);
 	}
 
+	// 가게의 위도, 경도 추출
+	private double[] getLatitudeLongitude(String addressRoad, String addressDetail) {
+		// 전체 주소 문자열 생성 (도로명주소 + 상세주소)
+		String fullAddress = addressRoad + " " + addressDetail;
+
+		// 주소 기반 위경도 가져오기
+		double[] latLng = geoService.getLatLngFromAddress(fullAddress);
+		return latLng;
+	}
+
 	// 가게 수정
 	@Transactional
-	public BakeryDto update(Long id, Bakery bakery) {
-		Bakery existingBakery = bakeryRepository.findByBakeryIdAndDeletedAtIsNull(id); // 삭제되지 않은 것만
-		if (existingBakery == null) {
-			throw new IllegalArgumentException("가게를 찾을 수 없습니다. ID: " + id);
+	public BakeryDto update(String curEmail, Long bakery_id, BakeryDto updates) {
+		Bakery bakery = bakeryRepository.findByBakeryIdAndDeletedAtIsNull(bakery_id); // 삭제되지 않은 것만
+		if (bakery == null) {
+			throw new CustomException(ErrorCode.BAKERY_NOT_FOUND);
 		}
 
-		validateDuplicateBakery(bakery.getName(), bakery.getBusinessRegistrationNumber(), id);
+		// ✅ 현재 로그인한 사용자가 이 가게의 주인인지 검증
+		if (!bakery.getUser().getEmail().equals(curEmail)) {
+			throw new CustomException(ErrorCode.NO_PERMISSION_TO_EDIT_BAKERY);
+		}
 
-		existingBakery.setName(bakery.getName());
-		existingBakery.setDescription(bakery.getDescription());
-		existingBakery.setBusinessRegistrationNumber(bakery.getBusinessRegistrationNumber());
-		existingBakery.setAddressRoad(bakery.getAddressRoad());
-		existingBakery.setAddressDetail(bakery.getAddressDetail());
-		existingBakery.setPhotoUrl(bakery.getPhotoUrl());
-		existingBakery.setLatitude(bakery.getLatitude());
-		existingBakery.setLongitude(bakery.getLongitude());
+		// ✅ 수정하려는 가게명 중복 검사
+		if (updates.name() != null && bakeryRepository.existsByNameAndBakeryIdNot(updates.name(), bakery.getBakeryId())) {
+			throw new CustomException(ErrorCode.BAKERY_NAME_ALREADY_IN_USE);
+		}
 
-		existingBakery.setUpdatedAt(LocalDateTime.now());
+		// ✅ 주소 변경 확인 후 위경도 업데이트
+		String newAddrRoad = Optional.ofNullable(updates.addressRoad()).orElse(bakery.getAddressRoad());
+		String newAddrDetail = Optional.ofNullable(updates.addressDetail()).orElse(bakery.getAddressDetail());
 
-		Bakery updatedBakery = bakeryRepository.save(existingBakery);
+		if (!newAddrRoad.equals(bakery.getAddressRoad()) || !newAddrDetail.equals(bakery.getAddressDetail())) {
+			double[] latLng = getLatitudeLongitude(newAddrRoad, newAddrDetail);
+			bakery.setLatitude(latLng[0]);
+			bakery.setLongitude(latLng[1]);
+		}
+
+		// ✅ 수정 가능한 정보만 업데이트
+		bakery.setName(Optional.ofNullable(updates.name()).orElse(bakery.getName()));
+		bakery.setDescription(Optional.ofNullable(updates.description()).orElse(bakery.getDescription()));
+		bakery.setAddressRoad(newAddrRoad);
+		bakery.setAddressDetail(newAddrDetail);
+		bakery.setPhotoUrl(Optional.ofNullable(updates.photoUrl()).orElse(bakery.getPhotoUrl()));
+		bakery.setUpdatedAt(LocalDateTime.now());
+
+		Bakery updatedBakery = bakeryRepository.save(bakery);
 		return BakeryDto.from(updatedBakery);
 	}
 
@@ -139,7 +168,7 @@ public class BakeryService {
 		boolean existsByBusinessRegistrationNumber = bakeryRepository.existsByBusinessRegistrationNumber(businessRegistrationNumber);
 
 		if (existsByName) {
-			throw new CustomException(ErrorCode.STORENAME_ALREADY_IN_USE);
+			throw new CustomException(ErrorCode.BAKERY_NAME_ALREADY_IN_USE);
 		}
 
 		if (existsByBusinessRegistrationNumber) {

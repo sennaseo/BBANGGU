@@ -114,5 +114,4 @@ public class Bakery {
 		this.longitude = longitude;
 		this.user = user;
 	}
-
 }
