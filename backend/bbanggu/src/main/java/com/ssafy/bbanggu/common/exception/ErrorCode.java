@@ -31,6 +31,7 @@ public enum ErrorCode {
 	BAKERY_NAME_ALREADY_IN_USE(2001, HttpStatus.CONFLICT, "이미 존재하는 가게 이름입니다."),
 	BAKERY_NOT_FOUND(2002, HttpStatus.NOT_FOUND, "가게를 찾을 수 없습니다."),
 	NO_PERMISSION_TO_EDIT_BAKERY(2003, HttpStatus.FORBIDDEN, "해당 가게를 수정할 권한이 없습니다."),
+	NO_KEYWORD_ENTERED(2004, HttpStatus.BAD_REQUEST, "입력된 키워드가 없습니다. 검색어를 입력해주세요."),
 
 	// ✅ 빵 관련 예외 (2100번대)
 

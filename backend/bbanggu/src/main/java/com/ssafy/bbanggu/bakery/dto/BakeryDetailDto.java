@@ -19,10 +19,10 @@ public record BakeryDetailDto(
 	@NotBlank(message = "상세 주소는 필수 입력 값입니다.")
 	String addressDetail,
 	String photoUrl,
-	Double latitude,
-	Double longitude
+	Double star,
+	Double distance
 ) {
-	public static BakeryDetailDto from(Bakery bakery) {
+	public static BakeryDetailDto from(Bakery bakery, double distance) {
 		return new BakeryDetailDto(
 			bakery.getBakeryId(),
 			bakery.getUser().getUserId(),
@@ -32,8 +32,8 @@ public record BakeryDetailDto(
 			bakery.getAddressRoad(),
 			bakery.getAddressDetail(),
 			bakery.getPhotoUrl(),
-			bakery.getLatitude(),
-			bakery.getLongitude()
+			bakery.getStar(),
+			distance
 		);
 	}
 }

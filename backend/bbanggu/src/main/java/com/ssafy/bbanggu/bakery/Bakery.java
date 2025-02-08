@@ -55,6 +55,9 @@ public class Bakery {
     @Column(nullable = false)
     private Double longitude; // 경도
 
+	@Column(nullable = false, columnDefinition = "DOUBLE DEFAULT 0.0")
+	private Double star;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt; // 생성일
 
@@ -103,7 +106,7 @@ public class Bakery {
 	@Builder
 	public Bakery(String name, String description, String businessRegistrationNumber,
 		String addressRoad, String addressDetail, String photoUrl,
-		double latitude, double longitude, User user) {
+		double latitude, double longitude, double star, User user) {
 		this.name = name;
 		this.description = description;
 		this.businessRegistrationNumber = businessRegistrationNumber;
@@ -112,6 +115,7 @@ public class Bakery {
 		this.photoUrl = photoUrl;
 		this.latitude = latitude;
 		this.longitude = longitude;
+		this.star = star;
 		this.user = user;
 	}
 }

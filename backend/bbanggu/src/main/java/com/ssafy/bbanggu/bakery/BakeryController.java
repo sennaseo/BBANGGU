@@ -10,16 +10,13 @@ import com.ssafy.bbanggu.common.response.ApiResponse;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -35,9 +32,17 @@ public class BakeryController {
 	public ResponseEntity<ApiResponse> getAllBakeries(
 		@RequestParam(defaultValue = "createdAt") String sortBy,
 		@RequestParam(defaultValue = "desc") String sortOrder,
-		@PageableDefault(size = 10) Pageable pageable
+		@PageableDefault(size = 10) Pageable pageable,
+		@RequestParam(required = false) Double lat,
+		@RequestParam(required = false) Double lng
 	) {
-		Page<BakeryDetailDto> bakeries = bakeryService.getAllBakeries(sortBy, sortOrder, pageable);
+		// 📌 사용자 위치 default: 서울 성수동
+		if (lat == null || lng == null) {
+			lat = 37.5446;
+			lng = 127.0553;
+		}
+
+		List<BakeryDetailDto> bakeries = bakeryService.getAllBakeries(sortBy, sortOrder, pageable, lat, lng);
 		return ResponseEntity.ok().body(new ApiResponse("모든 가게 조회에 성공하였습니다.", bakeries));
 	}
 
@@ -50,8 +55,18 @@ public class BakeryController {
 
 	// 가게 상세 조회
 	@GetMapping("/{id}")
-	public ResponseEntity<ApiResponse> getBakeryById(@PathVariable Long id) {
-		BakeryDetailDto bakery = bakeryService.findById(id);
+	public ResponseEntity<ApiResponse> getBakeryById(
+		@PathVariable Long id,
+		@RequestParam(required = false) Double lat,
+		@RequestParam(required = false) Double lng
+	) {
+		// 📌 사용자 위치 default: 서울 성수동
+		if (lat == null || lng == null) {
+			lat = 37.5446;
+			lng = 127.0553;
+		}
+
+		BakeryDetailDto bakery = bakeryService.findById(id, lat, lng);
 		return ResponseEntity.ok().body(new ApiResponse("가게 정보 조회에 성공하였습니다.", bakery));
 	}
 
@@ -80,10 +95,18 @@ public class BakeryController {
 	// 키워드로 가게 검색
 	@GetMapping("/search")
 	public ResponseEntity<ApiResponse> searchBakeries(
-		@RequestParam String keyword,
-		@PageableDefault(size = 10) Pageable pageable
+		@RequestParam(required = false) String keyword,
+		@PageableDefault(size = 10) Pageable pageable,
+		@RequestParam(required = false) Double lat,
+		@RequestParam(required = false) Double lng
 	) {
-		Page<BakeryDto> bakeries = bakeryService.searchByKeyword(keyword, pageable);
+		// 📌 사용자 위치 default: 서울 성수동
+		if (lat == null || lng == null) {
+			lat = 37.5446;
+			lng = 127.0553;
+		}
+
+		Page<BakeryDetailDto> bakeries = bakeryService.searchByKeyword(keyword, pageable, lat, lng);
 		return ResponseEntity.ok().body(new ApiResponse("검색 결과 조회에 성공하였습니다.", bakeries));
 	}
 
