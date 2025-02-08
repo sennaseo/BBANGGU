@@ -162,6 +162,11 @@ VALUES
  (1, 3, 3, '2025-01-29'), (1, 3, 2, '2025-01-29'), (1, 2, 3, '2025-01-30'), (1, 2, 1, '2025-01-31'), (1, 2, 2, '2025-02-01'), (1, 2, 1, '2025-02-01'),
  (1, 3, 3, '2025-02-01'), (1, 1, 2, '2025-02-02'), (1, 3, 4, '2025-02-04'), (1, 3, 5, '2025-02-04');
  
+ INSERT INTO `bbanggu`.`bread_package` 
+(`bakery_id`, `name`, `price`, `discount_rate`, `quantity`, `description`) 
+VALUES 
+(1, '빵꾸러미1', 50000, 20, 2, '1번 빵꾸러미 설명입니다.');
+
 
  use bbanggu;
  select * from user;
@@ -170,3 +175,8 @@ VALUES
  select * from stock;
  select * from bread_category;
  select * from bread_package;
+ select * from reservation;
+ 
+ 
+ 
+ 
