@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import Header from '../../../components/owner/header/Header';
 import ProgressBar from './components/Progress.Bar';
 import { PACKAGE_STEPS, TOTAL_PACKAGE_STEPS } from './constants/PakageSteps';
+import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
+import breadBagIcon from '../../../assets/images/bakery/bread_pakage.svg';
+import wonIcon from '../../../assets/images/bakery/won_icon.png';
 
 // 경고 아이콘을 직접 SVG로 구현
 const WarningIcon = () => (
@@ -30,8 +33,9 @@ const generateTimeOptions = () => {
 
 const PackageSalesSetting: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { price, quantity, totalPrice } = location.state || { price: 0, quantity: 0, totalPrice: 0 };
   const [packageName, setPackageName] = useState('');
-  const [packageDescription, setPackageDescription] = useState('');
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
 
@@ -64,20 +68,6 @@ const PackageSalesSetting: React.FC = () => {
             value={packageName}
             onChange={(e) => setPackageName(e.target.value)}
             className="w-full px-4 py-3 rounded-[8px] border border-[#E5E5E5] text-[16px] placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-[#FC973B]"
-          />
-        </div>
-
-        {/* 빵꾸러미 설명 */}
-        <div className="mb-8">
-          <h3 className="text-[16px] font-bold text-[#242424] mb-2">빵꾸러미 설명</h3>
-          <p className="text-[14px] text-gray-600 mb-4">
-            가게의 음식을 자랑을 담아 설명해주세요 :)
-          </p>
-          <textarea
-            placeholder="ex) 크로아상과 식빵 등이 담길 수 있는 맛있는 빵꾸러미입니다!!"
-            value={packageDescription}
-            onChange={(e) => setPackageDescription(e.target.value)}
-            className="w-full h-[120px] px-4 py-3 rounded-[8px] border border-[#E5E5E5] text-[16px] placeholder:text-gray-300 resize-none focus:outline-none focus:ring-2 focus:ring-[#FC973B]"
           />
         </div>
 
@@ -147,6 +137,111 @@ const PackageSalesSetting: React.FC = () => {
             <WarningIcon />
             <p>저장된 요일의 시간이 있다면 자동으로 불러와져요</p>
           </div>
+        </div>
+
+        {/* 섹션 구분선 */}
+        <div className="flex items-center gap-3 mb-6">
+          <div className="h-[1px] bg-[#E5E5E5] flex-1" />
+          <div className="flex items-center gap-2 px-2">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <path d="M9 5H7C5.89543 5 5 5.89543 5 7V19C5 20.1046 5.89543 21 7 21H17C18.1046 21 19 20.1046 19 19V7C19 5.89543 18.1046 5 17 5H15M9 5C9 6.10457 9.89543 7 11 7H13C14.1046 7 15 6.10457 15 5M9 5C9 3.89543 9.89543 3 11 3H13C14.1046 3 15 3.89543 15 5" 
+                stroke="#FC973B" 
+                strokeWidth="2" 
+                strokeLinecap="round" 
+                strokeLinejoin="round"
+              />
+            </svg>
+            <span className="text-[#FC973B] font-medium">최종 확인</span>
+          </div>
+          <div className="h-[1px] bg-[#E5E5E5] flex-1" />
+        </div>
+
+        {/* 최종 빵꾸러미 요약 */}
+        <div className="mb-8">
+          <h3 className="text-[16px] font-bold text-[#242424] mb-4">빵꾸러미 판매 정보</h3>
+          <div className="bg-white rounded-[8px] shadow-[0_-2px_4px_-1px_rgba(0,0,0,0.06),0_4px_6px_-1px_rgba(0,0,0,0.1)] p-6">
+            {/* 빵꾸러미 정보 */}
+            <div className="flex items-start gap-3 mb-4">
+              <img src={breadBagIcon} alt="bread bag" className="w-6 h-6 mt-1" />
+              <div>
+                <p className="font-medium text-[16px] text-[#242424] mb-1">
+                  {packageName || '빵꾸러미 이름을 입력해주세요'}
+                </p>
+              </div>
+            </div>
+
+            {/* 구분선 */}
+            <div className="h-[1px] bg-[#E5E5E5] my-4" />
+
+            {/* 판매 정보 그리드 */}
+            <div className="grid grid-cols-2 gap-6">
+              {/* 가격 정보 */}
+              <div className="flex items-center gap-3">
+                <img src={wonIcon} alt="price" className="w-6 h-6" />
+                <div>
+                  <p className="text-[14px] text-[#6B7280] mb-1">판매 가격</p>
+                  <p className="text-[16px] font-medium text-[#242424]">
+                    {price.toLocaleString()}원
+                  </p>
+                </div>
+              </div>
+
+              {/* 수량 정보 */}
+              <div className="flex items-center gap-3">
+                <img src={breadBagIcon} alt="quantity" className="w-6 h-6" />
+                <div>
+                  <p className="text-[14px] text-[#6B7280] mb-1">판매 수량</p>
+                  <p className="text-[16px] font-medium text-[#242424]">
+                    {quantity}개
+                  </p>
+                </div>
+              </div>
+
+              {/* 시작 시간 */}
+              <div className="flex items-center gap-3">
+                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="#6B7280">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <div>
+                  <p className="text-[14px] text-[#6B7280] mb-1">판매 시작</p>
+                  <p className="text-[16px] font-medium text-[#242424]">{startTime || '시간 선택'}</p>
+                </div>
+              </div>
+
+              {/* 종료 시간 */}
+              <div className="flex items-center gap-3">
+                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="#6B7280">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <div>
+                  <p className="text-[14px] text-[#6B7280] mb-1">판매 종료</p>
+                  <p className="text-[16px] font-medium text-[#242424]">{endTime || '시간 선택'}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* 총 판매 금액 */}
+            <div className="h-[1px] bg-[#E5E5E5] my-4" />
+            <div className="flex justify-between items-center">
+              <span className="text-[16px] text-[#242424]">총 판매 금액</span>
+              <span className="text-[18px] font-bold text-[#FC973B]">
+                {totalPrice.toLocaleString()}원
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* 하단 경고 메시지 */}
+        <div className="flex items-start gap-2 mb-4">
+          <ExclamationTriangleIcon 
+            className="w-5 h-5 text-[#FC973B] flex-shrink-0" 
+          />
+          <p className="text-[14px] text-[#FC973B]">
+            빵꾸러미 등록 후에는 하루 동안 수정이 불가능합니다.<br/>
+            내용을 한 번 더 확인해주세요!
+          </p>
         </div>
 
         {/* 하단 버튼 */}

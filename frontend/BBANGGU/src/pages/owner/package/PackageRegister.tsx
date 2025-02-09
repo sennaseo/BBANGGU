@@ -318,7 +318,13 @@ const PackageRegister: React.FC = () => {
               ${packageCount > 0 
                 ? 'bg-[#FC973B] text-white hover:bg-[#e88934] transition-colors' 
                 : 'bg-[#D7C5B5] text-white cursor-not-allowed'}`}
-            onClick={() => navigate('/owner/package/sales-setting')}
+            onClick={() => navigate('/owner/package/sales-setting', {
+              state: {
+                price: calculatePrice(),
+                quantity: packageCount,
+                totalPrice: calculateTotalPrice()
+              }
+            })}
             disabled={packageCount === 0}
           >
             다음
