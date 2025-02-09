@@ -5,7 +5,7 @@ import BottomNavigation from '../../../components/owner/navigations/BottomNaviga
 function EditProfile() {
   return (
     <div className="min-h-screen bg-white pb-20">
-      <Header />
+      <Header title="회원정보수정" />
       <ProfileForm />
       <BottomNavigation />
     </div>

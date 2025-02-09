@@ -11,7 +11,7 @@ interface SubmitButtonProps {
     disabled = false,
     className = '',
     onClick,
-    type = 'button'
+    type = 'submit'
   }: SubmitButtonProps) {
     return (
       <button

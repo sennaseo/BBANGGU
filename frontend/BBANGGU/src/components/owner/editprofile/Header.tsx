@@ -1,7 +1,11 @@
 import { useNavigate } from 'react-router-dom';
 import { IoChevronBack } from "react-icons/io5";
 
-export function Header() {
+interface HeaderProps {
+  title: string;
+}
+
+export const Header: React.FC<HeaderProps> = ({ title }) => {
   const navigate = useNavigate();
 
   const handleBack = () => {
@@ -17,11 +21,11 @@ export function Header() {
         >
           <IoChevronBack className="w-6 h-6" />
         </button>
-        <h1 className="text-lg font-medium">회원정보수정</h1>
+        <h1 className="text-lg font-medium">{title}</h1>
       </div>
     </div>
   );
-}
+};
 
 export function ProfileForm() {
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
