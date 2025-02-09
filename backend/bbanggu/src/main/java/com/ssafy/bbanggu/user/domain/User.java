@@ -129,6 +129,34 @@ public class User {
 	}
 
 	/**
+	 * 기본 정보 수정 메서드
+	 *
+	 * @param name 이름
+	 * @param phone 전화번호
+	 * @param profilePhotoUrl 프로필 이미지
+	 */
+	public void updateUserInfo(String name, String phone, String profilePhotoUrl) {
+		if (name != null && !name.isBlank()) this.name = name;
+		if (phone != null && phone.matches("^(010-\\d{4}-\\d{4})$")) this.phone = phone;
+		if (profilePhotoUrl != null && !profilePhotoUrl.isBlank()) this.profilePhotoUrl = profilePhotoUrl;
+	}
+
+	/**
+	 * 위치 정보 수정 메서드
+	 *
+	 * @param addressRoad 도로명 주소
+	 * @param addressDetail 상세 주소
+	 * @param latitude 위도
+	 * @param longitude 경도
+	 */
+	public void updateUserPos(String addressRoad, String addressDetail, Double latitude, Double longitude) {
+		if (addressRoad != null && !addressRoad.isBlank()) this.addressRoad = addressRoad;
+		if (addressDetail != null && !addressDetail.isBlank()) this.addressDetail = addressDetail;
+		if (latitude != null) this.latitude = latitude;
+		if (longitude != null) this.longitude = longitude;
+	}
+
+	/**
 	 * 논리적 삭제 메서드
 	 */
 	public void delete() {

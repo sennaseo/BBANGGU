@@ -131,7 +131,7 @@ public class BakeryService {
 	}
 
 	// 가게의 위도, 경도 추출
-	private double[] getLatitudeLongitude(String addressRoad, String addressDetail) {
+	public double[] getLatitudeLongitude(String addressRoad, String addressDetail) {
 		// 전체 주소 문자열 생성 (도로명주소 + 상세주소)
 		String fullAddress = addressRoad + " " + addressDetail;
 
