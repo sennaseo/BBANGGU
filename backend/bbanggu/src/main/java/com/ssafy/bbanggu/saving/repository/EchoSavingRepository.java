@@ -8,7 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import java.util.Optional;
 
 public interface EchoSavingRepository extends JpaRepository<EchoSaving, Long> {
-	Optional<EchoSaving> findByUser(User user);
+	EchoSaving findByUser_UserId(Long userId);
 
 	@Query("SELECT COALESCE(SUM(e.savedMoney), 0) FROM EchoSaving e")
 	int sumTotalSavedMoney();
