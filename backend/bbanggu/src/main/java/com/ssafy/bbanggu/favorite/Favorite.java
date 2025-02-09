@@ -22,15 +22,12 @@ public class Favorite {
 	@Column(name = "favorite_id", columnDefinition = "INT UNSIGNED")
 	private Long favoriteId;
 
-	@ManyToOne
-	@JoinColumn(name = "user_id", insertable = false, updatable = false)
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "user_id", referencedColumnName = "user_id", nullable = false)
 	private User user;
 
-	@ManyToOne
-	@JoinColumn(name = "bakery_id", insertable = false, updatable = false)
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "bakery_id", nullable = false)
 	private Bakery bakery;
-
-	@Column(name = "is_liked", nullable = false)
-	private boolean isLiked;
 
 }

@@ -10,6 +10,7 @@ import com.ssafy.bbanggu.user.repository.UserRepository;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
@@ -39,23 +40,23 @@ public class AuthenticationController {
 		}
 
 		// 3️⃣ refresh token에서 사용자 정보 추출
-		String email = jwtTokenProvider.getEmailFromToken(refreshToken);
+		Long userId = jwtTokenProvider.getUserIdFromToken(refreshToken);
 
 		// 4️⃣ 사용자 조회 (DB에서 refresh token 일치 여부 확인)
-		Optional<User> user = userRepository.findByEmail(email);
+		Optional<User> user = userRepository.findById(userId);
 		if (user.isEmpty() || !refreshToken.equals(user.get().getRefreshToken())) {
 			throw new CustomException(ErrorCode.NOT_MATCHED_AUTH_INFO);
 		}
 
 		// 5️⃣ 새로운 Access Token 생성
-		String newAccessToken = jwtTokenProvider.createAccessToken(email);
+		String newAccessToken = jwtTokenProvider.createAccessToken(userId);
 		String newRefreshToken = refreshToken;
 
 		// 6️⃣ Sliding Refresh 적용 (Refresh Token이 24시간 이하로 남았을 때만 새로 발급)
 		long refreshTokenRemainingTime = jwtTokenProvider.getRemainingExpirationTime(refreshToken); // 남은 만료 시간
 
 		if (refreshTokenRemainingTime < 24 * 60 * 60 * 1000) { // 24시간 이하로 남았을 경우
-			newRefreshToken = jwtTokenProvider.createRefreshToken(email); // 새로운 Refresh Token 발급
+			newRefreshToken = jwtTokenProvider.createRefreshToken(userId); // 새로운 Refresh Token 발급
 			user.get().setRefreshToken(newRefreshToken); // DB 업데이트
 			userRepository.save(user.get());
 		}

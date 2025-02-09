@@ -31,11 +31,8 @@ public class EchoSavingController {
 			throw new CustomException(ErrorCode.INVALID_ACCESS_TOKEN);
 		}
 
-		// ✅ email 가져오기
-		String email = authentication.getName();
-
-		// ✅ email로 userId 조회
-		Long userId = userService.getUserIdByEmail(email);
+		// ✅ userId 가져오기
+		Long userId = Long.parseLong(authentication.getName());
 
 		SavingResponse response = echoSavingService.getUserSaving(userId);
 		return ResponseEntity.ok(new ApiResponse("사용자의 절약 정보 조회 성공", response));
@@ -49,11 +46,8 @@ public class EchoSavingController {
 			throw new CustomException(ErrorCode.INVALID_ACCESS_TOKEN);
 		}
 
-		// ✅ email 가져오기
-		String email = authentication.getName();
-
-		// ✅ email로 userId 조회
-		Long userId = userService.getUserIdByEmail(email);
+		// ✅ userId 가져오기
+		Long userId = Long.parseLong(authentication.getName());
 
 		// ✅ 필수 필드 검증
 		if (!updates.containsKey("reduce_co2e") || !updates.containsKey("saved_money")) {

@@ -24,8 +24,8 @@ public class AuthenticationService {
 		}
 
 		// 2️⃣ Refresh Token에서 이메일 추출
-		String email = jwtTokenProvider.getEmailFromToken(refreshToken);
-		User user = userRepository.findByEmail(email)
+		Long userId = jwtTokenProvider.getUserIdFromToken(refreshToken);
+		User user = userRepository.findById(userId)
 			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
 		// 3️⃣ DB에 저장된 Refresh Token과 비교
@@ -36,13 +36,13 @@ public class AuthenticationService {
 		String[] tokens = new String[2]; // access, refresh token을 담아줄 배열 생성
 
 		// 4️⃣ Refresh Token 사용 후 즉시 폐기 (보안 강화)
-		String newRefreshToken = jwtTokenProvider.createRefreshToken(email);
+		String newRefreshToken = jwtTokenProvider.createRefreshToken(userId);
 		user.setRefreshToken(newRefreshToken);
 		userRepository.save(user);
 		tokens[0] = newRefreshToken;
 
 		// 5️⃣ 새로운 AccessToken 발급
-		String newAccessToken = jwtTokenProvider.createAccessToken(email);
+		String newAccessToken = jwtTokenProvider.createAccessToken(userId);
 		tokens[1] = newAccessToken;
 
 		return tokens;

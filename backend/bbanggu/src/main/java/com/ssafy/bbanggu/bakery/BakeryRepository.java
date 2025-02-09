@@ -28,6 +28,8 @@ public interface BakeryRepository extends JpaRepository<Bakery, Long> {
 
 	Bakery findByBakeryIdAndDeletedAtIsNull(Long id);
 
+	Page<Bakery> findByBakeryIdInAndDeletedAtIsNull(List<Long> bakeryIds, Pageable pageable);
+
 	Page<Bakery> findAllByDeletedAtIsNull(Pageable pageable);
 
 	@Query("SELECT b FROM Bakery b WHERE (LOWER(b.name) LIKE LOWER(CONCAT('%', :keyword, '%')) "
