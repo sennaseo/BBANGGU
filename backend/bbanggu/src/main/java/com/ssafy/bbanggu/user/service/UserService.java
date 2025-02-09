@@ -1,18 +1,22 @@
 package com.ssafy.bbanggu.user.service;
 
 import java.util.Map;
+import java.util.Optional;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.ssafy.bbanggu.auth.dto.JwtToken;
 import com.ssafy.bbanggu.auth.security.JwtTokenProvider;
+import com.ssafy.bbanggu.bakery.service.BakeryService;
 import com.ssafy.bbanggu.common.exception.CustomException;
 import com.ssafy.bbanggu.common.exception.ErrorCode;
 import com.ssafy.bbanggu.saving.domain.EchoSaving;
 import com.ssafy.bbanggu.saving.repository.EchoSavingRepository;
 import com.ssafy.bbanggu.user.domain.User;
 import com.ssafy.bbanggu.user.dto.CreateUserRequest;
+import com.ssafy.bbanggu.user.dto.UpdateUserRequest;
 import com.ssafy.bbanggu.user.dto.UserResponse;
 import com.ssafy.bbanggu.user.repository.UserRepository;
 
@@ -26,6 +30,7 @@ public class UserService { // 사용자 관련 비즈니스 로직 처리
 	private final EchoSavingRepository echoSavingRepository;
 	private final PasswordEncoder passwordEncoder;
 	private final JwtTokenProvider jwtTokenProvider;
+	private final BakeryService bakeryService;
 
 	/**
 	 * 회원가입 로직 처리
@@ -34,22 +39,24 @@ public class UserService { // 사용자 관련 비즈니스 로직 처리
 	 * @return UserResponse 생성된 사용자 정보
 	 */
 	public UserResponse create(CreateUserRequest request) {
-		// 1. 이메일 중복 여부 검사
-		validateEmailNotExists(request.email());
+		// 1️⃣ 이메일 중복 여부 검사
+		if (userRepository.existsByEmail(request.email())) {
+			throw new CustomException(ErrorCode.EMAIL_ALREADY_IN_USE);
+		}
 
-		// 2. 전화번호 중복 확인
+		// 2️⃣ 전화번호 중복 확인
 		if (userRepository.existsByPhone(request.phone())) {
 			throw new CustomException(ErrorCode.PHONE_NUMBER_ALREADY_EXISTS);
 		}
 
-		// 3. 비밀번호 암호화
+		// 3️⃣ 비밀번호 암호화
 		String encodedPassword = passwordEncoder.encode(request.password());
 
-		// 4. User 엔티티 생성 및 저장 (회원가입)
-		User user = User.createNormalUser(request.name(), request.email(), encodedPassword, request.phone(),
-			request.userType());
+		// 4️⃣ User 엔티티 생성 및 저장 (회원가입)
+		User user = User.createNormalUser(request.name(), request.email(), encodedPassword, request.phone(), request.userType());
 		userRepository.save(user);
 
+		// 5️⃣ 절약 정보 자동 생성 및 초기화
 		EchoSaving echoSaving = EchoSaving.builder()
 			.user(user)
 			.savedMoney(0)
@@ -57,14 +64,7 @@ public class UserService { // 사용자 관련 비즈니스 로직 처리
 			.build();
 
 		echoSavingRepository.save(echoSaving);
-
 		return UserResponse.from(user);
-	}
-
-	private void validateEmailNotExists(String email) {
-		if (userRepository.existsByEmail(email)) {
-			throw new CustomException(ErrorCode.EMAIL_ALREADY_IN_USE);
-		}
 	}
 
 	/**
@@ -140,7 +140,8 @@ public class UserService { // 사용자 관련 비즈니스 로직 처리
 	/**
 	 * 사용자 정보 수정
 	 */
-	public void update(Long userId, Map<String, Object> updates) {
+	@Transactional
+	public void update(Long userId, UpdateUserRequest updates) {
 		User user = userRepository.findById(userId)
 			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
@@ -149,22 +150,27 @@ public class UserService { // 사용자 관련 비즈니스 로직 처리
 			throw new CustomException(ErrorCode.ACCOUNT_DEACTIVATED);
 		}
 
-		// ✅ 특정 필드만 변경 가능하도록 처리
-		updates.forEach((key, value) -> {
-			switch (key) {
-				case "name" -> user.setName((String)value);
-				case "phone" -> {
-					if (userRepository.existsByPhone((String)value)) {
-						throw new CustomException(ErrorCode.PHONE_NUMBER_ALREADY_EXISTS);
-					}
-					user.setPhone((String)value);
-				}
-				case "profileImage" -> user.setProfilePhotoUrl((String)value);
-				default -> throw new CustomException(ErrorCode.INVALID_REQUEST);
-			}
-		});
+		// ✅ 위치 정보가 바뀌었을 때에만 변경 가능하도록 처리
+		String addrRoad = user.getAddressRoad();
+		String addrDetail = user.getAddressDetail();
 
-		userRepository.save(user);
+		if ((updates.addressRoad() != null && !updates.addressRoad().equals(addrRoad))
+			|| (updates.addressDetail() != null && !updates.addressDetail().equals(addrDetail))) {
+			double[] latLng = bakeryService.getLatitudeLongitude(updates.addressRoad(), updates.addressDetail());
+			user.updateUserPos(
+				updates.addressRoad(),
+				updates.addressDetail(),
+				latLng[0],
+				latLng[1]
+			);
+		}
+
+		// ✅ 특정 필드만 변경 가능하도록 처리
+		user.updateUserInfo(
+			updates.name(),
+			updates.phone(),
+			updates.profilePhotoUrl()
+		);
 	}
 
 	/**
@@ -184,12 +190,6 @@ public class UserService { // 사용자 관련 비즈니스 로직 처리
 		// 비밀번호 암호화 후 저장
 		user.setPassword(passwordEncoder.encode(newPassword));
 		userRepository.save(user);
-	}
-
-	public Long getUserIdByEmail(String email) {
-		return userRepository.findByEmail(email)
-			.map(User::getUserId)
-			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 	}
 
 	/**

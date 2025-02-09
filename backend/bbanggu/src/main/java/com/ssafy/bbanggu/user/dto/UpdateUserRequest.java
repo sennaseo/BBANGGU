@@ -6,5 +6,8 @@ package com.ssafy.bbanggu.user.dto;
  */
 public record UpdateUserRequest(
 	String name,
-	String profilePhotoUrl
+	String phone,
+	String profilePhotoUrl,
+	String addressRoad,
+	String addressDetail
 ) {}
