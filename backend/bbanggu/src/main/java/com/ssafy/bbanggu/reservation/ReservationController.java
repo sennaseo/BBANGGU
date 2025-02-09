@@ -74,7 +74,7 @@ public class ReservationController {
 		}
 	}
 
-	@GetMapping("/")
+	@GetMapping("")
 	public ResponseEntity<?> getUserReservationList(@RequestHeader("Authorization") String authorization) {
 		try {
 			List<ReservationDTO> reservationList = reservationService.getUserReservationList(authorization);

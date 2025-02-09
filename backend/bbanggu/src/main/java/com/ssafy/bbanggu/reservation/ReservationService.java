@@ -90,7 +90,7 @@ public class ReservationService {
 		String token = authorization.replace("Bearer ", "");
 		long userId = jwtTokenProvider.getUserIdFromToken(token);
 
-		List<Reservation> reservationList = reservationRepository.findByUserId(userId);
+		List<Reservation> reservationList = reservationRepository.findByUser_UserId(userId);
 		List<ReservationDTO> reservationDTOList = new ArrayList<>();
 		for (Reservation reservation : reservationList) {
 			reservationDTOList.add(entityToDto(reservation));
