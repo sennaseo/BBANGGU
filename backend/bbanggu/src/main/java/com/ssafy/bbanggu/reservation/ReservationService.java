@@ -1,6 +1,8 @@
 package com.ssafy.bbanggu.reservation;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -9,6 +11,7 @@ import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ssafy.bbanggu.auth.security.JwtTokenProvider;
 import com.ssafy.bbanggu.bakery.Bakery;
 import com.ssafy.bbanggu.breadpackage.BreadPackage;
 import com.ssafy.bbanggu.common.exception.CustomException;
@@ -24,10 +27,13 @@ public class ReservationService {
 
 	private final ReservationRepository reservationRepository;
 	private final PaymentService paymentService;
+	private final JwtTokenProvider jwtTokenProvider;
 
-	public ReservationService(ReservationRepository reservationRepository, PaymentService paymentService) {
+	public ReservationService(ReservationRepository reservationRepository, PaymentService paymentService,
+		JwtTokenProvider jwtTokenProvider) {
 		this.reservationRepository = reservationRepository;
 		this.paymentService = paymentService;
+		this.jwtTokenProvider = jwtTokenProvider;
 	}
 
 	public void createReservation(ReservationDTO reservationDto, String orderId, String paymentKey, int amount) {
@@ -68,7 +74,31 @@ public class ReservationService {
 		reservation.setStatus("CANCELED");
 	}
 
-	/* =========== 변환 메소드 ============= */
+	public void pickUp(long reservationId) {
+		// 예약 정보 조회
+		Reservation reservation = reservationRepository.findById(reservationId).orElse(null);
+		if (reservation == null) {
+			throw new CustomException(ErrorCode.RESERVATION_NOT_FOUND);
+		}
+
+		// 예약 상태 업데이트
+		reservation.setPickupAt(LocalDateTime.now());
+		reservation.setStatus("PICKUP_COMPLETED");
+	}
+
+	public List<ReservationDTO> getUserReservationList(String authorization) {
+		String token = authorization.replace("Bearer ", "");
+		long userId = jwtTokenProvider.getUserIdFromToken(token);
+
+		List<Reservation> reservationList = reservationRepository.findByUserId(userId);
+		List<ReservationDTO> reservationDTOList = new ArrayList<>();
+		for (Reservation reservation : reservationList) {
+			reservationDTOList.add(entityToDto(reservation));
+		}
+		return reservationDTOList;
+	}
+
+	/* =========== 유틸성 메소드 ============= */
 
 	private ReservationDTO entityToDto(Reservation reservation) {
 		return ReservationDTO.builder()
@@ -109,6 +139,18 @@ public class ReservationService {
 			.status(reservationDto.getStatus())
 			.orderId(reservationDto.getOrderId())
 			.build();
+	}
+
+	// 사용자와 예약 ID가 일치하는지 검증
+	public boolean check(long reservationId, String authorization) {
+		String token = authorization.replace("Bearer ", "");
+		long userId = jwtTokenProvider.getUserIdFromToken(token);
+
+		Reservation reservation = reservationRepository.findById(reservationId).orElse(null);
+		if (reservation == null) {
+			throw new CustomException(ErrorCode.RESERVATION_NOT_FOUND);
+		}
+		return reservation.getUser().getUserId() == userId;
 	}
 
 }
