@@ -11,7 +11,7 @@ public record UserResponse(
 	String name,
 	String email,
 	String phone,
-	String userType,
+	String role,
 	String profilePhotoUrl
 ) {
 	/**
@@ -26,7 +26,7 @@ public record UserResponse(
 			user.getName(),
 			user.getEmail(),
 			user.getPhone(),
-			user.getUserType(),
+			user.getRole().name(),
 			user.getProfilePhotoUrl()
 		);
 	}

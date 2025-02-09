@@ -1,7 +1,5 @@
 package com.ssafy.bbanggu.user.controller;
 
-import java.util.Map;
-
 import com.ssafy.bbanggu.auth.dto.EmailRequest;
 import com.ssafy.bbanggu.auth.dto.JwtToken;
 import com.ssafy.bbanggu.auth.service.EmailService;
@@ -96,7 +94,7 @@ public class UserController {
 
 		// ✅ AccessToken을 HTTP-Only 쿠키에 저장
 		ResponseCookie accessTokenCookie = ResponseCookie.from("accessToken", accessToken)
-			.httpOnly(true) // XSS 공격 방지
+			.httpOnly(false) // XSS 공격 방지
 			.secure(true) // HTTPS 환경에서만 사용 (로컬 개발 시 false 가능)
 			.path("/") // 모든 API 요청에서 쿠키 전송 가능
 			.maxAge(30 * 60) // 30분 유지

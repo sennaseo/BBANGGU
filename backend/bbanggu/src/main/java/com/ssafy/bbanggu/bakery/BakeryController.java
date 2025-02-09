@@ -1,5 +1,6 @@
 package com.ssafy.bbanggu.bakery;
 
+import com.ssafy.bbanggu.auth.security.CustomUserDetails;
 import com.ssafy.bbanggu.bakery.dto.BakeryDetailDto;
 import com.ssafy.bbanggu.bakery.dto.BakeryDto;
 import com.ssafy.bbanggu.bakery.dto.BakeryLocationDto;
@@ -15,6 +16,8 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -37,13 +40,14 @@ public class BakeryController {
 		@RequestParam(defaultValue = "createdAt") String sortBy,
 		@RequestParam(defaultValue = "desc") String sortOrder,
 		@PageableDefault(size = 10) Pageable pageable,
-		@RequestParam(required = false) Double lat,
-		@RequestParam(required = false) Double lng
+		@AuthenticationPrincipal CustomUserDetails userDetails
 	) {
-		// 📌 사용자 위치 default: 서울 성수동
-		if (lat == null || lng == null) {
-			lat = 37.5446;
-			lng = 127.0553;
+		Double lat = null;
+		Double lng = null;
+
+		if (userDetails != null && userDetails.getLatitude() != 0.0 && userDetails.getLongitude() != 0.0) {
+			lat = userDetails.getLatitude();
+			lng = userDetails.getLongitude();
 		}
 
 		List<BakeryDetailDto> bakeries = bakeryService.getAllBakeries(sortBy, sortOrder, pageable, lat, lng);
@@ -61,13 +65,14 @@ public class BakeryController {
 	@GetMapping("/{bakery_id}")
 	public ResponseEntity<ApiResponse> getBakeryById(
 		@PathVariable Long bakery_id,
-		@RequestParam(required = false) Double lat,
-		@RequestParam(required = false) Double lng
+		@AuthenticationPrincipal CustomUserDetails userDetails
 	) {
-		// 📌 사용자 위치 default: 서울 성수동
-		if (lat == null || lng == null) {
-			lat = 37.5446;
-			lng = 127.0553;
+		Double lat = null;
+		Double lng = null;
+
+		if (userDetails != null && userDetails.getLatitude() != 0.0 && userDetails.getLongitude() != 0.0) {
+			lat = userDetails.getLatitude();
+			lng = userDetails.getLongitude();
 		}
 
 		BakeryDetailDto bakery = bakeryService.findById(bakery_id, lat, lng);
@@ -76,24 +81,22 @@ public class BakeryController {
 
 	// 가게 수정
 	@PutMapping("/{bakery_id}")
-	public ResponseEntity<ApiResponse> updateBakery(Authentication authentication, @PathVariable Long bakery_id, @RequestBody BakeryDto updates) {
-		// ✅ Access Token이 없는 경우 예외처리
-		if (authentication == null || authentication.getName() == null) {
-			throw new CustomException(ErrorCode.INVALID_ACCESS_TOKEN);
+	public ResponseEntity<ApiResponse> updateBakery(
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@PathVariable Long bakery_id,
+		@RequestBody BakeryDto updates
+	) {
+		if (userDetails == null) {
+			throw new CustomException(ErrorCode.UNAUTHORIZED_USER);
 		}
 
-		// ✅ userId 가져오기
-		Long userId = Long.parseLong(authentication.getName());
-		if (!userRepository.existsById(userId)) {
-			throw new CustomException(ErrorCode.USER_NOT_FOUND);
-		}
-
-		Bakery bakery = bakeryRepository.findByBakeryIdAndDeletedAtIsNull(bakery_id); // 삭제되지 않은 것만
+		Bakery bakery = bakeryRepository.findByBakeryIdAndDeletedAtIsNull(bakery_id);
 		if (bakery == null) {
 			throw new CustomException(ErrorCode.BAKERY_NOT_FOUND);
 		}
 
 		// ✅ 현재 로그인한 사용자가 이 가게의 주인인지 검증
+		Long userId = userDetails.getUserId();
 		if (!bakery.getUser().getUserId().equals(userId)) {
 			throw new CustomException(ErrorCode.NO_PERMISSION_TO_EDIT_BAKERY);
 		}
@@ -104,16 +107,12 @@ public class BakeryController {
 
 	// 가게 삭제
 	@DeleteMapping("/{bakery_id}")
-	public ResponseEntity<ApiResponse> deleteBakery(Authentication authentication, @PathVariable Long bakery_id) {
-		// ✅ Access Token이 없는 경우 예외처리
-		if (authentication == null || authentication.getName() == null) {
-			throw new CustomException(ErrorCode.INVALID_ACCESS_TOKEN);
-		}
-
-		// ✅ userId 가져오기
-		Long userId = Long.parseLong(authentication.getName());
-		if (!userRepository.existsById(userId)) {
-			throw new CustomException(ErrorCode.USER_NOT_FOUND);
+	public ResponseEntity<ApiResponse> deleteBakery(
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@PathVariable Long bakery_id
+	) {
+		if (userDetails == null) {
+			throw new CustomException(ErrorCode.UNAUTHORIZED_USER);
 		}
 
 		Bakery bakery = bakeryRepository.findByBakeryIdAndDeletedAtIsNull(bakery_id);
@@ -121,6 +120,7 @@ public class BakeryController {
 			throw new CustomException(ErrorCode.BAKERY_NOT_FOUND);
 		}
 
+		Long userId = userDetails.getUserId();
 		if (!bakery.getUser().getUserId().equals(userId)) {
 			throw new CustomException(ErrorCode.UNAUTHORIZED_USER);
 		}
@@ -134,13 +134,14 @@ public class BakeryController {
 	public ResponseEntity<ApiResponse> searchBakeries(
 		@RequestParam(required = false) String keyword,
 		@PageableDefault(size = 10) Pageable pageable,
-		@RequestParam(required = false) Double lat,
-		@RequestParam(required = false) Double lng
+		@AuthenticationPrincipal CustomUserDetails userDetails
 	) {
-		// 📌 사용자 위치 default: 서울 성수동
-		if (lat == null || lng == null) {
-			lat = 37.5446;
-			lng = 127.0553;
+		Double lat = null;
+		Double lng = null;
+
+		if (userDetails != null && userDetails.getLatitude() != 0.0 && userDetails.getLongitude() != 0.0) {
+			lat = userDetails.getLatitude();
+			lng = userDetails.getLongitude();
 		}
 
 		Page<BakeryDetailDto> bakeries = bakeryService.searchByKeyword(keyword, pageable, lat, lng);
@@ -148,9 +149,9 @@ public class BakeryController {
 	}
 
 	// 모든 가게의 좌표 조회
-	@GetMapping("/locations")
-	public ResponseEntity<List<BakeryLocationDto>> getAllBakeryLocations() {
-		List<BakeryLocationDto> bakeryLocations = bakeryService.findAllBakeryLocations();
-		return ResponseEntity.ok(bakeryLocations);
-	}
+	// @GetMapping("/locations")
+	// public ResponseEntity<List<BakeryLocationDto>> getAllBakeryLocations() {
+	// 	List<BakeryLocationDto> bakeryLocations = bakeryService.findAllBakeryLocations();
+	// 	return ResponseEntity.ok(bakeryLocations);
+	// }
 }
