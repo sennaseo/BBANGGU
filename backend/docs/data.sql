@@ -177,6 +177,8 @@ VALUES
  select * from bread_package;
  select * from reservation;
  
+ delete from reservation where reservation_id = 3;
+ 
  
  
  
