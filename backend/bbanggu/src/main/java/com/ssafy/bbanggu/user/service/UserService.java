@@ -9,23 +9,23 @@ import com.ssafy.bbanggu.auth.dto.JwtToken;
 import com.ssafy.bbanggu.auth.security.JwtTokenProvider;
 import com.ssafy.bbanggu.common.exception.CustomException;
 import com.ssafy.bbanggu.common.exception.ErrorCode;
+import com.ssafy.bbanggu.saving.domain.EchoSaving;
+import com.ssafy.bbanggu.saving.repository.EchoSavingRepository;
 import com.ssafy.bbanggu.user.domain.User;
 import com.ssafy.bbanggu.user.dto.CreateUserRequest;
 import com.ssafy.bbanggu.user.dto.UserResponse;
 import com.ssafy.bbanggu.user.repository.UserRepository;
 
+import lombok.RequiredArgsConstructor;
+
 @Service
+@RequiredArgsConstructor
 public class UserService { // 사용자 관련 비즈니스 로직 처리
+
 	private final UserRepository userRepository;
+	private final EchoSavingRepository echoSavingRepository;
 	private final PasswordEncoder passwordEncoder;
 	private final JwtTokenProvider jwtTokenProvider;
-
-	public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder,
-		JwtTokenProvider jwtTokenProvider) {
-		this.userRepository = userRepository;
-		this.passwordEncoder = passwordEncoder;
-		this.jwtTokenProvider = jwtTokenProvider;
-	}
 
 	/**
 	 * 회원가입 로직 처리
@@ -49,6 +49,14 @@ public class UserService { // 사용자 관련 비즈니스 로직 처리
 		User user = User.createNormalUser(request.name(), request.email(), encodedPassword, request.phone(),
 			request.userType());
 		userRepository.save(user);
+
+		EchoSaving echoSaving = EchoSaving.builder()
+			.user(user)
+			.savedMoney(0)
+			.reducedCo2e(0)
+			.build();
+
+		echoSavingRepository.save(echoSaving);
 
 		return UserResponse.from(user);
 	}
