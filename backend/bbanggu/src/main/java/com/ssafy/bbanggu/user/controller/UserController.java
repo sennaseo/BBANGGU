@@ -59,11 +59,8 @@ public class UserController {
 			throw new CustomException(ErrorCode.INVALID_ACCESS_TOKEN);
 		}
 
-		// ✅ email 가져오기
-		String email = authentication.getName();
-
-		// ✅ email로 userId 조회
-		Long userId = userService.getUserIdByEmail(email);
+		// ✅ userId 가져오기
+		Long userId = Long.parseLong(authentication.getName());
 
 		// ✅ 회원 탈퇴 처리 (논리 삭제)
 		userService.delete(userId);
@@ -133,11 +130,8 @@ public class UserController {
 			throw new CustomException(ErrorCode.INVALID_ACCESS_TOKEN);
 		}
 
-		// ✅ email 가져오기
-		String email = authentication.getName();
-
-		// ✅ email로 userId 조회
-		Long userId = userService.getUserIdByEmail(email);
+		// ✅ userId 가져오기
+		Long userId = Long.parseLong(authentication.getName());
 
 		// ✅ 로그아웃 처리 (Refresh Token 삭제)
 		userService.logout(userId);
@@ -174,11 +168,8 @@ public class UserController {
 			throw new CustomException(ErrorCode.INVALID_ACCESS_TOKEN);
 		}
 
-		// ✅ email 가져오기
-		String email = authentication.getName();
-
-		// ✅ email로 userId 조회
-		Long userId = userService.getUserIdByEmail(email);
+		// ✅ userId 가져오기
+		Long userId = Long.parseLong(authentication.getName());
 
 		// ✅ 변경할 필드만 업데이트
 		userService.update(userId, updates);

@@ -37,32 +37,38 @@ public class JwtTokenProvider {
 	}
 
 	// ✅ Access Token 생성
-	public String createAccessToken(String email) {
-		System.out.println("accessToken 생성 시작");
-		String accessToken = generateToken(email, accessTokenValidity);
-		System.out.println("accessToken 생성 완료");
-		return accessToken;
+	public String createAccessToken(Long userId) {
+		return generateToken(userId, accessTokenValidity);
 	}
 
 	// ✅ Refresh Token 생성
-	public String createRefreshToken(String email) {
-		return generateToken(email, refreshTokenValidity);
+	public String createRefreshToken(Long userId) {
+		return generateToken(userId, refreshTokenValidity);
 	}
 
 	// ✅ 공통 JWT 생성 로직
-	private String generateToken(String email, long validity) {
+	private String generateToken(Long userId, long validity) {
 		return Jwts.builder()
-				.setSubject(email) // 사용자 이메일 (ID) 저장
+				.setSubject(String.valueOf(userId)) // 사용자 아이디 저장
 				.setIssuedAt(new Date()) // 발급 시간
 				.setExpiration(new Date(System.currentTimeMillis() + validity)) // 만료시간 설정
 				.signWith(secretKey, SignatureAlgorithm.HS256) // HS256 알고리즘 사용
 				.compact();
 	}
 
-	// ✅ JWT에서 사용자 이메일 추출
-	public String getEmailFromToken(String token) {
-		return Jwts.parserBuilder().setSigningKey(secretKey).build()
-				.parseClaimsJws(token).getBody().getSubject();
+	// ✅ JWT에서 사용자 아이디 추출 (String -> Long 변환)
+	public Long getUserIdFromToken(String token) {
+		try {
+			String userIdStr = Jwts.parserBuilder()
+				.setSigningKey(secretKey)
+				.build()
+				.parseClaimsJws(token)
+				.getBody()
+				.getSubject();
+			return Long.parseLong(userIdStr); // String을 Long으로 변환
+		} catch (NumberFormatException e) {
+			throw new CustomException(ErrorCode.TOKEN_VERIFICATION_FAILED);
+		}
 	}
 
 	// ✅ JWT 검증

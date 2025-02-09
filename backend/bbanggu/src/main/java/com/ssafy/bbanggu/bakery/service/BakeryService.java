@@ -22,7 +22,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -76,8 +75,8 @@ public class BakeryService {
 
 	// ID로 가게 조회
 	@Transactional(readOnly = true)
-	public BakeryDetailDto findById(Long id, double userLat, double userLng) {
-		Bakery bakery = bakeryRepository.findByBakeryIdAndDeletedAtIsNull(id); // 삭제되지 않은 것만;
+	public BakeryDetailDto findById(Long bakery_id, double userLat, double userLng) {
+		Bakery bakery = bakeryRepository.findByBakeryIdAndDeletedAtIsNull(bakery_id); // 삭제되지 않은 것만;
 		if (bakery == null) {
 			throw new CustomException(ErrorCode.BAKERY_NOT_FOUND);
 		}
@@ -87,7 +86,7 @@ public class BakeryService {
 		return BakeryDetailDto.from(bakery, distance);
 	}
 
-	private double calculateDistance(double lat1, double lng1, double lat2, double lng2) {
+	public double calculateDistance(double lat1, double lng1, double lat2, double lng2) {
 		final int R = 6371; // 지구 반지름 (단위: km)
 
 		double dLat = Math.toRadians(lat2 - lat1);
@@ -143,17 +142,7 @@ public class BakeryService {
 
 	// 가게 수정
 	@Transactional
-	public BakeryDto update(String curEmail, Long bakery_id, BakeryDto updates) {
-		Bakery bakery = bakeryRepository.findByBakeryIdAndDeletedAtIsNull(bakery_id); // 삭제되지 않은 것만
-		if (bakery == null) {
-			throw new CustomException(ErrorCode.BAKERY_NOT_FOUND);
-		}
-
-		// ✅ 현재 로그인한 사용자가 이 가게의 주인인지 검증
-		if (!bakery.getUser().getEmail().equals(curEmail)) {
-			throw new CustomException(ErrorCode.NO_PERMISSION_TO_EDIT_BAKERY);
-		}
-
+	public BakeryDto update(Bakery bakery, BakeryDto updates) {
 		// ✅ 수정하려는 가게명 중복 검사
 		if (updates.name() != null && bakeryRepository.existsByNameAndBakeryIdNot(updates.name(), bakery.getBakeryId())) {
 			throw new CustomException(ErrorCode.BAKERY_NAME_ALREADY_IN_USE);
@@ -184,16 +173,9 @@ public class BakeryService {
 
 	// 가게 삭제 (Soft Delete)
 	@Transactional
-	public String delete(Long id) {
-		Bakery bakery = bakeryRepository.findByBakeryIdAndDeletedAtIsNull(id); // 삭제되지 않은 것만
-		if (bakery == null) {
-			throw new IllegalArgumentException("가게를 찾을 수 없습니다. ID: " + id);
-		}
-
+	public void delete(Bakery bakery) {
 		bakery.setDeletedAt(LocalDateTime.now());
 		bakeryRepository.save(bakery);
-
-		return "가게 " + id + " 를 삭제했습니다.";
 	}
 
 

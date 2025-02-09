@@ -118,7 +118,7 @@ public class KakaoAuthService {
 				});
 
 			// ✅ 4. JWT 발급
-			JwtToken jwtToken = new JwtToken(jwtUtil.createAccessToken(user.getEmail()), jwtUtil.createRefreshToken(user.getEmail()));
+			JwtToken jwtToken = new JwtToken(jwtUtil.createAccessToken(user.getUserId()), jwtUtil.createRefreshToken(user.getUserId()));
 			System.out.println("✅ JWT 발급 완료: " + jwtToken);
 
 			// ✅ 5. Refresh Token 저장 (즉시 반영)

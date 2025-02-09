@@ -1,56 +1,68 @@
 package com.ssafy.bbanggu.favorite;
 
-import com.ssafy.bbanggu.bakery.Bakery;
-import com.ssafy.bbanggu.bakery.dto.BakeryDto;
-import com.ssafy.bbanggu.favorite.dto.FavoriteDto;
-import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import com.ssafy.bbanggu.bakery.dto.BakeryDetailDto;
+import com.ssafy.bbanggu.common.exception.CustomException;
+import com.ssafy.bbanggu.common.exception.ErrorCode;
+import com.ssafy.bbanggu.common.response.ApiResponse;
 
-import java.util.List;
-import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/favorite")
 @RequiredArgsConstructor
 public class FavoriteController {
 
-
 	private final FavoriteService favoriteService;
 
 	// 관심 가게 등록
-	@PostMapping
-	public ResponseEntity<String> addFavorite(@RequestBody FavoriteDto favoriteDto) {
-		try {
-			String response = favoriteService.addFavorite(favoriteDto.userId(), favoriteDto.bakeryId());
-			return ResponseEntity.status(201).body(response);
-		} catch (IllegalArgumentException e) {
-			return ResponseEntity.badRequest().body(e.getMessage());  // 400 상태 코드
-		}
+	@PostMapping("/{bakery_id}")
+	public ResponseEntity<ApiResponse> addFavorite(Authentication authentication, @PathVariable Long bakery_id) {
+		favoriteService.addFavorite(Long.parseLong(authentication.getName()), bakery_id);
+		return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse("관심가게 등록이 완료되었습니다.", null));
 	}
 
 	// 관심 가게 취소
-	@PostMapping("/remove")
-	public ResponseEntity<String> removeFavorite(@RequestBody FavoriteDto favoriteDto) {
+	@DeleteMapping("/{bakery_id}")
+	public ResponseEntity<ApiResponse> removeFavorite(Authentication authentication, @PathVariable Long bakery_id) {
 		try {
-			String response = favoriteService.removeFavorite(favoriteDto.userId(), favoriteDto.bakeryId());
-			return ResponseEntity.ok(response);
+			favoriteService.removeFavorite(Long.parseLong(authentication.getName()), bakery_id);
+			return ResponseEntity.ok().body(new ApiResponse("관심 가게 취소가 완료되었습니다.", null));
 		} catch (IllegalArgumentException e) {
-			return ResponseEntity.badRequest().body(e.getMessage());  // 400 상태 코드
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse("관심 가게 취소가 실패하였습니다.", null));  // 400 상태 코드
 		}
 	}
 
 	// 유저가 좋아요한 가게 조회
 	@GetMapping
-	public ResponseEntity<List<BakeryDto>> getFavoriteBakeries(@RequestParam Long userId) {
+	public ResponseEntity<ApiResponse> getFavoriteBakeries(
+		Authentication authentication,
+		@PageableDefault(size = 10) Pageable pageable,
+		@RequestParam(required = false) Double lat,
+		@RequestParam(required = false) Double lng
+	) {
+		// 📌 사용자 위치 default: 서울 성수동
+		if (lat == null || lng == null) {
+			lat = 37.5446;
+			lng = 127.0553;
+		}
+
 		try {
-			List<Bakery> bakeries = favoriteService.findAllFavorites(userId);
-			List<BakeryDto> bakeryDtos = bakeries.stream()
-				.map(BakeryDto::from)
-				.collect(Collectors.toList());
-			return ResponseEntity.ok(bakeryDtos);
-		} catch (Exception e) {
-			return ResponseEntity.badRequest().body(null);  // 예외 발생 시 400 상태 코드
+			Long userId = Long.parseLong(authentication.getName());
+			Page<BakeryDetailDto> bakeries = favoriteService.findAllFavorites(userId, lat, lng, pageable);
+
+			return ResponseEntity.ok().body(new ApiResponse("사용자가 관심가게로 등록한 모든 가게를 조회하였습니다.", bakeries));
+		} catch (NumberFormatException e) {
+			throw new CustomException(ErrorCode.TOKEN_VERIFICATION_FAILED);
+		} catch (IllegalArgumentException e) {
+			throw new CustomException(ErrorCode.USER_NOT_FOUND);
 		}
 	}
 }

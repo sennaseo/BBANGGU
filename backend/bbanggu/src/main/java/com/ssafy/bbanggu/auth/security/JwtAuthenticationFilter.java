@@ -11,18 +11,18 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
+
 import java.io.IOException;
 
+import com.ssafy.bbanggu.auth.service.CustomUserDetailsService;
+
 @Component
+@RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
 	private final JwtTokenProvider jwtTokenProvider;
-	private final UserDetailsService userDetailsService;
-
-	public JwtAuthenticationFilter(JwtTokenProvider jwtTokenProvider, UserDetailsService userDetailsService) {
-		this.jwtTokenProvider = jwtTokenProvider;
-		this.userDetailsService = userDetailsService;
-	}
+	private final CustomUserDetailsService userDetailsService;
 
 	@Override
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
@@ -34,8 +34,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
 		// 2️⃣ 토큰이 존재하고, 유효한 경우에만 인증 처리
 		if (token != null && jwtTokenProvider.validateToken(token)) {
-			String userEmail = jwtTokenProvider.getEmailFromToken(token);
-			UserDetails userDetails = userDetailsService.loadUserByUsername(userEmail);
+			Long userId = jwtTokenProvider.getUserIdFromToken(token);
+			UserDetails userDetails = userDetailsService.loadUserById(userId);
 
 			// 3️⃣ SecurityContext에 사용자 정보 저장
 			UsernamePasswordAuthenticationToken authentication =

@@ -39,6 +39,10 @@ public enum ErrorCode {
 	BREAD_PACKAGE_NOT_FOUND(2200, HttpStatus.NOT_FOUND, "빵꾸러미를 찾을 수 없습니다."),
 	BREAD_PACKAGE_QUANTITY_CONFLICT(2001, HttpStatus.CONFLICT, "빵꾸러미가 부족합니다."),
 
+	// ✅ 관심 가게 관련 예외 (2300번대)
+	ALREADY_FAVORITE(2300, HttpStatus.BAD_REQUEST, "이미 관심가게로 등록된 빵집입니다."),
+	BAKERY_NOT_FAVORITE(2301, HttpStatus.BAD_REQUEST, "좋아요 하지 않은 가게입니다."),
+
 	// 예약 관련 예외 (2300번대)
 	RESERVATION_NOT_FOUND(2300, HttpStatus.NOT_FOUND, "예약 정보를 찾을 수 없습니다."),
 	PAYMENT_NOT_VALID(2301, HttpStatus.BAD_REQUEST, "결제 정보가 다릅니다."),

@@ -90,36 +90,27 @@ public class UserService { // 사용자 관련 비즈니스 로직 처리
         // 이메일로 사용자 조회
         User user = userRepository.findByEmail(email)
 			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
-		System.out.println("이메일로 사용자 조회 완료");
 
         // 논리적으로 삭제된 사용자 처리
         if (user.isDeleted()) {
 			throw new CustomException(ErrorCode.ACCOUNT_DEACTIVATED);
         }
-		System.out.println("현재 사용자는 회원탈퇴를 하지 않음");
 
         // 비밀번호 검증
         if (!passwordEncoder.matches(password, user.getPassword())) {
 			throw new CustomException(ErrorCode.INVALID_PASSWORD);
         }
-		System.out.println("사용자가 입력한 이메일과 비밀번호가 일치함");
 
         // ✅ JWT 토큰 생성
-		String accessToken = jwtTokenProvider.createAccessToken(email);
-		String refreshToken = jwtTokenProvider.createRefreshToken(email);
-		System.out.println("토큰 생성 완료");
+		String accessToken = jwtTokenProvider.createAccessToken(user.getUserId());
+		String refreshToken = jwtTokenProvider.createRefreshToken(user.getUserId());
 
         // ✅ Refresh Token을 DB 저장
         user.setRefreshToken(refreshToken);
         userRepository.save(user);
-		System.out.println("refresh token 데이터베이스에 저장 완료");
 
         // ✅ 응답 데이터 생성
-        // Map<String, String> tokens = new HashMap<>();
-		// tokens.put("access_token", Token.getAccessToken());
-		// tokens.put("refresh_token", Token.getRefreshToken());
 		JwtToken tokens = new JwtToken(accessToken, refreshToken);
-
         return tokens;
     }
 
