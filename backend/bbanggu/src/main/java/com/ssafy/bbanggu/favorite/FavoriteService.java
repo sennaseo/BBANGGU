@@ -92,4 +92,21 @@ public class FavoriteService {
 
 		return new PageImpl<>(bakeryDetailDtos, pageable, bakeries.getTotalElements());
 	}
+
+	@Transactional(readOnly = true)
+	public List<BakeryDetailDto> getTop10ByFavorites() {
+		return bakeryRepository.findTop10ByFavorites().stream()
+			.map(bakery -> BakeryDetailDto.from(bakery, 0))
+			.toList();
+	}
+
+	@Transactional(readOnly = true)
+	public List<BakeryDetailDto> getTop10ByFavoritesWithLocation(double userLat, double userLng) {
+		return bakeryRepository.findBestBakeriesByLocation(userLat, userLng).stream()
+			.map(bakery -> {
+				double distance = bakeryService.calculateDistance(userLat, userLng, bakery.getLatitude(), bakery.getLongitude());
+				return BakeryDetailDto.from(bakery, distance);
+			})
+			.toList();
+	}
 }

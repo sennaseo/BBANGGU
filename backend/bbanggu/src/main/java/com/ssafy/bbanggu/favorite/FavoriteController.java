@@ -1,9 +1,13 @@
 package com.ssafy.bbanggu.favorite;
 
+import java.util.List;
+
 import com.ssafy.bbanggu.bakery.dto.BakeryDetailDto;
 import com.ssafy.bbanggu.common.exception.CustomException;
 import com.ssafy.bbanggu.common.exception.ErrorCode;
 import com.ssafy.bbanggu.common.response.ApiResponse;
+import com.ssafy.bbanggu.user.domain.User;
+import com.ssafy.bbanggu.user.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -21,6 +25,7 @@ import org.springframework.web.bind.annotation.*;
 public class FavoriteController {
 
 	private final FavoriteService favoriteService;
+	private final UserRepository userRepository;
 
 	// 관심 가게 등록
 	@PostMapping("/{bakery_id}")
@@ -64,5 +69,30 @@ public class FavoriteController {
 		} catch (IllegalArgumentException e) {
 			throw new CustomException(ErrorCode.USER_NOT_FOUND);
 		}
+	}
+
+	// BEST 가게 조회
+	@GetMapping("/best")
+	public ResponseEntity<ApiResponse> getBestBakeries(Authentication authentication) {
+		List<BakeryDetailDto> bestBakeries;
+
+		// 아직 회원가입을 하지 않은 사용자인 경우
+		if (authentication == null) {
+			bestBakeries = favoriteService.getTop10ByFavorites();
+			return ResponseEntity.ok().body(new ApiResponse("BEST 가게 조회에 성공하였습니다.", bestBakeries));
+		}
+
+		Long userId = Long.parseLong(authentication.getName());
+		User user = userRepository.findById(userId)
+			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+		// 아직 주소를 등록하지 않은 회원
+		if (user.getLatitude() == 0 || user.getLongitude() == 0) {
+			bestBakeries = favoriteService.getTop10ByFavorites();
+		} else { // 주소를 등록한 회원
+			bestBakeries = favoriteService.getTop10ByFavoritesWithLocation(user.getLatitude(), user.getLongitude());
+		}
+
+		return ResponseEntity.ok().body(new ApiResponse("BEST 가게 조회에 성공하였습니다.", bestBakeries));
 	}
 }
