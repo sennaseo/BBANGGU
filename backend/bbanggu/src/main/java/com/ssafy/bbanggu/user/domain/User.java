@@ -62,6 +62,22 @@ public class User {
 	@Column(length = 512)
 	private String refreshToken;
 
+	@Column
+	@Setter
+	private String addressRoad;
+
+	@Column
+	@Setter
+	private String addressDetail;
+
+	@Column
+	@Setter
+	private Double latitude;
+
+	@Column
+	@Setter
+	private Double longitude;
+
 	@CreationTimestamp
 	@Column(name = "created_at", updatable = false)
 	private LocalDateTime createAt;

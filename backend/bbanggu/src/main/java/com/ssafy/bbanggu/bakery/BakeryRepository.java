@@ -36,6 +36,24 @@ public interface BakeryRepository extends JpaRepository<Bakery, Long> {
 		+ "OR LOWER(b.addressRoad) LIKE LOWER(CONCAT('%', :keyword, '%')) "
 		+ "OR LOWER(b.description) LIKE LOWER(CONCAT('%', :keyword, '%'))) AND b.deletedAt IS NULL")
 	Page<Bakery> searchByKeyword(@Param("keyword") String keyword, Pageable pageable);
+
+	@Query("SELECT b FROM Bakery b " +
+		"LEFT JOIN b.favorites f " +
+		"GROUP BY b.bakeryId " +
+		"ORDER BY COUNT(f) DESC " +
+		"LIMIT 10")
+	List<Bakery> findTop10ByFavorites();
+
+	@Query("SELECT b FROM Bakery b " +
+		"LEFT JOIN b.favorites f " +
+		"WHERE FUNCTION('ST_Distance_Sphere', " +
+		"    POINT(b.longitude, b.latitude), " +
+		"    POINT(:longitude, :latitude)) <= 5000 " +
+		"GROUP BY b.bakeryId " +
+		"ORDER BY COUNT(f) DESC " +
+		"LIMIT 10")
+	List<Bakery> findBestBakeriesByLocation(@Param("latitude") double userLat, @Param("longitude") double userLng);
+
 	Page<Bakery> findByNameContainingAndDeletedAtIsNull(String keyword, Pageable pageable);
 
 	// // 사용자 ID로 가게 목록 조회
