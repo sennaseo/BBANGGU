@@ -1,9 +1,91 @@
+import { useState } from 'react';
+import { EllipsisVerticalIcon, PencilSquareIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { useNavigate } from 'react-router-dom';
 import breadPackageIcon from '../../../../assets/images/bakery/bread_pakage.svg';
 
 export const BreadPackageInfo = () => {
+  const [showMenu, setShowMenu] = useState(false);
+  const [hasPackage, setHasPackage] = useState(true);
+  const navigate = useNavigate();
+
+  const handleEdit = () => {
+    navigate('/owner/package/register', {
+      state: {
+        isEditing: true,
+        packageInfo: {
+          price: 2000,
+          quantity: 6,
+          totalPrice: 12000
+          // 기타 필요한 정보들...
+        }
+      }
+    });
+    setShowMenu(false);
+  };
+
+  const handleDelete = () => {
+    if (window.confirm('빵꾸러미를 삭제하시겠습니까?')) {
+      setHasPackage(false);
+      setShowMenu(false);
+    }
+  };
+
+  if (!hasPackage) {
+    return (
+      <div className="flex flex-col items-center justify-center py-12 px-4 bg-[#F9F9F9] rounded-[10px] border border-dashed border-[#E5E5E5] mb-6">
+        <img 
+          src={breadPackageIcon} 
+          alt="빵꾸러미" 
+          className="w-16 h-16 mb-4 opacity-50"
+        />
+        <p className="text-[#6B7280] text-center mb-6">
+          등록된 빵꾸러미가 없습니다<br/>
+          새로운 빵꾸러미를 등록해보세요!
+        </p>
+        <button
+          onClick={() => navigate('/owner/package/guide')}
+          className="px-6 py-3 bg-[#FC973B] text-white rounded-[8px] hover:bg-[#e88934] transition-colors"
+        >
+          빵꾸러미 등록하기
+        </button>
+      </div>
+    );
+  }
+
   return (
     <>
-      <h2 className="text-[20px] font-bold mb-4">빵꾸러미 정보</h2>
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-[20px] font-bold">빵꾸러미 정보</h2>
+        {/* 더보기 버튼 */}
+        <div className="relative">
+          <button
+            onClick={() => setShowMenu(!showMenu)}
+            className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+          >
+            <EllipsisVerticalIcon className="w-6 h-6 text-[#6B7280]" />
+          </button>
+
+          {/* 드롭다운 메뉴 */}
+          {showMenu && (
+            <div className="absolute top-11 right-0 bg-white shadow-[0_4px_20px_rgba(0,0,0,0.15)] rounded-[12px] border border-[#EFEFEF] py-2 z-10 w-32 overflow-hidden">
+              <button
+                onClick={handleEdit}
+                className="w-full px-4 py-2.5 text-left text-sm hover:bg-[#FFF9F5] text-[#242424] flex items-center gap-2 transition-colors"
+              >
+                <PencilSquareIcon className="w-4 h-4" />
+                수정하기
+              </button>
+              <button
+                onClick={handleDelete}
+                className="w-full px-4 py-2.5 text-left text-sm hover:bg-[#FFF9F5] text-red-500 flex items-center gap-2 transition-colors"
+              >
+                <TrashIcon className="w-4 h-4" />
+                삭제하기
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
 
       <div className="bg-[#F9F9F9] rounded-[10px] p-4 mb-6 mx-auto border border-[#FC973B] w-[400px] h-[251px] flex-shrink-0">
         <p className="text-sm text-[#333333] font-bold mb-3">빵꾸러미 1개당</p>
