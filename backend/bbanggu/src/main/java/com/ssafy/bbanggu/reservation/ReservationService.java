@@ -1,6 +1,9 @@
 package com.ssafy.bbanggu.reservation;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,7 +33,7 @@ public class ReservationService {
 	private final JwtTokenProvider jwtTokenProvider;
 
 	public ReservationService(ReservationRepository reservationRepository, PaymentService paymentService,
-		JwtTokenProvider jwtTokenProvider) {
+							  JwtTokenProvider jwtTokenProvider) {
 		this.reservationRepository = reservationRepository;
 		this.paymentService = paymentService;
 		this.jwtTokenProvider = jwtTokenProvider;
@@ -86,17 +89,37 @@ public class ReservationService {
 		reservation.setStatus("PICKUP_COMPLETED");
 	}
 
-	public List<ReservationDTO> getUserReservationList(String authorization) {
+	public List<ReservationDTO> getUserReservationList(String authorization, LocalDate startDate, LocalDate endDate) {
 		String token = authorization.replace("Bearer ", "");
 		long userId = jwtTokenProvider.getUserIdFromToken(token);
 
-		List<Reservation> reservationList = reservationRepository.findByUser_UserId(userId);
+		LocalDateTime startDateTime = startDate.atStartOfDay();
+		LocalDateTime endDateTime = endDate.atTime(LocalTime.MAX);
+
+		List<Reservation> reservationList = reservationRepository.findByUser_UserIdAndReservationCreatedAtBetween(userId, startDateTime, endDateTime);
 		List<ReservationDTO> reservationDTOList = new ArrayList<>();
 		for (Reservation reservation : reservationList) {
 			reservationDTOList.add(entityToDto(reservation));
 		}
 		return reservationDTOList;
 	}
+
+	public List<ReservationDTO> getOwnerReservationList(String authorization, long bakeryId, LocalDate startDate, LocalDate endDate) {
+		String token = authorization.replace("Bearer ", "");
+		long userId = jwtTokenProvider.getUserIdFromToken(token);
+		// TODO: bakeryId와 UserId로 소유자 검증 필요
+
+		LocalDateTime startDateTime = startDate.atStartOfDay();
+		LocalDateTime endDateTime = endDate.atTime(LocalTime.MAX);
+
+		List<Reservation> reservationList = reservationRepository.findByBakery_BakeryIdAndReservationCreatedAtBetween(bakeryId, startDateTime, endDateTime);
+		List<ReservationDTO> reservationDTOList = new ArrayList<>();
+		for (Reservation reservation : reservationList) {
+			reservationDTOList.add(entityToDto(reservation));
+		}
+		return reservationDTOList;
+	}
+
 
 	/* =========== 유틸성 메소드 ============= */
 
@@ -152,5 +175,4 @@ public class ReservationService {
 		}
 		return reservation.getUser().getUserId() == userId;
 	}
-
 }

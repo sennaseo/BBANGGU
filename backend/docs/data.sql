@@ -165,8 +165,27 @@ VALUES
  INSERT INTO `bbanggu`.`bread_package` 
 (`bakery_id`, `name`, `price`, `discount_rate`, `quantity`, `description`) 
 VALUES 
-(1, '빵꾸러미1', 50000, 20, 2, '1번 빵꾸러미 설명입니다.');
+(1, '빵꾸러미1', 50000, 20, 2, '1번 빵꾸러미 설명입니다.'),
+(2, '빵꾸러미2', 6000, 30, 5, '2번 빵꾸러미 설명입니다.'),
+(3, '빵꾸러미3', 2500, 40, 7, '3번 빵꾸러미 설명입니다.');
 
+
+INSERT INTO `bbanggu`.`reservation` (
+    `user_id`, `bakery_id`, `bread_package_id`, `quantity`, `total_price`, 
+    `reserved_pickup_time`, `pickup_at`, `created_at`, `cancelled_at`, `status`, `order_id`
+) VALUES
+-- Bakery 1 (2개)
+(103, 1, 1, 1, 50000, '2025-02-15 10:00:00', NULL, '2025-02-10 09:00:00', NULL, 'CONFIRMED', 'ORD-20250210-001'),
+(102, 1, 1, 1, 50000, '2025-02-16 15:00:00', NULL, '2025-02-11 10:30:00', NULL, 'PENDING', 'ORD-20250211-002'),
+
+-- Bakery 2 (3개)
+(101, 2, 2, 3, 18000, '2025-02-17 08:30:00', NULL, '2025-02-12 08:00:00', NULL, 'CONFIRMED', 'ORD-20250212-003'),
+(103, 2, 2, 2, 12000, '2025-02-18 14:00:00', NULL, '2025-02-13 12:15:00', NULL, 'CANCELLED', 'ORD-20250213-004'),
+(104, 2, 2, 4, 24000, '2025-02-19 17:30:00', NULL, '2025-02-14 16:45:00', NULL, 'CONFIRMED', 'ORD-20250214-005'),
+
+-- Bakery 3 (2개)
+(102, 3, 3, 2, 12500, '2025-02-20 09:45:00', NULL, '2025-02-15 14:30:00', NULL, 'CONFIRMED', 'ORD-20250215-006'),
+(105, 3, 3, 3, 7500, '2025-02-21 18:20:00', NULL, '2025-02-16 17:40:00', NULL, 'PENDING', 'ORD-20250216-007');
 
  use bbanggu;
  select * from user;
@@ -177,7 +196,6 @@ VALUES
  select * from bread_package;
  select * from reservation;
  
- delete from reservation where reservation_id = 3;
  
  
  
