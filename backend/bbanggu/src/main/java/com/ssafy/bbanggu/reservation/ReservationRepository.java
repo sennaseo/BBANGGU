@@ -7,8 +7,8 @@ import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface ReservationRepository extends JpaRepository<Reservation, Long> {
-	List<Reservation> findByUser_UserIdAndReservationCreatedAtBetween(long userId, LocalDateTime startDate, LocalDateTime endDate);
+	List<Reservation> findByUser_UserIdAndCreatedAtBetween(long userId, LocalDateTime startDate, LocalDateTime endDate);
 
-	List<Reservation> findByBakery_BakeryIdAndReservationCreatedAtBetween(long bakeryId, LocalDateTime startDate, LocalDateTime endDate);
+	List<Reservation> findByBakery_BakeryIdAndCreatedAtBetween(long bakeryId, LocalDateTime startDate, LocalDateTime endDate);
 
 }

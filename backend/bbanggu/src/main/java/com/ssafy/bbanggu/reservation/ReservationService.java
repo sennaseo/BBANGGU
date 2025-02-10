@@ -96,7 +96,7 @@ public class ReservationService {
 		LocalDateTime startDateTime = startDate.atStartOfDay();
 		LocalDateTime endDateTime = endDate.atTime(LocalTime.MAX);
 
-		List<Reservation> reservationList = reservationRepository.findByUser_UserIdAndReservationCreatedAtBetween(userId, startDateTime, endDateTime);
+		List<Reservation> reservationList = reservationRepository.findByUser_UserIdAndCreatedAtBetween(userId, startDateTime, endDateTime);
 		List<ReservationDTO> reservationDTOList = new ArrayList<>();
 		for (Reservation reservation : reservationList) {
 			reservationDTOList.add(entityToDto(reservation));
@@ -112,7 +112,7 @@ public class ReservationService {
 		LocalDateTime startDateTime = startDate.atStartOfDay();
 		LocalDateTime endDateTime = endDate.atTime(LocalTime.MAX);
 
-		List<Reservation> reservationList = reservationRepository.findByBakery_BakeryIdAndReservationCreatedAtBetween(bakeryId, startDateTime, endDateTime);
+		List<Reservation> reservationList = reservationRepository.findByBakery_BakeryIdAndCreatedAtBetween(bakeryId, startDateTime, endDateTime);
 		List<ReservationDTO> reservationDTOList = new ArrayList<>();
 		for (Reservation reservation : reservationList) {
 			reservationDTOList.add(entityToDto(reservation));
