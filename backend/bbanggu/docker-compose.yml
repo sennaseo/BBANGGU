@@ -30,6 +30,7 @@ services:
       dockerfile: Dockerfile
       # args:
     #    command: ./gradlew build && java -jar bbanggu-0.0.1-SNAPSHOT.jar
+    image: bbanggu-server
     container_name: bbanggu-server
     depends_on:
       db:
