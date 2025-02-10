@@ -1,38 +1,24 @@
-// import axios from "axios"
-import type { BakeryType, PackageType } from "../../types/bakery"
-import { mockBakeries } from "../../mocks/user/bakeryMockData"
-
-// const api = axios.create({
-//   baseURL: "https://api.example.com", // Replace with your actual API base URL
-// })
+import { mainApi } from '../../api/user/main/mainApi';
+import type { BakeryType, PackageType } from '../../types/bakery';
 
 export async function fetchBestPackages(): Promise<PackageType[]> {
   try {
-    // Uncomment the following line when your API is ready
-    // const response = await api.get<PackageType[]>('/best-packages')
-    // return response.data
-
-    // For now, we'll use the mock data
-    await new Promise((resolve) => setTimeout(resolve, 500)) // Simulate API delay
-    return mockBakeries.map((bakery) => bakery.bread_package)
+    // TODO: 패키지 API 구현 후 수정
+    await mainApi.getAllBakeries();
+    return [];
   } catch (error) {
-    console.error("Error fetching best packages:", error)
-    throw error
+    console.error("베스트 패키지 조회 실패:", error);
+    throw error;
   }
 }
 
 export async function fetchRecommendedStores(): Promise<BakeryType[]> {
   try {
-    // Uncomment the following line when your API is ready
-    // const response = await api.get<BakeryType[]>('/recommended-stores')
-    // return response.data
-
-    // For now, we'll use the mock data
-    await new Promise((resolve) => setTimeout(resolve, 500)) // Simulate API delay
-    return mockBakeries
+    const response = await mainApi.getAllBakeries();
+    return response.data;
   } catch (error) {
-    console.error("Error fetching recommended stores:", error)
-    throw error
+    console.error("추천 매장 조회 실패:", error);
+    throw error;
   }
 }
 

@@ -32,29 +32,17 @@ export interface PackageType {
 }
 
 export interface BakeryType {
-  bakery_id: number
-  user_id: number
-  name: string
-  description: string
-  business_registration_number: string
-  address_road: string
-  address_detail: string
-  photo_url: string
-  background_image_url: string
-  latitude: number
-  longitude: number
-  created_at: string
-  updated_at: string
-  deleted_at?: string
-  likes_count: number
-  rating: number
-  review_count: number
-  distance: string
-  hours: string
-  price: number
-  original_price: number
-  is_liked: boolean
-  bread_package: PackageType
+  bakeryId: number;
+  userId: number;
+  name: string;
+  description: string;
+  businessRegistrationNumber: string;
+  addressRoad: string;
+  addressDetail: string;
+  photoUrl: string | null;
+  star: number;
+  distance: number;
+  package: PackageType[];
 }
 
 export interface ReservationType {
