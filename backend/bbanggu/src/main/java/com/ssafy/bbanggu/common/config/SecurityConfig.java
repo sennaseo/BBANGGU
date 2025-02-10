@@ -14,6 +14,8 @@ import com.ssafy.bbanggu.auth.security.JwtAuthenticationFilter;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 
+import static org.springframework.security.config.Customizer.withDefaults;
+
 @Configuration
 @RequiredArgsConstructor
 public class SecurityConfig {
@@ -22,6 +24,7 @@ public class SecurityConfig {
 	@Bean
 	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 		http
+			.cors(withDefaults())// ✅ Spring Security의 기본 CORS 정책 비활성화
 			.csrf(csrf -> csrf.disable()) // ✅ CSRF 보호 비활성화
 			.authorizeHttpRequests(auth -> auth
 				.requestMatchers(
