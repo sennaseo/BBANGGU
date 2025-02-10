@@ -16,10 +16,10 @@ public class WebConfig implements WebMvcConfigurer {
 	@Override
 	public void addCorsMappings(CorsRegistry registry) {
 		registry.addMapping("/**")
-			.allowedOriginPatterns("http://localhost:*") // ✅ 모든 로컬 포트 허용
+			.allowedOrigins("http://localhost:5173")  // ✅ 특정 Origin 명시
 			.allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
-			.allowedHeaders("*")	 // 모든 헤더 허용
-			.allowCredentials(true)
-			.exposedHeaders("Access-Control-Allow-Origin"); // 클라이언트에서 헤더 접근 가능하도록 설정
+			.allowedHeaders("*")
+			.allowCredentials(true);  // ✅ allowCredentials(true) 사용 시, 정확한 Origin 필요
 	}
+
 }
