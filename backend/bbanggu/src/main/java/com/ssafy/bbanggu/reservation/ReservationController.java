@@ -1,5 +1,6 @@
 package com.ssafy.bbanggu.reservation;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
@@ -27,7 +28,7 @@ public class ReservationController {
 
 	@PostMapping("/create")
 	public ResponseEntity<?> create(@RequestBody ReservationDTO reservationDto, @RequestParam String orderId,
-		@RequestParam String paymentKey, @RequestParam int amount) {
+									@RequestParam String paymentKey, @RequestParam int amount) {
 		try {
 			reservationService.createReservation(reservationDto, orderId, paymentKey, amount);
 			return ResponseEntity.status(HttpStatus.CREATED)
@@ -40,7 +41,7 @@ public class ReservationController {
 
 	@PostMapping("/cancel")
 	public ResponseEntity<?> cancel(@RequestParam long reservationId, @RequestParam String cancelReason,
-		@RequestHeader("Authorization") String authorization) {
+									@RequestHeader("Authorization") String authorization) {
 		if (!reservationService.check(reservationId, authorization)) {
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
 				.body(new ApiResponse("사용자의 예약이 아닙니다.", null));
@@ -58,7 +59,7 @@ public class ReservationController {
 
 	@PutMapping("/pickup/{reservationId}")
 	public ResponseEntity<?> pickup(@PathVariable long reservationId,
-		@RequestHeader("Authorization") String authorization) {
+									@RequestHeader("Authorization") String authorization) {
 		if (!reservationService.check(reservationId, authorization)) {
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
 				.body(new ApiResponse("사용자의 예약이 아닙니다.", null));
@@ -74,10 +75,10 @@ public class ReservationController {
 		}
 	}
 
-	@GetMapping("")
-	public ResponseEntity<?> getUserReservationList(@RequestHeader("Authorization") String authorization) {
+	@GetMapping("/{startDate}/{endDate}")
+	public ResponseEntity<?> getUserReservationList(@RequestHeader("Authorization") String authorization, @PathVariable LocalDate startDate, @PathVariable LocalDate endDate) {
 		try {
-			List<ReservationDTO> reservationList = reservationService.getUserReservationList(authorization);
+			List<ReservationDTO> reservationList = reservationService.getUserReservationList(authorization, startDate, endDate);
 			if (reservationList.isEmpty()) {
 				ResponseEntity.status(HttpStatus.NO_CONTENT)
 					.body(new ApiResponse("예약이 없습니다.", null));
@@ -87,6 +88,23 @@ public class ReservationController {
 		} catch (Exception e) {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
 				.body(new ApiResponse("사용자 예약 현황 조회 실패", null));
+		}
+	}
+
+	@GetMapping("/bakery/{bakeryId}/{startDate}/{endDate}")
+	public ResponseEntity<?> getOwnerReservationList(@RequestHeader("Authorization") String authorization, @PathVariable long bakeryId,
+													 @PathVariable LocalDate startDate, @PathVariable LocalDate endDate) {
+		try {
+			List<ReservationDTO> reservationList = reservationService.getOwnerReservationList(authorization, bakeryId, startDate, endDate);
+			if (reservationList.isEmpty()) {
+				ResponseEntity.status(HttpStatus.NO_CONTENT)
+					.body(new ApiResponse("예약이 없습니다.", null));
+			}
+			return ResponseEntity.status(HttpStatus.OK)
+				.body(new ApiResponse("가게 예약 현황 조회 성공", reservationList));
+		} catch (Exception e) {
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+				.body(new ApiResponse("가게 예약 현황 조회 실패", null));
 		}
 	}
 
