@@ -20,13 +20,13 @@ public class CustomUserDetails implements UserDetails {
 	private String email;
 
 	@Getter
-	private double latitude;
+	private Double latitude;
 
 	@Getter
-	private double longitude;
+	private Double longitude;
 	private Role role;
 
-	public CustomUserDetails(Long userId, String email, double latitude, double longitude, Role role) {
+	public CustomUserDetails(Long userId, String email, Double latitude, Double longitude, Role role) {
 		this.userId = userId;
 		this.email = email;
 		this.latitude = latitude;

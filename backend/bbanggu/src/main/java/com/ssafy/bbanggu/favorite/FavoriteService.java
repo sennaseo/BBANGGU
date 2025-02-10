@@ -1,10 +1,9 @@
 package com.ssafy.bbanggu.favorite;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import com.ssafy.bbanggu.bakery.Bakery;
-import com.ssafy.bbanggu.bakery.BakeryRepository;
+import com.ssafy.bbanggu.bakery.repository.BakeryRepository;
 import com.ssafy.bbanggu.bakery.dto.BakeryDetailDto;
 import com.ssafy.bbanggu.bakery.service.BakeryService;
 import com.ssafy.bbanggu.common.exception.CustomException;
