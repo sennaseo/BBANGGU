@@ -19,6 +19,7 @@ public class WebConfig implements WebMvcConfigurer {
 			.allowedOrigins("http://localhost:5173")  // 여러 도메인이 필요하면 allowedOriginPatterns 사용
 			.allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
 			.allowCredentials(true)
-			.allowedHeaders("*");  // 모든 헤더 허용
+			.allowedHeaders("*")	 // 모든 헤더 허용
+			.exposedHeaders("Access-Control-Allow-Origin"); // 클라이언트에서 헤더 접근 가능하도록 설정
 	}
 }
