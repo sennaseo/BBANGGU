@@ -89,10 +89,7 @@ public class ReservationService {
 		reservation.setStatus("PICKUP_COMPLETED");
 	}
 
-	public List<ReservationDTO> getUserReservationList(String authorization, LocalDate startDate, LocalDate endDate) {
-		String token = authorization.replace("Bearer ", "");
-		long userId = jwtTokenProvider.getUserIdFromToken(token);
-
+	public List<ReservationDTO> getUserReservationList(Long userId, LocalDate startDate, LocalDate endDate) {
 		LocalDateTime startDateTime = startDate.atStartOfDay();
 		LocalDateTime endDateTime = endDate.atTime(LocalTime.MAX);
 
@@ -105,9 +102,9 @@ public class ReservationService {
 	}
 
 	public List<ReservationDTO> getOwnerReservationList(String authorization, long bakeryId, LocalDate startDate, LocalDate endDate) {
-		String token = authorization.replace("Bearer ", "");
-		long userId = jwtTokenProvider.getUserIdFromToken(token);
 		// TODO: bakeryId와 UserId로 소유자 검증 필요
+//		String token = authorization.replace("Bearer ", "");
+//		long userId = jwtTokenProvider.getUserIdFromToken(token);
 
 		LocalDateTime startDateTime = startDate.atStartOfDay();
 		LocalDateTime endDateTime = endDate.atTime(LocalTime.MAX);
