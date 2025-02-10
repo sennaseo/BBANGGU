@@ -30,6 +30,7 @@ services:
       dockerfile: Dockerfile
       # args:
     #    command: ./gradlew build && java -jar bbanggu-0.0.1-SNAPSHOT.jar
+    image: bbanggu-server
     container_name: bbanggu-server
     depends_on:
       db:
@@ -52,7 +53,7 @@ services:
     container_name: bbanggu-nginx
     restart: always
     volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx:/etc/nginx
     ports:
       - "80:80"
     depends_on:
