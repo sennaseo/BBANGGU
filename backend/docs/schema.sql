@@ -21,6 +21,10 @@ CREATE TABLE IF NOT EXISTS `bbanggu`.`user` (
   `phone` VARCHAR(20) NULL DEFAULT NULL,
   `profile_image_url` VARCHAR(255) NULL DEFAULT NULL,
   `user_type` VARCHAR(255) NOT NULL,
+  `address_road` VARCHAR(255) NULL DEFAULT NULL,
+  `address_detail` VARCHAR(150) NULL DEFAULT NULL,
+  `latitude` DOUBLE NULL DEFAULT 0.0,
+  `longitude` DOUBLE NULL DEFAULT 0.0,
   `created_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
   `deleted_at` TIMESTAMP NULL DEFAULT NULL,
   `kakao_id` VARCHAR(50) NULL DEFAULT NULL,
@@ -33,7 +37,6 @@ ENGINE = InnoDB
 AUTO_INCREMENT = 4
 DEFAULT CHARACTER SET = utf8mb4
 COLLATE = utf8mb4_0900_ai_ci;
-
 
 -- -----------------------------------------------------
 -- Table `bbanggu`.`bakery`
@@ -49,7 +52,7 @@ CREATE TABLE IF NOT EXISTS `bbanggu`.`bakery` (
   `address_detail` VARCHAR(150) NOT NULL,
   `latitude` DOUBLE NOT NULL,
   `longitude` DOUBLE NOT NULL,
-  `star` DOUBLE NOT NULL DEFAULT 0,
+  `star` DOUBLE DEFAULT 0.0 NOT NULL,
   `created_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
   `deleted_at` TIMESTAMP NULL DEFAULT NULL,
   `updated_at` TIMESTAMP NULL DEFAULT NULL,
@@ -64,7 +67,6 @@ ENGINE = InnoDB
 AUTO_INCREMENT = 7
 DEFAULT CHARACTER SET = utf8mb4
 COLLATE = utf8mb4_0900_ai_ci;
-
 
 -- -----------------------------------------------------
 -- Table `bbanggu`.`bakery_pickup_timetable`
@@ -132,11 +134,8 @@ COLLATE = utf8mb4_0900_ai_ci;
 CREATE TABLE IF NOT EXISTS `bbanggu`.`bread_package` (
   `bread_package_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   `bakery_id` INT UNSIGNED NOT NULL,
-  `name` VARCHAR(100) NULL DEFAULT NULL,
   `price` INT UNSIGNED NOT NULL,
-  `discount_rate` FLOAT NOT NULL,
   `quantity` INT UNSIGNED NOT NULL,
-  `description` VARCHAR(500) NULL DEFAULT NULL,
   `pending` INT NOT NULL DEFAULT 0,
   `created_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
   `deleted_at` TIMESTAMP NULL DEFAULT NULL,
@@ -178,7 +177,6 @@ CREATE TABLE IF NOT EXISTS `bbanggu`.`favorite` (
   `favorite_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   `user_id` INT UNSIGNED NOT NULL,
   `bakery_id` INT UNSIGNED NOT NULL,
-  `is_liked` TINYINT(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`favorite_id`),
   INDEX `bakery_id` (`bakery_id` ASC) VISIBLE,
   INDEX `favorite_ibfk_1` (`user_id` ASC) VISIBLE,
@@ -211,7 +209,6 @@ CREATE TABLE IF NOT EXISTS `bbanggu`.`reservation` (
   `created_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
   `cancelled_at` TIMESTAMP NULL DEFAULT NULL,
   `status` VARCHAR(45) NOT NULL,
-  `order_id` VARCHAR(50) NOT NULL,
   PRIMARY KEY (`reservation_id`),
   INDEX `user_id` (`user_id` ASC) VISIBLE,
   INDEX `bakery_id` (`bakery_id` ASC) VISIBLE,
@@ -308,7 +305,7 @@ ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb4
 COLLATE = utf8mb4_0900_ai_ci;
 
-
 SET SQL_MODE=@OLD_SQL_MODE;
 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
+

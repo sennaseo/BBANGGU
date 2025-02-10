@@ -5,6 +5,8 @@ import java.util.UUID;
 
 import org.hibernate.annotations.CreationTimestamp;
 
+import com.ssafy.bbanggu.user.Role;
+
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
@@ -32,12 +34,10 @@ public class User {
 	@Column(unique = true, length = 50)
 	private String kakaoId;
 
-	@NotNull
 	@Column(nullable = false)
 	@Setter
 	private String name;
 
-	@NotNull
 	@Column(nullable = false, unique = true)
 	private String email;
 
@@ -50,9 +50,9 @@ public class User {
 	@Setter
 	private String phone;
 
-	@NotNull
-	@Column(nullable = false)
-	private String userType;
+	@Enumerated(EnumType.STRING)
+	@Column(name = "user_type", nullable = false)
+	private Role role;
 
 	@Column
 	@Setter
@@ -61,6 +61,22 @@ public class User {
 	@Setter
 	@Column(length = 512)
 	private String refreshToken;
+
+	@Column
+	@Setter
+	private String addressRoad;
+
+	@Column
+	@Setter
+	private String addressDetail;
+
+	@Column
+	@Setter
+	private Double latitude;
+
+	@Column
+	@Setter
+	private Double longitude;
 
 	@CreationTimestamp
 	@Column(name = "created_at", updatable = false)
@@ -76,15 +92,15 @@ public class User {
 	 * @param email 사용자 이메일
 	 * @param password 사용자 비밀번호
 	 * @param phone 사용자 전화번호
-	 * @param userType 사용자 유형
+	 * @param role 사용자 유형
 	 */
-	public User(String name, String email, String kakaoId, String password, String phone, String userType) {
+	public User(String name, String email, String kakaoId, String password, String phone, Role role) {
 		this.name = name;
 		this.email = email;
 		this.kakaoId = kakaoId;
 		this.password = password;
 		this.phone = phone;
-		this.userType = userType;
+		this.role = role;
 	}
 
 	/**
@@ -94,11 +110,11 @@ public class User {
 	 * @param email 사용자 이메일
 	 * @param password 암호화된 비밀번호
 	 * @param phone 사용자 전화번호
-	 * @param userType 사용자 유형
+	 * @param role 사용자 유형
 	 * @return User 객체
 	 */
-	public static User createNormalUser(String name, String email, String password, String phone, String userType) {
-		return new User(name, email, null, password, phone, userType);
+	public static User createNormalUser(String name, String email, String password, String phone, Role role) {
+		return new User(name, email, null, password, phone, role);
 	}
 
 	/**
@@ -109,7 +125,40 @@ public class User {
 	 * @return User 객체
 	 */
 	public static User createKakaoUser(String kakaoId, String nickname) {
-		return new User(nickname, "kakao_" + kakaoId + "@bbanggu.com", kakaoId, UUID.randomUUID().toString(), null, "USER");
+		return new User(nickname, "kakao_" + kakaoId + "@bbanggu.com", kakaoId, UUID.randomUUID().toString(), null, Role.USER);
+	}
+
+	/**
+	 * 기본 정보 수정 메서드
+	 *
+	 * @param name 이름
+	 * @param phone 전화번호
+	 * @param profilePhotoUrl 프로필 이미지
+	 */
+	public void updateUserInfo(String name, String phone, String profilePhotoUrl) {
+		if (name != null && !name.isBlank()) this.name = name;
+		if (phone != null && phone.matches("^(010-\\d{4}-\\d{4})$")) this.phone = phone;
+		if (profilePhotoUrl != null && !profilePhotoUrl.isBlank()) this.profilePhotoUrl = profilePhotoUrl;
+	}
+
+	/**
+	 * 위치 정보 수정 메서드
+	 *
+	 * @param addressRoad 도로명 주소
+	 * @param addressDetail 상세 주소
+	 * @param latitude 위도
+	 * @param longitude 경도
+	 */
+	public void updateUserPos(String addressRoad, String addressDetail, Double latitude, Double longitude) {
+		if (addressRoad != null && !addressRoad.isBlank()) this.addressRoad = addressRoad;
+		if (addressDetail != null && !addressDetail.isBlank()) this.addressDetail = addressDetail;
+		if (latitude != null) this.latitude = latitude;
+		if (longitude != null) this.longitude = longitude;
+	}
+
+	// 역할 변경 메서드
+	public void changeRole(Role newRole) {
+		this.role = newRole;
 	}
 
 	/**

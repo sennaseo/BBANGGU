@@ -1,6 +1,5 @@
 package com.ssafy.bbanggu.auth.security;
 
-import com.ssafy.bbanggu.user.domain.User;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -8,37 +7,47 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Collection;
 import java.util.List;
 
+import com.ssafy.bbanggu.user.Role;
+
 import lombok.Getter;
 
 public class CustomUserDetails implements UserDetails {
 
-	// ✅ userId 반환 메서드 추가
 	@Getter
-	private final Long userId;  // ✅ userId 사용
-	private final String email;
-	private final String password;
-	private final Collection<? extends GrantedAuthority> authorities;
+	private Long userId;
 
-	public CustomUserDetails(User user) {
-		this.userId = user.getUserId(); // ✅ userId 설정
-		this.email = user.getEmail();
-		this.password = user.getPassword();
-		this.authorities = List.of(new SimpleGrantedAuthority(user.getUserType())); // 권한 설정
+	@Getter
+	private String email;
+
+	@Getter
+	private double latitude;
+
+	@Getter
+	private double longitude;
+	private Role role;
+
+	public CustomUserDetails(Long userId, String email, double latitude, double longitude, Role role) {
+		this.userId = userId;
+		this.email = email;
+		this.latitude = latitude;
+		this.longitude = longitude;
+		this.role = role;
 	}
 
+	// 역할을 SimpleGrantedAuthority 형태로 반환
 	@Override
 	public Collection<? extends GrantedAuthority> getAuthorities() {
-		return authorities;
+		return List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
 	}
 
 	@Override
 	public String getPassword() {
-		return password;
+		return null;
 	}
 
 	@Override
 	public String getUsername() {
-		return String.valueOf(userId);  // ✅ userId를 String으로 변환하여 반환
+		return String.valueOf(userId);
 	}
 
 	@Override

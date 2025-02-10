@@ -35,7 +35,7 @@ public class BakeryService {
 
 	// 삭제되지 않은 모든 가게 조회
 	@Transactional(readOnly = true)
-	public List<BakeryDetailDto> getAllBakeries(String sortBy, String sortOrder, Pageable pageable, double userLat, double userLng) {
+	public List<BakeryDetailDto> getAllBakeries(String sortBy, String sortOrder, Pageable pageable, Double userLat, Double userLng) {
 		Sort.Direction direction = sortOrder.equalsIgnoreCase("asc") ? Sort.Direction.ASC : Sort.Direction.DESC;
 
 		// ✅ 1. JPA에서 SQL 정렬 & 페이징 적용 (distance가 아닌 경우)
@@ -44,7 +44,8 @@ public class BakeryService {
 			return bakeryRepository.findAllByDeletedAtIsNull(sortedPageable)
 				.stream()
 				.map(bakery -> {
-					double distance = calculateDistance(userLat, userLng, bakery.getLatitude(), bakery.getLongitude());
+					double distance = (userLat == null || userLng == null) ? 0.0
+						: calculateDistance(userLat, userLng, bakery.getLatitude(), bakery.getLongitude());
 					return BakeryDetailDto.from(bakery, distance);
 				})
 				.collect(Collectors.toList());
@@ -54,7 +55,8 @@ public class BakeryService {
 		List<BakeryDetailDto> bakeries = bakeryRepository.findAllByDeletedAtIsNull(pageable)
 			.stream()
 			.map(bakery -> {
-				double distance = calculateDistance(userLat, userLng, bakery.getLatitude(), bakery.getLongitude());
+				double distance = (userLat == null || userLng == null) ? 0.0
+					: calculateDistance(userLat, userLng, bakery.getLatitude(), bakery.getLongitude());
 				return BakeryDetailDto.from(bakery, distance);
 			})
 			.collect(Collectors.toList());
@@ -75,14 +77,14 @@ public class BakeryService {
 
 	// ID로 가게 조회
 	@Transactional(readOnly = true)
-	public BakeryDetailDto findById(Long bakery_id, double userLat, double userLng) {
+	public BakeryDetailDto findById(Long bakery_id, Double userLat, Double userLng) {
 		Bakery bakery = bakeryRepository.findByBakeryIdAndDeletedAtIsNull(bakery_id); // 삭제되지 않은 것만;
 		if (bakery == null) {
 			throw new CustomException(ErrorCode.BAKERY_NOT_FOUND);
 		}
 
-		// ✅ 사용자 위치 기반 거리 계산
-		double distance = calculateDistance(userLat, userLng, bakery.getLatitude(), bakery.getLongitude());
+		double distance = (userLat == null || userLng == null) ? 0.0
+			: calculateDistance(userLat, userLng, bakery.getLatitude(), bakery.getLongitude());
 		return BakeryDetailDto.from(bakery, distance);
 	}
 
@@ -131,7 +133,7 @@ public class BakeryService {
 	}
 
 	// 가게의 위도, 경도 추출
-	private double[] getLatitudeLongitude(String addressRoad, String addressDetail) {
+	public double[] getLatitudeLongitude(String addressRoad, String addressDetail) {
 		// 전체 주소 문자열 생성 (도로명주소 + 상세주소)
 		String fullAddress = addressRoad + " " + addressDetail;
 
@@ -181,14 +183,15 @@ public class BakeryService {
 
 	// 키워드로 가게 검색 (삭제된 가게 제외)
 	@Transactional(readOnly = true)
-	public Page<BakeryDetailDto> searchByKeyword(String keyword, Pageable pageable, double userLat, double userLng) {
+	public Page<BakeryDetailDto> searchByKeyword(String keyword, Pageable pageable, Double userLat, Double userLng) {
 		if (keyword == null || keyword.trim().isEmpty()) {
 			throw new CustomException(ErrorCode.NO_KEYWORD_ENTERED);
 		}
 
 		return bakeryRepository.searchByKeyword(keyword, pageable)
 			.map(bakery -> {
-				double distance = calculateDistance(userLat, userLng, bakery.getLatitude(), bakery.getLongitude());
+				double distance = (userLat == null || userLng == null) ? 0.0
+					: calculateDistance(userLat, userLng, bakery.getLatitude(), bakery.getLongitude());
 				return BakeryDetailDto.from(bakery, distance);
 			});
 	}
@@ -208,12 +211,12 @@ public class BakeryService {
 	}
 
 	// 모든 가게의 좌표 조회
-	@Transactional(readOnly = true)
-	public List<BakeryLocationDto> findAllBakeryLocations() {
-		List<Bakery> bakeries = bakeryRepository.findByDeletedAtIsNull(); // 삭제되지 않은 가게만 조회
-
-		return bakeries.stream()
-			.map(BakeryLocationDto::from)
-			.collect(Collectors.toList());
-	}
+	// @Transactional(readOnly = true)
+	// public List<BakeryLocationDto> findAllBakeryLocations() {
+	// 	List<Bakery> bakeries = bakeryRepository.findByDeletedAtIsNull(); // 삭제되지 않은 가게만 조회
+	//
+	// 	return bakeries.stream()
+	// 		.map(BakeryLocationDto::from)
+	// 		.collect(Collectors.toList());
+	// }
 }

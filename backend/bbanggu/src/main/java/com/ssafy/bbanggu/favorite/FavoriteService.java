@@ -55,10 +55,6 @@ public class FavoriteService {
 	// 좋아요 취소
 	@Transactional
 	public void removeFavorite(Long userId, Long bakeryId) {
-		if (!userRepository.existsById(userId)) {
-			throw new CustomException(ErrorCode.USER_NOT_FOUND);
-		}
-
 		if (!bakeryRepository.existsById(bakeryId)) {
 			throw new CustomException(ErrorCode.BAKERY_NOT_FOUND);
 		}
@@ -71,11 +67,7 @@ public class FavoriteService {
 
 	// 유저가 좋아요한 모든 가게 조회
 	@Transactional(readOnly = true)
-	public Page<BakeryDetailDto> findAllFavorites(Long userId, double userLat, double userLng, Pageable pageable) {
-		if (!userRepository.existsById(userId)) {
-			throw new CustomException(ErrorCode.USER_NOT_FOUND);
-		}
-
+	public Page<BakeryDetailDto> findAllFavorites(Long userId, Double userLat, Double userLng, Pageable pageable) {
 		// 좋아요 누른 가게 아이디 조회
 		List<Favorite> favorites = favoriteRepository.findByUser_UserId(userId);
 		List<Long> bakeryIds = favorites.stream()
@@ -87,9 +79,29 @@ public class FavoriteService {
 		Page<Bakery> bakeries = bakeryRepository.findByBakeryIdInAndDeletedAtIsNull(bakeryIds, pageable);
 
 		List<BakeryDetailDto> bakeryDetailDtos = bakeries.getContent().stream()
-			.map(b -> BakeryDetailDto.from(b, bakeryService.calculateDistance(userLat, userLng, b.getLatitude(), b.getLongitude())))
+			.map(b -> {
+				double distance = (userLat == null || userLng == null) ? 0.0
+					: bakeryService.calculateDistance(userLat, userLng, b.getLatitude(), b.getLongitude());
+				return BakeryDetailDto.from(b, distance);
+			})
 			.toList();
 
 		return new PageImpl<>(bakeryDetailDtos, pageable, bakeries.getTotalElements());
+	}
+
+	@Transactional(readOnly = true)
+	public List<BakeryDetailDto> getTop10BestBakeries(Double userLat, Double userLng) {
+		if (userLat == null || userLng == null) {
+			return bakeryRepository.findTop10ByFavorites().stream()
+				.map(bakery -> BakeryDetailDto.from(bakery, 0.0)) // ✅ 로그인X or 주소 미등록 → 거리 0.0km 처리
+				.toList();
+		}
+
+		return bakeryRepository.findBestBakeriesByLocation(userLat, userLng).stream()
+			.map(bakery -> {
+				double distance = bakeryService.calculateDistance(userLat, userLng, bakery.getLatitude(), bakery.getLongitude());
+				return BakeryDetailDto.from(bakery, distance);
+			})
+			.toList();
 	}
 }

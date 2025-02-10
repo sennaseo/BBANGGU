@@ -7,7 +7,6 @@ import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 
 interface PackageForm {
   name: string;
-  description: string;
   price: number;
   quantity: number;
   startTime: string;
@@ -18,7 +17,6 @@ export default function PackageSettingPage() {
   const navigate = useNavigate();
   const [form, setForm] = useState<PackageForm>({
     name: '',
-    description: '',
     price: 0,
     quantity: 8,
     startTime: '19:00',
@@ -102,21 +100,6 @@ export default function PackageSettingPage() {
             onChange={handleChange}
             placeholder="ex) 귀가롱러마꾸러미"
             className="w-full px-4 py-3 rounded-[8px] border border-[#E5E5E5] text-[16px] placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-[#FC973B]"
-          />
-        </div>
-
-        {/* 빵꾸러미 설명 */}
-        <div className="mb-8">
-          <h3 className="text-[16px] font-bold text-[#242424] mb-2">빵꾸러미 설명</h3>
-          <p className="text-[14px] text-gray-600 mb-4">
-            가게의 음식을 자랑을 담아 설명해주세요 :)
-          </p>
-          <textarea
-            name="description"
-            value={form.description}
-            onChange={handleChange}
-            placeholder="ex) 크로아상과 식빵 등이 담길 수 있는 맛있는 빵꾸러미입니다!!"
-            className="w-full h-[120px] px-4 py-3 rounded-[8px] border border-[#E5E5E5] text-[16px] placeholder:text-gray-300 resize-none focus:outline-none focus:ring-2 focus:ring-[#FC973B]"
           />
         </div>
 
@@ -290,9 +273,6 @@ export default function PackageSettingPage() {
               <div>
                 <p className="font-medium text-[16px] text-[#242424] mb-1">
                   {form.name || '빵꾸러미 이름을 입력해주세요'}
-                </p>
-                <p className="text-[14px] text-[#6B7280]">
-                  {form.description || '빵꾸러미 설명을 입력해주세요'}
                 </p>
               </div>
             </div>
