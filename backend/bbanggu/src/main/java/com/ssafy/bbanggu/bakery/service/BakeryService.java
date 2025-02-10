@@ -1,10 +1,9 @@
 package com.ssafy.bbanggu.bakery.service;
 
 import com.ssafy.bbanggu.bakery.Bakery;
-import com.ssafy.bbanggu.bakery.BakeryRepository;
+import com.ssafy.bbanggu.bakery.repository.BakeryRepository;
 import com.ssafy.bbanggu.bakery.dto.BakeryDetailDto;
 import com.ssafy.bbanggu.bakery.dto.BakeryDto;
-import com.ssafy.bbanggu.bakery.dto.BakeryLocationDto;
 import com.ssafy.bbanggu.common.exception.CustomException;
 import com.ssafy.bbanggu.common.exception.ErrorCode;
 import com.ssafy.bbanggu.user.domain.User;

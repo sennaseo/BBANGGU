@@ -3,16 +3,21 @@ package com.ssafy.bbanggu.bakery;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import jakarta.persistence.*;
 import java.sql.Time;
+
+import com.ssafy.bbanggu.bakery.dto.BakeryPickupTimetableDto;
+import com.ssafy.bbanggu.bakery.dto.PickupTimeDto;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
+@Getter
 @Table(name = "bakery_pickup_timetable")
 public class BakeryPickupTimetable {
 
@@ -25,17 +30,40 @@ public class BakeryPickupTimetable {
 	@JoinColumn(name = "bakery_id", nullable = false)
 	private Bakery bakery; // 가게 ID
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "day_of_week", nullable = false)
-    private DayOfWeek dayOfWeek; // 요일
+    @Column private String sunday;
 
-    @Column(name = "start_time", nullable = false)
-    private Time startTime; // 시작 시간
+	@Column private String monday;
 
-    @Column(name = "end_time", nullable = false)
-    private Time endTime; // 종료 시간
-}
+	@Column private String tuesday;
 
-enum DayOfWeek {
-    Sunday, Monday, Tuesday, Wednesday, Thursday, Friday, Saturday
+	@Column private String wednesday;
+
+	@Column private String thursday;
+
+	@Column private String friday;
+
+	@Column private String saturday;
+
+	/**
+	 * 📌 픽업 시간 업데이트 (Setter 사용 없이 내부 메서드 활용)
+	 */
+	public void updatePickupTimetable(BakeryPickupTimetableDto dto) {
+		this.monday = updateTime(dto.getMonday(), this.monday);
+		this.tuesday = updateTime(dto.getTuesday(), this.tuesday);
+		this.wednesday = updateTime(dto.getWednesday(), this.wednesday);
+		this.thursday = updateTime(dto.getThursday(), this.thursday);
+		this.friday = updateTime(dto.getFriday(), this.friday);
+		this.saturday = updateTime(dto.getSaturday(), this.saturday);
+		this.sunday = updateTime(dto.getSunday(), this.sunday);
+	}
+
+	/**
+	 * 📌 기존 값이 존재하면 유지, 새로운 값이 들어오면 업데이트
+	 */
+	private String updateTime(PickupTimeDto newTime, String currentTime) {
+		if (newTime == null || newTime.getStartTime() == null || newTime.getEndTime() == null) {
+			return currentTime; // 새로운 값이 없으면 기존 값 유지
+		}
+		return newTime.getStartTime().replace(":", "") + newTime.getEndTime().replace(":", "");
+	}
 }
