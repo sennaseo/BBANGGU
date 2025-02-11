@@ -2,15 +2,15 @@ package com.ssafy.bbanggu.review.dto;
 
 import com.ssafy.bbanggu.review.domain.Review;
 
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 
 public record ReviewDto (
-	Long reviewId,
-	@NotBlank(message = "사용자 ID는 필수 입력 값입니다.")
-	Long userId,
-	@NotBlank(message = "가게 ID는 필수 입력 값입니다.")
-	Long bakeryId,
-	@NotBlank(message = "별점은 필수 입력 값입니다.")
+	@NotBlank(message = "예약 ID는 필수 입력 값입니다.")
+	Long reservationId,
+	@Min(value = 1, message = "별점은 최소 1점 이상이어야 합니다.")
+	@Max(value = 5, message = "별점은 최대 5점까지 가능합니다.")
 	Integer rating,
 	String reviewImgUrl,
 	@NotBlank(message = "리뷰 내용은 필수 입력 값입니다.")
@@ -19,9 +19,7 @@ public record ReviewDto (
 ){
 	public static ReviewDto from(Review review) {
 		return new ReviewDto(
-			review.getReviewId(),
-			review.getUser().getUserId(),
-			review.getBakery().getBakeryId(),
+			review.getReservation().getReservationId(),
 			review.getRating(),
 			review.getReviewImageUrl(),
 			review.getContent()
