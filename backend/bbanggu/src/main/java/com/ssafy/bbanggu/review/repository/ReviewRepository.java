@@ -7,5 +7,5 @@ import com.ssafy.bbanggu.review.domain.Review;
 
 @Repository
 public interface ReviewRepository extends JpaRepository<Review, Long> {
-	boolean existsByReservationId(Long reservationId);
+	boolean existsByReservation_ReservationId(Long reservationId);
 }
