@@ -3,6 +3,7 @@ package com.ssafy.bbanggu.bakery;
 import com.ssafy.bbanggu.auth.security.CustomUserDetails;
 import com.ssafy.bbanggu.bakery.dto.BakeryDetailDto;
 import com.ssafy.bbanggu.bakery.dto.BakeryDto;
+import com.ssafy.bbanggu.bakery.dto.BakeryLocationDto;
 import com.ssafy.bbanggu.bakery.dto.BakeryPickupTimetableDto;
 import com.ssafy.bbanggu.bakery.dto.PickupTimeDto;
 import com.ssafy.bbanggu.bakery.repository.BakeryRepository;
@@ -198,57 +199,32 @@ public class BakeryController {
 	/**
 	 * 픽업 시간 수정
 	 */
-	// @PutMapping("/{bakery_id}/pickup")
-	// public ResponseEntity<ApiResponse> updatePickupTime(
-	// 	@AuthenticationPrincipal CustomUserDetails userDetails,
-	// 	@PathVariable("bakery_id") Long bakeryId,
-	// 	@RequestBody BakeryPickupTimetableDto request
-	// ) {
-	// 	// ✅ 유효한 빵집인지 검증 (
-	// 	Bakery bakery = bakeryRepository.findByBakeryIdAndDeletedAtIsNull(bakeryId);
-	// 	if (bakery == null) {
-	// 		throw new CustomException(ErrorCode.BAKERY_NOT_FOUND);
-	// 	}
-	//
-	// 	// ✅ 현재 로그인된 사용자가 이 가게의 사장님인지 검증
-	// 	Long userId = userDetails.getUserId();
-	// 	if (!bakery.getUser().getUserId().equals(userId)) {
-	// 		throw new CustomException(ErrorCode.UNAUTHORIZED_USER);
-	// 	}
-	//
-	// 	bakeryPickupService.updatePickupTime(bakery, request);
-	// 	return ResponseEntity.ok().body(new ApiResponse("픽업 시간이 성공적으로 수정되었습니다.", null));
-	// }
+	@PutMapping("/{bakery_id}/pickup")
+	public ResponseEntity<ApiResponse> updatePickupTime(
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@PathVariable("bakery_id") Long bakeryId,
+		@RequestBody BakeryPickupTimetableDto request
+	) {
+		// ✅ 유효한 빵집인지 검증 (
+		Bakery bakery = bakeryRepository.findByBakeryIdAndDeletedAtIsNull(bakeryId);
+		if (bakery == null) {
+			throw new CustomException(ErrorCode.BAKERY_NOT_FOUND);
+		}
 
-	/**
-	 * 픽업 시간 수정 (판매 설정 페이지)
-	 */
-	// @PutMapping("/{bakery_id}/pickup/today")
-	// public ResponseEntity<ApiResponse> updatePickupTime(
-	// 	@AuthenticationPrincipal CustomUserDetails userDetails,
-	// 	@PathVariable("bakery_id") Long bakeryId,
-	// 	@RequestBody PickupTimeDto request
-	// ) {
-	// 	// ✅ 유효한 빵집인지 검증 (
-	// 	Bakery bakery = bakeryRepository.findByBakeryIdAndDeletedAtIsNull(bakeryId);
-	// 	if (bakery == null) {
-	// 		throw new CustomException(ErrorCode.BAKERY_NOT_FOUND);
-	// 	}
-	//
-	// 	// ✅ 현재 로그인된 사용자가 이 가게의 사장님인지 검증
-	// 	Long userId = userDetails.getUserId();
-	// 	if (!bakery.getUser().getUserId().equals(userId)) {
-	// 		throw new CustomException(ErrorCode.UNAUTHORIZED_USER);
-	// 	}
-	//
-	// 	bakeryPickupService.updatePickupTimeToday(bakery, request);
-	// 	return ResponseEntity.ok().body(new ApiResponse("픽업 시간이 성공적으로 수정되었습니다.", null));
-	// }
+		// ✅ 현재 로그인된 사용자가 이 가게의 사장님인지 검증
+		Long userId = userDetails.getUserId();
+		if (!bakery.getUser().getUserId().equals(userId)) {
+			throw new CustomException(ErrorCode.UNAUTHORIZED_USER);
+		}
+
+		bakeryPickupService.updatePickupTime(bakery, request);
+		return ResponseEntity.ok().body(new ApiResponse("픽업 시간이 성공적으로 수정되었습니다.", null));
+	}
 
 	// 모든 가게의 좌표 조회
-	// @GetMapping("/locations")
-	// public ResponseEntity<List<BakeryLocationDto>> getAllBakeryLocations() {
-	// 	List<BakeryLocationDto> bakeryLocations = bakeryService.findAllBakeryLocations();
-	// 	return ResponseEntity.ok(bakeryLocations);
-	// }
+	@GetMapping("/map")
+	public ResponseEntity<List<BakeryLocationDto>> getAllBakeryLocations() {
+		List<BakeryLocationDto> bakeryLocations = bakeryService.findAllBakeryLocations();
+		return ResponseEntity.ok(bakeryLocations);
+	}
 }

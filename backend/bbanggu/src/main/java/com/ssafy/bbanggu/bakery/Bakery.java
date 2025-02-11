@@ -10,7 +10,7 @@ import java.util.List;
 import com.ssafy.bbanggu.bread.Bread;
 import com.ssafy.bbanggu.breadpackage.BreadPackage;
 import com.ssafy.bbanggu.favorite.Favorite;
-import com.ssafy.bbanggu.review.Review;
+import com.ssafy.bbanggu.review.domain.Review;
 import com.ssafy.bbanggu.stock.Stock;
 
 @Data

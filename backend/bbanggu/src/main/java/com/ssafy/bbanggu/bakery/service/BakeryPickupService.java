@@ -90,25 +90,15 @@ public class BakeryPickupService {
 		return timeDto.getStartTime().replace(":", "") + timeDto.getEndTime().replace(":", "");
 	}
 
-	// @Transactional
-	// public void updatePickupTime(Bakery bakery, BakeryPickupTimetableDto request) {
-	// 	// 기존 데이터 조회
-	// 	BakeryPickupTimetable timetable = bakeryPickupTimetableRepository.findByBakery_BakeryId(bakery.getBakeryId())
-	// 		.orElse(BakeryPickupTimetable.builder().bakery(bakery).build()); // 없으면 새로 생성
-	//
-	// 	// 업데이트할 데이터 설정
-	// 	timetable.updatePickupTimetable(request);
-	// 	bakeryPickupTimetableRepository.save(timetable);
-	// }
-	//
-	// @Transactional
-	// public void updatePickupTimeToday(Bakery bakery, PickupTimeDto request) {
-	// 	// 기존 데이터 조회
-	// 	BakeryPickupTimetable timetable = bakeryPickupTimetableRepository.findByBakery_BakeryId(bakery.getBakeryId())
-	// 		.orElse(BakeryPickupTimetable.builder().bakery(bakery).build()); // 없으면 새로 생성
-	//
-	// 	// 업데이트할 데이터 설정
-	// 	timetable.updatePickupTimetable(request);
-	// 	bakeryPickupTimetableRepository.save(timetable);
-	// }
+	@Transactional
+	public void updatePickupTime(Bakery bakery, BakeryPickupTimetableDto request) {
+		// 기존 데이터 조회
+		BakeryPickupTimetable timetable = bakeryPickupTimetableRepository.findByBakery_BakeryId(bakery.getBakeryId())
+			.orElse(BakeryPickupTimetable.builder().bakery(bakery).build()); // 없으면 새로 생성
+
+		// 업데이트할 데이터 설정
+		timetable.updatePickupTimetable(request);
+		bakeryPickupTimetableRepository.save(timetable);
+	}
+
 }
