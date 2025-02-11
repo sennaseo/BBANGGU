@@ -35,7 +35,7 @@ public class EmailController {
 	@PostMapping("/send")
 	public ResponseEntity<ApiResponse> sendEmail(@Valid @RequestBody EmailRequest request, BindingResult result) {
 		if (result.hasErrors()) {
-			throw new CustomException(ErrorCode.INVALID_REQUEST);
+			throw new CustomException(ErrorCode.BAD_REQUEST);
 		}
 
 		emailService.sendAuthenticationCode(request.email());

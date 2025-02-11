@@ -8,7 +8,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Setter;
 
-public record BakeryDto(
+public record BakeryCreateDto(
 	Long bakeryId,
 	@NotNull(message = "사용자 ID는 필수 입력 값입니다.")
 	Long userId,
@@ -20,11 +20,10 @@ public record BakeryDto(
 	@NotBlank(message = "도로명 주소는 필수 입력 값입니다.")
 	String addressRoad,
 	String addressDetail,
-	String photoUrl,
-	Double star
+	String photoUrl
 ) {
-	public static BakeryDto from(Bakery bakery) {
-		return new BakeryDto(
+	public static BakeryCreateDto from(Bakery bakery) {
+		return new BakeryCreateDto(
 			bakery.getBakeryId(),
 			bakery.getUser().getUserId(),
 			bakery.getName(),
@@ -32,8 +31,7 @@ public record BakeryDto(
 			bakery.getBusinessRegistrationNumber(),
 			bakery.getAddressRoad(),
 			bakery.getAddressDetail(),
-			bakery.getPhotoUrl(),
-			bakery.getStar()
+			bakery.getPhotoUrl()
 		);
 	}
 }
