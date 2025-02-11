@@ -30,9 +30,6 @@ public class BreadPackage {
     @Column(nullable = false)
     private Integer price; // 가격
 
-    @Column(name = "discount_rate", nullable = false)
-    private Float discountRate; // 할인율
-
     @Column(nullable = false)
     private Integer quantity; // 수량
 

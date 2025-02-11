@@ -30,7 +30,7 @@ public class ReviewService {
 	public ReviewDto createReview(Long userId, ReviewDto request) {
 		Long reservationId = request.reservationId();
 
-		// 예약 정보 조회
+		// ✅ 해당 ID의 예약이 존재하는지 정보 조회
 		Reservation reservation = reservationRepository.findById(reservationId)
 			.orElseThrow(() -> new CustomException(ErrorCode.RESERVATION_NOT_FOUND));
 
