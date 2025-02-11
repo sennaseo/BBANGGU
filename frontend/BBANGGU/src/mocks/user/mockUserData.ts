@@ -11,7 +11,7 @@ export const mockUsers: Record<number, UserType> = {
     favorite: [
       {
         user_id: 101,
-        bakery_id: 1,
+        bakeryId: 1,
         created_at: "2024-03-01T10:00:00Z",
         bakery: {
           ...mockBakeries[0],
@@ -20,7 +20,7 @@ export const mockUsers: Record<number, UserType> = {
       },
       {
         user_id: 101,
-        bakery_id: 2,
+        bakeryId: 2,
         created_at: "2024-03-02T14:30:00Z",
         bakery: {
           ...mockBakeries[1],

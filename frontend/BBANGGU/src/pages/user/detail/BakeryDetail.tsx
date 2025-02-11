@@ -8,10 +8,10 @@ import OrderButton from "../../../components/user/bakerydetail/OrderButton"
 import { mockReviews } from "../../../mocks/user/reviewMockData"
 
 export default function BakeryDetail() {
-  const { bakery_id } = useParams<{ bakery_id: string }>()
-  // const parsedBakeryId = bakery_id ? Number.parseInt(bakery_id, 10) : undefined
-  const { bakery, isLoading, error } = useBakeryDetail(bakery_id)
-  const bakeryReviews = mockReviews.filter((review) => review.bakery_id === bakery?.bakery_id)
+  const { bakeryId } = useParams<{ bakeryId: string }>()
+  // const parsedBakeryId = bakeryId ? Number.parseInt(bakeryId, 10) : undefined
+  const { bakery, isLoading, error } = useBakeryDetail(bakeryId)
+  const bakeryReviews = mockReviews.filter((review) => review.bakeryId === bakery?.bakeryId)
 
   if (isLoading) return <div>Loading...</div>
   if (error) return <div>Error loading bakery details</div>
@@ -34,7 +34,7 @@ export default function BakeryDetail() {
           </div>
           <BakeryLocation location={bakery}/>
           <div className="px-[20px]">
-            <BakeryReviews bakery_id={bakery.bakery_id} reviews={bakeryReviews} />
+            <BakeryReviews bakeryId={bakery.bakeryId} reviews={bakeryReviews} />
           </div>
         </div>
       </div>

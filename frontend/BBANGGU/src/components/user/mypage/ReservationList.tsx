@@ -22,7 +22,7 @@ export function ReservationList({ reservations = [] }: ReservationListProps) {
       try {
         const names: Record<string, string> = {}
         for (const reservation of data) {
-          const bakery = mockBakeries.find(b => b.bakery_id === reservation.bakery_id)
+          const bakery = mockBakeries.find(b => b.bakeryId === reservation.bakeryId)
           names[reservation.reservation_id] = bakery?.name || '베이커리 정보 없음'
         }
         setBakeryNames(names)

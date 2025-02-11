@@ -15,7 +15,7 @@ export function ReservationDetail() {
   const reservation = mockReservations.find(
     r => r.reservation_id === Number(reservation_id)
   );
-  const bakery = mockBakeries.find(b => b.bakery_id === reservation?.bakery_id);
+  const bakery = mockBakeries.find(b => b.bakeryId === reservation?.bakeryId);
 
   if (!reservation || !bakery) {
     return (

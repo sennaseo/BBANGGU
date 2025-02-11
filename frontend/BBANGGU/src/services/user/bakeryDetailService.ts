@@ -6,10 +6,10 @@ import type { BakeryType } from "../../types/bakery"
 //   baseURL: "https://api.example.com",
 // })
 
-export async function getBakeryById(bakery_id: string): Promise<BakeryType> {
+export async function getBakeryById(bakeryId: string): Promise<BakeryType> {
   try {
-    // Convert string bakery_id to number
-    const numericBakeryId = Number.parseInt(bakery_id, 10)
+    // Convert string bakeryId to number
+    const numericBakeryId = Number.parseInt(bakeryId, 10)
 
     // Simulate API delay
     await new Promise((resolve) => setTimeout(resolve, 500))

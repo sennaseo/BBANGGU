@@ -4,11 +4,11 @@ import type { ReviewType } from "../../../types/bakery"
 import { mockUsers } from "../../../mocks/user/mockUserData"
 
 interface BakeryReviewsProps {
-  bakery_id: number
+  bakeryId: number
   reviews: ReviewType[]
 }
 
-export default function BakeryReviews({ bakery_id, reviews }: BakeryReviewsProps) {
+export default function BakeryReviews({ bakeryId, reviews }: BakeryReviewsProps) {
   if (reviews.length === 0) {
     return (
       <div className="py-[15px]">
@@ -20,7 +20,7 @@ export default function BakeryReviews({ bakery_id, reviews }: BakeryReviewsProps
 
   return (
     <div className="py-[15px]">
-      <Link to={`/user/bakery/${bakery_id}/reviews`} className="mb-[15px] flex w-full items-center justify-between">
+      <Link to={`/user/bakery/${bakeryId}/reviews`} className="mb-[15px] flex w-full items-center justify-between">
         <h2 className="text-[16px] font-bold">리뷰 구경하기</h2>
         <ChevronRight className="h-5 w-5" />
       </Link>

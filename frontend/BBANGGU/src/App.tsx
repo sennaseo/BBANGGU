@@ -56,8 +56,8 @@ export default function App() {
 
             {/* 사용자 관련 페이지 */}
             <Route path="/user" element={<UserMain />} />
-            <Route path="/user/bakery/:bakery_id" element={<BakeryDetail />} />
-            <Route path="/user/bakery/:bakery_id/reviews" element={<UserReview />} />
+            <Route path="/user/bakery/:bakeryId" element={<BakeryDetail />} />
+            <Route path="/user/bakery/:bakeryId/reviews" element={<UserReview />} />
             <Route path="/user/:user_id/mypage" element={<UserMyPage />} />
             <Route path="/user/mypage/edit" element={<UserEditProfile />} />
             <Route path="/user/mypage/user-customer-support" element={<UserCustomerSupport />} />

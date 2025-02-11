@@ -25,7 +25,7 @@ export function ReservationHistory() {
   }
 
   const ReservationItem = ({ reservation }: { reservation: typeof mockReservations[0] }) => {
-    const bakery = mockBakeries.find(b => b.bakery_id === reservation.bakery_id)
+    const bakery = mockBakeries.find(b => b.bakeryId === reservation.bakeryId)
     
     const getStatusText = (status: string) => {
       switch(status) {

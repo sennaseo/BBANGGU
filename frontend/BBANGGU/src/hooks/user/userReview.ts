@@ -2,7 +2,7 @@ import { useState, useEffect } from "react"
 import { getReviews } from "../../services/user/ReviewService"
 import type { ReviewType } from "../../types/bakery"
 
-export function useReview(bakery_id: string) {
+export function useReview(bakeryId: string) {
   const [reviews, setReviews] = useState<ReviewType[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<Error | null>(null)
@@ -13,7 +13,7 @@ export function useReview(bakery_id: string) {
     async function fetchReviews() {
       try {
         setLoading(true)
-        const data = await getReviews(bakery_id)
+        const data = await getReviews(bakeryId)
         setReviews(data)
       } catch (err) {
         setError(err instanceof Error ? err : new Error("Failed to fetch reviews"))
@@ -23,7 +23,7 @@ export function useReview(bakery_id: string) {
     }
 
     fetchReviews()
-  }, [bakery_id])
+  }, [bakeryId])
 
   const filteredReviews = reviews
     .filter((review) => !showPhotoOnly || review.review_image_url)

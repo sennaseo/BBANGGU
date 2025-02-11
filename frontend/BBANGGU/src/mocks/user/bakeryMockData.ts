@@ -2,7 +2,7 @@ import type { BakeryType } from "../../types/bakery"
 
 export const mockBakeries: BakeryType[] = [
   {
-    bakery_id: 1,
+    bakeryId: 1,
     user_id: 1,
     name: "폭신달달 베이커리",
     description:
@@ -26,8 +26,8 @@ export const mockBakeries: BakeryType[] = [
     original_price: 10000,
     is_liked: false,
     bread_package: {
-      bread_package_id: 1,
-      bakery_id: 1,
+      bread_packageId: 1,
+      bakeryId: 1,
       name: "소중한 빵꾸러미",
       price: 8000,
       discount_rate: 0.2,
@@ -38,7 +38,7 @@ export const mockBakeries: BakeryType[] = [
     },
   },
   {
-    bakery_id: 2,
+    bakeryId: 2,
     user_id: 2,
     name: "달콤한 빵집",
     description: "매일 아침 신선한 재료로 구워내는 달콤한 빵집입니다. 크로와상과 식빵이 인기메뉴입니다.",
@@ -61,8 +61,8 @@ export const mockBakeries: BakeryType[] = [
     original_price: 12000,
     is_liked: false,
     bread_package: {
-      bread_package_id: 2,
-      bakery_id: 2,
+      bread_packageId: 2,
+      bakeryId: 2,
       name: "오후의 빵꾸러미",
       price: 10000,
       discount_rate: 0.25,
@@ -73,7 +73,7 @@ export const mockBakeries: BakeryType[] = [
     },
   },
   {
-    bakery_id: 3,
+    bakeryId: 3,
     user_id: 3,
     name: "비욘드문",
     description: "신선한 재료로 만든 다양한 빵을 즐겨보세요. 특히 크로와상이 인기 있습니다.",
@@ -96,8 +96,8 @@ export const mockBakeries: BakeryType[] = [
     original_price: 13000,
     is_liked: false,
     bread_package: {
-      bread_package_id: 3,
-      bakery_id: 3,
+      bread_packageId: 3,
+      bakeryId: 3,
       name: "초코초코 꾸러미",
       price: 12000,
       discount_rate: 0.15,

@@ -2,15 +2,12 @@ export interface UserType {
   user_id: number
   name: string
   profile_image_url: string
-  reservations: ReservationType[]
-  echosaves: EchoSaveType[]
-  favorite: FavoriteBakeryType[]
 }
 
 export interface ReviewType {
   review_id: number
   user_id: number
-  bakery_id: number
+  bakeryId: number
   rating: number
   content: string
   review_image_url?: string
@@ -19,21 +16,18 @@ export interface ReviewType {
 }
 
 export interface PackageType {
-  bread_package_id: number
-  bakery_id: number
-  name: string
+  packageId: number
+  bakeryId: number
   price: number
-  discount_rate: number
+  discountRate: number
   quantity: number
+  name: string
   description: string
-  created_at: string
-  deleted_at?: string
-  reservations: ReservationType[]
 }
 
 export interface BakeryType {
   bakeryId: number;
-  userId: number;
+  user_id: number;
   name: string;
   description: string;
   businessRegistrationNumber: string;
@@ -42,14 +36,13 @@ export interface BakeryType {
   photoUrl: string | null;
   star: number;
   distance: number;
-  package: PackageType[];
 }
 
 export interface ReservationType {
   reservation_id: number
   user_id: number
-  bakery_id: number
-  bread_package_id: number
+  bakeryId: number
+  bread_packageId: number
   quantity: number
   total_price: number
   reserved_pickup_time: string
@@ -71,8 +64,32 @@ export interface EchoSaveType {
 
 export interface FavoriteBakeryType {
   user_id: number
-  bakery_id: number
+  bakeryId: number
   created_at: string
   deleted_at?: string
-  bakery?: BakeryType
+}
+
+export interface ExtendedBakeryType extends BakeryType {
+  package: PackageType[];
+  favorite: FavoriteBakeryType[];
+  hours: ReservationType[];
+  reviews: ReviewType[];
+}
+
+export interface BestPackageItem extends PackageType {
+  bakery: BakeryType;
+  favorite: boolean;
+}
+
+export interface BakerySearchItem {
+  bakeryId: number;
+  userId: number;
+  name: string;
+  description: string;
+  businessRegistrationNumber: string;
+  addressRoad: string;
+  addressDetail: string;
+  photoUrl: string;
+  star: number;
+  distance: number;
 }

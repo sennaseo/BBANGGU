@@ -7,9 +7,9 @@ import ReviewList from "../../../components/user/review/Reviewlist"
 
 export default function UserReview() {
   const navigate = useNavigate();
-  const { bakery_id } = useParams<{ bakery_id: string }>()
+  const { bakeryId } = useParams<{ bakeryId: string }>()
   const { reviews, ratingCounts, averageRating, loading, error, showPhotoOnly, setShowPhotoOnly, sortBy, setSortBy } =
-    useReview(bakery_id!)
+    useReview(bakeryId!)
 
   if (loading) {
     return (

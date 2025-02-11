@@ -93,9 +93,9 @@ export const FavoriteBakery = () => {
         <div className="flex flex-col gap-5">
           {favorites.map(({ bakery }) => bakery && (
             <div
-              key={bakery.bakery_id}
+              key={bakery.bakeryId}
               className="bg-white rounded-xl shadow-md overflow-hidden cursor-pointer"
-              onClick={() => handleBakeryClick(bakery.bakery_id)}
+              onClick={() => handleBakeryClick(bakery.bakeryId)}
             >
               <div className="relative">
                 <img 

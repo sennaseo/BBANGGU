@@ -1,30 +1,68 @@
-import { useUsermain } from "../../../hooks/user/useUsermain"
+import { useState, useEffect } from "react"
+import { getUserMainData, toggleFavoriteForUserMain, searchBakery } from "../../../services/user/usermainService"
 import SearchBar from "../../../components/user/usermain/SearchBar"
 import Header from "../../../components/user/usermain/Header"
 import BestPackages from "../../../components/user/usermain/BestPackages"
 import RecommendedStores from "../../../components/user/usermain/RecommendedStores"
 import ErrorBoundary from "../../../components/ErrorBoundary"
 import { useNavigate } from "react-router-dom"
-import { mockBakeries } from "../../../mocks/user/bakeryMockData"
 import UserBottomNavigation from "../../../components/user/navigations/bottomnavigation/UserBottomNavigation"
-export default function UserMain() {
-  const {
-    searchQuery,
-    setSearchQuery,
-    bestPackages,
-    recommendedStores,
-    loading,
-    error,
-    toggleLike,
-  } = useUsermain()
+import type { BakerySearchItem, BestPackageItem, ExtendedBakeryType } from "../../../types/bakery"
 
+export default function UserMain() {
+  const [bestPackages, setBestPackages] = useState<BestPackageItem[]>([])
+  const [recommendedStores, setRecommendedStores] = useState<ExtendedBakeryType[]>([])
+  const [searchQuery, setSearchQuery] = useState<string>("")
+  const [searchResults, setSearchResults] = useState<BakerySearchItem[]>([])
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<Error | null>(null)
   const navigate = useNavigate()
 
-  const handleStoreClick = (bakery_id: number) => {
-    navigate(`/user/bakery/${bakery_id}`)
+  // API 데이터를 불러와서 캐시된 데이터가 있다면 재요청 없이 사용합니다.
+  const loadData = async () => {
+    setIsLoading(true)
+    try {
+      const { updatedStores, bestPackages } = await getUserMainData()
+      setRecommendedStores(updatedStores)
+      setBestPackages(bestPackages)
+      setSearchResults(searchResults)
+    } catch (err) {
+      setError(err as Error)
+    } finally {
+      setIsLoading(false)
+    }
   }
 
-  if (loading) {
+  useEffect(() => {
+    loadData()
+  }, [])
+
+  // 좋아요 토글 후 캐시 업데이트 후 상태 반영
+  const handleToggleFavorite = async (bakeryId: number) => {
+    try {
+      await toggleFavoriteForUserMain(bakeryId)
+      const { bestPackages } = await getUserMainData()
+      setBestPackages(bestPackages)
+    } catch (err) {
+      setError(err as Error)
+    }
+  }
+
+  const handleStoreClick = (bakeryId: number) => {
+    navigate(`/user/bakery/${bakeryId}`)
+  }
+
+  // 검색 실행 함수: 입력받은 검색어로 API 요청 후 결과를 상태에 업데이트합니다.
+  const handleSearch = async (keyword: string) => {
+    try {
+      const results = await searchBakery(keyword)
+      setSearchResults(results)
+    } catch (error) {
+      console.error("검색 실패:", error)
+    }
+  }
+
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center h-screen">
         <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-[#fc973b]"></div>
@@ -75,7 +113,7 @@ export default function UserMain() {
                 </p>
               </div>
               <div className="relative z-10">
-                <SearchBar value={searchQuery} onChange={setSearchQuery} />
+                <SearchBar value={searchQuery} onChange={setSearchQuery} onSearch={handleSearch} />
                 {/* Bread icon */}
                 <div className="absolute right-[1vh] top-[-130px] z-0">
                   <img
@@ -88,8 +126,8 @@ export default function UserMain() {
             </div>
           </section>
 
-          <BestPackages packages={bestPackages} bakeries={mockBakeries} onToggleLike={toggleLike} />
-          <RecommendedStores stores={recommendedStores} onToggleLike={toggleLike} onStoreClick={handleStoreClick} />
+          <BestPackages bestPackages={bestPackages} onToggleLike={handleToggleFavorite} />
+          <RecommendedStores stores={recommendedStores} onToggleLike={handleToggleFavorite} onStoreClick={handleStoreClick} />
         </main>
         <UserBottomNavigation />
       </ErrorBoundary>
