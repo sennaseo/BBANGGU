@@ -1,4 +1,4 @@
-package com.ssafy.bbanggu.bakery;
+package com.ssafy.bbanggu.bakery.domain;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -7,8 +7,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import jakarta.persistence.*;
-import java.sql.Time;
 
+import com.ssafy.bbanggu.bakery.domain.Bakery;
 import com.ssafy.bbanggu.bakery.dto.BakeryPickupTimetableDto;
 import com.ssafy.bbanggu.bakery.dto.PickupTimeDto;
 

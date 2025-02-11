@@ -2,7 +2,7 @@ package com.ssafy.bbanggu.bread;
 
 import java.time.LocalDateTime;
 
-import com.ssafy.bbanggu.bakery.Bakery;
+import com.ssafy.bbanggu.bakery.domain.Bakery;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

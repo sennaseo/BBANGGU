@@ -1,11 +1,15 @@
 package com.ssafy.bbanggu.user.controller;
 
+import java.util.Optional;
+
 import com.ssafy.bbanggu.auth.dto.EmailRequest;
 import com.ssafy.bbanggu.auth.dto.JwtToken;
+import com.ssafy.bbanggu.auth.security.CustomUserDetails;
 import com.ssafy.bbanggu.auth.service.EmailService;
 import com.ssafy.bbanggu.common.exception.CustomException;
 import com.ssafy.bbanggu.common.exception.ErrorCode;
 import com.ssafy.bbanggu.common.response.ApiResponse;
+import com.ssafy.bbanggu.user.domain.User;
 import com.ssafy.bbanggu.user.dto.CreateUserRequest;
 import com.ssafy.bbanggu.user.dto.LoginRequest;
 import com.ssafy.bbanggu.user.dto.PasswordResetConfirmRequest;
@@ -18,6 +22,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
@@ -146,13 +151,18 @@ public class UserController {
 			.body(new ApiResponse("로그아웃이 완료되었습니다.", null));
     }
 
-	@GetMapping("/mypage")
-	public ResponseEntity<ApiResponse> readUserInfo(Authentication authentication) {
-		Long userId = Long.parseLong(authentication.getName());
+	@GetMapping("/{userId}")
+	public ResponseEntity<ApiResponse> getUserInfo(
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@PathVariable Long userId
+	) {
+		// 현재 로그인한 사용자와 조회 대상이 일치하는지 확인
+		if (!userDetails.getUserId().equals(userId)) {
+			throw new CustomException(ErrorCode.NOT_EQUAL_USER);
+		}
 
-
-
-		return ResponseEntity.ok(new ApiResponse("회원 정보가 성공적으로 수정되었습니다.", null));
+		UserResponse user = userService.getUserInfo(userId);
+		return ResponseEntity.ok(new ApiResponse("회원 정보 조회가 성공적으로 완료되었습니다.", user));
 	}
 
     /**

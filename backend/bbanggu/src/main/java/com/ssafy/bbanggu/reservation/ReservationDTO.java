@@ -1,9 +1,5 @@
 package com.ssafy.bbanggu.reservation;
 
-import com.ssafy.bbanggu.bakery.Bakery;
-import com.ssafy.bbanggu.breadpackage.BreadPackage;
-import com.ssafy.bbanggu.user.domain.User;
-import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;

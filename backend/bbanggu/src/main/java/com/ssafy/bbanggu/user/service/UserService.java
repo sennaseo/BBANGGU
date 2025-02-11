@@ -138,6 +138,21 @@ public class UserService { // 사용자 관련 비즈니스 로직 처리
 	}
 
 	/**
+	 * 사용자 정보 조회
+	 */
+	public UserResponse getUserInfo(Long userId) {
+		User user = userRepository.findById(userId)
+			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+		// 탈퇴한 계정인지 확인
+		if (user.getDeletedAt() != null) {
+			throw new CustomException(ErrorCode.ACCOUNT_DEACTIVATED);
+		}
+
+		return UserResponse.from(user);
+	}
+
+	/**
 	 * 사용자 정보 수정
 	 */
 	@Transactional
