@@ -46,8 +46,8 @@ public class Bakery {
     @Column(name = "address_detail", nullable = false, length = 150)
     private String addressDetail; // 상세 주소
 
-    @Column(name = "photo_url", length = 255, nullable = true)
-    private String photoUrl; // 사진 URL
+    @Column(name = "bakery_image_url", length = 255, nullable = true)
+    private String bakeryImageUrl; // 사진 URL
 
     @Column(nullable = false)
     private Double latitude; // 위도
@@ -102,17 +102,17 @@ public class Bakery {
 		deletedAt = LocalDateTime.now();
 	}
 
-	// ✅ Builder 패턴 확인 (description, photoUrl 포함해야 함)
+	// ✅ Builder 패턴 확인 (description, bakeryImageUrl 포함해야 함)
 	@Builder
 	public Bakery(String name, String description, String businessRegistrationNumber,
-		String addressRoad, String addressDetail, String photoUrl,
+		String addressRoad, String addressDetail, String bakeryImageUrl,
 		double latitude, double longitude, double star, User user) {
 		this.name = name;
 		this.description = description;
 		this.businessRegistrationNumber = businessRegistrationNumber;
 		this.addressRoad = addressRoad;
 		this.addressDetail = addressDetail;
-		this.photoUrl = photoUrl;
+		this.bakeryImageUrl = bakeryImageUrl;
 		this.latitude = latitude;
 		this.longitude = longitude;
 		this.star = star;

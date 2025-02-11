@@ -184,7 +184,7 @@ public class UserService { // 사용자 관련 비즈니스 로직 처리
 		user.updateUserInfo(
 			updates.name(),
 			updates.phone(),
-			updates.profilePhotoUrl()
+			updates.profileImageUrl()
 		);
 	}
 

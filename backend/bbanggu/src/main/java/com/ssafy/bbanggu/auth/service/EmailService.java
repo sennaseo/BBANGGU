@@ -30,9 +30,9 @@ public class EmailService {
 	 */
 	public void sendAuthenticationCode(String email) {
 		// 1. 요청 제한 확인 (과도한 요청 방지)
-		if (storeService.isRateLimited(email)) {
-			throw new CustomException(ErrorCode.TOO_MANY_REQUESTS);
-		}
+//		if (storeService.isRateLimited(email)) {
+//			throw new CustomException(ErrorCode.TOO_MANY_REQUESTS);
+//		}
 
 		// 2. 인증번호 생성
 		String authCode = generateAuthCode();
