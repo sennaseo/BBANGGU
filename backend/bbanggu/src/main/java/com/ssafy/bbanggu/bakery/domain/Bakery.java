@@ -118,4 +118,5 @@ public class Bakery {
 		this.star = star;
 		this.user = user;
 	}
+
 }

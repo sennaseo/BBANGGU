@@ -9,7 +9,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum ErrorCode {
 	// ✅ 사용자 관련 예외 (1000번대)
-	INVALID_REQUEST(1000, HttpStatus.BAD_REQUEST, "잘못된 요청입니다."),
+	BAD_REQUEST(1000, HttpStatus.BAD_REQUEST, "잘못된 요청입니다. 요청 데이터를 다시 확인해주세요."),
 	USER_NOT_FOUND(1001, HttpStatus.NOT_FOUND, "해당 사용자를 찾을 수 없습니다."),
 	INVALID_PASSWORD(1002, HttpStatus.UNAUTHORIZED, "비밀번호가 올바르지 않습니다."),
 	ACCOUNT_DEACTIVATED(1003, HttpStatus.FORBIDDEN, "이 계정은 비활성화(탈퇴)되었습니다."),

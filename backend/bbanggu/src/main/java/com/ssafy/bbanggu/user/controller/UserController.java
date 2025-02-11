@@ -46,7 +46,7 @@ public class UserController {
     public ResponseEntity<?> createUser(@Valid @RequestBody CreateUserRequest request, BindingResult result) {
         // 회원가입 요청 데이터 검증
         if (result.hasErrors()) {
-            throw new CustomException(ErrorCode.INVALID_REQUEST);
+            throw new CustomException(ErrorCode.BAD_REQUEST);
         }
 
         UserResponse response = userService.create(request);
@@ -89,7 +89,7 @@ public class UserController {
     @PostMapping("/login")
     public ResponseEntity<ApiResponse> login(@Valid @RequestBody LoginRequest request, BindingResult result) {
 		if (result.hasErrors()) {
-			throw new CustomException(ErrorCode.INVALID_REQUEST);
+			throw new CustomException(ErrorCode.BAD_REQUEST);
 		}
 
 		// ✅ UserService에서 로그인 & 토큰 생성

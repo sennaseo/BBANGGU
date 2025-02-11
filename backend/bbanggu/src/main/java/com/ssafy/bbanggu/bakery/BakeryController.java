@@ -2,6 +2,7 @@ package com.ssafy.bbanggu.bakery;
 
 import com.ssafy.bbanggu.auth.security.CustomUserDetails;
 import com.ssafy.bbanggu.bakery.domain.Bakery;
+import com.ssafy.bbanggu.bakery.dto.BakeryCreateDto;
 import com.ssafy.bbanggu.bakery.dto.BakeryDetailDto;
 import com.ssafy.bbanggu.bakery.dto.BakeryDto;
 import com.ssafy.bbanggu.bakery.dto.BakeryLocationDto;
@@ -60,8 +61,8 @@ public class BakeryController {
 
 	// 가게 추가
 	@PostMapping
-	public ResponseEntity<ApiResponse> createBakery(@RequestBody @Valid BakeryDto bakery) {
-		BakeryDto createdBakery = bakeryService.createBakery(bakery);
+	public ResponseEntity<ApiResponse> createBakery(@RequestBody @Valid BakeryCreateDto bakery) {
+		BakeryCreateDto createdBakery = bakeryService.createBakery(bakery);
 		return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse("가게 등록이 완료되었습니다.", createdBakery));
 	}
 

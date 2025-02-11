@@ -1,6 +1,7 @@
 package com.ssafy.bbanggu.bakery.service;
 
 import com.ssafy.bbanggu.bakery.domain.Bakery;
+import com.ssafy.bbanggu.bakery.dto.BakeryCreateDto;
 import com.ssafy.bbanggu.bakery.dto.BakeryLocationDto;
 import com.ssafy.bbanggu.bakery.repository.BakeryRepository;
 import com.ssafy.bbanggu.bakery.dto.BakeryDetailDto;
@@ -103,7 +104,7 @@ public class BakeryService {
 
 	// 가게 추가
 	@Transactional
-	public BakeryDto createBakery(BakeryDto bakeryDto) {
+	public BakeryCreateDto createBakery(BakeryCreateDto bakeryDto) {
 		validateDuplicateBakery(bakeryDto.name(), bakeryDto.businessRegistrationNumber(), null);
 
 		// 사용자 조회 (userId로 User 찾기)
@@ -123,13 +124,14 @@ public class BakeryService {
 				.addressRoad(bakeryDto.addressRoad())
 				.addressDetail(bakeryDto.addressDetail())
 				.businessRegistrationNumber(bakeryDto.businessRegistrationNumber())
+				.star(0.0)
 				.latitude(latitude)
 				.longitude(longitude)
 				.user(user)
 				.build();
 
 		Bakery savedBakery = bakeryRepository.save(bakery);
-		return BakeryDto.from(savedBakery);
+		return BakeryCreateDto.from(savedBakery);
 	}
 
 	// 가게의 위도, 경도 추출
