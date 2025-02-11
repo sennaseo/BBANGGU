@@ -32,7 +32,6 @@ public class BreadPackageService {
 		BreadPackage breadPackage = BreadPackage.builder()
 			.bakery(bakery)
 			.price(request.price())
-			.discountRate(request.discountRate())
 			.quantity(request.quantity())
 			.name(request.name())
 			.description(request.description())
