@@ -47,6 +47,7 @@ services:
       - .env
     networks:
       - bbanggu-network
+    restart: always
 
   nginx:
     image: nginx:latest
