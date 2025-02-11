@@ -88,18 +88,18 @@ public class InMemoryStoreService {
 		logger.info("Rate limit set for email: {}", email);
 	}
 
-	/**
-	 * 요청 제한 확인
-	 * @param email 사용자 이메일
-	 */
-	public boolean isRateLimited(String email) {
-		Long expirationTime = rateLimitStore.get(email);
-		if (expirationTime == null || System.currentTimeMillis() > expirationTime) {
-			rateLimitStore.remove(email);
-			return false;
-		}
-		return true;
-	}
+//	/**
+//	 * 요청 제한 확인
+//	 * @param email 사용자 이메일
+//	 */
+//	public boolean isRateLimited(String email) {
+//		Long expirationTime = rateLimitStore.get(email);
+//		if (expirationTime == null || System.currentTimeMillis() > expirationTime) {
+//			rateLimitStore.remove(email);
+//			return false;
+//		}
+//		return true;
+//	}
 
 	// public boolean verifyAuthCode(String email, String authCode) {
 	// 	Pair<String, Long> codeData = authCodeStore.get(email);

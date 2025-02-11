@@ -141,7 +141,7 @@ public class KakaoAuthService {
 		// User 엔티티의 정적 메서드 활용 (가독성 & 유지보수성 향상)
 		User newUser = User.createKakaoUser(userInfo.getKakaoId(), userInfo.getNickname());
 
-		newUser.setProfilePhotoUrl(userInfo.getProfileImage()); // ✅ 프로필 이미지 설정
+		newUser.setProfileImageUrl(userInfo.getProfileImage()); // ✅ 프로필 이미지 설정
 
 		return userRepository.save(newUser);
 	}
