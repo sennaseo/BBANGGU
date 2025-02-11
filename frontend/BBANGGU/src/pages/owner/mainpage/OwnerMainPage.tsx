@@ -70,22 +70,17 @@ const OwnerMainPage: React.FC = () => {
     const fetchPackages = async () => {
       try {
         setIsLoading(true);
+        console.log('Fetching packages...'); // 로딩 시작 로그
         const data = await getBakeryPackages(bakeryId);
+        console.log('Packages received:', data); // 데이터 수신 로그
         setPackages(data);
       } catch (err) {
+        console.error('Error details:', err); // 자세한 에러 로그
         if (err instanceof Error) {
-          // 에러 타입에 따른 더 구체적인 메시지 표시
-          if (err.message.includes('500')) {
-            setError('서버에 일시적인 문제가 발생했습니다. 잠시 후 다시 시도해주세요.');
-          } else if (err.message.includes('404')) {
-            setError('빵집 정보를 찾을 수 없습니다.');
-          } else {
-            setError(`빵꾸러미 정보를 불러오는데 실패했습니다: ${err.message}`);
-          }
+          setError(`빵꾸러미 정보를 불러오는데 실패했습니다: ${err.message}`);
         } else {
           setError('알 수 없는 오류가 발생했습니다.');
         }
-        console.error('빵꾸러미 조회 오류:', err);
       } finally {
         setIsLoading(false);
       }

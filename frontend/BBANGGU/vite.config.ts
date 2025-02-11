@@ -14,8 +14,8 @@ export default defineConfig({
     },
   },
   server: {
-    host: true, // 모든 네트워크 인터페이스에서 접근 허용
-    port: 5173,  // 기본 포트
+    host: 'localhost',  // 0.0.0.0 대신 localhost 사용
+    port: 5173,
     proxy: {
       '/bread-package': {
         target: 'http://i12d102.p.ssafy.io:8081',
@@ -48,6 +48,9 @@ export default defineConfig({
           });
         },
       }
-    }
+    },
+    hmr: {
+      host: 'localhost'  // WebSocket 연결을 위한 호스트 설정
+    },
   },
 })

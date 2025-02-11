@@ -56,6 +56,7 @@ export const BreadPackageInfo: React.FC<BreadPackageInfoProps> = ({ packages }) 
 
   // 현재는 첫 번째 패키지만 표시 (나중에 여러 패키지 표시로 확장 가능)
   const currentPackage = safePackages[0];
+  const packageQuantity = currentPackage.items.reduce((sum, item) => sum + item.quantity, 0);
 
   return (
     <>
@@ -101,21 +102,21 @@ export const BreadPackageInfo: React.FC<BreadPackageInfoProps> = ({ packages }) 
           />
           <div className="flex items-center gap-2">
             <span className="text-[24px] font-bold">{currentPackage.price.toLocaleString()}원</span>
-            <span className="text-[24px] font-bold text-[#FC973B]">× {currentPackage.quantity}개</span>
+            <span className="text-[24px] font-bold text-[#FC973B]">× {packageQuantity}개</span>
           </div>
         </div>
 
         <div className="bg-[#FC973B] text-white p-3 rounded-[10px] mb-3">
           <div className="flex justify-between px-2">
             <span className="font-medium">오늘 빵꾸러미로 번 돈</span>
-            <span className="font-bold">{(currentPackage.price * currentPackage.quantity).toLocaleString()}원</span>
+            <span className="font-bold">{(currentPackage.price * packageQuantity).toLocaleString()}원</span>
           </div>
         </div>
 
         <div className="bg-[#FC973B] text-white p-3 rounded-[10px]">
           <div className="flex justify-between px-2">
             <span className="font-medium">오늘 절약한 환경 수치</span>
-            <span className="font-bold">{currentPackage.quantity * 20}g</span>
+            <span className="font-bold">{packageQuantity * 20}g</span>
           </div>
         </div>
       </div>
