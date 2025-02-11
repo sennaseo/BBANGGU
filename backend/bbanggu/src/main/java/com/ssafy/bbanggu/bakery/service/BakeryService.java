@@ -1,6 +1,7 @@
 package com.ssafy.bbanggu.bakery.service;
 
 import com.ssafy.bbanggu.bakery.Bakery;
+import com.ssafy.bbanggu.bakery.dto.BakeryLocationDto;
 import com.ssafy.bbanggu.bakery.repository.BakeryRepository;
 import com.ssafy.bbanggu.bakery.dto.BakeryDetailDto;
 import com.ssafy.bbanggu.bakery.dto.BakeryDto;
@@ -210,12 +211,12 @@ public class BakeryService {
 	}
 
 	// 모든 가게의 좌표 조회
-	// @Transactional(readOnly = true)
-	// public List<BakeryLocationDto> findAllBakeryLocations() {
-	// 	List<Bakery> bakeries = bakeryRepository.findByDeletedAtIsNull(); // 삭제되지 않은 가게만 조회
-	//
-	// 	return bakeries.stream()
-	// 		.map(BakeryLocationDto::from)
-	// 		.collect(Collectors.toList());
-	// }
+	@Transactional(readOnly = true)
+	public List<BakeryLocationDto> findAllBakeryLocations() {
+		List<Bakery> bakeries = bakeryRepository.findByDeletedAtIsNull(); // 삭제되지 않은 가게만 조회
+
+		return bakeries.stream()
+			.map(BakeryLocationDto::from)
+			.collect(Collectors.toList());
+	}
 }

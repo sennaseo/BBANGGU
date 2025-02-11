@@ -1,4 +1,4 @@
-package com.ssafy.bbanggu.review;
+package com.ssafy.bbanggu.review.domain;
 
 import com.ssafy.bbanggu.user.domain.User;
 import lombok.AllArgsConstructor;
