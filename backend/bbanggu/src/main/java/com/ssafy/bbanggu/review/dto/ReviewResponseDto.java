@@ -4,25 +4,22 @@ import java.time.LocalDateTime;
 
 import com.ssafy.bbanggu.review.domain.Review;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-
-@Getter
-@AllArgsConstructor
-public class ReviewResponseDto {
-	private Long reviewId;
-	private Long reservationId;
-	private int rating;
-	private String content;
-	private String reviewImageUrl;
-	private LocalDateTime createdAt;
-
-	public ReviewResponseDto(Review review) {
-		this.reviewId = review.getReviewId();
-		this.reservationId = review.getReservation().getReservationId();
-		this.rating = review.getRating();
-		this.content = review.getContent();
-		this.reviewImageUrl = review.getReviewImageUrl();
-		this.createdAt = review.getCreatedAt();
+public record ReviewResponseDto (
+	Long reviewId,
+	Long reservationId,
+	int rating,
+	String content,
+	String reviewImageUrl,
+	LocalDateTime createdAt
+){
+	public static ReviewResponseDto from(Review review) {
+		return new ReviewResponseDto(
+			review.getReviewId(),
+			review.getReservation().getReservationId(),
+			review.getRating(),
+			review.getContent(),
+			review.getReviewImageUrl(),
+			review.getCreatedAt()
+		);
 	}
 }
