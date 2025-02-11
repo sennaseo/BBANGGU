@@ -1,5 +1,6 @@
 package com.ssafy.bbanggu.review.domain;
 
+import com.ssafy.bbanggu.reservation.Reservation;
 import com.ssafy.bbanggu.user.domain.User;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -24,13 +25,17 @@ public class Review {
     @Column(name = "review_id", columnDefinition = "INT UNSIGNED")
     private Long reviewId; // 리뷰 ID
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user; // 사용자 ID
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "bakery_id", nullable = false)
     private Bakery bakery; // 가게 ID
+
+	@OneToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "reservation_id", nullable = false, unique = true)
+	private Reservation reservation;
 
     @Column(nullable = false)
     private Integer rating; // 평점

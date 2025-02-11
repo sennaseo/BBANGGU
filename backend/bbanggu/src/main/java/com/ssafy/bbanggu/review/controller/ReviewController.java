@@ -28,13 +28,13 @@ public class ReviewController {
 	/**
 	 * 리뷰 등록 api
 	 */
-	// @PostMapping
-	// public ResponseEntity<ApiResponse> createReview(
-	// 	@AuthenticationPrincipal CustomUserDetails userDetails,
-	// 	@RequestBody @Valid ReviewDto review
-	// ){
-	// 	ReviewDto createdReview = reviewService.createReview(userDetails, review);
-	// 	return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse("리뷰 등록이 성공적으로 완료되었습니다.", createdReview));
-	// }
+	@PostMapping
+	public ResponseEntity<ApiResponse> createReview(
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@RequestBody @Valid ReviewDto review
+	){
+		ReviewDto createdReview = reviewService.createReview(userDetails.getUserId(), review);
+		return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse("리뷰 등록이 성공적으로 완료되었습니다.", createdReview));
+	}
 
 }
