@@ -21,7 +21,32 @@ export default defineConfig({
         target: 'http://i12d102.p.ssafy.io:8081',
         changeOrigin: true,
         secure: false,
-        rewrite: (path) => path.replace(/^\/bread-package/, '/bread-package')
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'GET,PUT,POST,DELETE,PATCH,OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+        },
+        configure: (proxy, _options) => {
+          proxy.on('error', (err, _req, _res) => {
+            console.log('proxy error', err);
+          });
+          proxy.on('proxyReq', (proxyReq, req, _res) => {
+            console.log('Sending Request:', req.method, req.url);
+            // 요청 헤더 로깅
+            console.log('Request Headers:', proxyReq.getHeaders());
+          });
+          proxy.on('proxyRes', (proxyRes, req, _res) => {
+            console.log('Received Response:', proxyRes.statusCode, req.url);
+            // 응답 바디 로깅
+            let body = '';
+            proxyRes.on('data', function(chunk) {
+              body += chunk;
+            });
+            proxyRes.on('end', function() {
+              console.log('Response body:', body);
+            });
+          });
+        },
       }
     }
   },

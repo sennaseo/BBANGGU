@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React from 'react';
 import { EllipsisVerticalIcon, PencilSquareIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { useNavigate } from 'react-router-dom';
 import breadPackageIcon from '../../../../assets/images/bakery/bread_pakage.svg';
@@ -9,14 +9,17 @@ interface BreadPackageInfoProps {
 }
 
 export const BreadPackageInfo: React.FC<BreadPackageInfoProps> = ({ packages }) => {
-  const [showMenu, setShowMenu] = useState(false);
+  const [showMenu, setShowMenu] = React.useState(false);
   const navigate = useNavigate();
+
+  // packages가 undefined일 때를 대비한 기본값 처리
+  const safePackages = packages || [];
 
   const handleEdit = () => {
     navigate('/owner/package/register', {
       state: {
         isEditing: true,
-        packageInfo: packages[0] // 현재는 첫 번째 패키지만 수정 가능하도록 설정
+        packageInfo: safePackages[0] // 현재는 첫 번째 패키지만 수정 가능하도록 설정
       }
     });
     setShowMenu(false);
@@ -29,7 +32,7 @@ export const BreadPackageInfo: React.FC<BreadPackageInfoProps> = ({ packages }) 
     }
   };
 
-  if (packages.length === 0) {
+  if (safePackages.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-12 px-4 bg-[#F9F9F9] rounded-[10px] border border-dashed border-[#E5E5E5] mb-6">
         <img 
@@ -52,7 +55,7 @@ export const BreadPackageInfo: React.FC<BreadPackageInfoProps> = ({ packages }) 
   }
 
   // 현재는 첫 번째 패키지만 표시 (나중에 여러 패키지 표시로 확장 가능)
-  const currentPackage = packages[0];
+  const currentPackage = safePackages[0];
 
   return (
     <>
