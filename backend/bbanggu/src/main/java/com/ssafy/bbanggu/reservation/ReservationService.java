@@ -50,10 +50,10 @@ public class ReservationService {
 		try {
 			ObjectMapper objectMapper = new ObjectMapper();
 			JsonNode jsonNode = objectMapper.readTree(response.getBody());
-			reservationDto.setOrderId(jsonNode.get("paymentKey").asText());        // 임시로 paymentKey 넣음. 원래는 orderId
+			reservationDto.setPaymentKey(jsonNode.get("paymentKey").asText());        // 임시로 paymentKey 넣음. 원래는 orderId
 			Reservation reservation = dtoToEntity(reservationDto);
 			System.out.println("Entity로 변환 성공");
-			System.out.println(reservation.getOrderId());
+			System.out.println(reservation.getPaymentKey());
 			reservationRepository.save(reservation);
 			System.out.println("reservation save 성공");
 		} catch (JsonProcessingException e) {
@@ -68,7 +68,7 @@ public class ReservationService {
 			throw new CustomException(ErrorCode.RESERVATION_NOT_FOUND);
 		}
 		// 결제 취소
-		ResponseEntity<String> response = paymentService.cancelPayment(reservation.getOrderId(), cancelReason);
+		ResponseEntity<String> response = paymentService.cancelPayment(reservation.getPaymentKey(), cancelReason);
 		System.out.println(response.getBody());
 
 		// 예약 정보 업데이트
@@ -130,7 +130,7 @@ public class ReservationService {
 			.reservedPickupTime(reservation.getReservedPickupTime())
 			.createdAt(LocalDateTime.now())
 			.status("RESERVATION_CONFIRMED")
-			.orderId(reservation.getOrderId())
+			.paymentKey(reservation.getPaymentKey())
 			.build();
 	}
 
@@ -156,7 +156,7 @@ public class ReservationService {
 			.reservedPickupTime(reservationDto.getReservedPickupTime())
 			.createdAt(reservationDto.getCreatedAt())
 			.status(reservationDto.getStatus())
-			.orderId(reservationDto.getOrderId())
+			.paymentKey(reservationDto.getPaymentKey())
 			.build();
 	}
 

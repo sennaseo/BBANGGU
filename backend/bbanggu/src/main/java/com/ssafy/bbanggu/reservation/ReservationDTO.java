@@ -21,5 +21,5 @@ public class ReservationDTO {
 	private LocalDateTime createdAt; // 생성일
 	private LocalDateTime cancelledAt; // 취소일
 	private String status; // 상태
-	private String orderId; // 주문(결제) ID
+	private String paymentKey; // 주문(결제) 키
 }
