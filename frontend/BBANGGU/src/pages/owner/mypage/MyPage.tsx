@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import BottomNavigation from '../../../components/owner/navigations/BottomNavigations/BottomNavigation';
 import defaultProfile from '@/assets/default-profile.jpg';
 import pickupTimeIcon from '@/assets/icons/pickup-time-icon.svg';
@@ -6,8 +6,50 @@ import settlementIcon from '@/assets/icons/settlement-icon.svg';
 import qnaIcon from '@/assets/icons/qna-icon.svg';
 import supportIcon from '@/assets/icons/support-icon.svg';
 import { Bell } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { getUserInfo } from '../../../api/common/user';
 
 function MyPage() {
+  const [userInfo, setUserInfo] = useState<{
+    name: string;
+    profilePhotoUrl: string | null;
+  }>({
+    name: '',
+    profilePhotoUrl: null
+  });
+
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchUserInfo = async () => {
+      try {
+        const userId = 109; // 임시로 하드코딩
+        const data = await getUserInfo(userId);
+        console.log('Received user data:', data); // 데이터 확인용
+        setUserInfo({
+          name: data.name,
+          profilePhotoUrl: data.profilePhotoUrl
+        });
+      } catch (error) {
+        console.error('Error fetching user info:', error);
+        // 에러 메시지 표시 또는 로그인 페이지로 리다이렉트
+        if (error instanceof Error && error.message === '로그인이 필요합니다.') {
+          // TODO: 로그인 페이지로 리다이렉트
+          navigate('/login');
+        }
+      }
+    };
+
+    fetchUserInfo();
+  }, [navigate]);
+
+  const handleLogout = () => {
+    // 로컬 스토리지에서 토큰 제거
+    localStorage.removeItem('accessToken');
+    // 로그인 페이지로 리다이렉트
+    navigate('/login');
+  };
+
   return (
     <div className="min-h-screen bg-white pb-20">
       {/* 헤더 */}
@@ -22,7 +64,7 @@ function MyPage() {
       <div className="px-6 py-6">
         <div className="flex items-center space-x-4">
           <img
-            src={defaultProfile}
+            src={userInfo.profilePhotoUrl ? userInfo.profilePhotoUrl : defaultProfile}
             alt="프로필"
             className="w-[60px] h-[60px] rounded-full object-cover bg-gray-100"
             onError={(e) => {
@@ -32,7 +74,7 @@ function MyPage() {
           />
           <div>
             <h2 className="text-lg font-semibold">
-              권가롱이
+              {userInfo.name}
               <span className="text-gray-600 font-normal ml-1">사장님</span>
             </h2>
             <p className="text-gray-600 text-sm">오늘도 빵과 함께 할기찬 하루 보내세요~</p>
@@ -102,7 +144,7 @@ function MyPage() {
       <div className="mt-8 px-6">
         <div className="flex items-center justify-center">
           <button 
-            onClick={() => {/* 로그아웃 처리 */}}
+            onClick={handleLogout}
             className="text-gray-500 text-sm px-4"
           >
             로그아웃

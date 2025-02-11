@@ -25,17 +25,17 @@ public class Review {
     @Column(name = "review_id", columnDefinition = "INT UNSIGNED")
     private Long reviewId; // 리뷰 ID
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user; // 사용자 ID
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "bakery_id", nullable = false)
-    private Bakery bakery; // 가게 ID
-
 	@OneToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "reservation_id", nullable = false, unique = true)
 	private Reservation reservation;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "user_id", nullable = false)
+	private User user;
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "bakery_id", nullable = false)
+	private Bakery bakery;
 
     @Column(nullable = false)
     private Integer rating; // 평점
@@ -51,4 +51,22 @@ public class Review {
 
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt; // 삭제일
+
+	@PrePersist
+	protected void onCreate() {
+		this.createdAt = LocalDateTime.now();
+	}
+
+	public Review(
+		Reservation reservation, User user, Bakery bakery,
+		Integer rating, String content, String photoUrl
+	) {
+		this.reservation = reservation;
+		this.user = user;
+		this.bakery = bakery;
+		this.rating = rating;
+		this.content = content;
+		this.reviewImageUrl = photoUrl;
+		this.createdAt = LocalDateTime.now();
+	}
 }

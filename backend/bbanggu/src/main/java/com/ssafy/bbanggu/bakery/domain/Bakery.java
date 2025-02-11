@@ -77,7 +77,7 @@ public class Bakery {
     @OneToMany(mappedBy = "bakery", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<BreadPackage> packages; // 패키지 목록
 
-    @OneToMany(mappedBy = "bakery", cascade = CascadeType.ALL, orphanRemoval = true)
+	@OneToMany(mappedBy = "bakery", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Review> reviews; // 리뷰 목록
 
     @OneToMany(mappedBy = "bakery", cascade = CascadeType.ALL, orphanRemoval = true)

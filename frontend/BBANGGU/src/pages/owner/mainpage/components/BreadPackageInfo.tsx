@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React from 'react';
 import { EllipsisVerticalIcon, PencilSquareIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { useNavigate } from 'react-router-dom';
 import breadPackageIcon from '../../../../assets/images/bakery/bread_pakage.svg';
@@ -9,14 +9,17 @@ interface BreadPackageInfoProps {
 }
 
 export const BreadPackageInfo: React.FC<BreadPackageInfoProps> = ({ packages }) => {
-  const [showMenu, setShowMenu] = useState(false);
+  const [showMenu, setShowMenu] = React.useState(false);
   const navigate = useNavigate();
+
+  // packages가 undefined일 때를 대비한 기본값 처리
+  const safePackages = packages || [];
 
   const handleEdit = () => {
     navigate('/owner/package/register', {
       state: {
         isEditing: true,
-        packageInfo: packages[0] // 현재는 첫 번째 패키지만 수정 가능하도록 설정
+        packageInfo: safePackages[0] // 현재는 첫 번째 패키지만 수정 가능하도록 설정
       }
     });
     setShowMenu(false);
@@ -29,7 +32,7 @@ export const BreadPackageInfo: React.FC<BreadPackageInfoProps> = ({ packages }) 
     }
   };
 
-  if (packages.length === 0) {
+  if (safePackages.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-12 px-4 bg-[#F9F9F9] rounded-[10px] border border-dashed border-[#E5E5E5] mb-6">
         <img 
@@ -52,7 +55,8 @@ export const BreadPackageInfo: React.FC<BreadPackageInfoProps> = ({ packages }) 
   }
 
   // 현재는 첫 번째 패키지만 표시 (나중에 여러 패키지 표시로 확장 가능)
-  const currentPackage = packages[0];
+  const currentPackage = safePackages[0];
+  const packageQuantity = currentPackage.items.reduce((sum, item) => sum + item.quantity, 0);
 
   return (
     <>
@@ -98,21 +102,21 @@ export const BreadPackageInfo: React.FC<BreadPackageInfoProps> = ({ packages }) 
           />
           <div className="flex items-center gap-2">
             <span className="text-[24px] font-bold">{currentPackage.price.toLocaleString()}원</span>
-            <span className="text-[24px] font-bold text-[#FC973B]">× {currentPackage.quantity}개</span>
+            <span className="text-[24px] font-bold text-[#FC973B]">× {packageQuantity}개</span>
           </div>
         </div>
 
         <div className="bg-[#FC973B] text-white p-3 rounded-[10px] mb-3">
           <div className="flex justify-between px-2">
             <span className="font-medium">오늘 빵꾸러미로 번 돈</span>
-            <span className="font-bold">{(currentPackage.price * currentPackage.quantity).toLocaleString()}원</span>
+            <span className="font-bold">{(currentPackage.price * packageQuantity).toLocaleString()}원</span>
           </div>
         </div>
 
         <div className="bg-[#FC973B] text-white p-3 rounded-[10px]">
           <div className="flex justify-between px-2">
             <span className="font-medium">오늘 절약한 환경 수치</span>
-            <span className="font-bold">{currentPackage.quantity * 20}g</span>
+            <span className="font-bold">{packageQuantity * 20}g</span>
           </div>
         </div>
       </div>
