@@ -1,3 +1,4 @@
+use bbanggu;
 -- MySQL Workbench Forward Engineering
 
 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
@@ -71,12 +72,17 @@ COLLATE = utf8mb4_0900_ai_ci;
 -- -----------------------------------------------------
 -- Table `bbanggu`.`bakery_pickup_timetable`
 -- -----------------------------------------------------
+drop table bakery_pickup_timetable;
 CREATE TABLE IF NOT EXISTS `bbanggu`.`bakery_pickup_timetable` (
   `bakery_pickup_timetable_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   `bakery_id` INT UNSIGNED NOT NULL,
-  `day_of_week` ENUM('Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday') NOT NULL,
-  `start_time` TIME NOT NULL,
-  `end_time` TIME NOT NULL,
+  `sunday` VARCHAR(10) NULL DEFAULT NULL,
+  `monday` VARCHAR(10) NULL DEFAULT NULL,
+  `tuesday` VARCHAR(10) NULL DEFAULT NULL,
+  `wednesday` VARCHAR(10) NULL DEFAULT NULL,
+  `thursday` VARCHAR(10) NULL DEFAULT NULL,
+  `friday` VARCHAR(10) NULL DEFAULT NULL,
+  `saturday` VARCHAR(10) NULL DEFAULT NULL,
   PRIMARY KEY (`bakery_pickup_timetable_id`),
   INDEX `bakery_id` (`bakery_id` ASC) VISIBLE,
   CONSTRAINT `pickup_time_ibfk_1`
@@ -87,6 +93,7 @@ ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb4
 COLLATE = utf8mb4_0900_ai_ci;
 
+select * from bakery_pickup_timetable;
 
 -- -----------------------------------------------------
 -- Table `bbanggu`.`bread_category`
@@ -134,6 +141,7 @@ COLLATE = utf8mb4_0900_ai_ci;
 CREATE TABLE IF NOT EXISTS `bbanggu`.`bread_package` (
   `bread_package_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   `bakery_id` INT UNSIGNED NOT NULL,
+  `name` VARCHAR(100) NULL DEFAULT NULL,
   `price` INT UNSIGNED NOT NULL,
   `quantity` INT UNSIGNED NOT NULL,
   `pending` INT NOT NULL DEFAULT 0,
@@ -305,7 +313,9 @@ ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb4
 COLLATE = utf8mb4_0900_ai_ci;
 
+
 SET SQL_MODE=@OLD_SQL_MODE;
 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
+
 
