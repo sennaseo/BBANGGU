@@ -84,10 +84,10 @@ public class ReviewController {
 	/**
 	 * 가게 별점 조회 api
 	 */
-	// @GetMapping("/{bakery_id}/rating")
-	// public ResponseEntity<ApiResponse> getBakeryRating(@PathVariable Long bakery_id) {
-	// 	ReviewRatingDto rating = reviewService.getBakeryRating(bakery_id);
-	// 	return ResponseEntity.ok().body(new ApiResponse("가게의 평점 조회가 완료되었습니다.", rating));
-	// }
+	@GetMapping("/{bakery_id}/rating")
+	public ResponseEntity<ApiResponse> getBakeryRating(@PathVariable Long bakery_id) {
+		ReviewRatingDto rating = reviewService.getBakeryRating(bakery_id);
+		return ResponseEntity.ok().body(new ApiResponse("가게의 평점 조회가 완료되었습니다.", rating));
+	}
 
 }

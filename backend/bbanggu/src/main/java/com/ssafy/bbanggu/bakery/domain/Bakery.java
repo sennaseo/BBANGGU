@@ -58,6 +58,21 @@ public class Bakery {
 	@Column(nullable = false, columnDefinition = "DOUBLE DEFAULT 0.0")
 	private Double star;
 
+	@Column(nullable = false, columnDefinition = "INT DEFAULT 0")
+	private int rating1Cnt;
+
+	@Column(nullable = false, columnDefinition = "INT DEFAULT 0")
+	private int rating2Cnt;
+
+	@Column(nullable = false, columnDefinition = "INT DEFAULT 0")
+	private int rating3Cnt;
+
+	@Column(nullable = false, columnDefinition = "INT DEFAULT 0")
+	private int rating4Cnt;
+
+	@Column(nullable = false, columnDefinition = "INT DEFAULT 0")
+	private int rating5Cnt;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt; // 생성일
 

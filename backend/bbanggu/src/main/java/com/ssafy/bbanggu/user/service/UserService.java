@@ -39,24 +39,24 @@ public class UserService { // 사용자 관련 비즈니스 로직 처리
 	 * @return UserResponse 생성된 사용자 정보
 	 */
 	public UserResponse create(CreateUserRequest request) {
-		// 1️⃣ 이메일 중복 여부 검사
+		// ✅ 이메일 중복 여부 검사
 		if (userRepository.existsByEmail(request.email())) {
 			throw new CustomException(ErrorCode.EMAIL_ALREADY_IN_USE);
 		}
 
-		// 2️⃣ 전화번호 중복 확인
+		// ✅ 전화번호 중복 확인
 		if (userRepository.existsByPhone(request.phone())) {
 			throw new CustomException(ErrorCode.PHONE_NUMBER_ALREADY_EXISTS);
 		}
 
-		// 3️⃣ 비밀번호 암호화
+		// 1️⃣ 비밀번호 암호화
 		String encodedPassword = passwordEncoder.encode(request.password());
 
-		// 4️⃣ User 엔티티 생성 및 저장 (회원가입)
+		// 2️⃣ User 엔티티 생성 및 저장 (회원가입)
 		User user = User.createNormalUser(request.name(), request.email(), encodedPassword, request.phone(), request.toEntity().getRole());
 		userRepository.save(user);
 
-		// 5️⃣ 절약 정보 자동 생성 및 초기화
+		// 3️⃣ 절약 정보 자동 생성 및 초기화
 		EchoSaving echoSaving = EchoSaving.builder()
 			.user(user)
 			.savedMoney(0)

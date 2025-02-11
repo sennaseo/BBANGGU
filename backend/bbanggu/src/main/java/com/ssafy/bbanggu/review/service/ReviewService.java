@@ -1,6 +1,7 @@
 package com.ssafy.bbanggu.review.service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -134,14 +135,21 @@ public class ReviewService {
 	/**
 	 * 가게 평점 조회
 	 */
-	// public ReviewRatingDto getBakeryRating(Long bakeryId) {
-	// 	Bakery bakery = bakeryRepository.findByBakeryIdAndDeletedAtIsNull(bakeryId);
-	// 	if (bakery == null) {
-	// 		throw new CustomException(ErrorCode.BAKERY_NOT_FOUND);
-	// 	}
-	//
-	// 	List<Review> reviews = reviewRepository.findByBakeryAndDeletedAtIsNullOrderByCreatedAtDesc(bakery);
-	//
-	// }
+	public ReviewRatingDto getBakeryRating(Long bakeryId) {
+		Bakery bakery = bakeryRepository.findByBakeryIdAndDeletedAtIsNull(bakeryId);
+		if (bakery == null) {
+			throw new CustomException(ErrorCode.BAKERY_NOT_FOUND);
+		}
+
+		List<Integer> star_cnt = new ArrayList<>();
+		star_cnt.add(bakery.getRating1Cnt());
+		star_cnt.add(bakery.getRating2Cnt());
+		star_cnt.add(bakery.getRating3Cnt());
+		star_cnt.add(bakery.getRating4Cnt());
+		star_cnt.add(bakery.getRating5Cnt());
+
+		ReviewRatingDto rating = new ReviewRatingDto(bakeryId, bakery.getStar(), star_cnt);
+		return rating;
+	}
 
 }
