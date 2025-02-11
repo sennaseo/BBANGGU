@@ -1,5 +1,9 @@
 package com.ssafy.bbanggu.review.service;
 
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.stereotype.Service;
 
 import com.ssafy.bbanggu.bakery.domain.Bakery;
@@ -10,7 +14,11 @@ import com.ssafy.bbanggu.reservation.Reservation;
 import com.ssafy.bbanggu.reservation.ReservationRepository;
 import com.ssafy.bbanggu.review.domain.Review;
 import com.ssafy.bbanggu.review.dto.ReviewDto;
+import com.ssafy.bbanggu.review.dto.ReviewRatingDto;
+import com.ssafy.bbanggu.review.dto.ReviewResponseDto;
 import com.ssafy.bbanggu.review.repository.ReviewRepository;
+import com.ssafy.bbanggu.user.domain.User;
+import com.ssafy.bbanggu.user.repository.UserRepository;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +30,7 @@ public class ReviewService {
 	private final ReservationRepository reservationRepository;
 	private final ReviewRepository reviewRepository;
 	private final BakeryRepository bakeryRepository;
+	private final UserRepository userRepository;
 
 	/**
 	 * 리뷰 등록
@@ -64,4 +73,75 @@ public class ReviewService {
 		Review savedReview = reviewRepository.save(review);
 		return ReviewDto.from(savedReview);
 	}
+
+	/**
+	 * 리뷰 삭제
+	 */
+	@Transactional
+	public void delete(Long userId, Long reviewId) {
+		Review review = reviewRepository.findById(reviewId)
+			.orElseThrow(() -> new CustomException(ErrorCode.RESERVATION_NOT_FOUND));
+
+		if (!review.getUser().getUserId().equals(userId)) {
+			throw new CustomException(ErrorCode.FORBIDDEN_REVIEW);
+		}
+
+		review.setDeletedAt(LocalDateTime.now());
+		reviewRepository.save(review);
+	}
+
+	/**
+	 * 사용자 리뷰 조회
+	 */
+	public List<ReviewResponseDto> getUserReviews(Long userId) {
+		User user = userRepository.findById(userId)
+			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+		List<Review> reviews = reviewRepository.findByUserAndDeletedAtIsNullOrderByCreatedAtDesc(user);
+
+		return reviews.stream()
+			.map(review -> new ReviewResponseDto(
+				review.getReviewId(),
+				review.getReservation().getReservationId(),
+				review.getRating(),
+				review.getContent(),
+				review.getReviewImageUrl(),
+				review.getCreatedAt()
+			)).collect(Collectors.toList());
+	}
+
+	/**
+	 * 가게 리뷰 조회
+	 */
+	public List<ReviewResponseDto> getBakeryReviews(Long bakeryId) {
+		Bakery bakery = bakeryRepository.findByBakeryIdAndDeletedAtIsNull(bakeryId);
+		if (bakery == null) {
+			throw new CustomException(ErrorCode.BAKERY_NOT_FOUND);
+		}
+
+		List<Review> reviews = reviewRepository.findByBakeryAndDeletedAtIsNullOrderByCreatedAtDesc(bakery);
+		return reviews.stream()
+			.map(review -> new ReviewResponseDto(
+				review.getReviewId(),
+				review.getReservation().getReservationId(),
+				review.getRating(),
+				review.getContent(),
+				review.getReviewImageUrl(),
+				review.getCreatedAt()
+			)).collect(Collectors.toList());
+	}
+
+	/**
+	 * 가게 평점 조회
+	 */
+	// public ReviewRatingDto getBakeryRating(Long bakeryId) {
+	// 	Bakery bakery = bakeryRepository.findByBakeryIdAndDeletedAtIsNull(bakeryId);
+	// 	if (bakery == null) {
+	// 		throw new CustomException(ErrorCode.BAKERY_NOT_FOUND);
+	// 	}
+	//
+	// 	List<Review> reviews = reviewRepository.findByBakeryAndDeletedAtIsNullOrderByCreatedAtDesc(bakery);
+	//
+	// }
+
 }
