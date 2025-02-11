@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.ssafy.bbanggu.bakery.Bakery;
+import com.ssafy.bbanggu.bakery.domain.Bakery;
 import com.ssafy.bbanggu.util.image.ImageService;
 
 import lombok.RequiredArgsConstructor;

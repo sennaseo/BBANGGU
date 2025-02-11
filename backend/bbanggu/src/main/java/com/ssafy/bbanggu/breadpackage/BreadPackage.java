@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
-import com.ssafy.bbanggu.bakery.Bakery;
+import com.ssafy.bbanggu.bakery.domain.Bakery;
 
 @Data
 @Builder

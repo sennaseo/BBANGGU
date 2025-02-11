@@ -1,4 +1,4 @@
-package com.ssafy.bbanggu.bakery;
+package com.ssafy.bbanggu.bakery.domain;
 
 import com.ssafy.bbanggu.user.domain.User;
 import lombok.AllArgsConstructor;

@@ -2,7 +2,7 @@ package com.ssafy.bbanggu.reservation;
 
 import java.time.LocalDateTime;
 
-import com.ssafy.bbanggu.bakery.Bakery;
+import com.ssafy.bbanggu.bakery.domain.Bakery;
 import com.ssafy.bbanggu.breadpackage.BreadPackage;
 import com.ssafy.bbanggu.user.domain.User;
 

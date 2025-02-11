@@ -1,10 +1,12 @@
 package com.ssafy.bbanggu.bakery;
 
 import com.ssafy.bbanggu.auth.security.CustomUserDetails;
+import com.ssafy.bbanggu.bakery.domain.Bakery;
 import com.ssafy.bbanggu.bakery.dto.BakeryDetailDto;
 import com.ssafy.bbanggu.bakery.dto.BakeryDto;
 import com.ssafy.bbanggu.bakery.dto.BakeryLocationDto;
 import com.ssafy.bbanggu.bakery.dto.BakeryPickupTimetableDto;
+import com.ssafy.bbanggu.bakery.dto.BakerySettlementDto;
 import com.ssafy.bbanggu.bakery.dto.PickupTimeDto;
 import com.ssafy.bbanggu.bakery.repository.BakeryRepository;
 import com.ssafy.bbanggu.bakery.service.BakeryPickupService;
@@ -62,6 +64,11 @@ public class BakeryController {
 		BakeryDto createdBakery = bakeryService.createBakery(bakery);
 		return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse("가게 등록이 완료되었습니다.", createdBakery));
 	}
+
+	// @PostMapping("/settlement")
+	// public ResponseEntity<ApiResponse> createSettlement(@RequestBody @Valid BakerySettlementDto settlement) {
+	// 	BakerySettlementDto createSettlement = bakeryService.
+	// }
 
 	// 가게 상세 조회
 	@GetMapping("/{bakery_id}")
