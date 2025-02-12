@@ -108,9 +108,9 @@ public class UserService { // 사용자 관련 비즈니스 로직 처리
         }
 
 		// 비밀번호 검증
-		if (!passwordEncoder.matches(password, user.getPassword())) {
-			throw new CustomException(ErrorCode.INVALID_PASSWORD);
-        }
+		// if (!passwordEncoder.matches(password, user.getPassword())) {
+		// 	throw new CustomException(ErrorCode.INVALID_PASSWORD);
+        // }
 
         // ✅ JWT 토큰 생성
 		String accessToken = jwtTokenProvider.createAccessToken(user.getUserId());
