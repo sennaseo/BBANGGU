@@ -5,6 +5,9 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.time.LocalDateTime;
+import java.util.Optional;
+
+import com.ssafy.bbanggu.bakery.domain.Bakery;
 
 @Repository
 public interface BreadPackageRepository extends JpaRepository<BreadPackage, Long> {

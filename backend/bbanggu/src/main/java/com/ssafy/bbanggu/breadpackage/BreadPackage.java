@@ -47,4 +47,10 @@ public class BreadPackage {
 
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt; // 삭제일
+
+	public void update(Integer price, Integer quantity, String name) {
+		this.price = price;
+		this.quantity = quantity;
+		this.name = name;
+	}
 }
