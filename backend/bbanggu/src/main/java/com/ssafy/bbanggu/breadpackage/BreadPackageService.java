@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.ssafy.bbanggu.auth.security.CustomUserDetails;
 import com.ssafy.bbanggu.bakery.domain.Bakery;
 import com.ssafy.bbanggu.bakery.repository.BakeryRepository;
 import com.ssafy.bbanggu.breadpackage.dto.BreadPackageDto;
@@ -24,9 +25,15 @@ public class BreadPackageService {
 	private final BreadPackageRepository breadPackageRepository;
 	private final BakeryRepository bakeryRepository;
 
-	public BreadPackageDto createPackage(BreadPackageDto request) {
+	public BreadPackageDto createPackage(CustomUserDetails userDetails, BreadPackageDto request) {
 		Bakery bakery = bakeryRepository.findById(request.bakeryId())
 			.orElseThrow(() -> new IllegalArgumentException("Bakery not found"));
+		System.out.println("!!!!!!!!!! 베이커리 아이디: " + bakery.getBakeryId() + ", 사장님 아이디: " + bakery.getUser().getUserId());
+		System.out.println("로그인한 사용자 아이디: " + userDetails.getUserId());
+
+		if (!bakery.getUser().getUserId().equals(userDetails.getUserId())) {
+			throw new CustomException(ErrorCode.UNAUTHORIZED_USER);
+		}
 
 		// BreadPackage 객체 생성
 		BreadPackage breadPackage = BreadPackage.builder()
