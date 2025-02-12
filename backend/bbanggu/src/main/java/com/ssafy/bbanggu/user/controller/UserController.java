@@ -1,5 +1,6 @@
 package com.ssafy.bbanggu.user.controller;
 
+import java.util.Map;
 import java.util.Optional;
 
 import com.ssafy.bbanggu.auth.dto.EmailRequest;
@@ -116,7 +117,7 @@ public class UserController {
 		return ResponseEntity.ok()
 			.header(HttpHeaders.SET_COOKIE, accessTokenCookie.toString())
 			.header(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString())
-			.body(new ApiResponse("로그인이 성공적으로 완료되었습니다.", null));
+			.body(new ApiResponse("로그인이 성공적으로 완료되었습니다.", tokens));
     }
 
     /**
