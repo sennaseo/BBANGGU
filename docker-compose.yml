@@ -1,0 +1,88 @@
+services:
+  db:
+    image: mysql:8.0
+    container_name: bbanggu-db
+    restart: always
+    environment:
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./backend/bbanggu/mysql/:/docker-entrypoint-initdb.d/
+      - mysql_data:/var/lib/mysql
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - bbanggu-network
+
+  app:
+    build:
+      context: ./backend/bbanggu/
+      dockerfile: Dockerfile
+      # args:
+    #    command: ./gradlew build && java -jar bbanggu-0.0.1-SNAPSHOT.jar
+    image: bbanggu-server
+    container_name: bbanggu-server
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8081:8081"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://bbanggu-db:3306/${DB_NAME}?useSSL=false&serverTimezone=Asia/Seoul&allowPublicKeyRetrieval=true
+      - SPRING_DATASOURCE_USERNAME=${DB_USERNAME}
+      - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
+      - SPRING_JPA_DATABASE_PLATFORM=org.hibernate.dialect.MySQL8Dialect
+      - SERVER_PORT=8081
+    env_file:
+      - .env
+    networks:
+      - bbanggu-network
+    restart: always
+
+  nginx:
+    image: nginx:latest
+    container_name: bbanggu-nginx
+    restart: always
+    volumes:
+      - ./nginx:/etc/nginx
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - app
+    networks:
+      - bbanggu-network
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://i12d102.p.ssafy.io:8081" ]
+      interval: 10s
+      retries: 5
+
+  certbot:
+    container_name: certbot
+    image: certbot/certbot
+    restart: unless-stopped
+    volumes:
+      - ./backend/bbanggu/data/certbot/conf:/etc/letsencrypt
+      - ./backend/bbanggu/data/certbot/www:/var/www/certbot
+    depends_on:
+      - nginx
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+
+
+volumes:
+  mysql_data:
+
+networks:
+  bbanggu-network:
+    driver: bridge

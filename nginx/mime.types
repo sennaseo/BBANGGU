@@ -1,0 +1,22 @@
+types {
+    text/html                             html htm shtml;
+    text/css                              css;
+    image/gif                             gif;
+    image/jpeg                            jpeg jpg;
+    application/javascript                js;
+    application/json                      json;
+    application/xml                       xml;
+    application/x-www-form-urlencoded      xhtml;
+    application/octet-stream              bin exe dll;
+    text/plain                            txt log;
+    image/png                             png;
+    image/svg+xml                         svg;
+    application/pdf                       pdf;
+    application/zip                       zip;
+    application/msword                    doc;
+    application/vnd.ms-excel              xls;
+    application/vnd.ms-powerpoint         ppt;
+    application/vnd.openxmlformats-officedocument.wordprocessingml.document docx;
+    application/vnd.openxmlformats-officedocument.spreadsheetml.sheet xlsx;
+    application/vnd.openxmlformats-officedocument.presentationml.presentation pptx;
+}
