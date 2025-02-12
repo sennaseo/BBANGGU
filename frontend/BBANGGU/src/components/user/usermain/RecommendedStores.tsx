@@ -72,16 +72,11 @@ export default function RecommendedStores({ stores, onToggleLike, onStoreClick }
               </div>
               <div>
                 <span className="text-[18px] font-bold text-[#333333]">
-                  {(
-                    (store.package?.[0]?.price || 0) *
-                    (1 - (store.package?.[0]?.discountRate || 0) / 100)
-                  ).toLocaleString()}원
+                  {((store.package?.[0]?.price || 0) * 0.5).toLocaleString()}원
                 </span>
-                {store.package?.[0]?.discountRate ? (
-                  <span className="text-[14px] text-[#D2D2D2] line-through ml-2">
-                    {(store.package?.[0]?.price || 0).toLocaleString()}원
-                  </span>
-                ) : null}
+                <span className="text-[14px] text-[#D2D2D2] line-through ml-2">
+                  {(store.package?.[0]?.price || 0).toLocaleString()}원
+                </span>
               </div>
             </div>
           </div>

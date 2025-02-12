@@ -6,8 +6,6 @@ export const mockUsers: Record<number, UserType> = {
     user_id: 101,
     name: "빵순이",
     profile_image_url: "https://images.unsplash.com/photo-1569346276519-709519eeaa51?q=80&w=2082&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    reservations: [],
-    echosaves: [],
     favorite: [
       {
         user_id: 101,
