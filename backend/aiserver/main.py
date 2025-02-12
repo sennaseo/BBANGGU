@@ -1,5 +1,5 @@
 # pip install python-multipart
-from fastapi import FastAPI, UploadFile
+from fastapi import FastAPI, UploadFile, File, Form
 from typing import List
 from pathlib import Path
 from ai.detect import detect_breads_from_image
@@ -9,6 +9,7 @@ import shutil
 import os
 
 app = FastAPI()
+
 
 @app.post("/detect")
 async def detect_breads(images: List[UploadFile]):
@@ -20,13 +21,21 @@ async def detect_breads(images: List[UploadFile]):
             result_list[class_name] += count
     return result_list
 
+
 UPLOAD_DIR = "uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
+
 @app.post("/train")
-async def train(images: List[UploadFile], bakery_id: int, name: str, price: int):
+async def train(
+        images: List[UploadFile] = File(...),
+        bakery_id: int = Form(...),
+        name: str = Form(...),
+        price: int = Form(...)
+):
     store_dir = Path(UPLOAD_DIR) / str(bakery_id)
     store_dir.mkdir(parents=True, exist_ok=True)
+    print("store_dir: " + store_dir)
 
     image_paths = []
     for image in images:
