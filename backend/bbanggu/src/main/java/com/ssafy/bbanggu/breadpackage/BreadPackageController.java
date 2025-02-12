@@ -31,7 +31,7 @@ public class BreadPackageController {
 
 	private final BreadPackageService breadPackageService;
 
-	@PostMapping
+	@PostMapping("")
 	public ResponseEntity<?> createPackage(
 		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@RequestBody BreadPackageDto request) {
