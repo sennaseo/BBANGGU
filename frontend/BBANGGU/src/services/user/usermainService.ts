@@ -14,7 +14,7 @@ export async function fetchBestPackages(): Promise<PackageType[]> {
 
     // For now, we'll use the mock data
     await new Promise((resolve) => setTimeout(resolve, 500)) // Simulate API delay
-    return mockBakeries.map((bakery) => bakery.bread_package)
+    return mockBakeries.map((bakery) => bakery.bread_package).flat()
   } catch (error) {
     console.error("Error fetching best packages:", error)
     throw error

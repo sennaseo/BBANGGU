@@ -19,16 +19,14 @@ export interface ReviewType {
 }
 
 export interface PackageType {
-  id: number;
-  name: string;
-  price: number;
-  description?: string;
-  status: 'ACTIVE' | 'INACTIVE';
-  items: {
-    id: number;
-    name: string;
-    quantity: number;
-  }[];
+  packageId: number
+  bakeryId: number
+  price: number
+  discountRate: number
+  quantity: number
+  name: string
+  description: string
+  items: { quantity: number }[]
 }
 
 export interface BakeryType {
@@ -54,7 +52,7 @@ export interface BakeryType {
   price: number
   original_price: number
   is_liked: boolean
-  bread_package: PackageType
+  bread_package: PackageType[]
 }
 
 export interface ReservationType {

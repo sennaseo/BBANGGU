@@ -84,7 +84,7 @@ export function ReservationDetail() {
             <div className="flex justify-between items-center">
               <div className="flex gap-2">
                 <span className="text-gray-600">{reservation.quantity}x</span>
-                <span className="font-medium">{bakery.bread_package.name}</span>
+                <span className="font-medium">{bakery.bread_package[0].name}</span>
               </div>
               <div>
                 {reservation.total_price.toLocaleString()}원

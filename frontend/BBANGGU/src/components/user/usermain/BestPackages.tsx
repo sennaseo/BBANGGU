@@ -43,14 +43,14 @@ export default function BestPackages({ packages, bakeries, onToggleLike }: BestP
       </div>
       <DraggableScroller ref={scrollRef} className="flex gap-4 overflow-x-scroll scrollbar-hide -mx-5 px-5">
         {sortedPackages.map((pkg) => {
-          const bakery = bakeries.find((b) => b.bakery_id === pkg.bakery_id)
+          const bakery = bakeries.find((b) => b.bakery_id === pkg.packageId)
           if (!bakery) return null
 
           return (
             <div
-              key={`package-${pkg.bread_package_id}`}
+              key={`package-${pkg.packageId}`}
               className="flex-none w-[130px] text-center cursor-pointer"
-              onClick={() => handlePackageClick(pkg.bakery_id)}
+              onClick={() => handlePackageClick(pkg.packageId)}
             >
               <div className="relative aspect-square mb-2">
                 <img
@@ -62,7 +62,7 @@ export default function BestPackages({ packages, bakeries, onToggleLike }: BestP
                   className="absolute right-2 bottom-2 p-1.5 rounded-full bg-white/80 backdrop-blur-sm hover:bg-white transition-colors"
                   onClick={(e) => {
                     e.stopPropagation()
-                    onToggleLike(pkg.bakery_id)
+                    onToggleLike(pkg.packageId)
                   }}
                 >
                   {bakery.is_liked ? (
