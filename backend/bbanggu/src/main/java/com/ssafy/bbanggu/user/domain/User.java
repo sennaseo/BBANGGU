@@ -70,13 +70,13 @@ public class User {
 	@Column(name = "address_detail")
 	private String addressDetail;
 
-	@Column
 	@Setter
-	private Double latitude;
+	@Column
+	private Double latitude = 0.0;
 
-	@Column
 	@Setter
-	private Double longitude;
+	@Column
+	private Double longitude = 0.0;
 
 	@CreationTimestamp
 	@Column(name = "created_at", nullable = false, updatable = false)

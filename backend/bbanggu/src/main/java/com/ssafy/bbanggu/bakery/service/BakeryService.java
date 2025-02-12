@@ -1,11 +1,14 @@
 package com.ssafy.bbanggu.bakery.service;
 
 import com.ssafy.bbanggu.bakery.domain.Bakery;
+import com.ssafy.bbanggu.bakery.domain.Settlement;
 import com.ssafy.bbanggu.bakery.dto.BakeryCreateDto;
 import com.ssafy.bbanggu.bakery.dto.BakeryLocationDto;
+import com.ssafy.bbanggu.bakery.dto.BakerySettlementDto;
 import com.ssafy.bbanggu.bakery.repository.BakeryRepository;
 import com.ssafy.bbanggu.bakery.dto.BakeryDetailDto;
 import com.ssafy.bbanggu.bakery.dto.BakeryDto;
+import com.ssafy.bbanggu.bakery.repository.BakerySettlementRepository;
 import com.ssafy.bbanggu.common.exception.CustomException;
 import com.ssafy.bbanggu.common.exception.ErrorCode;
 import com.ssafy.bbanggu.user.domain.User;
@@ -33,6 +36,7 @@ public class BakeryService {
 	private final BakeryRepository bakeryRepository;
 	private final GeoService geoService;
 	private final UserRepository userRepository;
+	private final BakerySettlementRepository bakerySettlementRepository;
 
 	// 삭제되지 않은 모든 가게 조회
 	@Transactional(readOnly = true)
@@ -143,6 +147,27 @@ public class BakeryService {
 		// 주소 기반 위경도 가져오기
 		double[] latLng = geoService.getLatLngFromAddress(fullAddress);
 		return latLng;
+	}
+
+	/**
+	 * 가게 정산 정보 등록
+	 */
+	@Transactional
+	public BakerySettlementDto createSettlement(BakerySettlementDto settlement) {
+		User user = userRepository.findById(settlement.userId())
+			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+		Settlement bakerySet = Settlement.builder()
+			.user(user)
+			.bankName(settlement.bankName())
+			.accountHolderName(settlement.accountHolderName())
+			.accountNumber(settlement.accountNumber())
+			.emailForTaxInvoice(settlement.emailForTaxInvoice())
+			.businessLicenseFileUrl(settlement.businessLicenseFileUrl())
+			.build();
+
+		Settlement savedSettlement = bakerySettlementRepository.save(bakerySet);
+		return BakerySettlementDto.from(savedSettlement);
 	}
 
 	// 가게 수정

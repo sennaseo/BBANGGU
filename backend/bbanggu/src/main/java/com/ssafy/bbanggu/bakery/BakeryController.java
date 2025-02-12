@@ -66,10 +66,14 @@ public class BakeryController {
 		return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse("가게 등록이 완료되었습니다.", createdBakery));
 	}
 
-	// @PostMapping("/settlement")
-	// public ResponseEntity<ApiResponse> createSettlement(@RequestBody @Valid BakerySettlementDto settlement) {
-	// 	BakerySettlementDto createSettlement = bakeryService.
-	// }
+	/**
+	 * 가게 정산 정보 등록 api
+	 */
+	@PostMapping("/settlement")
+	public ResponseEntity<ApiResponse> createSettlement(@RequestBody @Valid BakerySettlementDto settlement) {
+		BakerySettlementDto createSettlement = bakeryService.createSettlement(settlement);
+		return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse("가게 정산 정보 등록이 완료되었습니다.", createSettlement));
+	}
 
 	// 가게 상세 조회
 	@GetMapping("/{bakery_id}")
