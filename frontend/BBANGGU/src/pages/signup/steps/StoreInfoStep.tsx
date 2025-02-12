@@ -4,9 +4,12 @@ import { InputField } from "../../../components/signup/InputField"
 interface StoreInfoStepProps {
   formData: {
     storeName: string
+    storeDescription: string
+    storePhone: string
     storeAddress: string
     storeAddressDetail: string
     storePhoto: string
+    businessRegistrationNumber: string
   }
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void
 }
@@ -98,7 +101,31 @@ export function StoreInfoStep({ formData, onChange }: StoreInfoStepProps) {
         name="storeName"
         value={formData.storeName}
         onChange={onChange}
-        placeholder="텍스트"
+        placeholder="가게 이름을 입력해주세요"
+      />
+
+      <InputField
+        label="가게 설명"
+        name="storeDescription"
+        value={formData.storeDescription}
+        onChange={onChange}
+        placeholder="가게를 소개해주세요"
+      />
+
+      <InputField
+        label="사업자 등록 번호"
+        name="businessRegistrationNumber"
+        value={formData.businessRegistrationNumber}
+        onChange={onChange}
+        placeholder="사업자 등록 번호를 입력해주세요"
+      />
+
+      <InputField
+        label="가게 전화번호"
+        name="storePhone"
+        value={formData.storePhone}
+        onChange={onChange}
+        placeholder="가게 전화번호를 입력해주세요"
       />
 
       <div className="space-y-2">

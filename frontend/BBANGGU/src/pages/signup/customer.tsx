@@ -26,7 +26,7 @@ export default function CustomerSignupPage() {
   const [isEmailVerificationSent, setIsEmailVerificationSent] = useState(false)
   const [isEmailVerified, setIsEmailVerified] = useState(false)
   const [isPhoneVerificationSent, setIsPhoneVerificationSent] = useState(false)
-  const [isPhoneVerified, setIsPhoneVerified] = useState(false)
+  const [isPhoneVerified] = useState(false)
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
@@ -40,12 +40,11 @@ export default function CustomerSignupPage() {
     try {
       await UserApi.sendEmailVerification(formData.email);
       setIsEmailVerificationSent(true);
-      alert('인증번호가 전송되었습니다.');
     } catch (error: any) {
       if (error.code === 3001) {
         alert('너무 많은 요청을 보냈습니다. 나중에 다시 시도하세요.');
       } else {
-        alert(error.message || '인증번호 전송에 실패했습니다.');
+        alert('인증번호 전송에 실패했습니다.');
       }
     }
   }
@@ -54,14 +53,13 @@ export default function CustomerSignupPage() {
     try {
       await UserApi.verifyEmail(formData.email, formData.emailVerificationCode);
       setIsEmailVerified(true);
-      alert('이메일이 인증되었습니다.');
     } catch (error: any) {
       if (error.code === 3002) {
         alert('인증번호가 일치하지 않습니다. 다시 확인해주세요.');
       } else if (error.code === 3004) {
         alert('이미 사용된 인증 코드입니다.');
       } else {
-        alert(error.message || '이메일 인증에 실패했습니다.');
+        alert('이메일 인증에 실패했습니다.');
       }
     }
   }
@@ -79,28 +77,20 @@ export default function CustomerSignupPage() {
   const handlePhoneVerificationSubmit = async () => {
     if (formData.phone) {
       try {
-        const registerData = {
+        await UserApi.register({
           name: formData.name,
           email: formData.email,
           password: formData.password,
           phone: formData.phone
-        };
-        
-        console.log('Sending register data:', registerData);
-        
-        const response = await UserApi.register(registerData);
-        console.log('Register success:', response);
+        });
         setCurrentStep("complete");
       } catch (error: any) {
-        console.error('Register error:', error);
-        if (error?.code === 1006) {
+        if (error.code === 1006) {
           alert('이미 사용 중인 이메일입니다.');
-        } else if (error?.code === 1008) {
+        } else if (error.code === 1008) {
           alert('이미 사용 중인 전화번호입니다.');
-        } else if (error?.code === 1000) {
-          alert(error.message || '입력하신 정보를 다시 확인해주세요.');
         } else {
-          alert('회원가입에 실패했습니다. 입력하신 정보를 다시 확인해주세요.');
+          alert('회원가입에 실패했습니다.');
         }
       }
     }
@@ -255,4 +245,3 @@ export default function CustomerSignupPage() {
     </div>
   )
 }
-

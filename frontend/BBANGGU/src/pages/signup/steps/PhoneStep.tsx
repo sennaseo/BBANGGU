@@ -3,9 +3,14 @@ import type React from "react"
 
 interface PhoneStepProps {
   formData: {
-    phone: string
-  }
-  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void
+    phone: string;
+    verificationCode?: string;
+  };
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onPhoneVerification: () => void;
+  onVerificationSubmit: () => Promise<void>;
+  isVerificationSent: boolean;
+  isVerified: boolean;
 }
 
 export function PhoneStep({
