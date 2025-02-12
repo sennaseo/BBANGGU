@@ -102,7 +102,6 @@ export function StoreInfoStep({ formData, onChange }: StoreInfoStepProps) {
       />
 
       <div className="space-y-2">
-        <label className="block text-[15px] font-medium">가게 주소</label>
         <InputField
           label="가게 주소"
           name="storeAddress"
@@ -114,7 +113,7 @@ export function StoreInfoStep({ formData, onChange }: StoreInfoStepProps) {
           readOnly
         />
         <InputField
-          label="세부 주소"
+          label=""
           name="storeAddressDetail"
           value={formData.storeAddressDetail}
           onChange={onChange}
