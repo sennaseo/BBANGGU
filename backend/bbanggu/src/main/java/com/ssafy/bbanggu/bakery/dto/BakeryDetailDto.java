@@ -19,6 +19,7 @@ public record BakeryDetailDto(
 	@NotBlank(message = "상세 주소는 필수 입력 값입니다.")
 	String addressDetail,
 	String bakeryImageUrl,
+	String bakeryBackgroundImgUrl,
 	Double star,
 	Double distance
 ) {
@@ -32,6 +33,7 @@ public record BakeryDetailDto(
 			bakery.getAddressRoad(),
 			bakery.getAddressDetail(),
 			bakery.getBakeryImageUrl(),
+			bakery.getBakeryBackgroundImgUrl(),
 			bakery.getStar(),
 			distance
 		);
