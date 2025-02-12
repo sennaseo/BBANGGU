@@ -14,9 +14,12 @@ import com.ssafy.bbanggu.bakery.repository.BakeryRepository;
 import com.ssafy.bbanggu.breadpackage.dto.BreadPackageDto;
 import com.ssafy.bbanggu.common.exception.CustomException;
 import com.ssafy.bbanggu.common.exception.ErrorCode;
+import com.ssafy.bbanggu.user.domain.User;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -28,9 +31,17 @@ public class BreadPackageService {
 	public BreadPackageDto createPackage(CustomUserDetails userDetails, BreadPackageDto request) {
 		Bakery bakery = bakeryRepository.findById(request.bakeryId())
 			.orElseThrow(() -> new CustomException(ErrorCode.BAKERY_NOT_FOUND));
+		log.info("✅ " + request.bakeryId() + "번 빵집이 존재합니다^^");
 
+		if(!bakery.getUser().getUserId().equals(userDetails.getUserId())) {
+			log.info("❗❗현재 로그인한 사용자의 아이디와 사장님의 아이디가 일치하지 않음❗❗\n"
+				+ "로그인한 사용자 ID: " + userDetails.getUserId() + "\n사장님 ID: " + bakery.getUser().getUserId());
+			throw new CustomException(ErrorCode.UNAUTHORIZED_USER);
+		}
+		log.info("✅ 현재 로그인한 사용자가 해당 빵집의 사장님입니다^^");
 
-
+		log.info("📌 현재 요청으로 들어온 빵꾸러미 정보\n1️⃣ bakery ID: " + request.bakeryId() + "\n2️⃣ price: " + request.price() +
+			"\n3️⃣ quantity: " + request.quantity() + "\n4️⃣ name: " + request.name());
 		// BreadPackage 객체 생성
 		BreadPackage breadPackage = BreadPackage.builder()
 			.bakery(bakery)
@@ -42,6 +53,7 @@ public class BreadPackageService {
 
 		// BreadPackage 저장
 		BreadPackage savedBreadPackage = breadPackageRepository.save(breadPackage);
+		log.info("🩵 생성된 빵꾸러미 DB에 저장 완료 🩵");
 
 		// 저장된 BreadPackage를 BreadPackageDto로 변환하여 리턴
 		return BreadPackageDto.from(savedBreadPackage);
@@ -66,7 +78,16 @@ public class BreadPackageService {
 	}
 
 	// 가게 ID로 모든 빵 패키지 리스트 조회 (논리적 삭제된 패키지 제외)
+
+	/**
+	 * 가게의 전체 빵꾸러미 조회
+	 */
 	public List<BreadPackageDto> getPackagesByBakeryId(Long bakeryId) {
+		Bakery bakery = bakeryRepository.findByBakeryIdAndDeletedAtIsNull(bakeryId);
+		if (bakery == null) {
+			throw new CustomException(ErrorCode.BAKERY_NOT_FOUND);
+		}
+
 		List<BreadPackage> breadPackages = breadPackageRepository.findByBakery_BakeryIdAndDeletedAtIsNull(bakeryId);
 		return breadPackages.stream()
 			.map(BreadPackageDto::from)
@@ -74,10 +95,10 @@ public class BreadPackageService {
 	}
 
 	// 베이커리 별 기간별 빵 패키지 조회
-	public List<BreadPackageDto> getPackagesByBakeryAndDate(Long bakeryId, LocalDateTime startDate,
-															LocalDateTime endDate) {
+	public List<BreadPackageDto> getPackagesByBakeryAndDate(Long bakeryId, LocalDateTime startDate, LocalDateTime endDate) {
 		List<BreadPackage> breadPackages = breadPackageRepository.findByBakery_BakeryIdAndCreatedAtBetweenAndDeletedAtIsNull(
 			bakeryId, startDate, endDate);
+		log.info("✅ 삭제되지 않은 가게들 중 기간에 해당하는 빵꾸러미 리스트 생성 완료 !!");
 		return breadPackages.stream()
 			.map(BreadPackageDto::from)
 			.collect(Collectors.toList());
