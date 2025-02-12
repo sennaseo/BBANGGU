@@ -56,7 +56,7 @@ public class User {
 
 	@Column
 	@Setter
-	private String profilePhotoUrl;
+	private String profileImageUrl;
 
 	@Setter
 	@Column(length = 512)
@@ -133,12 +133,12 @@ public class User {
 	 *
 	 * @param name 이름
 	 * @param phone 전화번호
-	 * @param profilePhotoUrl 프로필 이미지
+	 * @param profileImageUrl 프로필 이미지
 	 */
-	public void updateUserInfo(String name, String phone, String profilePhotoUrl) {
+	public void updateUserInfo(String name, String phone, String profileImageUrl) {
 		if (name != null && !name.isBlank()) this.name = name;
 		if (phone != null && phone.matches("^(010-\\d{4}-\\d{4})$")) this.phone = phone;
-		if (profilePhotoUrl != null && !profilePhotoUrl.isBlank()) this.profilePhotoUrl = profilePhotoUrl;
+		if (profileImageUrl != null && !profileImageUrl.isBlank()) this.profileImageUrl = profileImageUrl;
 	}
 
 	/**

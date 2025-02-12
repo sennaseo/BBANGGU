@@ -2,7 +2,7 @@ package com.ssafy.bbanggu.reservation;
 
 import java.time.LocalDateTime;
 
-import com.ssafy.bbanggu.bakery.Bakery;
+import com.ssafy.bbanggu.bakery.domain.Bakery;
 import com.ssafy.bbanggu.breadpackage.BreadPackage;
 import com.ssafy.bbanggu.user.domain.User;
 
@@ -65,6 +65,6 @@ public class Reservation {
 	@Column(nullable = false, length = 45)
 	private String status; // 상태
 
-	@Column(name = "order_id", nullable = false, length = 50)
-	private String orderId; // 주문(결제) ID
+	@Column(name = "payment_key", nullable = false, length = 50)
+	private String paymentKey; // 주문(결제) Key
 }

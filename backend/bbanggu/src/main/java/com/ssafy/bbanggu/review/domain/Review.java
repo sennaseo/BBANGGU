@@ -1,5 +1,6 @@
-package com.ssafy.bbanggu.review;
+package com.ssafy.bbanggu.review.domain;
 
+import com.ssafy.bbanggu.reservation.Reservation;
 import com.ssafy.bbanggu.user.domain.User;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,7 +10,7 @@ import lombok.NoArgsConstructor;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
-import com.ssafy.bbanggu.bakery.Bakery;
+import com.ssafy.bbanggu.bakery.domain.Bakery;
 
 @Data
 @Builder
@@ -24,13 +25,17 @@ public class Review {
     @Column(name = "review_id", columnDefinition = "INT UNSIGNED")
     private Long reviewId; // 리뷰 ID
 
-    @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user; // 사용자 ID
+	@OneToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "reservation_id", nullable = false, unique = true)
+	private Reservation reservation;
 
-    @ManyToOne
-    @JoinColumn(name = "bakery_id", nullable = false)
-    private Bakery bakery; // 가게 ID
+    @ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "user_id", nullable = false)
+	private User user;
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "bakery_id", nullable = false)
+	private Bakery bakery;
 
     @Column(nullable = false)
     private Integer rating; // 평점
@@ -46,4 +51,22 @@ public class Review {
 
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt; // 삭제일
+
+	@PrePersist
+	protected void onCreate() {
+		this.createdAt = LocalDateTime.now();
+	}
+
+	public Review(
+		Reservation reservation, User user, Bakery bakery,
+		Integer rating, String content, String photoUrl
+	) {
+		this.reservation = reservation;
+		this.user = user;
+		this.bakery = bakery;
+		this.rating = rating;
+		this.content = content;
+		this.reviewImageUrl = photoUrl;
+		this.createdAt = LocalDateTime.now();
+	}
 }
