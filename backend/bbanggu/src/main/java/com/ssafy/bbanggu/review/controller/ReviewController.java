@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ssafy.bbanggu.auth.security.CustomUserDetails;
@@ -76,8 +77,11 @@ public class ReviewController {
 	 * 가게 리뷰 조회 api
 	 */
 	@GetMapping("/bakery/{bakery_id}")
-	public ResponseEntity<ApiResponse> getBakeryReview(@PathVariable Long bakery_id){
-		List<ReviewResponseDto> reviews = reviewService.getBakeryReviews(bakery_id);
+	public ResponseEntity<ApiResponse> getBakeryReview(
+		@PathVariable Long bakery_id,
+		@RequestParam(required = false, defaultValue = "false") boolean photoOnly
+	){
+		List<ReviewResponseDto> reviews = reviewService.getBakeryReviews(bakery_id, photoOnly);
 		return ResponseEntity.ok().body(new ApiResponse("가게에 작성된 리뷰를 모두 조회하였습니다.", reviews));
 	}
 

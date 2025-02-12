@@ -7,6 +7,8 @@ import lombok.*;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import org.hibernate.annotations.Formula;
+
 import com.ssafy.bbanggu.bread.Bread;
 import com.ssafy.bbanggu.breadpackage.BreadPackage;
 import com.ssafy.bbanggu.favorite.Favorite;
@@ -127,7 +129,10 @@ public class Bakery {
 	@Builder
 	public Bakery(String name, String description, String businessRegistrationNumber,
 		String addressRoad, String addressDetail, String bakeryImageUrl,
-		double latitude, double longitude, double star, User user) {
+		double latitude, double longitude, double star, User user,
+		int reviewCnt, int rating1Cnt, int rating2Cnt, int rating3Cnt,
+		int rating4Cnt, int rating5Cnt
+	) {
 		this.name = name;
 		this.description = description;
 		this.businessRegistrationNumber = businessRegistrationNumber;
@@ -138,6 +143,12 @@ public class Bakery {
 		this.longitude = longitude;
 		this.star = star;
 		this.user = user;
+		this.reviewCnt = reviewCnt;
+		this.rating1Cnt = rating1Cnt;
+		this.rating2Cnt = rating2Cnt;
+		this.rating3Cnt = rating3Cnt;
+		this.rating4Cnt = rating4Cnt;
+		this.rating5Cnt = rating5Cnt;
 	}
 
 }
