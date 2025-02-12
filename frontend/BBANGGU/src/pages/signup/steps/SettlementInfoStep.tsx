@@ -3,7 +3,7 @@ import { InputField } from "../../../components/signup/InputField"
 
 interface SettlementInfoStepProps {
   formData: {
-    accountName: string
+    bankName: string
     accountHolder: string
     accountNumber: string
     taxEmail: string
@@ -13,7 +13,7 @@ interface SettlementInfoStepProps {
   onSubmit: () => void
 }
 
-export function SettlementInfoStep({ formData, onChange}: SettlementInfoStepProps) {
+export function SettlementInfoStep({ formData, onChange }: SettlementInfoStepProps) {
   const [imagePreview, setImagePreview] = useState<string | null>(null)
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -48,11 +48,11 @@ export function SettlementInfoStep({ formData, onChange}: SettlementInfoStepProp
   return (
     <div className="space-y-6">
       <InputField
-        label="가게 이름"
-        name="accountName"
-        value={formData.accountName}
+        label="거래은행"
+        name="bankName"
+        value={formData.bankName}
         onChange={onChange}
-        placeholder="ex) 빵집의제도 인동점"
+        placeholder="거래은행을 입력해주세요"
       />
 
       <InputField
@@ -60,7 +60,7 @@ export function SettlementInfoStep({ formData, onChange}: SettlementInfoStepProp
         name="accountHolder"
         value={formData.accountHolder}
         onChange={onChange}
-        placeholder="ex) 홍길동"
+        placeholder="예금주명을 입력해주세요"
       />
 
       <InputField
@@ -77,7 +77,7 @@ export function SettlementInfoStep({ formData, onChange}: SettlementInfoStepProp
         type="email"
         value={formData.taxEmail}
         onChange={onChange}
-        placeholder="ex) gildong1234@gmail.com"
+        placeholder="세금계산서 발급용 이메일을 입력해주세요"
       />
 
       <div className="space-y-2">
