@@ -50,7 +50,7 @@ const PackageSalesSetting: React.FC = () => {
       
       <div className="mt-4">
         <ProgressBar 
-          currentStep={PACKAGE_STEPS.SALES} 
+          currentStep={PACKAGE_STEPS.CONFIRM} 
           totalSteps={TOTAL_PACKAGE_STEPS}
         />
       </div>

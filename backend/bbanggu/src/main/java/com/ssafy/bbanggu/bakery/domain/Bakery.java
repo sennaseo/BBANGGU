@@ -1,4 +1,4 @@
-package com.ssafy.bbanggu.bakery;
+package com.ssafy.bbanggu.bakery.domain;
 
 import com.ssafy.bbanggu.user.domain.User;
 import jakarta.persistence.*;
@@ -10,7 +10,7 @@ import java.util.List;
 import com.ssafy.bbanggu.bread.Bread;
 import com.ssafy.bbanggu.breadpackage.BreadPackage;
 import com.ssafy.bbanggu.favorite.Favorite;
-import com.ssafy.bbanggu.review.Review;
+import com.ssafy.bbanggu.review.domain.Review;
 import com.ssafy.bbanggu.stock.Stock;
 
 @Data
@@ -46,8 +46,8 @@ public class Bakery {
     @Column(name = "address_detail", nullable = false, length = 150)
     private String addressDetail; // 상세 주소
 
-    @Column(name = "photo_url", length = 255, nullable = true)
-    private String photoUrl; // 사진 URL
+    @Column(name = "bakery_image_url", length = 255, nullable = true)
+    private String bakeryImageUrl; // 사진 URL
 
     @Column(nullable = false)
     private Double latitude; // 위도
@@ -57,6 +57,21 @@ public class Bakery {
 
 	@Column(nullable = false, columnDefinition = "DOUBLE DEFAULT 0.0")
 	private Double star;
+
+	@Column(nullable = false, columnDefinition = "INT DEFAULT 0")
+	private int rating1Cnt;
+
+	@Column(nullable = false, columnDefinition = "INT DEFAULT 0")
+	private int rating2Cnt;
+
+	@Column(nullable = false, columnDefinition = "INT DEFAULT 0")
+	private int rating3Cnt;
+
+	@Column(nullable = false, columnDefinition = "INT DEFAULT 0")
+	private int rating4Cnt;
+
+	@Column(nullable = false, columnDefinition = "INT DEFAULT 0")
+	private int rating5Cnt;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt; // 생성일
@@ -77,7 +92,7 @@ public class Bakery {
     @OneToMany(mappedBy = "bakery", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<BreadPackage> packages; // 패키지 목록
 
-    @OneToMany(mappedBy = "bakery", cascade = CascadeType.ALL, orphanRemoval = true)
+	@OneToMany(mappedBy = "bakery", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Review> reviews; // 리뷰 목록
 
     @OneToMany(mappedBy = "bakery", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -102,20 +117,21 @@ public class Bakery {
 		deletedAt = LocalDateTime.now();
 	}
 
-	// ✅ Builder 패턴 확인 (description, photoUrl 포함해야 함)
+	// ✅ Builder 패턴 확인 (description, bakeryImageUrl 포함해야 함)
 	@Builder
 	public Bakery(String name, String description, String businessRegistrationNumber,
-		String addressRoad, String addressDetail, String photoUrl,
+		String addressRoad, String addressDetail, String bakeryImageUrl,
 		double latitude, double longitude, double star, User user) {
 		this.name = name;
 		this.description = description;
 		this.businessRegistrationNumber = businessRegistrationNumber;
 		this.addressRoad = addressRoad;
 		this.addressDetail = addressDetail;
-		this.photoUrl = photoUrl;
+		this.bakeryImageUrl = bakeryImageUrl;
 		this.latitude = latitude;
 		this.longitude = longitude;
 		this.star = star;
 		this.user = user;
 	}
+
 }

@@ -34,6 +34,7 @@ export interface BakeryType {
   addressRoad: string;
   addressDetail: string;
   photoUrl: string | null;
+  backgroundImageUrl: string | null;
   star: number;
   distance: number;
 }

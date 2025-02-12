@@ -8,8 +8,8 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.ssafy.bbanggu.bakery.Bakery;
-import com.ssafy.bbanggu.bakery.BakeryRepository;
+import com.ssafy.bbanggu.bakery.domain.Bakery;
+import com.ssafy.bbanggu.bakery.repository.BakeryRepository;
 import com.ssafy.bbanggu.breadpackage.dto.BreadPackageDto;
 import com.ssafy.bbanggu.common.exception.CustomException;
 import com.ssafy.bbanggu.common.exception.ErrorCode;
@@ -32,7 +32,6 @@ public class BreadPackageService {
 		BreadPackage breadPackage = BreadPackage.builder()
 			.bakery(bakery)
 			.price(request.price())
-			.discountRate(request.discountRate())
 			.quantity(request.quantity())
 			.name(request.name())
 			.description(request.description())

@@ -1,6 +1,6 @@
 package com.ssafy.bbanggu.favorite;
 
-import com.ssafy.bbanggu.bakery.Bakery;
+import com.ssafy.bbanggu.bakery.domain.Bakery;
 import com.ssafy.bbanggu.user.domain.User;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

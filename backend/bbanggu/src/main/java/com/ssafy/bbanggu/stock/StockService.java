@@ -6,7 +6,7 @@ import java.util.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.ssafy.bbanggu.bakery.Bakery;
+import com.ssafy.bbanggu.bakery.domain.Bakery;
 import com.ssafy.bbanggu.bread.Bread;
 
 import lombok.RequiredArgsConstructor;

@@ -1,10 +1,11 @@
 package com.ssafy.bbanggu.bakery.service;
 
-import com.ssafy.bbanggu.bakery.Bakery;
-import com.ssafy.bbanggu.bakery.BakeryRepository;
+import com.ssafy.bbanggu.bakery.domain.Bakery;
+import com.ssafy.bbanggu.bakery.dto.BakeryCreateDto;
+import com.ssafy.bbanggu.bakery.dto.BakeryLocationDto;
+import com.ssafy.bbanggu.bakery.repository.BakeryRepository;
 import com.ssafy.bbanggu.bakery.dto.BakeryDetailDto;
 import com.ssafy.bbanggu.bakery.dto.BakeryDto;
-import com.ssafy.bbanggu.bakery.dto.BakeryLocationDto;
 import com.ssafy.bbanggu.common.exception.CustomException;
 import com.ssafy.bbanggu.common.exception.ErrorCode;
 import com.ssafy.bbanggu.user.domain.User;
@@ -78,7 +79,7 @@ public class BakeryService {
 	// ID로 가게 조회
 	@Transactional(readOnly = true)
 	public BakeryDetailDto findById(Long bakery_id, Double userLat, Double userLng) {
-		Bakery bakery = bakeryRepository.findByBakeryIdAndDeletedAtIsNull(bakery_id); // 삭제되지 않은 것만;
+		Bakery bakery = bakeryRepository.findByBakeryIdAndDeletedAtIsNull(bakery_id); // 삭제되지 않은 것만
 		if (bakery == null) {
 			throw new CustomException(ErrorCode.BAKERY_NOT_FOUND);
 		}
@@ -103,7 +104,7 @@ public class BakeryService {
 
 	// 가게 추가
 	@Transactional
-	public BakeryDto createBakery(BakeryDto bakeryDto) {
+	public BakeryCreateDto createBakery(BakeryCreateDto bakeryDto) {
 		validateDuplicateBakery(bakeryDto.name(), bakeryDto.businessRegistrationNumber(), null);
 
 		// 사용자 조회 (userId로 User 찾기)
@@ -119,17 +120,18 @@ public class BakeryService {
 		Bakery bakery = Bakery.builder()
 				.name(bakeryDto.name())
 				.description(bakeryDto.description())
-				.photoUrl(bakeryDto.photoUrl())
+				.bakeryImageUrl(bakeryDto.bakeryImageUrl())
 				.addressRoad(bakeryDto.addressRoad())
 				.addressDetail(bakeryDto.addressDetail())
 				.businessRegistrationNumber(bakeryDto.businessRegistrationNumber())
+				.star(0.0)
 				.latitude(latitude)
 				.longitude(longitude)
 				.user(user)
 				.build();
 
 		Bakery savedBakery = bakeryRepository.save(bakery);
-		return BakeryDto.from(savedBakery);
+		return BakeryCreateDto.from(savedBakery);
 	}
 
 	// 가게의 위도, 경도 추출
@@ -165,7 +167,7 @@ public class BakeryService {
 		bakery.setDescription(Optional.ofNullable(updates.description()).orElse(bakery.getDescription()));
 		bakery.setAddressRoad(newAddrRoad);
 		bakery.setAddressDetail(newAddrDetail);
-		bakery.setPhotoUrl(Optional.ofNullable(updates.photoUrl()).orElse(bakery.getPhotoUrl()));
+		bakery.setBakeryImageUrl(Optional.ofNullable(updates.bakeryImageUrl()).orElse(bakery.getBakeryImageUrl()));
 		bakery.setUpdatedAt(LocalDateTime.now());
 
 		Bakery updatedBakery = bakeryRepository.save(bakery);
@@ -211,12 +213,12 @@ public class BakeryService {
 	}
 
 	// 모든 가게의 좌표 조회
-	// @Transactional(readOnly = true)
-	// public List<BakeryLocationDto> findAllBakeryLocations() {
-	// 	List<Bakery> bakeries = bakeryRepository.findByDeletedAtIsNull(); // 삭제되지 않은 가게만 조회
-	//
-	// 	return bakeries.stream()
-	// 		.map(BakeryLocationDto::from)
-	// 		.collect(Collectors.toList());
-	// }
+	@Transactional(readOnly = true)
+	public List<BakeryLocationDto> findAllBakeryLocations() {
+		List<Bakery> bakeries = bakeryRepository.findByDeletedAtIsNull(); // 삭제되지 않은 가게만 조회
+
+		return bakeries.stream()
+			.map(BakeryLocationDto::from)
+			.collect(Collectors.toList());
+	}
 }
