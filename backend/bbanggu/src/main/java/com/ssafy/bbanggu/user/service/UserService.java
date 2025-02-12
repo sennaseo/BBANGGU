@@ -50,10 +50,11 @@ public class UserService { // 사용자 관련 비즈니스 로직 처리
 		}
 
 		// 1️⃣ 비밀번호 암호화
-		String encodedPassword = passwordEncoder.encode(request.password());
+		//String encodedPassword = passwordEncoder.encode(request.password());
 
 		// 2️⃣ User 엔티티 생성 및 저장 (회원가입)
-		User user = User.createNormalUser(request.name(), request.email(), encodedPassword, request.phone(), request.toEntity().getRole());
+		// User user = User.createNormalUser(request.name(), request.email(), encodedPassword, request.phone(), request.toEntity().getRole());
+		User user = User.createNormalUser(request.name(), request.email(), request.password(), request.phone(), request.toEntity().getRole());
 		userRepository.save(user);
 
 		// 3️⃣ 절약 정보 자동 생성 및 초기화
@@ -107,9 +108,9 @@ public class UserService { // 사용자 관련 비즈니스 로직 처리
         }
 
 		// 비밀번호 검증
-		if (!passwordEncoder.matches(password, user.getPassword())) {
-			throw new CustomException(ErrorCode.INVALID_PASSWORD);
-        }
+		// if (!passwordEncoder.matches(password, user.getPassword())) {
+		// 	throw new CustomException(ErrorCode.INVALID_PASSWORD);
+        // }
 
         // ✅ JWT 토큰 생성
 		String accessToken = jwtTokenProvider.createAccessToken(user.getUserId());

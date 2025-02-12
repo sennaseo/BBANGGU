@@ -86,6 +86,7 @@ public enum ErrorCode {
 	REVIEW_ALREADY_EXISTS(4601, HttpStatus.CONFLICT, "해당 예약에 대한 리뷰는 이미 작성되었습니다."),
 	FORBIDDEN_REVIEW(4602, HttpStatus.FORBIDDEN, "해당 리뷰에 대한 권한이 없습니다."),
 	ONLY_VIEW_OWN_REVIEW(4603, HttpStatus.UNAUTHORIZED, "본인의 리뷰만 조회할 수 있습니다."),
+	INVALID_RATING(4604, HttpStatus.BAD_REQUEST, "유요하지 않은 평점입니다. 평점은 1~5 사이의 숫자여야 합니다."),
 
 	// ✅ 서버 내부 오류 (5000번대)
 	INTERNAL_SERVER_ERROR(5000, HttpStatus.INTERNAL_SERVER_ERROR, "서버 내부 오류가 발생했습니다.");
