@@ -15,22 +15,26 @@ USE `bbanggu` ;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `bbanggu`.`user` (
   `user_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `kakao_id` VARCHAR(50) NULL DEFAULT NULL,
   `email` VARCHAR(255) NOT NULL,
   `password` VARCHAR(255) NOT NULL,
   `name` VARCHAR(255) NOT NULL,
   `phone` VARCHAR(20) NULL DEFAULT NULL,
   `profile_image_url` VARCHAR(255) NULL DEFAULT NULL,
   `user_type` VARCHAR(255) NOT NULL,
+  `refresh_token` VARCHAR(512) NULL DEFAULT NULL,
+  `address_road` VARCHAR(255) NULL DEFAULT NULL,
+  `address_detail` VARCHAR(150) NULL DEFAULT NULL,
+  `latitude` DOUBLE NOT NULL DEFAULT 0.0,
+  `longitude` DOUBLE NOT NULL DEFAULT 0.0,
   `created_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
   `deleted_at` TIMESTAMP NULL DEFAULT NULL,
-  `kakao_id` VARCHAR(50) NULL DEFAULT NULL,
-  `refresh_token` VARCHAR(512) NULL DEFAULT NULL,
   PRIMARY KEY (`user_id`),
   UNIQUE INDEX `email` (`email` ASC) VISIBLE,
   UNIQUE INDEX `phone` (`phone` ASC) VISIBLE,
   UNIQUE INDEX `UK4tp32nb01jmfcirpipti37lfs` (`kakao_id` ASC) VISIBLE)
 ENGINE = InnoDB
-AUTO_INCREMENT = 4
+AUTO_INCREMENT = 1
 DEFAULT CHARACTER SET = utf8mb4
 COLLATE = utf8mb4_0900_ai_ci;
 
@@ -45,6 +49,7 @@ CREATE TABLE IF NOT EXISTS `bbanggu`.`bakery` (
   `description` VARCHAR(1500) NULL DEFAULT NULL,
   `business_registration_number` VARCHAR(50) NOT NULL,
   `bakery_image_url` VARCHAR(255) NULL DEFAULT NULL,
+  `bakery_background_img_url` VARCHAR(255) NULL DEFAULT NULL,
   `address_road` VARCHAR(255) NOT NULL,
   `address_detail` VARCHAR(150) NOT NULL,
   `latitude` DOUBLE NOT NULL,
@@ -67,7 +72,7 @@ CREATE TABLE IF NOT EXISTS `bbanggu`.`bakery` (
     REFERENCES `bbanggu`.`user` (`user_id`)
     ON DELETE CASCADE)
 ENGINE = InnoDB
-AUTO_INCREMENT = 7
+AUTO_INCREMENT = 1
 DEFAULT CHARACTER SET = utf8mb4
 COLLATE = utf8mb4_0900_ai_ci;
 
@@ -78,9 +83,13 @@ COLLATE = utf8mb4_0900_ai_ci;
 CREATE TABLE IF NOT EXISTS `bbanggu`.`bakery_pickup_timetable` (
   `bakery_pickup_timetable_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   `bakery_id` INT UNSIGNED NOT NULL,
-  `day_of_week` ENUM('Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday') NOT NULL,
-  `start_time` TIME NOT NULL,
-  `end_time` TIME NOT NULL,
+  `sunday` varchar(10) NULL DEFAULT NULL,
+  `monday` varchar(10) NULL DEFAULT NULL,
+  `tuesday` varchar(10) NULL DEFAULT NULL,
+  `wednesday` varchar(10) NULL DEFAULT NULL,
+  `thursday` varchar(10) NULL DEFAULT NULL,
+  `friday` varchar(10) NULL DEFAULT NULL,
+  `saturday` varchar(10) NULL DEFAULT NULL,
   PRIMARY KEY (`bakery_pickup_timetable_id`),
   INDEX `bakery_id` (`bakery_id` ASC) VISIBLE,
   CONSTRAINT `pickup_time_ibfk_1`
@@ -140,9 +149,7 @@ CREATE TABLE IF NOT EXISTS `bbanggu`.`bread_package` (
   `bakery_id` INT UNSIGNED NOT NULL,
   `name` VARCHAR(100) NULL DEFAULT NULL,
   `price` INT UNSIGNED NOT NULL,
-  `discount_rate` FLOAT NOT NULL,
   `quantity` INT UNSIGNED NOT NULL,
-  `description` VARCHAR(500) NULL DEFAULT NULL,
   `pending` INT NOT NULL DEFAULT 0,
   `created_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
   `deleted_at` TIMESTAMP NULL DEFAULT NULL,
@@ -184,7 +191,6 @@ CREATE TABLE IF NOT EXISTS `bbanggu`.`favorite` (
   `favorite_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   `user_id` INT UNSIGNED NOT NULL,
   `bakery_id` INT UNSIGNED NOT NULL,
-  `is_liked` TINYINT(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`favorite_id`),
   INDEX `bakery_id` (`bakery_id` ASC) VISIBLE,
   INDEX `favorite_ibfk_1` (`user_id` ASC) VISIBLE,
@@ -243,6 +249,7 @@ COLLATE = utf8mb4_0900_ai_ci;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `bbanggu`.`review` (
   `review_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `reservation_id` INT UNSIGNED NOT NULL,
   `user_id` INT UNSIGNED NOT NULL,
   `bakery_id` INT UNSIGNED NOT NULL,
   `rating` INT UNSIGNED NOT NULL,
@@ -254,7 +261,7 @@ CREATE TABLE IF NOT EXISTS `bbanggu`.`review` (
   INDEX `user_id` (`user_id` ASC) VISIBLE,
   INDEX `bakery_id` (`bakery_id` ASC) VISIBLE,
   CONSTRAINT `review_ibfk_1`
-    FOREIGN KEY (`user_id`)
+    FOREIGN KEY (`user_id`)             
     REFERENCES `bbanggu`.`user` (`user_id`)
     ON DELETE CASCADE,
   CONSTRAINT `review_ibfk_2`

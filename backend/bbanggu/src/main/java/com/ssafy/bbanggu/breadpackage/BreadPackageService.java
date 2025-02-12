@@ -27,13 +27,9 @@ public class BreadPackageService {
 
 	public BreadPackageDto createPackage(CustomUserDetails userDetails, BreadPackageDto request) {
 		Bakery bakery = bakeryRepository.findById(request.bakeryId())
-			.orElseThrow(() -> new IllegalArgumentException("Bakery not found"));
-		System.out.println("!!!!!!!!!! 베이커리 아이디: " + bakery.getBakeryId() + ", 사장님 아이디: " + bakery.getUser().getUserId());
-		System.out.println("로그인한 사용자 아이디: " + userDetails.getUserId());
+			.orElseThrow(() -> new CustomException(ErrorCode.BAKERY_NOT_FOUND));
 
-		if (!bakery.getUser().getUserId().equals(userDetails.getUserId())) {
-			throw new CustomException(ErrorCode.UNAUTHORIZED_USER);
-		}
+
 
 		// BreadPackage 객체 생성
 		BreadPackage breadPackage = BreadPackage.builder()

@@ -4,10 +4,13 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -20,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.ssafy.bbanggu.auth.security.CustomUserDetails;
 import com.ssafy.bbanggu.breadpackage.dto.BreadPackageDto;
 import com.ssafy.bbanggu.common.response.ApiResponse;
+import com.ssafy.bbanggu.common.response.ErrorResponse;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -31,10 +35,12 @@ public class BreadPackageController {
 
 	private final BreadPackageService breadPackageService;
 
+	/**
+	 * 빵꾸러미 생성
+	 */
 	@PostMapping
 	public ResponseEntity<?> createPackage(
-		@AuthenticationPrincipal CustomUserDetails userDetails,
-		@RequestBody BreadPackageDto request) {
+		@AuthenticationPrincipal CustomUserDetails userDetails, @RequestBody BreadPackageDto request) {
 		try {
 			BreadPackageDto createdPackage = breadPackageService.createPackage(userDetails, request);
 			return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse("빵꾸러미 등록 성공", createdPackage));
