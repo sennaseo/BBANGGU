@@ -41,9 +41,6 @@ public class BreadPackage {
 	@Column(nullable = false)
 	private int pending;
 
-	@Column(nullable = false)
-	private Double weight;
-
 	@CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt; // 생성일
