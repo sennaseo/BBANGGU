@@ -72,7 +72,44 @@ public class ReviewService {
 			.build();
 
 		Review savedReview = reviewRepository.save(review);
+		updateBakeryReviewState(bakery, request.rating());
 		return ReviewDto.from(savedReview);
+	}
+
+	/**
+	 * 가게 리뷰 정보 업데이트 (평점, 리뷰 수)
+	 */
+	private void updateBakeryReviewState(Bakery bakery, Integer rating) {
+		bakery.setReviewCnt(bakery.getReviewCnt() + 1);
+
+		switch (rating) {
+			case 1 -> bakery.setRating1Cnt(bakery.getRating1Cnt() + 1);
+			case 2 -> bakery.setRating2Cnt(bakery.getRating2Cnt() + 1);
+			case 3 -> bakery.setRating3Cnt(bakery.getRating3Cnt() + 1);
+			case 4 -> bakery.setRating4Cnt(bakery.getRating4Cnt() + 1);
+			case 5 -> bakery.setRating5Cnt(bakery.getRating5Cnt() + 1);
+			default -> throw new CustomException(ErrorCode.INVALID_RATING);
+		}
+
+		double newRating = calculateNewRatingAverage(bakery);
+		bakery.setStar(newRating);
+
+		bakeryRepository.save(bakery);
+	}
+
+	/**
+	 * 새로운 평균 평점 계산
+	 */
+	private double calculateNewRatingAverage(Bakery bakery) {
+		int totalReviews = bakery.getReviewCnt();
+		int totalRatingSum =
+			bakery.getRating1Cnt() +
+			(2 * bakery.getRating2Cnt()) +
+			(3 * bakery.getRating3Cnt()) +
+			(4 * bakery.getRating4Cnt()) +
+			(5 * bakery.getRating5Cnt());
+
+		return (double) totalRatingSum / totalReviews;
 	}
 
 	/**
@@ -114,13 +151,19 @@ public class ReviewService {
 	/**
 	 * 가게 리뷰 조회
 	 */
-	public List<ReviewResponseDto> getBakeryReviews(Long bakeryId) {
+	public List<ReviewResponseDto> getBakeryReviews(Long bakeryId, boolean photoOnly) {
 		Bakery bakery = bakeryRepository.findByBakeryIdAndDeletedAtIsNull(bakeryId);
 		if (bakery == null) {
 			throw new CustomException(ErrorCode.BAKERY_NOT_FOUND);
 		}
 
-		List<Review> reviews = reviewRepository.findByBakeryAndDeletedAtIsNullOrderByCreatedAtDesc(bakery);
+		List<Review> reviews;
+		if(photoOnly) {
+			reviews = reviewRepository.findPhotoReviewsByBakery(bakery);
+		} else {
+			reviews = reviewRepository.findByBakeryAndDeletedAtIsNullOrderByCreatedAtDesc(bakery);
+		}
+
 		return reviews.stream()
 			.map(review -> new ReviewResponseDto(
 				review.getReviewId(),
