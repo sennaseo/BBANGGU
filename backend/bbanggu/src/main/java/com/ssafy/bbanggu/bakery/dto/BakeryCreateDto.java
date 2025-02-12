@@ -20,7 +20,8 @@ public record BakeryCreateDto(
 	@NotBlank(message = "도로명 주소는 필수 입력 값입니다.")
 	String addressRoad,
 	String addressDetail,
-	String bakeryImageUrl
+	String bakeryImageUrl,
+	String bakryBackgroundImgUrl
 ) {
 	public static BakeryCreateDto from(Bakery bakery) {
 		return new BakeryCreateDto(
@@ -31,7 +32,8 @@ public record BakeryCreateDto(
 			bakery.getBusinessRegistrationNumber(),
 			bakery.getAddressRoad(),
 			bakery.getAddressDetail(),
-			bakery.getBakeryImageUrl()
+			bakery.getBakeryImageUrl(),
+			bakery.getBakeryBackgroundImgUrl()
 		);
 	}
 }

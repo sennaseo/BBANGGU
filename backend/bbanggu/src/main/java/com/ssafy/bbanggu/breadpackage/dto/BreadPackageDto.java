@@ -7,8 +7,7 @@ public record BreadPackageDto (
 	Long bakeryId,
 	Integer price,
 	Integer quantity,
-	String name,
-	String description
+	String name
 ) {
 	public static BreadPackageDto from(BreadPackage breadPackage) {
 		return new BreadPackageDto(
@@ -16,8 +15,7 @@ public record BreadPackageDto (
 			breadPackage.getBakery().getBakeryId(),
 			breadPackage.getPrice(),
 			breadPackage.getQuantity(),
-			breadPackage.getName(),
-			breadPackage.getDescription()
+			breadPackage.getName()
 		);
 	}
 }

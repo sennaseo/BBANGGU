@@ -121,6 +121,7 @@ public class BakeryService {
 				.name(bakeryDto.name())
 				.description(bakeryDto.description())
 				.bakeryImageUrl(bakeryDto.bakeryImageUrl())
+				.bakeryBackgroundImgUrl(bakeryDto.bakryBackgroundImgUrl())
 				.addressRoad(bakeryDto.addressRoad())
 				.addressDetail(bakeryDto.addressDetail())
 				.businessRegistrationNumber(bakeryDto.businessRegistrationNumber())
@@ -168,6 +169,7 @@ public class BakeryService {
 		bakery.setAddressRoad(newAddrRoad);
 		bakery.setAddressDetail(newAddrDetail);
 		bakery.setBakeryImageUrl(Optional.ofNullable(updates.bakeryImageUrl()).orElse(bakery.getBakeryImageUrl()));
+		bakery.setBakeryBackgroundImgUrl(Optional.ofNullable(updates.bakeryBackgroundImgUrl()).orElse(bakery.getBakeryBackgroundImgUrl()));
 		bakery.setUpdatedAt(LocalDateTime.now());
 
 		Bakery updatedBakery = bakeryRepository.save(bakery);

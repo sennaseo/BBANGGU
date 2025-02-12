@@ -47,7 +47,10 @@ public class Bakery {
     private String addressDetail; // 상세 주소
 
     @Column(name = "bakery_image_url", length = 255, nullable = true)
-    private String bakeryImageUrl; // 사진 URL
+    private String bakeryImageUrl; // 가게 이미지 URL
+
+	@Column(name = "bakery_background_img_url")
+	private String bakeryBackgroundImgUrl; // 가게 배경 이미지 URL
 
     @Column(nullable = false)
     private Double latitude; // 위도
@@ -58,20 +61,23 @@ public class Bakery {
 	@Column(nullable = false, columnDefinition = "DOUBLE DEFAULT 0.0")
 	private Double star;
 
-	@Column(nullable = false, columnDefinition = "INT DEFAULT 0")
+	@Column(name = "rating_1_cnt", nullable = false, columnDefinition = "INT DEFAULT 0")
 	private int rating1Cnt;
 
-	@Column(nullable = false, columnDefinition = "INT DEFAULT 0")
+	@Column(name = "rating_2_cnt", nullable = false, columnDefinition = "INT DEFAULT 0")
 	private int rating2Cnt;
 
-	@Column(nullable = false, columnDefinition = "INT DEFAULT 0")
+	@Column(name = "rating_3_cnt", nullable = false, columnDefinition = "INT DEFAULT 0")
 	private int rating3Cnt;
 
-	@Column(nullable = false, columnDefinition = "INT DEFAULT 0")
+	@Column(name = "rating_4_cnt", nullable = false, columnDefinition = "INT DEFAULT 0")
 	private int rating4Cnt;
 
-	@Column(nullable = false, columnDefinition = "INT DEFAULT 0")
+	@Column(name = "rating_5_cnt", nullable = false, columnDefinition = "INT DEFAULT 0")
 	private int rating5Cnt;
+
+	@Column(name = "review_cnt", nullable = false, columnDefinition = "INT DEFAULT 0")
+	private int reviewCnt;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt; // 생성일
