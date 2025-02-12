@@ -2,9 +2,13 @@ import { useNavigate } from "react-router-dom";
 
 interface SignupCompleteStepProps {
   isOwner?: boolean;
+  userName?: string;
 }
 
-export function SignupCompleteStep({ isOwner = false }: SignupCompleteStepProps) {
+export function SignupCompleteStep({ 
+  isOwner = false, 
+  userName = "" 
+}: SignupCompleteStepProps) {
   const navigate = useNavigate();
 
   return (
@@ -14,7 +18,9 @@ export function SignupCompleteStep({ isOwner = false }: SignupCompleteStepProps)
         alt="Welcome"
         className="w-[120px] mb-6"
       />
-      <h1 className="text-[22px] font-bold mb-2">환영합니다 {isOwner ? "사장님" : "권가롱롱님"}!</h1>
+      <h1 className="text-[22px] font-bold mb-2">
+        환영합니다 {isOwner ? "사장님" : `${userName}님`}!
+      </h1>
       <p className="text-[15px] text-gray-600 mb-8">가입이 완료되었어요 🙌</p>
       <button
         onClick={() => navigate(isOwner ? "/main" : "/user")}
