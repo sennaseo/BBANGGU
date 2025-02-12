@@ -28,6 +28,9 @@ public class BreadPackageService {
 	private final BreadPackageRepository breadPackageRepository;
 	private final BakeryRepository bakeryRepository;
 
+	/**
+	 * 빵꾸러미 생성
+	 */
 	public BreadPackageDto createPackage(CustomUserDetails userDetails, BreadPackageDto request) {
 		Bakery bakery = bakeryRepository.findById(request.bakeryId())
 			.orElseThrow(() -> new CustomException(ErrorCode.BAKERY_NOT_FOUND));
@@ -59,25 +62,22 @@ public class BreadPackageService {
 		return BreadPackageDto.from(savedBreadPackage);
 	}
 
-	public boolean deletePackage(Long id) {
-		Optional<BreadPackage> optionalPackage = breadPackageRepository.findById(id);
-		if (optionalPackage.isPresent()) {
-			BreadPackage breadPackage = optionalPackage.get();
 
-			// 이미 삭제된 패키지인 경우 처리
-			if (breadPackage.getDeletedAt() != null) {
-				return false; // 이미 삭제된 빵꾸러미입니다.
-			}
-
-			// 논리적 삭제 처리
-			breadPackage.setDeletedAt(LocalDateTime.now());
-			breadPackageRepository.save(breadPackage);
-			return true;
+	/**
+	 * 빵꾸러미 삭제 (논리적 삭제)
+	 */
+	public void deletePackage(Long packageId) {
+		BreadPackage breadPackage = breadPackageRepository.findById(packageId)
+			.orElseThrow(() -> new CustomException(ErrorCode.BREAD_PACKAGE_NOT_FOUND));
+		if (breadPackage.getDeletedAt() != null) {
+			throw new CustomException(ErrorCode.PACKAGE_ALREADY_DELETED);
 		}
-		return false;
+
+		// 논리적 삭제 처리
+		breadPackage.setDeletedAt(LocalDateTime.now());
+		breadPackageRepository.save(breadPackage);
 	}
 
-	// 가게 ID로 모든 빵 패키지 리스트 조회 (논리적 삭제된 패키지 제외)
 
 	/**
 	 * 가게의 전체 빵꾸러미 조회
@@ -94,29 +94,40 @@ public class BreadPackageService {
 			.collect(Collectors.toList());
 	}
 
-	// 베이커리 별 기간별 빵 패키지 조회
+
+	/**
+	 * 가게의 기간 내 빵꾸러미 전체 조회
+	 */
 	public List<BreadPackageDto> getPackagesByBakeryAndDate(Long bakeryId, LocalDateTime startDate, LocalDateTime endDate) {
-		List<BreadPackage> breadPackages = breadPackageRepository.findByBakery_BakeryIdAndCreatedAtBetweenAndDeletedAtIsNull(
-			bakeryId, startDate, endDate);
-		log.info("✅ 삭제되지 않은 가게들 중 기간에 해당하는 빵꾸러미 리스트 생성 완료 !!");
+		List<BreadPackage> breadPackages = breadPackageRepository.findByBakery_BakeryIdAndCreatedAtBetweenAndDeletedAtIsNull(bakeryId, startDate, endDate);
+		if (breadPackages.isEmpty()) {
+			throw new CustomException(ErrorCode.BREAD_PACKAGE_NOT_FOUND);
+		}
+
 		return breadPackages.stream()
 			.map(BreadPackageDto::from)
 			.collect(Collectors.toList());
 	}
 
-	public int updateBreadPackage(long packageId, int quantity) {
-		BreadPackage breadPackage = breadPackageRepository.findById(packageId).orElse(null);
-		if (breadPackage == null) {
-			throw new CustomException(ErrorCode.BREAD_PACKAGE_NOT_FOUND);
+
+	/**
+	 * 빵꾸러미 수정
+	 */
+	public BreadPackageDto updateBreadPackage(CustomUserDetails userDetails, long packageId, BreadPackageDto request) {
+		BreadPackage breadPackage = breadPackageRepository.findById(packageId)
+				.orElseThrow(() -> new CustomException(ErrorCode.BREAD_PACKAGE_NOT_FOUND));
+		log.info("✅ {}번 빵꾸러미 존재 확인 완료", packageId);
+
+		if (!breadPackage.getBakery().getUser().getUserId().equals(userDetails.getUserId())) {
+			log.info("❗❗빵꾸러미 수정 권한 없음 -> 로그인한 사용자 ID: {}, 사장님 ID: {}❗❗",
+				userDetails.getUserId(), breadPackage.getBakery().getUser().getUserId());
+			throw new CustomException(ErrorCode.UNAUTHORIZED_USER);
 		}
-		int updatedQuantity = breadPackage.getQuantity() + quantity;
-		System.out.println("updatedQuantity: " + updatedQuantity);
-		if (updatedQuantity < 0) {
-			throw new CustomException(ErrorCode.BREAD_PACKAGE_QUANTITY_CONFLICT);
-		}
-		breadPackage.setQuantity(updatedQuantity);
-		breadPackageRepository.save(breadPackage);
-		return updatedQuantity;
+		log.info("✅ 현재 로그인한 사용자가 해당 빵집의 사장님입니다^^");
+
+		breadPackage.update(request.price(), request.quantity(), request.name());
+		BreadPackage updatedPackage = breadPackageRepository.save(breadPackage);
+		return BreadPackageDto.from(updatedPackage);
 	}
 
 	public int getBreadPackageQuantity(long breadPackageId) {
