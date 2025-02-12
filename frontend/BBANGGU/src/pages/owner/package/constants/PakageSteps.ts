@@ -2,8 +2,8 @@ export const PACKAGE_STEPS = {
   GUIDE: 1,
   CAMERA: 2,
   PREVIEW: 3,
-  REGISTER: 4,
-  SALES: 5
+  DETAILS: 4,
+  CONFIRM: 5
 } as const;
 
 export const TOTAL_PACKAGE_STEPS = 5;

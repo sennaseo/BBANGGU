@@ -132,7 +132,7 @@ const PackageRegister: React.FC = () => {
       
       <div className="mt-4">
         <ProgressBar 
-          currentStep={PACKAGE_STEPS.REGISTER} 
+          currentStep={PACKAGE_STEPS.DETAILS} 
           totalSteps={TOTAL_PACKAGE_STEPS}
         />
       </div>
