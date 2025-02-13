@@ -67,7 +67,7 @@ services:
     networks:
       - bbanggu-network
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://i12d102.p.ssafy.io:8081" ]
+      test: [ "CMD", "curl", "-f", "https://i12d102.p.ssafy.io/api/bakery/1" ]
       interval: 10s
       retries: 5
 
