@@ -15,11 +15,13 @@ const PackageAnalysis: React.FC = () => {
 
   const startCamera = async () => {
     try {
+      // 세로 모드에 최적화된 해상도 설정
       const stream = await navigator.mediaDevices.getUserMedia({ 
         video: {
           facingMode: 'environment',
-          width: { ideal: window.innerWidth },
-          height: { ideal: window.innerHeight }
+          width: { min: 720, ideal: 1080, max: 1440 },  // 세로 모드 기준 width
+          height: { min: 1280, ideal: 1920, max: 2560 }, // 세로 모드 기준 height
+          aspectRatio: 9/16  // 모바일 세로 비율 (16:9의 역수)
         },
         audio: false 
       });
@@ -28,10 +30,15 @@ const PackageAnalysis: React.FC = () => {
         videoRef.current.srcObject = stream;
         videoRef.current.style.objectFit = 'contain';
         
-        // 카메라 기능 확인
+        // 카메라 설정 확인을 위한 로그
         const videoTrack = stream.getVideoTracks()[0];
-        const capabilities = videoTrack.getCapabilities() as any;  // 타입 캐스팅
-        console.log('카메라 기능:', capabilities);
+        const capabilities = videoTrack.getCapabilities() as any;
+        const settings = videoTrack.getSettings();
+        console.log('카메라 해상도:', {
+          width: settings.width,
+          height: settings.height,
+          aspectRatio: settings.aspectRatio
+        });
 
         // 줌 기능이 지원되는 경우에만 이벤트 추가
         if (capabilities?.zoom) {  // optional chaining 추가
@@ -54,7 +61,6 @@ const PackageAnalysis: React.FC = () => {
               );
               
               const scale = distance / initialDistance;
-              const settings = videoTrack.getSettings() as any;  // 타입 캐스팅
               const currentZoom = settings?.zoom || 1;
               const maxZoom = capabilities?.zoom?.max || 2;
               const newZoom = Math.max(1, Math.min(maxZoom, currentZoom * scale));
