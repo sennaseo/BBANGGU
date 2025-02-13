@@ -61,7 +61,7 @@ public class ReservationController {
 	 * 예약 생성 API
 	 *
 	 * @param userDetails 현재 로그인한 사용자 정보
-	 * @param reservation reservationId, paymentKey
+	 * @param reservation reservationId, paymentKey, amount, orderId
 	 * @return reservationId, status
 	 */
 	@PostMapping

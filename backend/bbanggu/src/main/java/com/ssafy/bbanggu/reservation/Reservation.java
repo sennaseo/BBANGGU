@@ -15,6 +15,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -58,7 +59,6 @@ public class Reservation {
 	@Column(name = "created_at", nullable = false, updatable = false)
 	private LocalDateTime createdAt; // 생성일
 
-	@CreationTimestamp
 	@Column(name = "cancelled_at")
 	private LocalDateTime cancelledAt; // 취소일
 

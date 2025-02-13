@@ -77,7 +77,7 @@ public class ReservationService {
 			.bakery(breadPackage.getBakery())
 			.breadPackage(breadPackage)
 			.quantity(request.quantity())
-			.totalPrice(request.quantity() * breadPackage.getPrice())
+			.totalPrice(request.quantity() * (breadPackage.getPrice() / 2))
 			.status("PENDING")
 			.paymentKey("PENDING_PAYMENT") // 임시 값 설정
 			.build();
@@ -109,7 +109,7 @@ public class ReservationService {
 		log.info("✅ {}번 사용자 검증 완료", userDetails.getUserId());
 
 		// 결제 정보 검증
-		ResponseEntity<String> response = paymentService.check(request.paymentKey());
+		ResponseEntity<String> response = paymentService.check(request.paymentKey(), request.amount(), request.orderId());
 		if (response.getStatusCode() != HttpStatus.OK) {
 			throw new CustomException(ErrorCode.PAYMENT_NOT_VALID);
 		}
@@ -117,6 +117,7 @@ public class ReservationService {
 
 		// 해당 예약의 상태를 "CONFIRMED"로 전환
 		reservation.setStatus("CONFIRMED");
+		reservation.setCreatedAt(LocalDateTime.now());
 		Reservation savedReservation = reservationRepository.save(reservation);
 
 		// 해당 빵꾸러미의 개수에 예약 빵꾸러미 개수 반영
@@ -125,6 +126,7 @@ public class ReservationService {
 
 		int quantity_origin = breadPackage.getQuantity();
 		breadPackage.setQuantity(quantity_origin - breadPackage.getPending());
+		breadPackage.setPending(0);
 		BreadPackage newBreadPackage = breadPackageRepository.save(breadPackage);
 		log.info("✅ {}번 빵꾸러미 남은 개수: {}", newBreadPackage.getPackageId(), newBreadPackage.getQuantity());
 		log.info("🩵 예약 성공 (CONFIRMED) 🩵");
@@ -134,24 +136,6 @@ public class ReservationService {
 		responseData.put("status", savedReservation.getStatus());
 
 		return responseData;
-
-		// 결제 가격 검증
-
-
-		// orderId 추출 및 DTO에 추가
-		// try {
-		// 	ObjectMapper objectMapper = new ObjectMapper();
-		// 	JsonNode jsonNode = objectMapper.readTree(response.getBody());
-		// 	request.setPaymentKey(request.paymentKey());        // 임시로 paymentKey 넣음. 원래는 orderId
-		// 	Reservation reservation = dtoToEntity(request);
-		// 	System.out.println("Entity로 변환 성공");
-		// 	System.out.println(reservation.getPaymentKey());
-		// 	reservationRepository.save(reservation);
-		// 	log.info("🩵 예약 성공 🩵");
-		// 	System.out.println("reservation save 성공");
-		// } catch (JsonProcessingException e) {
-		// 	throw new RuntimeException(e);
-		// }
 	}
 
 	public void cancelReservation(long reservationId, String cancelReason) {
