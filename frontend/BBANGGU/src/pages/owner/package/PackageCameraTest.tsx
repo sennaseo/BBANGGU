@@ -1,10 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import Header from '../../../components/owner/header/Header';
 
 const PackageCameraTest: React.FC = () => {
   const navigate = useNavigate();
-  const location = useLocation();
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isStreaming, setIsStreaming] = useState(false);
 
