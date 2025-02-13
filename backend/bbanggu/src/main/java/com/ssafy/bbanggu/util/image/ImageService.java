@@ -13,7 +13,7 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class ImageService {
-	private final String uploadDir = "uploads/";
+	private final String uploadDir = "home/ubuntu/uploads";
 
 	public String saveImage(MultipartFile file) throws IOException {
 		String filename = UUID.randomUUID() + "_" + file.getOriginalFilename();
@@ -22,7 +22,7 @@ public class ImageService {
 		Files.write(filePath, file.getBytes());
 		System.out.println("이미지 저장 성공");
 
-		return filePath.toString();
+		return "/uploads/" + filename;
 	}
 
 }
