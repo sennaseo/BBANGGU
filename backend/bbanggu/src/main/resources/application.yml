@@ -26,7 +26,7 @@ spring:
     # database-platform: org.hibernate.dialect.MySQL8Dialect
     hibernate:
       ddl-auto: none
-#    defer-datasource-initialization: true  # JPA 초기화 후 `data.sql` 실행
+    #defer-datasource-initialization: true  # JPA 초기화 후 `data.sql` 실행
     properties:
       hibernate:
         format_sql: true
