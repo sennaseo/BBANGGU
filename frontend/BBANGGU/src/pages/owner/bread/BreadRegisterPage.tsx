@@ -9,6 +9,8 @@ import {
   ShoppingBag, Package, CircleDot, Star
 } from 'lucide-react';
 import { registerBread, getBakeryBreads, BreadInfo, updateBread, deleteBread } from '../../../api/owner/bread';
+import Camera from '../../../components/Camera';
+import axios from '../../../api/axiosInstance';
 
 interface BreadCategory {
   id: number;
@@ -194,6 +196,7 @@ export default function BreadRegisterPage() {
   const [existingBreads, setExistingBreads] = useState<BreadInfo[]>([]);
   const [editingBread, setEditingBread] = useState<BreadInfo | null>(null);
   const [openMenuId, setOpenMenuId] = useState<number | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   // 드롭다운 메뉴 ref 추가
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -383,6 +386,35 @@ export default function BreadRegisterPage() {
         alert(err.response?.data.message || '빵 삭제 중 오류가 발생했습니다.');
       }
     }
+  };
+
+  const handleCapture = async (imageData: string) => {
+    try {
+      setImagePreview(imageData);
+      
+      // 이미지 데이터를 Blob으로 변환
+      const response = await fetch(imageData);
+      const blob = await response.blob();
+      
+      // FormData 생성
+      const formData = new FormData();
+      formData.append('image', blob, 'bread-image.jpg');
+      
+      // 서버로 전송
+      const result = await axios.post('/bread/image', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      
+      console.log('이미지 업로드 성공:', result.data);
+    } catch (error) {
+      console.error('이미지 업로드 실패:', error);
+    }
+  };
+
+  const handleError = (error: string) => {
+    alert(error);
   };
 
   return (
@@ -662,6 +694,16 @@ export default function BreadRegisterPage() {
             </div>
           </div>
         )}
+
+        <div className="mt-8">
+          <h3 className="text-lg font-bold mb-4">빵 사진 촬영</h3>
+          <Camera onCapture={handleCapture} onError={handleError} />
+          {imagePreview && (
+            <div className="mt-4">
+              <img src={imagePreview} alt="촬영된 이미지" className="w-full" />
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

@@ -37,6 +37,7 @@ import { RecoilRoot } from 'recoil';
 import PackageSalesSetting from './pages/owner/package/PackageSalesSetting';
 import PackageSettingPage from './pages/owner/package/PackageSettingPage';
 import BreadRegisterPage from './pages/owner/bread/BreadRegisterPage';
+import { InstallPWA } from './components/InstallPWA';
 
 
 export default function App() {
@@ -89,6 +90,7 @@ export default function App() {
               <Route path="/owner/package/setting" element={<PackageSettingPage />} />
               <Route path="/owner/bread/register" element={<BreadRegisterPage />} />
             </Routes>
+            <InstallPWA />
           </MobileLayout>
         </Router>
       </ProfileProvider>
