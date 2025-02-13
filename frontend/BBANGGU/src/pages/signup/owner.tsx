@@ -220,7 +220,6 @@ export default function OwnerSignupPage() {
   const isEmailValid = formData.email.includes("@") && formData.email.includes(".")
   const isPasswordValid = formData.password.length >= 8
   const doPasswordsMatch = formData.password === formData.confirmPassword
-  const isStoreInfoValid = formData.storeName && formData.storeAddress && formData.storePhoto
 
   const handleBackClick = () => {
     switch (currentStep) {
