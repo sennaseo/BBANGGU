@@ -61,6 +61,7 @@ const PackageAnalysis: React.FC = () => {
               );
               
               const scale = distance / initialDistance;
+              const settings = videoTrack.getSettings() as any;  // 타입 캐스팅 추가
               const currentZoom = settings?.zoom || 1;
               const maxZoom = capabilities?.zoom?.max || 2;
               const newZoom = Math.max(1, Math.min(maxZoom, currentZoom * scale));
