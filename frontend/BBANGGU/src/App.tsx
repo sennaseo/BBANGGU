@@ -36,6 +36,7 @@ import PackageRegister from './pages/owner/package/PackageRegister';
 import { RecoilRoot } from 'recoil';
 import PackageSalesSetting from './pages/owner/package/PackageSalesSetting';
 import PackageSettingPage from './pages/owner/package/PackageSettingPage';
+import BreadRegisterPage from './pages/owner/bread/BreadRegisterPage';
 
 
 export default function App() {
@@ -86,6 +87,7 @@ export default function App() {
               <Route path="/owner/package/register" element={<PackageRegister />} />
               <Route path="/owner/package/sales-setting" element={<PackageSalesSetting />} />
               <Route path="/owner/package/setting" element={<PackageSettingPage />} />
+              <Route path="/owner/bread/register" element={<BreadRegisterPage />} />
             </Routes>
           </MobileLayout>
         </Router>

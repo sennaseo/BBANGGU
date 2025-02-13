@@ -1,37 +1,55 @@
 import axios from 'axios';
-import { ApiResponse } from '../../types/api';
+import axiosInstance from '../axios';
 import { PackageType } from '../../types/bakery';
 
-// ApiResponse 래퍼 제거 - API가 직접 배열을 반환하므로
+interface PackageResponse {
+  message: string;
+  data: PackageType[];
+}
+
 export const getBakeryPackages = async (bakeryId: number): Promise<PackageType[]> => {
   try {
-    // 상대 경로 사용 (프록시가 처리)
-    const apiUrl = `/bread-package/bakery/${bakeryId}`;
-    
-    const response = await axios.get<ApiResponse<PackageType[]>>(apiUrl, {
+    console.log('요청 시작:', {
+      url: `/bread-package/bakery/${bakeryId}`,
       headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
+        'Authorization': axiosInstance.defaults.headers.common['Authorization']
       }
     });
 
-    // 404인 경우 조용히 빈 배열 반환
-    if (response.status === 404) {
-      return [];
-    }
-
+    const response = await axiosInstance.get<PackageResponse>(`/bread-package/bakery/${bakeryId}`);
+    
+    // 응답 구조 확인을 위한 로그
+    console.log('전체 응답:', response);
+    
+    // data 필드가 있는지 확인
     if (!response.data || !response.data.data) {
-      console.log('Invalid response format:', response.data);
+      console.error('잘못된 응답 형식:', response.data);
       return [];
     }
 
     return response.data.data;
   } catch (error) {
     if (axios.isAxiosError(error)) {
-      console.error('Network Error:', error);
-      throw new Error('네트워크 연결을 확인해주세요.');
+      console.error('상세 에러 정보:', {
+        status: error.response?.status,
+        data: error.response?.data,
+        headers: error.response?.headers,
+        config: {
+          url: error.config?.url,
+          method: error.config?.method,
+          headers: error.config?.headers
+        }
+      });
+      
+      if (error.response?.status === 500) {
+        // 서버 에러의 경우 빈 배열 반환
+        console.warn('서버 에러 발생 - 빈 배열 반환');
+        return [];
+      }
+      if (error.response?.status === 404) {
+        return [];
+      }
     }
-    console.error('Unexpected Error:', error);
-    throw new Error('빵꾸러미 정보를 불러오는데 실패했습니다.');
+    throw error;
   }
 };

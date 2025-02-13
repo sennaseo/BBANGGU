@@ -7,6 +7,8 @@ import { CustomerList } from './components/CustomerList';
 import BottomNavigation from '../../../components/owner/navigations/BottomNavigations/BottomNavigation';
 import { getBakeryPackages } from '../../../api/owner/package';
 import { PackageType } from '../../../types/bakery';
+import { BuildingStorefrontIcon } from '@heroicons/react/24/outline';
+import { useNavigate } from 'react-router-dom';
 
 interface Customer {
   id: number;
@@ -22,6 +24,8 @@ const OwnerMainPage: React.FC = () => {
   const [packages, setPackages] = useState<PackageType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [hasBreadRegistered, setHasBreadRegistered] = useState(false);
+  const navigate = useNavigate();
 
   const initialCustomers: Customer[] = [
     { id: 1, name: '서유민', email: 'youmin77@naver.com', paymentTime: '19:15', isPickedUp: false, breadCount: 1 },
@@ -64,20 +68,31 @@ const OwnerMainPage: React.FC = () => {
   } = useCustomerSort(initialCustomers);
 
   // TODO: 실제 bakeryId는 로그인 정보에서 가져와야 함
-  const bakeryId = 1;
+  const bakeryId = 1; // 현재 토큰의 sub 값이 19입니다
 
   useEffect(() => {
     const fetchPackages = async () => {
       try {
         setIsLoading(true);
-        console.log('Fetching packages...'); // 로딩 시작 로그
+        console.log('패키지 조회 시작 - bakeryId:', bakeryId);
         const data = await getBakeryPackages(bakeryId);
-        console.log('Packages received:', data); // 데이터 수신 로그
-        setPackages(data);
+        console.log('조회된 패키지:', data);
+        
+        // 데이터가 배열인지 확인
+        if (Array.isArray(data)) {
+          setPackages(data);
+          setHasBreadRegistered(data.length > 0);
+        } else {
+          console.error('잘못된 데이터 형식:', data);
+          setPackages([]);
+          setHasBreadRegistered(false);
+        }
       } catch (err) {
-        console.error('Error details:', err); // 자세한 에러 로그
+        console.error('패키지 조회 실패:', err);
+        setPackages([]);
+        setHasBreadRegistered(false);
         if (err instanceof Error) {
-          setError(`빵꾸러미 정보를 불러오는데 실패했습니다: ${err.message}`);
+          setError(err.message);
         } else {
           setError('알 수 없는 오류가 발생했습니다.');
         }
@@ -124,6 +139,7 @@ const OwnerMainPage: React.FC = () => {
   return (
     <div className="pb-16">
       <div className="p-4">
+        {/* 기존 빵꾸러미 정보 */}
         <BreadPackageHeader />
         <div className="flex mb-6">
           <div className="flex flex-1 mx-1 border-b">
@@ -151,7 +167,18 @@ const OwnerMainPage: React.FC = () => {
         </div>
         {activeTab === 'package' ? (
           <>
-            <BreadPackageInfo packages={packages} />  
+            <BreadPackageInfo packages={packages} />
+            <div className="mb-6">
+              <button
+                onClick={() => navigate('/owner/bread/register')}
+                className="w-full flex items-center justify-center gap-3 py-4 bg-gradient-to-r from-[#FFF9F5] to-[#FFF5EC] text-[#FC973B] rounded-xl hover:shadow-md transition-all border border-[#FC973B]/10"
+              >
+                <div className="flex items-center gap-2">
+                  <BuildingStorefrontIcon className="w-5 h-5" />
+                </div>
+                <span className="font-medium">우리가게 빵 등록하기</span>
+              </button>
+            </div>
             <CustomerList 
               customers={customers}
               sortByPaymentTime={sortByPaymentTime}

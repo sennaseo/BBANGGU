@@ -32,7 +32,17 @@ export const BreadPackageInfo: React.FC<BreadPackageInfoProps> = ({ packages }) 
     }
   };
 
-  if (safePackages.length === 0) {
+  // 현재는 첫 번째 패키지만 표시 (나중에 여러 패키지 표시로 확장 가능)
+  const currentPackage = safePackages[0];
+  
+  // items가 없을 경우를 대비한 안전한 계산
+  const packageQuantity = currentPackage?.items?.reduce(
+    (sum, item) => sum + (item.quantity || 0), 
+    0
+  ) || currentPackage?.quantity || 0;
+
+  // 패키지가 없는 경우 빈 상태 표시
+  if (!currentPackage) {
     return (
       <div className="flex flex-col items-center justify-center py-12 px-4 bg-[#F9F9F9] rounded-[10px] border border-dashed border-[#E5E5E5] mb-6">
         <img 
@@ -53,10 +63,6 @@ export const BreadPackageInfo: React.FC<BreadPackageInfoProps> = ({ packages }) 
       </div>
     );
   }
-
-  // 현재는 첫 번째 패키지만 표시 (나중에 여러 패키지 표시로 확장 가능)
-  const currentPackage = safePackages[0];
-  const packageQuantity = currentPackage.items.reduce((sum, item) => sum + item.quantity, 0);
 
   return (
     <>
@@ -101,8 +107,12 @@ export const BreadPackageInfo: React.FC<BreadPackageInfoProps> = ({ packages }) 
             className="w-[24px] h-[24px] mt-1"
           />
           <div className="flex items-center gap-2">
-            <span className="text-[24px] font-bold">{currentPackage.price.toLocaleString()}원</span>
-            <span className="text-[24px] font-bold text-[#FC973B]">× {packageQuantity}개</span>
+            <span className="text-[24px] font-bold">
+              {currentPackage.price.toLocaleString()}원
+            </span>
+            <span className="text-[24px] font-bold text-[#FC973B]">
+              × {packageQuantity}개
+            </span>
           </div>
         </div>
 
