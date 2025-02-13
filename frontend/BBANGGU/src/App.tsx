@@ -38,7 +38,6 @@ import PackageSalesSetting from './pages/owner/package/PackageSalesSetting';
 import PackageSettingPage from './pages/owner/package/PackageSettingPage';
 import BreadRegisterPage from './pages/owner/bread/BreadRegisterPage';
 import { InstallPWA } from './components/InstallPWA';
-import PackageCameraTest from './pages/owner/package/PackageCameraTest';
 
 
 export default function App() {
@@ -90,7 +89,6 @@ export default function App() {
               <Route path="/owner/package/sales-setting" element={<PackageSalesSetting />} />
               <Route path="/owner/package/setting" element={<PackageSettingPage />} />
               <Route path="/owner/bread/register" element={<BreadRegisterPage />} />
-              <Route path="/owner/package/camera-test" element={<PackageCameraTest />} />
             </Routes>
             <InstallPWA />
           </MobileLayout>

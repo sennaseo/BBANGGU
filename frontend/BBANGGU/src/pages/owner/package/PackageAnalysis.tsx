@@ -1,26 +1,102 @@
-import React from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import Camera from '../../../components/Camera';
+import React, { useState, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Header from '../../../components/owner/header/Header';
-import ProgressBar from './components/Progress.Bar';
-import { PACKAGE_STEPS, TOTAL_PACKAGE_STEPS } from './constants/PakageSteps';
 
 const PackageAnalysis: React.FC = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  console.log('Location state:', location.state);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [isStreaming, setIsStreaming] = useState(false);
 
-  const handleCapture = (imageData: string) => {
-    navigate('/owner/package/preview', { state: { image: imageData } });
+  // 컴포넌트 마운트 시 자동으로 카메라 시작
+  useEffect(() => {
+    startCamera();
+    console.log('자동 시작 시도');
+  }, []);
+
+  const startCamera = async () => {
+    try {
+      // 기본적인 설정으로 시작
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        video: {
+          facingMode: 'environment',
+          width: { ideal: window.innerWidth },
+          height: { ideal: window.innerHeight }
+        },
+        audio: false 
+      });
+
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        videoRef.current.style.objectFit = 'contain';  // 'cover'에서 'contain'으로 변경
+        
+        // 카메라 기능 확인
+        const videoTrack = stream.getVideoTracks()[0];
+        const capabilities = videoTrack.getCapabilities();
+        console.log('카메라 기능:', capabilities);
+
+        // 줌 기능이 지원되는 경우에만 이벤트 추가
+        if (capabilities.zoom) {
+          let initialDistance = 0;
+
+          const handleTouchStart = (e: TouchEvent) => {
+            if (e.touches.length === 2) {
+              initialDistance = Math.hypot(
+                e.touches[0].pageX - e.touches[1].pageX,
+                e.touches[0].pageY - e.touches[1].pageY
+              );
+            }
+          };
+
+          const handleTouchMove = (e: TouchEvent) => {
+            if (e.touches.length === 2) {
+              const distance = Math.hypot(
+                e.touches[0].pageX - e.touches[1].pageX,
+                e.touches[0].pageY - e.touches[1].pageY
+              );
+              
+              const scale = distance / initialDistance;
+              const currentZoom = videoTrack.getSettings().zoom || 1;
+              const newZoom = Math.max(1, Math.min(capabilities.zoom.max || 2, currentZoom * scale));
+              
+              try {
+                videoTrack.applyConstraints({
+                  advanced: [{ zoom: newZoom }]
+                });
+              } catch (err) {
+                console.log('줌 적용 실패:', err);
+              }
+            }
+          };
+
+          videoRef.current.addEventListener('touchstart', handleTouchStart);
+          videoRef.current.addEventListener('touchmove', handleTouchMove);
+        }
+
+        videoRef.current.onloadedmetadata = () => {
+          setIsStreaming(true);
+          console.log('카메라 설정:', videoTrack.getSettings());
+        };
+      }
+    } catch (err) {
+      console.error('카메라 에러:', err);
+      alert('카메라 접근 권한이 필요합니다.');
+    }
   };
 
-  const handleError = (error: string) => {
-    console.error('카메라 에러:', error);
-  };
+  const takePhoto = () => {
+    if (!videoRef.current || !isStreaming) return;
 
-  const handleCameraClick = () => {
-    const button = document.querySelector('button[data-camera-trigger]') as HTMLButtonElement;
-    button?.click();
+    const canvas = document.createElement('canvas');
+    canvas.width = videoRef.current.videoWidth;
+    canvas.height = videoRef.current.videoHeight;
+    
+    const context = canvas.getContext('2d');
+    if (context) {
+      context.drawImage(videoRef.current, 0, 0);
+      const imageData = canvas.toDataURL('image/jpeg');
+      // 촬영 후 미리보기 페이지로 이동
+      navigate('/owner/package/preview', { state: { image: imageData } });
+    }
   };
 
   return (
@@ -32,25 +108,24 @@ const PackageAnalysis: React.FC = () => {
         textColor="text-white"
       />
       
-      <ProgressBar 
-        currentStep={PACKAGE_STEPS.CAMERA}  
-        totalSteps={TOTAL_PACKAGE_STEPS}
-      />
-
       <div className="flex-1 flex flex-col relative">
-        <div className="flex-1 relative overflow-hidden">
-          <Camera 
-            onCapture={handleCapture}
-            onError={handleError}
-            className="h-full w-full"
+        <div className="flex-1 relative">
+          <video
+            ref={videoRef}
+            autoPlay
+            playsInline
+            muted
+            className="absolute inset-0 w-full h-full object-cover"
           />
         </div>
 
-        <div className="h-24 bg-black flex items-center justify-center">
-          <button
-            className="w-16 h-16 rounded-full bg-white"
-            onClick={handleCameraClick}
-          />
+        <div className="h-32 bg-black flex items-center justify-center mb-8">
+          {isStreaming && (
+            <button
+              onClick={takePhoto}
+              className="w-16 h-16 rounded-full bg-white shadow-lg"
+            />
+          )}
         </div>
       </div>
     </div>
