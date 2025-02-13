@@ -1,37 +1,34 @@
-import axios from 'axios';
-import { ApiResponse } from '../../types/api';
-import { PackageType } from '../../types/bakery';
+import axiosInstance from '../axios';
 
-// ApiResponse 래퍼 제거 - API가 직접 배열을 반환하므로
-export const getBakeryPackages = async (bakeryId: number): Promise<PackageType[]> => {
+interface PackageResponse {
+  message: string;
+  data: Array<{
+    packageId: number;
+    bakeryId: number;
+    price: number;
+    quantity: number;
+    name: string;
+  }>;
+}
+
+export const getBakeryPackages = async (bakeryId: number) => {
   try {
-    // 상대 경로 사용 (프록시가 처리)
-    const apiUrl = `/bread-package/bakery/${bakeryId}`;
-    
-    const response = await axios.get<ApiResponse<PackageType[]>>(apiUrl, {
+    console.log('요청 시작:', {
+      url: `/bread-package/bakery/${bakeryId}`,
       headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
+        'Authorization': axiosInstance.defaults.headers.common['Authorization']
       }
     });
 
-    // 404인 경우 조용히 빈 배열 반환
-    if (response.status === 404) {
-      return [];
-    }
-
-    if (!response.data || !response.data.data) {
-      console.log('Invalid response format:', response.data);
-      return [];
-    }
-
-    return response.data.data;
+    const response = await axiosInstance.get<PackageResponse>(`/bread-package/bakery/${bakeryId}`);
+    
+    console.log('API 원본 응답:', response);  // 전체 응답 확인
+    console.log('response.data:', response.data);  // 응답 데이터 확인
+    
+    // ✅ response.data가 아닌 response.data.data를 반환
+    return response.data;  // {message: string, data: Array<...>} 형태로 반환
   } catch (error) {
-    if (axios.isAxiosError(error)) {
-      console.error('Network Error:', error);
-      throw new Error('네트워크 연결을 확인해주세요.');
-    }
-    console.error('Unexpected Error:', error);
-    throw new Error('빵꾸러미 정보를 불러오는데 실패했습니다.');
+    console.error('빵꾸러미 조회 실패:', error);
+    throw error;
   }
 };

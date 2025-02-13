@@ -6,3 +6,11 @@ export interface Customer {
   isPickedUp: boolean;
   breadCount: number;
 }
+
+export interface BreadPackage {
+  packageId: number;
+  bakeryId: number;
+  price: number;
+  quantity: number;
+  name: string;
+}
