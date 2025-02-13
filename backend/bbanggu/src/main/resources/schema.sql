@@ -237,7 +237,6 @@ CREATE TABLE IF NOT EXISTS `bbanggu`.`reservation` (
                                                        `bread_package_id` INT UNSIGNED NOT NULL,
                                                        `quantity` INT NOT NULL,
                                                        `total_price` INT NOT NULL,
-                                                       `reserved_pickup_time` TIMESTAMP NOT NULL,
                                                        `pickup_at` TIMESTAMP NULL DEFAULT NULL,
                                                        `created_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
                                                        `cancelled_at` TIMESTAMP NULL DEFAULT NULL,

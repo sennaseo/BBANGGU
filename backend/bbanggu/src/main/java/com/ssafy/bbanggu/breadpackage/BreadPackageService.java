@@ -36,7 +36,7 @@ public class BreadPackageService {
 			.orElseThrow(() -> new CustomException(ErrorCode.BAKERY_NOT_FOUND));
 		log.info("✅ " + request.bakeryId() + "번 빵집이 존재합니다^^");
 
-		if(!bakery.getUser().getUserId().equals(userDetails.getUserId())) {
+		if (!bakery.getUser().getUserId().equals(userDetails.getUserId())) {
 			log.info("❗❗현재 로그인한 사용자의 아이디와 사장님의 아이디가 일치하지 않음❗❗\n"
 				+ "로그인한 사용자 ID: " + userDetails.getUserId() + "\n사장님 ID: " + bakery.getUser().getUserId());
 			throw new CustomException(ErrorCode.UNAUTHORIZED_USER);
@@ -79,6 +79,11 @@ public class BreadPackageService {
 	}
 
 
+	public BreadPackageDto getPackageById(Long breadPackageId) {
+		return null;
+	}
+
+
 	/**
 	 * 가게의 전체 빵꾸러미 조회
 	 */
@@ -115,7 +120,7 @@ public class BreadPackageService {
 	 */
 	public BreadPackageDto updateBreadPackage(CustomUserDetails userDetails, long packageId, BreadPackageDto request) {
 		BreadPackage breadPackage = breadPackageRepository.findById(packageId)
-				.orElseThrow(() -> new CustomException(ErrorCode.BREAD_PACKAGE_NOT_FOUND));
+			.orElseThrow(() -> new CustomException(ErrorCode.BREAD_PACKAGE_NOT_FOUND));
 		log.info("✅ {}번 빵꾸러미 존재 확인 완료", packageId);
 
 		if (!breadPackage.getBakery().getUser().getUserId().equals(userDetails.getUserId())) {

@@ -6,6 +6,7 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.ssafy.bbanggu.breadpackage.BreadPackageService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -28,23 +29,29 @@ import jakarta.transaction.Transactional;
 public class ReservationService {
 
 	private final ReservationRepository reservationRepository;
+	private final BreadPackageService breadPackageService;
 	private final PaymentService paymentService;
 	private final JwtTokenProvider jwtTokenProvider;
 
-	public ReservationService(ReservationRepository reservationRepository, PaymentService paymentService,
+	public ReservationService(ReservationRepository reservationRepository, PaymentService paymentService, BreadPackageService breadPackageService,
 							  JwtTokenProvider jwtTokenProvider) {
 		this.reservationRepository = reservationRepository;
 		this.paymentService = paymentService;
+		this.breadPackageService = breadPackageService;
 		this.jwtTokenProvider = jwtTokenProvider;
 	}
 
-	public void createReservation(ReservationDTO reservationDto, String orderId, String paymentKey, int amount) {
+	public void createReservation(ReservationDTO reservationDto, String orderId, String paymentKey, int amount, int quantity) {
 		// 결제 정보 검증
 		ResponseEntity<String> response = paymentService.check(orderId, paymentKey, amount);
 		if (response.getStatusCode() != HttpStatus.OK) {
 			throw new CustomException(ErrorCode.PAYMENT_NOT_VALID);
 		}
 		System.out.println("결제 정보 검증 완료");
+
+		// 결제 가격 검증
+
+
 
 		// orderId 추출 및 DTO에 추가
 		try {
@@ -127,7 +134,6 @@ public class ReservationService {
 			.breadPackageId(reservation.getBreadPackage().getPackageId())
 			.quantity(reservation.getQuantity())
 			.totalPrice(reservation.getTotalPrice())
-			.reservedPickupTime(reservation.getReservedPickupTime())
 			.createdAt(LocalDateTime.now())
 			.status("RESERVATION_CONFIRMED")
 			.paymentKey(reservation.getPaymentKey())
@@ -153,7 +159,6 @@ public class ReservationService {
 			.breadPackage(breadPackage)
 			.quantity(reservationDto.getQuantity())
 			.totalPrice(reservationDto.getTotalPrice())
-			.reservedPickupTime(reservationDto.getReservedPickupTime())
 			.createdAt(reservationDto.getCreatedAt())
 			.status(reservationDto.getStatus())
 			.paymentKey(reservationDto.getPaymentKey())
