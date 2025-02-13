@@ -15,7 +15,6 @@ const PackageAnalysis: React.FC = () => {
 
   const startCamera = async () => {
     try {
-      // 기본적인 설정으로 시작
       const stream = await navigator.mediaDevices.getUserMedia({ 
         video: {
           facingMode: 'environment',
@@ -27,15 +26,15 @@ const PackageAnalysis: React.FC = () => {
 
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
-        videoRef.current.style.objectFit = 'contain';  // 'cover'에서 'contain'으로 변경
+        videoRef.current.style.objectFit = 'contain';
         
         // 카메라 기능 확인
         const videoTrack = stream.getVideoTracks()[0];
-        const capabilities = videoTrack.getCapabilities();
+        const capabilities = videoTrack.getCapabilities() as any;  // 타입 캐스팅
         console.log('카메라 기능:', capabilities);
 
         // 줌 기능이 지원되는 경우에만 이벤트 추가
-        if (capabilities.zoom) {
+        if (capabilities?.zoom) {  // optional chaining 추가
           let initialDistance = 0;
 
           const handleTouchStart = (e: TouchEvent) => {
@@ -55,12 +54,17 @@ const PackageAnalysis: React.FC = () => {
               );
               
               const scale = distance / initialDistance;
-              const currentZoom = videoTrack.getSettings().zoom || 1;
-              const newZoom = Math.max(1, Math.min(capabilities.zoom.max || 2, currentZoom * scale));
+              const settings = videoTrack.getSettings() as any;  // 타입 캐스팅
+              const currentZoom = settings?.zoom || 1;
+              const maxZoom = capabilities?.zoom?.max || 2;
+              const newZoom = Math.max(1, Math.min(maxZoom, currentZoom * scale));
               
               try {
                 videoTrack.applyConstraints({
-                  advanced: [{ zoom: newZoom }]
+                  advanced: [{
+                    // @ts-ignore
+                    zoom: newZoom
+                  }]
                 });
               } catch (err) {
                 console.log('줌 적용 실패:', err);

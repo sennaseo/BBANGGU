@@ -30,7 +30,7 @@ bld/
 [Bb]uild[Ll]og.*
 
 # NUNIT
-*.VisualState.xml
+*.VisualState.xmlㄲ
 TestResult.xml
 
 # Build Results of an ATL Project
@@ -203,3 +203,5 @@ dist/
 .dist/
 
 
+# TypeScript build info
+*.tsbuildinfo
