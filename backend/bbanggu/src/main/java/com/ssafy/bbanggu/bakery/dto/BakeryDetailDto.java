@@ -1,6 +1,6 @@
 package com.ssafy.bbanggu.bakery.dto;
 
-import com.ssafy.bbanggu.bakery.Bakery;
+import com.ssafy.bbanggu.bakery.domain.Bakery;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -18,9 +18,11 @@ public record BakeryDetailDto(
 	String addressRoad,
 	@NotBlank(message = "상세 주소는 필수 입력 값입니다.")
 	String addressDetail,
-	String photoUrl,
+	String bakeryImageUrl,
+	String bakeryBackgroundImgUrl,
 	Double star,
-	Double distance
+	Double distance,
+	int reviewCnt
 ) {
 	public static BakeryDetailDto from(Bakery bakery, double distance) {
 		return new BakeryDetailDto(
@@ -31,9 +33,11 @@ public record BakeryDetailDto(
 			bakery.getBusinessRegistrationNumber(),
 			bakery.getAddressRoad(),
 			bakery.getAddressDetail(),
-			bakery.getPhotoUrl(),
+			bakery.getBakeryImageUrl(),
+			bakery.getBakeryBackgroundImgUrl(),
 			bakery.getStar(),
-			distance
+			distance,
+			bakery.getReviewCnt()
 		);
 	}
 }

@@ -1,23 +1,25 @@
-import { useState } from 'react';
+import React from 'react';
 import { EllipsisVerticalIcon, PencilSquareIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { useNavigate } from 'react-router-dom';
 import breadPackageIcon from '../../../../assets/images/bakery/bread_pakage.svg';
+import { PackageType } from '../../../../types/bakery';
 
-export const BreadPackageInfo = () => {
-  const [showMenu, setShowMenu] = useState(false);
-  const [hasPackage, setHasPackage] = useState(true);
+interface BreadPackageInfoProps {
+  packages: PackageType[];
+}
+
+export const BreadPackageInfo: React.FC<BreadPackageInfoProps> = ({ packages }) => {
+  const [showMenu, setShowMenu] = React.useState(false);
   const navigate = useNavigate();
+
+  // packages가 undefined일 때를 대비한 기본값 처리
+  const safePackages = packages || [];
 
   const handleEdit = () => {
     navigate('/owner/package/register', {
       state: {
         isEditing: true,
-        packageInfo: {
-          price: 2000,
-          quantity: 6,
-          totalPrice: 12000
-          // 기타 필요한 정보들...
-        }
+        packageInfo: safePackages[0] // 현재는 첫 번째 패키지만 수정 가능하도록 설정
       }
     });
     setShowMenu(false);
@@ -25,12 +27,12 @@ export const BreadPackageInfo = () => {
 
   const handleDelete = () => {
     if (window.confirm('빵꾸러미를 삭제하시겠습니까?')) {
-      setHasPackage(false);
+      // TODO: 삭제 API 호출
       setShowMenu(false);
     }
   };
 
-  if (!hasPackage) {
+  if (safePackages.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-12 px-4 bg-[#F9F9F9] rounded-[10px] border border-dashed border-[#E5E5E5] mb-6">
         <img 
@@ -52,11 +54,14 @@ export const BreadPackageInfo = () => {
     );
   }
 
+  // 현재는 첫 번째 패키지만 표시 (나중에 여러 패키지 표시로 확장 가능)
+  const currentPackage = safePackages[0];
+  const packageQuantity = currentPackage.items.reduce((sum, item) => sum + item.quantity, 0);
+
   return (
     <>
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-[20px] font-bold">빵꾸러미 정보</h2>
-        {/* 더보기 버튼 */}
         <div className="relative">
           <button
             onClick={() => setShowMenu(!showMenu)}
@@ -65,7 +70,6 @@ export const BreadPackageInfo = () => {
             <EllipsisVerticalIcon className="w-6 h-6 text-[#6B7280]" />
           </button>
 
-          {/* 드롭다운 메뉴 */}
           {showMenu && (
             <div className="absolute top-11 right-0 bg-white shadow-[0_4px_20px_rgba(0,0,0,0.15)] rounded-[12px] border border-[#EFEFEF] py-2 z-10 w-32 overflow-hidden">
               <button
@@ -97,22 +101,22 @@ export const BreadPackageInfo = () => {
             className="w-[24px] h-[24px] mt-1"
           />
           <div className="flex items-center gap-2">
-            <span className="text-[24px] font-bold">2,000원</span>
-            <span className="text-[24px] font-bold text-[#FC973B]">× 6개</span>
+            <span className="text-[24px] font-bold">{currentPackage.price.toLocaleString()}원</span>
+            <span className="text-[24px] font-bold text-[#FC973B]">× {packageQuantity}개</span>
           </div>
         </div>
 
         <div className="bg-[#FC973B] text-white p-3 rounded-[10px] mb-3">
           <div className="flex justify-between px-2">
             <span className="font-medium">오늘 빵꾸러미로 번 돈</span>
-            <span className="font-bold">12,000원</span>
+            <span className="font-bold">{(currentPackage.price * packageQuantity).toLocaleString()}원</span>
           </div>
         </div>
 
         <div className="bg-[#FC973B] text-white p-3 rounded-[10px]">
           <div className="flex justify-between px-2">
             <span className="font-medium">오늘 절약한 환경 수치</span>
-            <span className="font-bold">20g</span>
+            <span className="font-bold">{packageQuantity * 20}g</span>
           </div>
         </div>
       </div>

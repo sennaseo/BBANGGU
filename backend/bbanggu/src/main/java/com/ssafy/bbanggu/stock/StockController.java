@@ -38,7 +38,7 @@ public class StockController {
 	}
 
 	// 재고 수정
-	@PutMapping(value = "", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+	@PutMapping(value = "")
 	public ResponseEntity<?> updateStock(@RequestBody StockDTO stockDto) {
 		try {
 			stockService.updateStock(stockDto);

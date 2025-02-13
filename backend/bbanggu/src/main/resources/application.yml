@@ -25,12 +25,16 @@ spring:
   jpa:
     # database-platform: org.hibernate.dialect.MySQL8Dialect
     hibernate:
-      ddl-auto: update
+      ddl-auto: none
+#    defer-datasource-initialization: true  # JPA 초기화 후 `data.sql` 실행
     properties:
       hibernate:
         format_sql: true
     show-sql: true
     open-in-view: false
+#  sql:
+#    init:
+#      mode: always
   mail:
     host: smtp.gmail.com
     port: 587
@@ -65,7 +69,7 @@ kakao:
 jwt:
   secret: ${JWT_SECRET}
   expiration:
-    access-token: 900000  # 15분 (밀리초)
+    access-token: 604800000 # 900000  # 15분 (밀리초)
     refresh-token: 604800000 # 7일 (밀리초)
 
 toss:

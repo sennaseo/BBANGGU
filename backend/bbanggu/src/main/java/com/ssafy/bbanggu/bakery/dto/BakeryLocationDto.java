@@ -1,6 +1,6 @@
 package com.ssafy.bbanggu.bakery.dto;
 
-import com.ssafy.bbanggu.bakery.Bakery;
+import com.ssafy.bbanggu.bakery.domain.Bakery;
 
 public record BakeryLocationDto(
 	Long bakeryId,

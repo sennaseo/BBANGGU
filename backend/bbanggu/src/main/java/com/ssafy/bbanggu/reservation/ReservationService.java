@@ -3,7 +3,6 @@ package com.ssafy.bbanggu.reservation;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,7 +15,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ssafy.bbanggu.auth.security.JwtTokenProvider;
-import com.ssafy.bbanggu.bakery.Bakery;
+import com.ssafy.bbanggu.bakery.domain.Bakery;
 import com.ssafy.bbanggu.breadpackage.BreadPackage;
 import com.ssafy.bbanggu.common.exception.CustomException;
 import com.ssafy.bbanggu.common.exception.ErrorCode;
@@ -30,8 +29,8 @@ import jakarta.transaction.Transactional;
 public class ReservationService {
 
 	private final ReservationRepository reservationRepository;
-	private final PaymentService paymentService;
 	private final BreadPackageService breadPackageService;
+	private final PaymentService paymentService;
 	private final JwtTokenProvider jwtTokenProvider;
 
 	public ReservationService(ReservationRepository reservationRepository, PaymentService paymentService, BreadPackageService breadPackageService,
@@ -42,7 +41,7 @@ public class ReservationService {
 		this.jwtTokenProvider = jwtTokenProvider;
 	}
 
-	public void createReservation(ReservationDTO reservationDto, String orderId, String paymentKey, int amount) {
+	public void createReservation(ReservationDTO reservationDto, String orderId, String paymentKey, int amount, int quantity) {
 		// 결제 정보 검증
 //		BreadPackage breadPackage = breadPackageService.get
 
@@ -52,15 +51,17 @@ public class ReservationService {
 		}
 		System.out.println("결제 정보 검증 완료");
 
+		// 결제 가격 검증
+
 
 		// orderId 추출 및 DTO에 추가
 		try {
 			ObjectMapper objectMapper = new ObjectMapper();
 			JsonNode jsonNode = objectMapper.readTree(response.getBody());
-			reservationDto.setOrderId(jsonNode.get("paymentKey").asText());        // 임시로 paymentKey 넣음. 원래는 orderId
+			reservationDto.setPaymentKey(jsonNode.get("paymentKey").asText());        // 임시로 paymentKey 넣음. 원래는 orderId
 			Reservation reservation = dtoToEntity(reservationDto);
 			System.out.println("Entity로 변환 성공");
-			System.out.println(reservation.getOrderId());
+			System.out.println(reservation.getPaymentKey());
 			reservationRepository.save(reservation);
 			System.out.println("reservation save 성공");
 		} catch (JsonProcessingException e) {
@@ -75,7 +76,7 @@ public class ReservationService {
 			throw new CustomException(ErrorCode.RESERVATION_NOT_FOUND);
 		}
 		// 결제 취소
-		ResponseEntity<String> response = paymentService.cancelPayment(reservation.getOrderId(), cancelReason);
+		ResponseEntity<String> response = paymentService.cancelPayment(reservation.getPaymentKey(), cancelReason);
 		System.out.println(response.getBody());
 
 		// 예약 정보 업데이트
@@ -95,10 +96,7 @@ public class ReservationService {
 		reservation.setStatus("PICKUP_COMPLETED");
 	}
 
-	public List<ReservationDTO> getUserReservationList(String authorization, LocalDate startDate, LocalDate endDate) {
-		String token = authorization.replace("Bearer ", "");
-		long userId = jwtTokenProvider.getUserIdFromToken(token);
-
+	public List<ReservationDTO> getUserReservationList(Long userId, LocalDate startDate, LocalDate endDate) {
 		LocalDateTime startDateTime = startDate.atStartOfDay();
 		LocalDateTime endDateTime = endDate.atTime(LocalTime.MAX);
 
@@ -111,9 +109,9 @@ public class ReservationService {
 	}
 
 	public List<ReservationDTO> getOwnerReservationList(String authorization, long bakeryId, LocalDate startDate, LocalDate endDate) {
-		String token = authorization.replace("Bearer ", "");
-		long userId = jwtTokenProvider.getUserIdFromToken(token);
 		// TODO: bakeryId와 UserId로 소유자 검증 필요
+//		String token = authorization.replace("Bearer ", "");
+//		long userId = jwtTokenProvider.getUserIdFromToken(token);
 
 		LocalDateTime startDateTime = startDate.atStartOfDay();
 		LocalDateTime endDateTime = endDate.atTime(LocalTime.MAX);
@@ -137,10 +135,9 @@ public class ReservationService {
 			.breadPackageId(reservation.getBreadPackage().getPackageId())
 			.quantity(reservation.getQuantity())
 			.totalPrice(reservation.getTotalPrice())
-			.reservedPickupTime(reservation.getReservedPickupTime())
 			.createdAt(LocalDateTime.now())
 			.status("RESERVATION_CONFIRMED")
-			.orderId(reservation.getOrderId())
+			.paymentKey(reservation.getPaymentKey())
 			.build();
 	}
 
@@ -163,10 +160,9 @@ public class ReservationService {
 			.breadPackage(breadPackage)
 			.quantity(reservationDto.getQuantity())
 			.totalPrice(reservationDto.getTotalPrice())
-			.reservedPickupTime(reservationDto.getReservedPickupTime())
 			.createdAt(reservationDto.getCreatedAt())
 			.status(reservationDto.getStatus())
-			.orderId(reservationDto.getOrderId())
+			.paymentKey(reservationDto.getPaymentKey())
 			.build();
 	}
 

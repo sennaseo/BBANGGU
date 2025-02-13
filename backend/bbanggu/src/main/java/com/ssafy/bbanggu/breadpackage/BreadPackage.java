@@ -8,7 +8,9 @@ import lombok.NoArgsConstructor;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
-import com.ssafy.bbanggu.bakery.Bakery;
+import org.hibernate.annotations.CreationTimestamp;
+
+import com.ssafy.bbanggu.bakery.domain.Bakery;
 
 @Data
 @Builder
@@ -27,24 +29,28 @@ public class BreadPackage {
     @JoinColumn(name = "bakery_id", nullable = false)
     private Bakery bakery; // 가게 ID
 
+	@Column
+	private String name; // 이름
+
     @Column(nullable = false)
     private Integer price; // 가격
-
-    @Column(name = "discount_rate", nullable = false)
-    private Float discountRate; // 할인율
 
     @Column(nullable = false)
     private Integer quantity; // 수량
 
+	@Column(nullable = false)
+	private int pending;
+
+	@CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt; // 생성일
 
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt; // 삭제일
 
-    @Column(length = 100)
-    private String name; // 패키지 이름
-
-    @Column(length = 500)
-    private String description; // 패키지 설명
+	public void update(Integer price, Integer quantity, String name) {
+		this.price = price;
+		this.quantity = quantity;
+		this.name = name;
+	}
 }

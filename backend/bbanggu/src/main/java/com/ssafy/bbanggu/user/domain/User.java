@@ -31,7 +31,7 @@ public class User {
 	private Long userId; // 사용자 고유 ID (Primary Key)
 
 	@Setter
-	@Column(unique = true, length = 50)
+	@Column(name = "kakao_id", unique = true, length = 50)
 	private String kakaoId;
 
 	@Column(nullable = false)
@@ -54,32 +54,32 @@ public class User {
 	@Column(name = "user_type", nullable = false)
 	private Role role;
 
-	@Column
+	@Column(name = "profile_image_url")
 	@Setter
-	private String profilePhotoUrl;
+	private String profileImageUrl;
 
 	@Setter
-	@Column(length = 512)
+	@Column(name = "refresh_token", length = 512)
 	private String refreshToken;
 
-	@Column
 	@Setter
+	@Column(name = "address_road")
 	private String addressRoad;
 
-	@Column
 	@Setter
+	@Column(name = "address_detail")
 	private String addressDetail;
 
-	@Column
 	@Setter
-	private Double latitude;
+	@Column
+	private Double latitude = 0.0;
 
-	@Column
 	@Setter
-	private Double longitude;
+	@Column
+	private Double longitude = 0.0;
 
 	@CreationTimestamp
-	@Column(name = "created_at", updatable = false)
+	@Column(name = "created_at", nullable = false, updatable = false)
 	private LocalDateTime createAt;
 
 	@Column(name = "deleted_at")
@@ -133,12 +133,12 @@ public class User {
 	 *
 	 * @param name 이름
 	 * @param phone 전화번호
-	 * @param profilePhotoUrl 프로필 이미지
+	 * @param profileImageUrl 프로필 이미지
 	 */
-	public void updateUserInfo(String name, String phone, String profilePhotoUrl) {
+	public void updateUserInfo(String name, String phone, String profileImageUrl) {
 		if (name != null && !name.isBlank()) this.name = name;
 		if (phone != null && phone.matches("^(010-\\d{4}-\\d{4})$")) this.phone = phone;
-		if (profilePhotoUrl != null && !profilePhotoUrl.isBlank()) this.profilePhotoUrl = profilePhotoUrl;
+		if (profileImageUrl != null && !profileImageUrl.isBlank()) this.profileImageUrl = profileImageUrl;
 	}
 
 	/**

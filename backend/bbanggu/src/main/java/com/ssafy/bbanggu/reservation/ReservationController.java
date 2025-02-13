@@ -3,8 +3,10 @@ package com.ssafy.bbanggu.reservation;
 import java.time.LocalDate;
 import java.util.List;
 
+import com.ssafy.bbanggu.auth.security.CustomUserDetails;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -28,9 +30,9 @@ public class ReservationController {
 
 	@PostMapping("/create")
 	public ResponseEntity<?> create(@RequestBody ReservationDTO reservationDto, @RequestParam String orderId,
-									@RequestParam String paymentKey, @RequestParam int amount) {
+									@RequestParam String paymentKey, @RequestParam int amount, @RequestParam int quantity) {
 		try {
-			reservationService.createReservation(reservationDto, orderId, paymentKey, amount);
+			reservationService.createReservation(reservationDto, orderId, paymentKey, amount, quantity);
 			return ResponseEntity.status(HttpStatus.CREATED)
 				.body(new ApiResponse("결제 검증 및 예약 생성 성공", null));
 		} catch (Exception e) {
@@ -76,9 +78,14 @@ public class ReservationController {
 	}
 
 	@GetMapping("/{startDate}/{endDate}")
-	public ResponseEntity<?> getUserReservationList(@RequestHeader("Authorization") String authorization, @PathVariable LocalDate startDate, @PathVariable LocalDate endDate) {
+	public ResponseEntity<?> getUserReservationList(
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@PathVariable LocalDate startDate,
+		@PathVariable LocalDate endDate
+	) {
+		Long userId = userDetails.getUserId();
 		try {
-			List<ReservationDTO> reservationList = reservationService.getUserReservationList(authorization, startDate, endDate);
+			List<ReservationDTO> reservationList = reservationService.getUserReservationList(userId, startDate, endDate);
 			if (reservationList.isEmpty()) {
 				ResponseEntity.status(HttpStatus.NO_CONTENT)
 					.body(new ApiResponse("예약이 없습니다.", null));

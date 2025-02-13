@@ -1,9 +1,12 @@
 package com.ssafy.bbanggu.bakery.dto;
 
-import com.ssafy.bbanggu.bakery.Bakery;
+import org.springframework.stereotype.Service;
+
+import com.ssafy.bbanggu.bakery.domain.Bakery;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import lombok.Setter;
 
 public record BakeryDto(
 	Long bakeryId,
@@ -16,9 +19,9 @@ public record BakeryDto(
 	String businessRegistrationNumber,
 	@NotBlank(message = "도로명 주소는 필수 입력 값입니다.")
 	String addressRoad,
-	@NotBlank(message = "상세 주소는 필수 입력 값입니다.")
 	String addressDetail,
-	String photoUrl,
+	String bakeryImageUrl,
+	String bakeryBackgroundImgUrl,
 	Double star
 ) {
 	public static BakeryDto from(Bakery bakery) {
@@ -30,7 +33,8 @@ public record BakeryDto(
 			bakery.getBusinessRegistrationNumber(),
 			bakery.getAddressRoad(),
 			bakery.getAddressDetail(),
-			bakery.getPhotoUrl(),
+			bakery.getBakeryImageUrl(),
+			bakery.getBakeryBackgroundImgUrl(),
 			bakery.getStar()
 		);
 	}

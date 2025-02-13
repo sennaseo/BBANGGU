@@ -27,6 +27,8 @@ public class PaymentService {
 		requestBody.put("paymentKey", paymentKey);
 		HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
 
+
+
 		// response 객체 반환
 		return restTemplate.exchange(
 			"https://api.tosspayments.com/v1/payments/confirm",

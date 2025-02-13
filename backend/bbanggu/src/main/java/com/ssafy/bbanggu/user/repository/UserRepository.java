@@ -1,6 +1,7 @@
 package com.ssafy.bbanggu.user.repository;
 
 import com.ssafy.bbanggu.user.domain.User;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

@@ -1,4 +1,4 @@
-package com.ssafy.bbanggu.bakery;
+package com.ssafy.bbanggu.bakery.domain;
 
 import com.ssafy.bbanggu.user.domain.User;
 import lombok.AllArgsConstructor;
@@ -8,6 +8,8 @@ import lombok.NoArgsConstructor;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+
+import org.hibernate.annotations.CreationTimestamp;
 
 @Data
 @Builder
@@ -41,6 +43,7 @@ public class Settlement {
     @Column(name = "business_license_file_url", length = 255)
     private String businessLicenseFileUrl; // 사업자 등록증 파일 URL
 
+	@CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt; // 생성일
 

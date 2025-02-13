@@ -4,7 +4,9 @@ import type React from "react"
 
 interface SignupLayoutProps {
   children: React.ReactNode
-  bottomButton?: React.ReactNode
+  title: string
+  description: string
+  bottomButton: React.ReactNode
 }
 
 export function SignupLayout({ children, bottomButton }: SignupLayoutProps) {
