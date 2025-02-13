@@ -1,18 +1,30 @@
-import { useRef, useState } from 'react';
+import { useRef, useState, forwardRef, useImperativeHandle } from 'react';
 
 interface CameraProps {
   onCapture: (imageData: string) => void;
   onError: (error: string) => void;
+  className?: string;
 }
 
-export default function Camera({ onCapture, onError }: CameraProps) {
+export interface CameraHandle {
+  switchCamera: () => Promise<void>;
+}
+
+const Camera = forwardRef<CameraHandle, CameraProps>(({ onCapture, onError, className }, ref) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isStreaming, setIsStreaming] = useState(false);
+  
+  // ref를 통해 외부에서 접근할 수 있는 메서드 정의
+  useImperativeHandle(ref, () => ({
+    switchCamera: async () => {
+      await startCamera();
+    }
+  }));
 
   const startCamera = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: { facingMode: 'environment' }, // 후면 카메라 사용
+        video: true,  // 단순히 video: true로 설정
         audio: false 
       });
       
@@ -21,6 +33,7 @@ export default function Camera({ onCapture, onError }: CameraProps) {
         setIsStreaming(true);
       }
     } catch (err) {
+      console.error('Camera error:', err);
       onError('카메라 접근 권한이 필요합니다.');
     }
   };
@@ -41,25 +54,25 @@ export default function Camera({ onCapture, onError }: CameraProps) {
   };
 
   return (
-    <div className="relative">
+    <div className={`relative ${className}`}>
       <video
         ref={videoRef}
         autoPlay
         playsInline
-        className="w-full h-full"
+        className="absolute inset-0 w-full h-full object-cover"
       />
-      <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-4">
+      <div className="hidden">  {/* 실제 트리거 버튼은 숨김 */}
         {!isStreaming ? (
           <button
+            data-camera-trigger
             onClick={startCamera}
-            className="bg-[#FF9F43] text-white px-4 py-2 rounded-lg"
           >
             카메라 시작
           </button>
         ) : (
           <button
+            data-camera-trigger
             onClick={captureImage}
-            className="bg-[#FF9F43] text-white px-4 py-2 rounded-lg"
           >
             사진 촬영
           </button>
@@ -67,4 +80,8 @@ export default function Camera({ onCapture, onError }: CameraProps) {
       </div>
     </div>
   );
-} 
+});
+
+Camera.displayName = 'Camera';
+
+export default Camera; 
