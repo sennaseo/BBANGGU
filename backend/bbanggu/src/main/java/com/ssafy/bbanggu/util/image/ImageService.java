@@ -20,7 +20,7 @@ public class ImageService {
 		Path filePath = Paths.get(uploadDir + filename);
 		Files.createDirectories(filePath.getParent());
 		Files.write(filePath, file.getBytes());
-		System.out.println("이미지 저장 성공");
+		System.out.println("💧💧💧💧💧💧이미지 저장 성공: "+ filePath.toString());
 
 		return "/uploads/" + filename;
 	}
