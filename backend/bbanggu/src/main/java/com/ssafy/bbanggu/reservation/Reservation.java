@@ -2,6 +2,8 @@ package com.ssafy.bbanggu.reservation;
 
 import java.time.LocalDateTime;
 
+import org.hibernate.annotations.CreationTimestamp;
+
 import com.ssafy.bbanggu.bakery.domain.Bakery;
 import com.ssafy.bbanggu.breadpackage.BreadPackage;
 import com.ssafy.bbanggu.user.domain.User;
@@ -13,6 +15,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -50,13 +53,10 @@ public class Reservation {
 	@Column(name = "total_price", nullable = false)
 	private Integer totalPrice; // 총 가격
 
-	@Column(name = "reserved_pickup_time", nullable = false)
-	private LocalDateTime reservedPickupTime; // 예약 픽업 시간
-
 	@Column(name = "pickup_at")
 	private LocalDateTime pickupAt; // 픽업 완료 시간
 
-	@Column(name = "created_at", nullable = false, updatable = false)
+	@Column(name = "created_at", nullable = false)
 	private LocalDateTime createdAt; // 생성일
 
 	@Column(name = "cancelled_at")

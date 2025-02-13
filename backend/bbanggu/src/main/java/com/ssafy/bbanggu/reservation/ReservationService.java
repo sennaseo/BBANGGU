@@ -4,69 +4,139 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 import com.ssafy.bbanggu.breadpackage.BreadPackageService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ssafy.bbanggu.auth.security.CustomUserDetails;
 import com.ssafy.bbanggu.auth.security.JwtTokenProvider;
 import com.ssafy.bbanggu.bakery.domain.Bakery;
 import com.ssafy.bbanggu.breadpackage.BreadPackage;
+import com.ssafy.bbanggu.breadpackage.BreadPackageRepository;
 import com.ssafy.bbanggu.common.exception.CustomException;
 import com.ssafy.bbanggu.common.exception.ErrorCode;
 import com.ssafy.bbanggu.payment.PaymentService;
+import com.ssafy.bbanggu.reservation.dto.ReservationCreateRequest;
+import com.ssafy.bbanggu.reservation.dto.ReservationDTO;
+import com.ssafy.bbanggu.reservation.dto.checkQuantityRequest;
 import com.ssafy.bbanggu.user.domain.User;
+import com.ssafy.bbanggu.user.repository.UserRepository;
 
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class ReservationService {
 
 	private final ReservationRepository reservationRepository;
 	private final BreadPackageService breadPackageService;
 	private final PaymentService paymentService;
 	private final JwtTokenProvider jwtTokenProvider;
+	private final BreadPackageRepository breadPackageRepository;
+	private final UserRepository userRepository;
 
-	public ReservationService(ReservationRepository reservationRepository, PaymentService paymentService, BreadPackageService breadPackageService,
-							  JwtTokenProvider jwtTokenProvider) {
-		this.reservationRepository = reservationRepository;
-		this.paymentService = paymentService;
-		this.breadPackageService = breadPackageService;
-		this.jwtTokenProvider = jwtTokenProvider;
+	public Map<String, Object> validateReservation(CustomUserDetails userDetails, checkQuantityRequest request) {
+		BreadPackage breadPackage = breadPackageRepository.findById(request.breadPackageId())
+			.orElseThrow(() -> new CustomException(ErrorCode.BREAD_PACKAGE_NOT_FOUND));
+		log.info("✅ {}번 빵꾸러미가 존재함", request.breadPackageId());
+
+		User user = userRepository.findById(userDetails.getUserId())
+			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+		log.info("✅ {}번 사용자 검증 완료", userDetails.getUserId());
+
+		if (request.quantity() > breadPackage.getQuantity()) {
+			throw new CustomException(ErrorCode.QUANTITY_EXCEEDED);
+		}
+		log.info("✅ 예약 수량 초과여부 검증 완료");
+
+		// 중복 예약 검증 (PENDING 상태 예약 존재 여부 체크)
+		Optional<Reservation> existingReservation = reservationRepository.findByUser_UserIdAndBreadPackageAndStatus(
+			userDetails.getUserId(), breadPackage, "PENDING");
+		if (existingReservation.isPresent()) {
+			throw new CustomException(ErrorCode.DUPLICATE_RESERVATION);
+		}
+		log.info("✅ 중복 예약 검증 완료");
+
+		// 새로운 예약 객체 생성
+		Reservation reservation = Reservation.builder()
+			.user(user)
+			.bakery(breadPackage.getBakery())
+			.breadPackage(breadPackage)
+			.quantity(request.quantity())
+			.totalPrice(request.quantity() * (breadPackage.getPrice() / 2))
+			.status("PENDING")
+			.createdAt(LocalDateTime.now())
+			.paymentKey("PENDING_PAYMENT") // 임시 값 설정
+			.build();
+
+		// 빵꾸러미 pending 설정
+		breadPackage.setPending(request.quantity());
+
+		Reservation savedReservation = reservationRepository.save(reservation);
+		log.info("🩵 빵꾸러미 예약 생성 완료 (PENDING) 🩵");
+
+		Map<String, Object> response = new HashMap<>();
+		response.put("reservationId", savedReservation.getReservationId());
+		response.put("status", savedReservation.getStatus());
+
+		return response;
 	}
 
-	public void createReservation(ReservationDTO reservationDto, String orderId, String paymentKey, int amount, int quantity) {
-		// 결제 정보 검증
-//		BreadPackage breadPackage = breadPackageService.get
+	public Map<String, Object> createReservation(CustomUserDetails userDetails, ReservationCreateRequest request) {
+		Reservation reservation = reservationRepository.findById(request.reservationId())
+			.orElseThrow(() -> new CustomException(ErrorCode.RESERVATION_NOT_FOUND));
+		if (!reservation.getStatus().equals("PENDING")) {
+			throw new CustomException(ErrorCode.UNVERIFIED_RESERVATION);
+		}
+		log.info("✅ 예약 상태 검증 완료");
 
-		ResponseEntity<String> response = paymentService.check(orderId, paymentKey, amount);
+		if (!reservation.getUser().getUserId().equals(userDetails.getUserId())) {
+			throw new CustomException(ErrorCode.USER_NOT_FOUND);
+		}
+		log.info("✅ {}번 사용자 검증 완료", userDetails.getUserId());
+
+		// 결제 정보 검증
+		ResponseEntity<String> response = paymentService.check(request.paymentKey(), request.amount(), request.orderId());
 		if (response.getStatusCode() != HttpStatus.OK) {
 			throw new CustomException(ErrorCode.PAYMENT_NOT_VALID);
 		}
-		System.out.println("결제 정보 검증 완료");
+		log.info("✅ 결제 정보 검증 완료");
 
-		// 결제 가격 검증
+		// 해당 예약의 상태를 "CONFIRMED"로 전환
+		reservation.setStatus("CONFIRMED");
+		reservation.setCreatedAt(LocalDateTime.now());
+		Reservation savedReservation = reservationRepository.save(reservation);
 
+		// 해당 빵꾸러미의 개수에 예약 빵꾸러미 개수 반영
+		BreadPackage breadPackage = breadPackageRepository.findById(reservation.getBreadPackage().getPackageId())
+			.orElseThrow(() -> new CustomException(ErrorCode.BREAD_PACKAGE_NOT_FOUND));
 
-		// orderId 추출 및 DTO에 추가
-		try {
-			ObjectMapper objectMapper = new ObjectMapper();
-			JsonNode jsonNode = objectMapper.readTree(response.getBody());
-			reservationDto.setPaymentKey(jsonNode.get("paymentKey").asText());        // 임시로 paymentKey 넣음. 원래는 orderId
-			Reservation reservation = dtoToEntity(reservationDto);
-			System.out.println("Entity로 변환 성공");
-			System.out.println(reservation.getPaymentKey());
-			reservationRepository.save(reservation);
-			System.out.println("reservation save 성공");
-		} catch (JsonProcessingException e) {
-			throw new RuntimeException(e);
-		}
+		int quantity_origin = breadPackage.getQuantity();
+		breadPackage.setQuantity(quantity_origin - breadPackage.getPending());
+		breadPackage.setPending(0);
+		BreadPackage newBreadPackage = breadPackageRepository.save(breadPackage);
+		log.info("✅ {}번 빵꾸러미 남은 개수: {}", newBreadPackage.getPackageId(), newBreadPackage.getQuantity());
+		log.info("🩵 예약 성공 (CONFIRMED) 🩵");
+
+		Map<String, Object> responseData = new HashMap<>();
+		responseData.put("reservationId", savedReservation.getReservationId());
+		responseData.put("status", savedReservation.getStatus());
+
+		return responseData;
 	}
 
 	public void cancelReservation(long reservationId, String cancelReason) {
@@ -102,9 +172,9 @@ public class ReservationService {
 
 		List<Reservation> reservationList = reservationRepository.findByUser_UserIdAndCreatedAtBetween(userId, startDateTime, endDateTime);
 		List<ReservationDTO> reservationDTOList = new ArrayList<>();
-		for (Reservation reservation : reservationList) {
-			reservationDTOList.add(entityToDto(reservation));
-		}
+		// for (Reservation reservation : reservationList) {
+		// 	reservationDTOList.add(entityToDto(reservation));
+		// }
 		return reservationDTOList;
 	}
 
@@ -118,53 +188,55 @@ public class ReservationService {
 
 		List<Reservation> reservationList = reservationRepository.findByBakery_BakeryIdAndCreatedAtBetween(bakeryId, startDateTime, endDateTime);
 		List<ReservationDTO> reservationDTOList = new ArrayList<>();
-		for (Reservation reservation : reservationList) {
-			reservationDTOList.add(entityToDto(reservation));
-		}
+		// for (Reservation reservation : reservationList) {
+		// 	reservationDTOList.add(entityToDto(reservation));
+		// }
 		return reservationDTOList;
 	}
 
 
 	/* =========== 유틸성 메소드 ============= */
 
-	private ReservationDTO entityToDto(Reservation reservation) {
-		return ReservationDTO.builder()
-			.reservationId(reservation.getReservationId())
-			.userId(reservation.getUser().getUserId())
-			.bakeryId(reservation.getBakery().getBakeryId())
-			.breadPackageId(reservation.getBreadPackage().getPackageId())
-			.quantity(reservation.getQuantity())
-			.totalPrice(reservation.getTotalPrice())
-			.createdAt(LocalDateTime.now())
-			.status("RESERVATION_CONFIRMED")
-			.paymentKey(reservation.getPaymentKey())
-			.build();
-	}
+	// private ReservationDTO entityToDto(Reservation reservation) {
+	// 	return ReservationDTO.builder()
+	// 		.reservationId(reservation.getReservationId())
+	// 		.userId(reservation.getUser().getUserId())
+	// 		.bakeryId(reservation.getBakery().getBakeryId())
+	// 		.breadPackageId(reservation.getBreadPackage().getPackageId())
+	// 		.quantity(reservation.getQuantity())
+	// 		.totalPrice(reservation.getTotalPrice())
+	// 		.reservedPickupTime(reservation.getReservedPickupTime())
+	// 		.createdAt(LocalDateTime.now())
+	// 		.status("RESERVATION_CONFIRMED")
+	// 		.paymentKey(reservation.getPaymentKey())
+	// 		.build();
+	// }
 
-	private Reservation dtoToEntity(ReservationDTO reservationDto) {
-		User user = User.builder()
-			.userId(reservationDto.getUserId())
-			.build();
-
-		Bakery bakery = Bakery.builder()
-			.bakeryId(reservationDto.getBakeryId())
-			.build();
-
-		BreadPackage breadPackage = BreadPackage.builder()
-			.packageId(reservationDto.getBreadPackageId())
-			.build();
-
-		return Reservation.builder()
-			.user(user)
-			.bakery(bakery)
-			.breadPackage(breadPackage)
-			.quantity(reservationDto.getQuantity())
-			.totalPrice(reservationDto.getTotalPrice())
-			.createdAt(reservationDto.getCreatedAt())
-			.status(reservationDto.getStatus())
-			.paymentKey(reservationDto.getPaymentKey())
-			.build();
-	}
+	// private Reservation dtoToEntity(ReservationCreateRequest reservationDto) {
+	// 	User user = User.builder()
+	// 		.userId(reservationDto.getUserId())
+	// 		.build();
+	//
+	// 	Bakery bakery = Bakery.builder()
+	// 		.bakeryId(reservationDto.getBakeryId())
+	// 		.build();
+	//
+	// 	BreadPackage breadPackage = BreadPackage.builder()
+	// 		.packageId(reservationDto.getBreadPackageId())
+	// 		.build();
+	//
+	// 	return Reservation.builder()
+	// 		.user(user)
+	// 		.bakery(bakery)
+	// 		.breadPackage(breadPackage)
+	// 		.quantity(reservationDto.getQuantity())
+	// 		.totalPrice(reservationDto.getTotalPrice())
+	// 		.reservedPickupTime(reservationDto.getReservedPickupTime())
+	// 		.createdAt(reservationDto.getCreatedAt())
+	// 		.status(reservationDto.getStatus())
+	// 		.paymentKey(reservationDto.getPaymentKey())
+	// 		.build();
+	// }
 
 	// 사용자와 예약 ID가 일치하는지 검증
 	public boolean check(long reservationId, String authorization) {

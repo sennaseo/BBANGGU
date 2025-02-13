@@ -59,6 +59,7 @@ services:
       - ./nginx:/etc/nginx
       - /etc/letsencrypt:/etc/letsencrypt:ro
       - /home/ubuntu/uploads:/home/ubuntu/uploads
+    user: "nginx:nginx"
     ports:
       - "80:80"
       - "443:443"
