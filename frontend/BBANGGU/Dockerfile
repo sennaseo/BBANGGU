@@ -1,4 +1,4 @@
-FROM node:22.13.0-alpine AS builder
+FROM node:22.13.0-alpine AS build
 
 WORKDIR /app
 
@@ -10,6 +10,7 @@ RUN npm install
 
 # 5. 빌드 실행
 COPY . .
+
 RUN npm run build
 
 # 6. 프로덕션 환경을 위한 Nginx 설정
@@ -19,7 +20,7 @@ FROM nginx:alpine
 COPY ./nginx.conf /etc/nginx/conf.d/default.conf
 
 # 8. 빌드된 프론트엔드 파일을 Nginx의 웹 서버 디렉토리로 복사
-COPY --from=builder /app/dist /usr/share/nginx/html
+COPY --from=build /app/dist /usr/share/nginx/html
 
 # 9. Nginx 포트 80을 오픈
 EXPOSE 80
