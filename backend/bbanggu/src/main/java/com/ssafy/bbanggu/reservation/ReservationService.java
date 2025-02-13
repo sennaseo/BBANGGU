@@ -7,6 +7,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.ssafy.bbanggu.breadpackage.BreadPackageService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -30,22 +31,27 @@ public class ReservationService {
 
 	private final ReservationRepository reservationRepository;
 	private final PaymentService paymentService;
+	private final BreadPackageService breadPackageService;
 	private final JwtTokenProvider jwtTokenProvider;
 
-	public ReservationService(ReservationRepository reservationRepository, PaymentService paymentService,
+	public ReservationService(ReservationRepository reservationRepository, PaymentService paymentService, BreadPackageService breadPackageService,
 							  JwtTokenProvider jwtTokenProvider) {
 		this.reservationRepository = reservationRepository;
 		this.paymentService = paymentService;
+		this.breadPackageService = breadPackageService;
 		this.jwtTokenProvider = jwtTokenProvider;
 	}
 
 	public void createReservation(ReservationDTO reservationDto, String orderId, String paymentKey, int amount) {
 		// 결제 정보 검증
+//		BreadPackage breadPackage = breadPackageService.get
+
 		ResponseEntity<String> response = paymentService.check(orderId, paymentKey, amount);
 		if (response.getStatusCode() != HttpStatus.OK) {
 			throw new CustomException(ErrorCode.PAYMENT_NOT_VALID);
 		}
 		System.out.println("결제 정보 검증 완료");
+
 
 		// orderId 추출 및 DTO에 추가
 		try {

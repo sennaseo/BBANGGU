@@ -64,6 +64,10 @@ public class BreadPackageService {
 		return false;
 	}
 
+//	public BreadPackage getBreadPackageByBreadPackageId(Long breadPackageId){
+//		Bre
+//	}
+
 	// 가게 ID로 모든 빵 패키지 리스트 조회 (논리적 삭제된 패키지 제외)
 	public List<BreadPackageDto> getPackagesByBakeryId(Long bakeryId) {
 		List<BreadPackage> breadPackages = breadPackageRepository.findByBakery_BakeryIdAndDeletedAtIsNull(bakeryId);
