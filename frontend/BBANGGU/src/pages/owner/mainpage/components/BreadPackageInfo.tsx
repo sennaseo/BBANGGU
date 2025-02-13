@@ -2,13 +2,19 @@ import React from 'react';
 import { EllipsisVerticalIcon, PencilSquareIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { useNavigate } from 'react-router-dom';
 import breadPackageIcon from '../../../../assets/images/bakery/bread_pakage.svg';
-import { PackageType } from '../../../../types/bakery';
 
 interface BreadPackageInfoProps {
-  packages: PackageType[];
+  packages: {
+    packageId: number;
+    bakeryId: number;
+    price: number;
+    quantity: number;
+    name: string;
+  }[];
 }
 
 export const BreadPackageInfo: React.FC<BreadPackageInfoProps> = ({ packages }) => {
+  console.log('BreadPackageInfo에 전달된 packages:', packages);
   const [showMenu, setShowMenu] = React.useState(false);
   const navigate = useNavigate();
 
@@ -32,7 +38,14 @@ export const BreadPackageInfo: React.FC<BreadPackageInfoProps> = ({ packages }) 
     }
   };
 
-  if (safePackages.length === 0) {
+  // 현재는 첫 번째 패키지만 표시 (나중에 여러 패키지 표시로 확장 가능)
+  const currentPackage = safePackages[0];
+  
+  // packageQuantity 계산 수정
+  const packageQuantity = currentPackage?.quantity || 0;  // items 관련 로직 제거
+
+  // 패키지가 없는 경우 빈 상태 표시
+  if (!currentPackage) {
     return (
       <div className="flex flex-col items-center justify-center py-12 px-4 bg-[#F9F9F9] rounded-[10px] border border-dashed border-[#E5E5E5] mb-6">
         <img 
@@ -53,10 +66,6 @@ export const BreadPackageInfo: React.FC<BreadPackageInfoProps> = ({ packages }) 
       </div>
     );
   }
-
-  // 현재는 첫 번째 패키지만 표시 (나중에 여러 패키지 표시로 확장 가능)
-  const currentPackage = safePackages[0];
-  const packageQuantity = currentPackage.items.reduce((sum, item) => sum + item.quantity, 0);
 
   return (
     <>
@@ -101,8 +110,12 @@ export const BreadPackageInfo: React.FC<BreadPackageInfoProps> = ({ packages }) 
             className="w-[24px] h-[24px] mt-1"
           />
           <div className="flex items-center gap-2">
-            <span className="text-[24px] font-bold">{currentPackage.price.toLocaleString()}원</span>
-            <span className="text-[24px] font-bold text-[#FC973B]">× {packageQuantity}개</span>
+            <span className="text-[24px] font-bold">
+              {currentPackage.price.toLocaleString()}원
+            </span>
+            <span className="text-[24px] font-bold text-[#FC973B]">
+              × {packageQuantity}개
+            </span>
           </div>
         </div>
 
