@@ -1,4 +1,4 @@
-import { useRef, useState, forwardRef, useImperativeHandle } from 'react';
+import { useRef, useState, forwardRef, useImperativeHandle, useEffect } from 'react';
 
 interface CameraProps {
   onCapture: (imageData: string) => void;
@@ -23,20 +23,39 @@ const Camera = forwardRef<CameraHandle, CameraProps>(({ onCapture, onError, clas
 
   const startCamera = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: true,  // 단순히 video: true로 설정
-        audio: false 
-      });
+      // 모바일에서는 후면 카메라를 우선적으로 사용
+      const constraints = {
+        video: {
+          facingMode: { ideal: 'environment' },  // 후면 카메라 우선
+          width: { ideal: window.innerWidth },   // 화면 너비에 맞춤
+          height: { ideal: window.innerHeight }  // 화면 높이에 맞춤
+        },
+        audio: false
+      };
+
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
       
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
-        setIsStreaming(true);
+        videoRef.current.onloadedmetadata = () => {
+          setIsStreaming(true);
+        };
       }
     } catch (err) {
       console.error('Camera error:', err);
       onError('카메라 접근 권한이 필요합니다.');
     }
   };
+
+  // 컴포넌트가 언마운트될 때 카메라 스트림 정리
+  useEffect(() => {
+    return () => {
+      if (videoRef.current?.srcObject) {
+        const tracks = (videoRef.current.srcObject as MediaStream).getTracks();
+        tracks.forEach(track => track.stop());
+      }
+    };
+  }, []);
 
   const captureImage = () => {
     if (!videoRef.current || !isStreaming) return;
@@ -59,7 +78,9 @@ const Camera = forwardRef<CameraHandle, CameraProps>(({ onCapture, onError, clas
         ref={videoRef}
         autoPlay
         playsInline
+        muted  // iOS Safari에서 필요
         className="absolute inset-0 w-full h-full object-cover"
+        style={{ transform: 'scaleX(-1)' }}  // 전면 카메라일 때 미러링
       />
       <div className="hidden">  {/* 실제 트리거 버튼은 숨김 */}
         {!isStreaming ? (
