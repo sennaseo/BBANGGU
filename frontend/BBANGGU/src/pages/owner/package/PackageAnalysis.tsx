@@ -24,7 +24,7 @@ const PackageAnalysis: React.FC = () => {
   return (
     <div className="min-h-screen bg-black flex flex-col">
       <Header 
-        title="재고 촬영!" 
+        title="재고 촬영!!" 
         onBack={() => navigate(-1)}
         className="bg-black"
         textColor="text-white"

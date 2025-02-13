@@ -22,24 +22,38 @@ const Camera: React.FC<CameraProps> = ({ onCapture, onError, className }) => {
 
   const startCamera = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ 
+      console.log('Starting camera...');
+      
+      // 더 유연한 카메라 설정 사용
+      const stream = await navigator.mediaDevices.getUserMedia({
         video: {
-          facingMode: 'environment',
-          width: { ideal: window.innerWidth },
-          height: { ideal: window.innerHeight }
+          facingMode: 'environment'  // exact 제거, 더 유연하게 설정
         },
-        audio: false 
+        audio: false
       });
+
+      console.log('Got stream:', stream);
       
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
-        videoRef.current.onloadedmetadata = () => {
-          setIsStreaming(true);
-        };
+        setIsStreaming(true);
       }
     } catch (err) {
-      console.error('Camera error:', err);
-      onError('카메라 접근 권한이 필요합니다.');
+      console.error('Detailed camera error:', err);
+      // 일반 카메라로 시도
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: true,
+          audio: false
+        });
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+          setIsStreaming(true);
+        }
+      } catch (fallbackErr) {
+        console.error('Fallback camera error:', fallbackErr);
+        onError('카메라 접근에 실패했습니다.');
+      }
     }
   };
 
