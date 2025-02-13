@@ -30,9 +30,9 @@ public class ReservationController {
 
 	@PostMapping("/create")
 	public ResponseEntity<?> create(@RequestBody ReservationDTO reservationDto, @RequestParam String orderId,
-									@RequestParam String paymentKey, @RequestParam int amount) {
+									@RequestParam String paymentKey, @RequestParam int amount, @RequestParam int quantity) {
 		try {
-			reservationService.createReservation(reservationDto, orderId, paymentKey, amount);
+			reservationService.createReservation(reservationDto, orderId, paymentKey, amount, quantity);
 			return ResponseEntity.status(HttpStatus.CREATED)
 				.body(new ApiResponse("결제 검증 및 예약 생성 성공", null));
 		} catch (Exception e) {
