@@ -1,0 +1,5 @@
+fastapi==0.95.0
+uvicorn==0.23.1
+python-multipart
+ultralytics
+opencv-python-headless
