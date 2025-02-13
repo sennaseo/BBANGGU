@@ -4,6 +4,7 @@
   "description": "소비기한 임박 빵 할인 서비스",
   "start_url": "/",
   "display": "standalone",
+  "display_override": ["standalone", "fullscreen"],
   "background_color": "#ffffff",
   "theme_color": "#FF9F43",
   "icons": [
@@ -22,5 +23,6 @@
   ],
   "orientation": "portrait",
   "scope": "/",
-  "permissions": ["camera"]
+  "permissions": ["camera"],
+  "prefer_related_applications": false
 } 

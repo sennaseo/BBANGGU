@@ -12,7 +12,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'apple-touch-icon.png'],
+      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
       manifest: {
         name: '빵구앱',
         short_name: '빵구',
@@ -20,6 +20,8 @@ export default defineConfig({
         theme_color: '#FF9F43',
         background_color: '#ffffff',
         display: 'standalone',
+        display_override: ["standalone", "fullscreen"],
+        prefer_related_applications: false,
         icons: [
           {
             src: '/icon/icon-192x192.png',
@@ -38,6 +40,13 @@ export default defineConfig({
             sizes: '180x180',
             type: 'image/png'
           }
+        ],
+        shortcuts: [
+          {
+            name: "빵 등록하기",
+            url: "/owner/bread/register",
+            icons: [{ src: "/icon/icon-192x192.png", sizes: "192x192" }]
+          }
         ]
       },
       workbox: {
@@ -51,7 +60,8 @@ export default defineConfig({
               networkTimeoutSeconds: 5,
             },
           }
-        ]
+        ],
+        navigateFallback: 'index.html'
       }
     })
   ],
