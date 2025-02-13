@@ -43,6 +43,8 @@ public class ReservationService {
 
 	public void createReservation(ReservationDTO reservationDto, String orderId, String paymentKey, int amount, int quantity) {
 		// 결제 정보 검증
+//		BreadPackage breadPackage = breadPackageService.get
+
 		ResponseEntity<String> response = paymentService.check(orderId, paymentKey, amount);
 		if (response.getStatusCode() != HttpStatus.OK) {
 			throw new CustomException(ErrorCode.PAYMENT_NOT_VALID);
@@ -50,7 +52,6 @@ public class ReservationService {
 		System.out.println("결제 정보 검증 완료");
 
 		// 결제 가격 검증
-
 
 
 		// orderId 추출 및 DTO에 추가
