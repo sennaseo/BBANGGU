@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 
 interface CameraProps {
   onCapture: (imageData: string) => void;
@@ -10,16 +10,32 @@ const Camera: React.FC<CameraProps> = ({ onCapture, onError, className }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isStreaming, setIsStreaming] = useState(false);
 
+  useEffect(() => {
+    startCamera();
+    return () => {
+      if (videoRef.current?.srcObject) {
+        const tracks = (videoRef.current.srcObject as MediaStream).getTracks();
+        tracks.forEach(track => track.stop());
+      }
+    };
+  }, []);
+
   const startCamera = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: true,  // 기본 설정으로 돌아가기
+        video: {
+          facingMode: 'environment',
+          width: { ideal: window.innerWidth },
+          height: { ideal: window.innerHeight }
+        },
         audio: false 
       });
       
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
-        setIsStreaming(true);
+        videoRef.current.onloadedmetadata = () => {
+          setIsStreaming(true);
+        };
       }
     } catch (err) {
       console.error('Camera error:', err);
@@ -48,6 +64,7 @@ const Camera: React.FC<CameraProps> = ({ onCapture, onError, className }) => {
         ref={videoRef}
         autoPlay
         playsInline
+        muted
         className="absolute inset-0 w-full h-full object-cover"
       />
       <div className="hidden">
