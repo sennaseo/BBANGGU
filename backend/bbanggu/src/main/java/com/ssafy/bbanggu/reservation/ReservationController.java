@@ -43,7 +43,7 @@ public class ReservationController {
 	 * @return reservationId, status
 	 */
 	@PostMapping("/check")
-	public ResponseEntity<ApiResponse> checkQuantity(
+	public ResponseEntity<ApiResponse> valid (
 		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@Valid @RequestBody ValidReservationRequest request
 	) {
@@ -54,7 +54,7 @@ public class ReservationController {
 
 
 	/**
-	 * 예약 생성 API
+	 * 예약 생성 (CONFIRMED) API
 	 *
 	 * @param userDetails 현재 로그인한 사용자 정보
 	 * @param reservation reservationId, paymentKey, amount, orderId
@@ -72,7 +72,7 @@ public class ReservationController {
 
 
 	/**
-	 * 예약 취소 API
+	 * 예약 취소 (CANCELED) API
 	 *
 	 * @param userDetails 현재 로그인한 사용자 정보
 	 * @param request reservationId, cancelReason
@@ -83,30 +83,31 @@ public class ReservationController {
 		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@RequestBody ReservationCancelRequest request
 	) {
+		log.info("✨ 빵꾸러미 예약 취소 ✨");
 		Map<String, Object> response = reservationService.cancelReservation(userDetails, request);
 		return ResponseEntity.ok().body(new ApiResponse("예약 및 결제 취소가 완료되었습니다.", response));
 	}
 
-	@PutMapping("/pickup/{reservationId}")
-	public ResponseEntity<?> pickup(@PathVariable long reservationId,
-									@RequestHeader("Authorization") String authorization) {
-		if (!reservationService.check(reservationId, authorization)) {
-			return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-				.body(new ApiResponse("사용자의 예약이 아닙니다.", null));
-		}
 
-		try {
-			reservationService.pickUp(reservationId);
-			return ResponseEntity.status(HttpStatus.OK)
-				.body(new ApiResponse("픽업 처리 성공", null));
-		} catch (Exception e) {
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-				.body(new ApiResponse("픽업 처리 실패", null));
-		}
+	/**
+	 * 픽업 완료 처리 (COMPLETED) API
+	 *
+	 * @param userDetails 현재 로그인한 사용자 정보
+	 * @param reservationId 완료할 예약 ID
+	 * @return reservationId, status
+	 */
+	@PutMapping("/pickup/{reservationId}")
+	public ResponseEntity<ApiResponse> pickup (
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@PathVariable long reservationId
+	) {
+		log.info("✨ 빵꾸러미 픽업 완료 처리 ✨");
+		Map<String, Object> response = reservationService.pickUp(reservationId, userDetails);
+		return ResponseEntity.ok().body(new ApiResponse("빵꾸러미 픽업 처리가 완료되었습니다.", response));
 	}
 
 	@GetMapping("/{startDate}/{endDate}")
-	public ResponseEntity<?> getUserReservationList(
+	public ResponseEntity<?> getUserReservationList (
 		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@PathVariable LocalDate startDate,
 		@PathVariable LocalDate endDate

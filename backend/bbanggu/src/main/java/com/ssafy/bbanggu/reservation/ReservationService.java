@@ -188,16 +188,37 @@ public class ReservationService {
 		return responseData;
 	}
 
-	public void pickUp(long reservationId) {
+
+	/**
+	 * 예약 완료 처리 메서드 (COMPLETED)
+	 */
+	public Map<String, Object> pickUp(long reservationId, CustomUserDetails userDetails) {
 		// 예약 정보 조회
-		Reservation reservation = reservationRepository.findById(reservationId).orElse(null);
-		if (reservation == null) {
-			throw new CustomException(ErrorCode.RESERVATION_NOT_FOUND);
+		Reservation reservation = reservationRepository.findById(reservationId)
+			.orElseThrow(() -> new CustomException(ErrorCode.RESERVATION_NOT_FOUND));
+		if (reservation.getStatus().equals("COMPLETED")) {
+			throw new CustomException(ErrorCode.RESERVATION_ALREADY_COMPLETED);
+		} else if (reservation.getStatus().equals("CANCELED")) {
+			throw new CustomException(ErrorCode.RESERVATION_ALREADY_CANCELED);
 		}
+		log.info("✅ 결제가 완료된 {}번 예약이 존재함", reservationId);
+
+		if (!reservation.getBakery().getUser().getUserId().equals(userDetails.getUserId())) {
+			throw new CustomException(ErrorCode.NOT_BAKERY_OWNER);
+		}
+		log.info("✅ 현재 로그인한 사용자와 가게 사장님이 일치함");
 
 		// 예약 상태 업데이트
+		reservation.setStatus("COMPLETED");
 		reservation.setPickupAt(LocalDateTime.now());
-		reservation.setStatus("PICKUP_COMPLETED");
+		Reservation savedReservation = reservationRepository.save(reservation);
+		log.info("🩵 빵꾸러미 판매 성공 (COMPLETED) 🩵");
+
+		Map<String, Object> responseData = new HashMap<>();
+		responseData.put("reservationId", savedReservation.getReservationId());
+		responseData.put("status", savedReservation.getStatus());
+
+		return responseData;
 	}
 
 	public List<ReservationDTO> getUserReservationList(Long userId, LocalDate startDate, LocalDate endDate) {
@@ -228,49 +249,6 @@ public class ReservationService {
 		return reservationDTOList;
 	}
 
-
-	/* =========== 유틸성 메소드 ============= */
-
-	// private ReservationDTO entityToDto(Reservation reservation) {
-	// 	return ReservationDTO.builder()
-	// 		.reservationId(reservation.getReservationId())
-	// 		.userId(reservation.getUser().getUserId())
-	// 		.bakeryId(reservation.getBakery().getBakeryId())
-	// 		.breadPackageId(reservation.getBreadPackage().getPackageId())
-	// 		.quantity(reservation.getQuantity())
-	// 		.totalPrice(reservation.getTotalPrice())
-	// 		.reservedPickupTime(reservation.getReservedPickupTime())
-	// 		.createdAt(LocalDateTime.now())
-	// 		.status("RESERVATION_CONFIRMED")
-	// 		.paymentKey(reservation.getPaymentKey())
-	// 		.build();
-	// }
-
-	// private Reservation dtoToEntity(ReservationCreateRequest reservationDto) {
-	// 	User user = User.builder()
-	// 		.userId(reservationDto.getUserId())
-	// 		.build();
-	//
-	// 	Bakery bakery = Bakery.builder()
-	// 		.bakeryId(reservationDto.getBakeryId())
-	// 		.build();
-	//
-	// 	BreadPackage breadPackage = BreadPackage.builder()
-	// 		.packageId(reservationDto.getBreadPackageId())
-	// 		.build();
-	//
-	// 	return Reservation.builder()
-	// 		.user(user)
-	// 		.bakery(bakery)
-	// 		.breadPackage(breadPackage)
-	// 		.quantity(reservationDto.getQuantity())
-	// 		.totalPrice(reservationDto.getTotalPrice())
-	// 		.reservedPickupTime(reservationDto.getReservedPickupTime())
-	// 		.createdAt(reservationDto.getCreatedAt())
-	// 		.status(reservationDto.getStatus())
-	// 		.paymentKey(reservationDto.getPaymentKey())
-	// 		.build();
-	// }
 
 	// 사용자와 예약 ID가 일치하는지 검증
 	public boolean check(long reservationId, String authorization) {
