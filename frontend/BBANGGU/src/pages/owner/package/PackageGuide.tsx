@@ -10,11 +10,11 @@ const PackageGuide: React.FC = () => {
   const navigate = useNavigate();
 
   const handleStartRegister = () => {
-    // 카메라 권한 요청 후 분석 페이지로 이동
+    // 카메라 권한 요청 후 테스트 페이지로 이동
     if ('mediaDevices' in navigator) {
       navigator.mediaDevices.getUserMedia({ video: true })
         .then(() => {
-          navigate('/owner/package/analysis');
+          navigate('/owner/package/camera-test');  // 테스트 페이지로 이동
         })
         .catch(error => {
           console.error('카메라 권한 거부:', error);

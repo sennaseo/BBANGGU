@@ -9,47 +9,18 @@ interface CameraProps {
 const Camera: React.FC<CameraProps> = ({ onCapture, onError, className }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isStreaming, setIsStreaming] = useState(false);
-  const streamRef = useRef<MediaStream | null>(null);  // 스트림 참조 저장
-
-  // 컴포넌트 언마운트 시 스트림 정리
-  useEffect(() => {
-    return () => {
-      if (streamRef.current) {
-        streamRef.current.getTracks().forEach(track => track.stop());
-      }
-    };
-  }, []);
 
   const startCamera = async () => {
     try {
-      // 기존 스트림 정리
-      if (streamRef.current) {
-        streamRef.current.getTracks().forEach(track => track.stop());
-      }
-
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: {
-          facingMode: 'environment',
-          width: { ideal: window.innerWidth },
-          height: { ideal: window.innerHeight }
-        },
-        audio: false
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        video: true,
+        audio: false 
       });
-
-      streamRef.current = stream;  // 스트림 참조 저장
-
+      
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
         videoRef.current.onloadedmetadata = () => {
-          videoRef.current?.play()
-            .then(() => {
-              setIsStreaming(true);
-              console.log('Camera started successfully');
-            })
-            .catch(err => {
-              console.error('Failed to play video:', err);
-              onError('카메라 시작에 실패했습니다.');
-            });
+          setIsStreaming(true);
         };
       }
     } catch (err) {
@@ -77,7 +48,7 @@ const Camera: React.FC<CameraProps> = ({ onCapture, onError, className }) => {
     <div className={`relative ${className}`}>
       <video
         ref={videoRef}
-        autoPlay={false}  // autoPlay 비활성화
+        autoPlay
         playsInline
         muted
         className="absolute inset-0 w-full h-full object-cover"
