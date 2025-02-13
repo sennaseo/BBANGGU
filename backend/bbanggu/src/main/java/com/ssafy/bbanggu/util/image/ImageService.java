@@ -18,9 +18,17 @@ public class ImageService {
 	public String saveImage(MultipartFile file) throws IOException {
 		String filename = UUID.randomUUID() + "_" + file.getOriginalFilename();
 		Path filePath = Paths.get(uploadDir + filename);
+
+		// 디버깅 로그 추가
+		System.out.println("💧 절대 경로: " + filePath.toAbsolutePath());
+		System.out.println("💧 디렉토리 존재 여부: " + Files.exists(filePath.getParent()));
+
 		Files.createDirectories(filePath.getParent());
 		Files.write(filePath, file.getBytes());
-		System.out.println("이미지 저장 성공");
+
+		// 파일 저장 후 확인
+		System.out.println("💧 파일 저장 후 존재 여부: " + Files.exists(filePath));
+		System.out.println("💧 파일 크기: " + Files.size(filePath));
 
 		return "/uploads/" + filename;
 	}
