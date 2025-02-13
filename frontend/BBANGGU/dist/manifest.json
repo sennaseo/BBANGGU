@@ -23,6 +23,5 @@
   ],
   "orientation": "portrait",
   "scope": "/",
-  "permissions": ["camera"],
   "prefer_related_applications": false
 } 
