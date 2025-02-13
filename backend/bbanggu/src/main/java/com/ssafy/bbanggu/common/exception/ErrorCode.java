@@ -47,12 +47,13 @@ public enum ErrorCode {
 	ALREADY_FAVORITE(2300, HttpStatus.BAD_REQUEST, "이미 관심가게로 등록된 빵집입니다."),
 	BAKERY_NOT_FAVORITE(2301, HttpStatus.BAD_REQUEST, "좋아요 하지 않은 가게입니다."),
 
-	// 예약 관련 예외 (2300번대)
+	// ✅ 예약 관련 예외 (2300번대)
 	RESERVATION_NOT_FOUND(2300, HttpStatus.NOT_FOUND, "예약 정보를 찾을 수 없습니다."),
 	PAYMENT_NOT_VALID(2301, HttpStatus.BAD_REQUEST, "결제 정보가 다릅니다."),
 	QUANTITY_EXCEEDED(2302, HttpStatus.BAD_REQUEST, "남은 빵꾸러미 수량보다 많은 개수를 예약할 수 없습니다."),
 	DUPLICATE_RESERVATION(2303, HttpStatus.CONFLICT, "이미 예약된 빵꾸러미가 있습니다. 중복 예약이 불가능합니다."),
 	UNVERIFIED_RESERVATION(2304, HttpStatus.UNAUTHORIZED, "검증되지 않은 예약입니다."),
+	RESERVATION_ALREADY_CANCELED(2305, HttpStatus.CONFLICT, "이미 취소된 예약으로, 중복 취소가 불가능합니다."),
 
 	// ✅ 이메일 인증 관련 예외 (3000번대)
 	EMAIL_SEND_FAILED(3000, HttpStatus.INTERNAL_SERVER_ERROR, "이메일 전송에 실패하였습니다."),
