@@ -93,13 +93,18 @@ module.exports = {
             opacity: '0',
             transform: 'scale(0.95)'
           },
+        },
+        'fade-in': {
+          '0%': { opacity: '0', transform: 'translateY(-10px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' }
         }
       },
       animation: {
         'slide-down': 'slide-down 0.2s ease-out',
         'slide-up': 'slide-up 0.2s ease-out forwards',
         'fade-scale-in': 'fade-scale-in 0.2s ease-out',
-        'fade-scale-out': 'fade-scale-out 0.2s ease-out forwards'
+        'fade-scale-out': 'fade-scale-out 0.2s ease-out forwards',
+        'fade-in': 'fade-in 0.2s ease-out'
       }
     },
   },

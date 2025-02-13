@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import com.ssafy.bbanggu.breadpackage.BreadPackageService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.parameters.P;
@@ -42,6 +43,7 @@ import lombok.extern.slf4j.Slf4j;
 public class ReservationService {
 
 	private final ReservationRepository reservationRepository;
+	private final BreadPackageService breadPackageService;
 	private final PaymentService paymentService;
 	private final JwtTokenProvider jwtTokenProvider;
 	private final BreadPackageRepository breadPackageRepository;
@@ -132,6 +134,9 @@ public class ReservationService {
 		responseData.put("status", savedReservation.getStatus());
 
 		return responseData;
+
+		// 결제 가격 검증
+
 
 		// orderId 추출 및 DTO에 추가
 		// try {

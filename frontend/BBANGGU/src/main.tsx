@@ -30,6 +30,18 @@ const loadKakaoMapScript = () => {
 
 loadKakaoMapScript()
   .then(() => {
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/service-worker.js')
+          .then(registration => {
+            console.log('ServiceWorker 등록 성공:', registration.scope);
+          })
+          .catch(error => {
+            console.log('ServiceWorker 등록 실패:', error);
+          });
+      });
+    }
+
     const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
     root.render(
       <React.StrictMode>

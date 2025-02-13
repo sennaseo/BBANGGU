@@ -37,6 +37,8 @@ services:
         condition: service_healthy
     ports:
       - "8081:8081"
+    volumes:
+      - /home/ubuntu/uploads:/home/ubuntu/uploads
     environment:
       - SPRING_DATASOURCE_URL=jdbc:mysql://bbanggu-db:3306/${DB_NAME}?useSSL=false&serverTimezone=Asia/Seoul&allowPublicKeyRetrieval=true
       - SPRING_DATASOURCE_USERNAME=${DB_USERNAME}
@@ -56,6 +58,8 @@ services:
     volumes:
       - ./nginx:/etc/nginx
       - /etc/letsencrypt:/etc/letsencrypt:ro
+      - /home/ubuntu/uploads:/home/ubuntu/uploads
+    user: "nginx:nginx"
     ports:
       - "80:80"
       - "443:443"
