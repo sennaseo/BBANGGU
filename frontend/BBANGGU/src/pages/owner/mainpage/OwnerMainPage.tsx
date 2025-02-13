@@ -6,10 +6,10 @@ import { ReviewSection } from './components/ReviewSection';
 import { CustomerList } from './components/CustomerList';
 import BottomNavigation from '../../../components/owner/navigations/BottomNavigations/BottomNavigation';
 import { getBakeryPackages } from '../../../api/owner/package';
-import { PackageType } from '../../../types/bakery';
 import { BuildingStorefrontIcon } from '@heroicons/react/24/outline';
 import { useNavigate } from 'react-router-dom';
 
+// 인터페이스 정의
 interface Customer {
   id: number;
   name: string;
@@ -19,12 +19,19 @@ interface Customer {
   breadCount: number;
 }
 
+interface BreadPackage {
+  packageId: number;
+  bakeryId: number;
+  price: number;
+  quantity: number;
+  name: string;
+}
+
 const OwnerMainPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'package' | 'review'>('package');
-  const [packages, setPackages] = useState<PackageType[]>([]);
+  const [packages, setPackages] = useState<BreadPackage[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [hasBreadRegistered, setHasBreadRegistered] = useState(false);
   const navigate = useNavigate();
 
   const initialCustomers: Customer[] = [
@@ -74,28 +81,17 @@ const OwnerMainPage: React.FC = () => {
     const fetchPackages = async () => {
       try {
         setIsLoading(true);
-        console.log('패키지 조회 시작 - bakeryId:', bakeryId);
-        const data = await getBakeryPackages(bakeryId);
-        console.log('조회된 패키지:', data);
+        const response = await getBakeryPackages(bakeryId);
         
-        // 데이터가 배열인지 확인
-        if (Array.isArray(data)) {
-          setPackages(data);
-          setHasBreadRegistered(data.length > 0);
-        } else {
-          console.error('잘못된 데이터 형식:', data);
-          setPackages([]);
-          setHasBreadRegistered(false);
+        console.log('API 전체 응답:', response);
+        
+        if (response && response.data) {
+          setPackages(response.data);
         }
       } catch (err) {
         console.error('패키지 조회 실패:', err);
+        setError('서버 연결에 실패했습니다. 잠시 후 다시 시도해주세요.');
         setPackages([]);
-        setHasBreadRegistered(false);
-        if (err instanceof Error) {
-          setError(err.message);
-        } else {
-          setError('알 수 없는 오류가 발생했습니다.');
-        }
       } finally {
         setIsLoading(false);
       }
@@ -176,7 +172,7 @@ const OwnerMainPage: React.FC = () => {
                 <div className="flex items-center gap-2">
                   <BuildingStorefrontIcon className="w-5 h-5" />
                 </div>
-                <span className="font-medium">우리가게 빵 등록하기</span>
+                <span className="font-medium">새로운 빵꾸러미 등록하기</span>
               </button>
             </div>
             <CustomerList 

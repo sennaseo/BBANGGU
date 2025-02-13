@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { PlusIcon, TrashIcon, PencilIcon, EllipsisVerticalIcon } from '@heroicons/react/24/outline';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import Header from '../../../components/owner/header/Header';
 import { 
-  Soup, Croissant, Cookie, CakeSlice,
+  Croissant, Cookie, CakeSlice,
   Pizza, Sandwich, IceCream2, Cake,
   Coffee, ChefHat, UtensilsCrossed, Store,
   ShoppingBag, Package, CircleDot, Star
@@ -163,8 +163,8 @@ const BREAD_CATEGORIES: BreadCategory[] = [
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://i12d102.p.ssafy.io:8081';
 
 // 이미지 URL을 완성하는 함수 수정
-const getFullImageUrl = (imageUrl: string | null) => {
-  if (!imageUrl) return null;
+const getFullImageUrl = (imageUrl: string | null): string => {
+  if (!imageUrl) return '';  // null 대신 빈 문자열 반환
   if (imageUrl.startsWith('http')) return imageUrl;
   
   const token = localStorage.getItem('token'); // 또는 다른 방식으로 토큰 가져오기
@@ -173,13 +173,22 @@ const getFullImageUrl = (imageUrl: string | null) => {
   return `${baseUrl}/${imagePath}?token=${token}`;
 };
 
+// 에러 타입 정의
+interface FormError extends Error {
+  response?: {
+    status: number;
+    data: {
+      message?: string;
+    };
+  };
+}
+
 export default function BreadRegisterPage() {
   const navigate = useNavigate();
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   const [breadName, setBreadName] = useState('');
   const [price, setPrice] = useState('');
   const [breadList, setBreadList] = useState<BreadItem[]>([]);
-  const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [existingBreads, setExistingBreads] = useState<BreadInfo[]>([]);
@@ -206,7 +215,6 @@ export default function BreadRegisterPage() {
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      setSelectedImage(file);
       const url = URL.createObjectURL(file);
       setPreviewUrl(url);
     }
@@ -232,7 +240,6 @@ export default function BreadRegisterPage() {
     setBreadName('');
     setPrice('');
     setSelectedCategory(null);
-    setSelectedImage(null);
     setPreviewUrl(null);
   };
 
@@ -266,9 +273,10 @@ export default function BreadRegisterPage() {
 
       alert('빵 등록이 완료되었습니다.');
       navigate(-1);
-    } catch (error: any) {
-      console.error('빵 등록 중 오류 발생:', error);
-      alert(error.message || '빵 등록 중 오류가 발생했습니다. 다시 시도해주세요.');
+    } catch (error: unknown) {
+      const err = error as FormError;
+      console.error(err.response);
+      alert(err.response?.data.message || '빵 등록 중 오류가 발생했습니다. 다시 시도해주세요.');
     } finally {
       setIsLoading(false);
     }
@@ -278,10 +286,13 @@ export default function BreadRegisterPage() {
   useEffect(() => {
     const fetchExistingBreads = async () => {
       try {
-        const breadsData = await getBakeryBreads(1);  // bakeryId: 1
+        console.log('빵 목록 조회 시작');  // 디버깅용 로그
+        const breadsData = await getBakeryBreads(1);
+        console.log('받아온 빵 목록:', breadsData);  // 디버깅용 로그
         setExistingBreads(breadsData);
       } catch (error) {
         console.error('기존 빵 목록 조회 실패:', error);
+        setExistingBreads([]);
       }
     };
 
@@ -307,7 +318,6 @@ export default function BreadRegisterPage() {
     setBreadName('');
     setPrice('');
     setSelectedCategory(null);
-    setSelectedImage(null);
     setPreviewUrl(null);
   };
 
@@ -344,13 +354,14 @@ export default function BreadRegisterPage() {
         
         // 목록 새로고침
         const updatedBreads = await getBakeryBreads(1);
-        setExistingBreads(updatedBreads);
+        setExistingBreads(updatedBreads);  // 그대로 설정
         
         // 폼 초기화
         handleCancelEdit();
         alert('빵 정보가 수정되었습니다.');
-      } catch (error: any) {
-        alert(error.message || '빵 수정 중 오류가 발생했습니다.');
+      } catch (error: unknown) {
+        const err = error as FormError;
+        alert(err.response?.data.message || '빵 수정 중 오류가 발생했습니다.');
       }
     } else {
       // 기존 추가 로직
@@ -358,17 +369,18 @@ export default function BreadRegisterPage() {
     }
   };
 
-  // 빵 삭제 핸들러 추가
+  // 빵 삭제 핸들러
   const handleDeleteBread = async (breadId: number) => {
     if (window.confirm('정말 이 빵을 삭제하시겠습니까?')) {
       try {
         await deleteBread(breadId);
         // 목록 새로고침
-        const updatedBreads = await getBakeryBreads(1);
-        setExistingBreads(updatedBreads);
+        const updatedBreads = await getBakeryBreads(1);  // BreadInfo[] 배열이 직접 반환됨
+        setExistingBreads(updatedBreads);  // 그대로 설정
         alert('빵이 삭제되었습니다.');
-      } catch (error: any) {
-        alert(error.message || '빵 삭제 중 오류가 발생했습니다.');
+      } catch (error: unknown) {
+        const err = error as FormError;
+        alert(err.response?.data.message || '빵 삭제 중 오류가 발생했습니다.');
       }
     }
   };
@@ -572,7 +584,7 @@ export default function BreadRegisterPage() {
         )}
 
         {/* 현재 등록된 빵 목록 */}
-        {existingBreads.length > 0 && (
+        {existingBreads && existingBreads.length > 0 && (
           <div className="mt-8 pt-8 border-t">
             <h3 className="text-lg font-bold text-[#333333] mb-4">
               현재 등록된 빵 목록

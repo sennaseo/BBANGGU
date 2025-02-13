@@ -14,7 +14,7 @@ interface BreadRegisterResponse {
   };
 }
 
-interface BreadInfo {
+export interface BreadInfo {
   breadId: number;
   bakeryId: number;
   breadCategoryId: number;
@@ -22,11 +22,6 @@ interface BreadInfo {
   price: number;
   breadImageUrl: string | null;
   breadImageBase64?: string | null; // Base64 이미지 데이터
-}
-
-interface BakeryBreadsResponse {
-  message: string;
-  data: BreadInfo[];
 }
 
 interface BreadUpdateRequest {
@@ -47,6 +42,18 @@ interface BreadUpdateResponse {
 interface BreadDeleteResponse {
   message: string;
   data: null;
+}
+
+interface ApiError extends Error {
+  response?: {
+    status: number;
+    data: {
+      message?: string;
+    };
+    config?: {
+      headers: Record<string, string>;
+    };
+  };
 }
 
 export const registerBread = async (
@@ -76,28 +83,38 @@ export const registerBread = async (
     });
 
     return response.data;
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const err = error as ApiError;
     console.error('=== 에러 상세 정보 ===');
-    if (error.response) {
-      console.error('에러 상태:', error.response.status);
-      console.error('에러 데이터:', error.response.data);
-      console.error('요청 헤더:', error.config?.headers);
+    if (err.response) {
+      console.error('에러 상태:', err.response.status);
+      console.error('에러 데이터:', err.response.data);
+      console.error('요청 헤더:', err.response.config?.headers);
     }
-    throw new Error(error.response?.data?.message || '빵 등록에 실패했습니다.');
+    throw new Error(err.response?.data?.message || '빵 등록에 실패했습니다.');
   }
 };
 
 export const getBakeryBreads = async (bakeryId: number): Promise<BreadInfo[]> => {
   try {
     const response = await axiosInstance.get<BreadInfo[]>(`/bread/bakery/${bakeryId}`);
-    return response.data;
-  } catch (error: any) {
-    console.error('=== 가게 빵 목록 조회 실패 ===');
-    if (error.response) {
-      console.error('에러 상태:', error.response.status);
-      console.error('에러 데이터:', error.response.data);
+    console.log('API 원본 응답:', response);
+    
+    // response.data가 바로 BreadInfo[] 배열임
+    if (!response.data) {
+      console.warn('API 응답에 데이터가 없습니다');
+      return [];
     }
-    throw new Error(error.response?.data?.message || '가게 빵 목록 조회에 실패했습니다.');
+
+    return response.data;  // 배열을 직접 반환
+  } catch (error: unknown) {
+    const err = error as ApiError;
+    console.error('=== 가게 빵 목록 조회 실패 ===');
+    if (err.response) {
+      console.error('에러 상태:', err.response.status);
+      console.error('에러 데이터:', err.response.data);
+    }
+    throw new Error(err.response?.data?.message || '가게 빵 목록 조회에 실패했습니다.');
   }
 };
 
@@ -126,13 +143,14 @@ export const updateBread = async (
     });
 
     return response.data;
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const err = error as ApiError;
     console.error('=== 빵 정보 수정 실패 ===');
-    if (error.response) {
-      console.error('에러 상태:', error.response.status);
-      console.error('에러 데이터:', error.response.data);
+    if (err.response) {
+      console.error('에러 상태:', err.response.status);
+      console.error('에러 데이터:', err.response.data);
     }
-    throw new Error(error.response?.data?.message || '빵 정보 수정에 실패했습니다.');
+    throw new Error(err.response?.data?.message || '빵 정보 수정에 실패했습니다.');
   }
 };
 
@@ -141,12 +159,13 @@ export const deleteBread = async (breadId: number): Promise<BreadDeleteResponse>
   try {
     const response = await axiosInstance.delete<BreadDeleteResponse>(`/bread/${breadId}`);
     return response.data;
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const err = error as ApiError;
     console.error('=== 빵 정보 삭제 실패 ===');
-    if (error.response) {
-      console.error('에러 상태:', error.response.status);
-      console.error('에러 데이터:', error.response.data);
+    if (err.response) {
+      console.error('에러 상태:', err.response.status);
+      console.error('에러 데이터:', err.response.data);
     }
-    throw new Error(error.response?.data?.message || '빵 정보 삭제에 실패했습니다.');
+    throw new Error(err.response?.data?.message || '빵 정보 삭제에 실패했습니다.');
   }
 }; 
