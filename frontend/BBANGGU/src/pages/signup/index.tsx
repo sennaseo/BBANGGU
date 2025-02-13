@@ -4,19 +4,26 @@ import { SignupLayout } from "../../components/signup/SignupLayout"
 import { Button } from "../../components/signup/Button"
 import { UserTypeStep } from "./steps/UserTypeStep"
 
+
+type UserType = "customer" | "owner" | null;
+
 export default function SignupPage() {
-  const [selectedType, setSelectedType] = useState<"customer" | "owner" | null>(null)
+  const [selectedType, setSelectedType] = useState<UserType>(null)
   const navigate = useNavigate()
 
-  const handleUserTypeSelect = (type: "customer" | "owner") => {
+  const handleUserTypeSelect = (type: UserType) => {
     setSelectedType(type)
   }
 
   const handleSubmit = () => {
     if (selectedType === "customer") {
-      navigate("/signup/customer")
+      navigate("/signup/customer", { 
+        state: { role: 'USER' } 
+      })
     } else if (selectedType === "owner") {
-      navigate("/signup/owner")
+      navigate("/signup/owner", { 
+        state: { role: 'OWNER' } 
+      })
     }
   }
 
@@ -34,4 +41,3 @@ export default function SignupPage() {
     </SignupLayout>
   )
 }
-

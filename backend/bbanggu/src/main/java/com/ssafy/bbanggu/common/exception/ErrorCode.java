@@ -37,8 +37,11 @@ public enum ErrorCode {
 	// ✅ 빵 관련 예외 (2100번대)
 
 	// ✅ 빵꾸머리 관련 예외 (2200번대)
-	BREAD_PACKAGE_NOT_FOUND(2200, HttpStatus.NOT_FOUND, "빵꾸러미를 찾을 수 없습니다."),
+	BREAD_PACKAGE_NOT_FOUND(2200, HttpStatus.NOT_FOUND, "존재하지 않는 빵꾸러미입니다."),
 	BREAD_PACKAGE_QUANTITY_CONFLICT(2001, HttpStatus.CONFLICT, "빵꾸러미가 부족합니다."),
+	WRONG_DATE_FORMAT(2002, HttpStatus.BAD_REQUEST, "잘못된 날짜 형식입니다. (예: 2024-02-01 00:00:00)"),
+	PACKAGE_ALREADY_DELETED(2003, HttpStatus.FORBIDDEN, "이미 삭제된 빵꾸러미입니다."),
+	DUPLICATE_BREAD_PACKAGE(2004, HttpStatus.CONFLICT, "동일한 빵꾸러미가 이미 등록되어 있습니다."),
 
 	// ✅ 관심 가게 관련 예외 (2300번대)
 	ALREADY_FAVORITE(2300, HttpStatus.BAD_REQUEST, "이미 관심가게로 등록된 빵집입니다."),
@@ -86,6 +89,7 @@ public enum ErrorCode {
 	REVIEW_ALREADY_EXISTS(4601, HttpStatus.CONFLICT, "해당 예약에 대한 리뷰는 이미 작성되었습니다."),
 	FORBIDDEN_REVIEW(4602, HttpStatus.FORBIDDEN, "해당 리뷰에 대한 권한이 없습니다."),
 	ONLY_VIEW_OWN_REVIEW(4603, HttpStatus.UNAUTHORIZED, "본인의 리뷰만 조회할 수 있습니다."),
+	INVALID_RATING(4604, HttpStatus.BAD_REQUEST, "유요하지 않은 평점입니다. 평점은 1~5 사이의 숫자여야 합니다."),
 
 	// ✅ 서버 내부 오류 (5000번대)
 	INTERNAL_SERVER_ERROR(5000, HttpStatus.INTERNAL_SERVER_ERROR, "서버 내부 오류가 발생했습니다.");

@@ -1,5 +1,6 @@
 package com.ssafy.bbanggu.user.controller;
 
+import java.util.Map;
 import java.util.Optional;
 
 import com.ssafy.bbanggu.auth.dto.EmailRequest;
@@ -15,6 +16,7 @@ import com.ssafy.bbanggu.user.dto.LoginRequest;
 import com.ssafy.bbanggu.user.dto.PasswordResetConfirmRequest;
 import com.ssafy.bbanggu.user.dto.UpdateUserRequest;
 import com.ssafy.bbanggu.user.dto.UserResponse;
+import com.ssafy.bbanggu.user.repository.UserRepository;
 import com.ssafy.bbanggu.user.service.UserService;
 
 import org.springframework.http.HttpHeaders;
@@ -27,19 +29,17 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RestController
 @RequestMapping("/user")
+@RequiredArgsConstructor
 public class UserController {
     private final UserService userService;
     private final EmailService emailAuthService;
-
-    public UserController(UserService userService, EmailService emailAuthService) {
-        this.userService = userService;
-        this.emailAuthService = emailAuthService;
-    }
+	private final UserRepository userRepository;
 
     // ✅ 회원가입
     @PostMapping("/register")
@@ -113,10 +113,13 @@ public class UserController {
 			.maxAge(7 * 24 * 60 * 60)
 			.build();
 
+		User user = userRepository.findByEmail(request.getEmail())
+			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
 		return ResponseEntity.ok()
 			.header(HttpHeaders.SET_COOKIE, accessTokenCookie.toString())
 			.header(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString())
-			.body(new ApiResponse("로그인이 성공적으로 완료되었습니다.", null));
+			.body(new ApiResponse("로그인이 성공적으로 완료되었습니다.", user.getRole()));
     }
 
     /**

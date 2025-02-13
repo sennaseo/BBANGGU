@@ -8,6 +8,8 @@ import lombok.NoArgsConstructor;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
+import org.hibernate.annotations.CreationTimestamp;
+
 import com.ssafy.bbanggu.bakery.domain.Bakery;
 
 @Data
@@ -36,12 +38,19 @@ public class BreadPackage {
     @Column(nullable = false)
     private Integer quantity; // 수량
 
-	@Column(nullable = false, columnDefinition = "INT DEFAULT 0")
+	@Column(nullable = false)
 	private int pending;
 
+	@CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt; // 생성일
 
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt; // 삭제일
+
+	public void update(Integer price, Integer quantity, String name) {
+		this.price = price;
+		this.quantity = quantity;
+		this.name = name;
+	}
 }

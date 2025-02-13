@@ -7,6 +7,7 @@ import { PasswordStep } from "./steps/PasswordStep"
 import { PhoneStep } from "./steps/PhoneStep"
 // import { NameEmailStep } from "./steps/NameEmailStep"
 import { SignupCompleteStep } from "./steps/SignupCompleteStep"
+import { UserApi } from "../../api/common/signup/UserApi"
 
 type SignupStep = "email" | "password" | "phone" | "complete"
 
@@ -25,7 +26,7 @@ export default function CustomerSignupPage() {
   const [isEmailVerificationSent, setIsEmailVerificationSent] = useState(false)
   const [isEmailVerified, setIsEmailVerified] = useState(false)
   const [isPhoneVerificationSent, setIsPhoneVerificationSent] = useState(false)
-  const [isPhoneVerified, setIsPhoneVerified] = useState(false)
+  const [isPhoneVerified] = useState(false)
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
@@ -35,27 +36,32 @@ export default function CustomerSignupPage() {
     }))
   }
 
-  const handleEmailVerification = () => {
-    // TODO: Implement actual email verification logic
-    console.log("Sending verification email to:", formData.email)
-    setIsEmailVerificationSent(true)
+  const handleEmailVerification = async () => {
+    try {
+      await UserApi.sendEmailVerification(formData.email);
+      setIsEmailVerificationSent(true);
+    } catch (error: any) {
+      if (error.code === 3001) {
+        alert('너무 많은 요청을 보냈습니다. 나중에 다시 시도하세요.');
+      } else {
+        alert('인증번호 전송에 실패했습니다.');
+      }
+    }
   }
 
-  const handleEmailVerificationSubmit = () => {
-    // TODO: Implement actual email verification logic
-    console.log("Verifying email code:", formData.emailVerificationCode)
-    // Simulating email verification process
-    setTimeout(() => {
-      if (formData.emailVerificationCode === "123456") {
-        // Replace with actual verification logic
-        setIsEmailVerified(true)
-        // Remove the line that changes the step
-        // setCurrentStep("password")
+  const handleEmailVerificationSubmit = async () => {
+    try {
+      await UserApi.verifyEmail(formData.email, formData.emailVerificationCode);
+      setIsEmailVerified(true);
+    } catch (error: any) {
+      if (error.code === 3002) {
+        alert('인증번호가 일치하지 않습니다. 다시 확인해주세요.');
+      } else if (error.code === 3004) {
+        alert('이미 사용된 인증 코드입니다.');
       } else {
-        // Show error message
-        alert("Invalid verification code. Please try again.")
+        alert('이메일 인증에 실패했습니다.');
       }
-    }, 1000) // Simulate a 1-second delay for verification
+    }
   }
 
   const handlePasswordSubmit = () => {
@@ -68,10 +74,25 @@ export default function CustomerSignupPage() {
     setIsPhoneVerificationSent(true)
   }
 
-  const handlePhoneVerificationSubmit = () => {
-    if (formData.phoneVerificationCode.length === 5) {
-      setIsPhoneVerified(true)
-      setCurrentStep("complete")
+  const handlePhoneVerificationSubmit = async () => {
+    if (formData.phone) {
+      try {
+        await UserApi.register({
+          name: formData.name,
+          email: formData.email,
+          password: formData.password,
+          phone: formData.phone
+        });
+        setCurrentStep("complete");
+      } catch (error: any) {
+        if (error.code === 1006) {
+          alert('이미 사용 중인 이메일입니다.');
+        } else if (error.code === 1008) {
+          alert('이미 사용 중인 전화번호입니다.');
+        } else {
+          alert('회원가입에 실패했습니다.');
+        }
+      }
     }
   }
 
@@ -104,7 +125,7 @@ export default function CustomerSignupPage() {
             <h1 className="text-[22px] font-bold mb-2">이메일 입력</h1>
             <p className="text-[15px] text-gray-600 mb-6">원활한 서비스 이용을 위해 이메일 인증을 해주세요</p>
             <div className="space-y-6">
-              <InputField label="이름" name="name" value={formData.name} onChange={handleChange} placeholder="권가을" />
+              <InputField label="이름" name="name" value={formData.name} onChange={handleChange} placeholder="홍길동" />
               <div className="space-y-2">
                 <InputField
                   label="EMAIL"
@@ -112,7 +133,7 @@ export default function CustomerSignupPage() {
                   type="email"
                   value={formData.email}
                   onChange={handleChange}
-                  placeholder="KKY@gmail.com"
+                  placeholder="gildong123@gmail.com"
                   actionButton={
                     <Button
                       variant="secondary"
@@ -166,8 +187,8 @@ export default function CustomerSignupPage() {
       case "phone":
         return (
           <div className="pt-8">
-            <h1 className="text-[22px] font-bold mb-2">전화번호 인증</h1>
-            <p className="text-[15px] text-gray-600 mb-8">원활한 서비스 이용을 위해 이메일 인증을 해주세요</p>
+            <h1 className="text-[22px] font-bold mb-2">전화번호 입력</h1>
+            <p className="text-[15px] text-gray-600 mb-8">원활한 서비스 이용을 위해 전화번호를 입력해주세요</p>
             <PhoneStep
               formData={{
                 phone: formData.phone,
@@ -182,7 +203,7 @@ export default function CustomerSignupPage() {
           </div>
         )
       case "complete":
-        return <SignupCompleteStep />
+        return <SignupCompleteStep userName={formData.name} />
     }
   }
 
@@ -214,7 +235,7 @@ export default function CustomerSignupPage() {
                 ? !isEmailVerified || !formData.name || !isEmailValid
                 : currentStep === "password"
                   ? !isPasswordValid || !doPasswordsMatch
-                  : !isPhoneVerified
+                  : !formData.phone
             }
           >
             다음
@@ -224,4 +245,3 @@ export default function CustomerSignupPage() {
     </div>
   )
 }
-
