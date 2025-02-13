@@ -5,11 +5,6 @@ interface KakaoLoginResponse {
   data: string;
 }
 
-interface KakaoCallbackResponse {
-  message: string;
-  data: null;
-}
-
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://i12d102.p.ssafy.io:8081';
 
 export const getKakaoLoginUrl = async (): Promise<KakaoLoginResponse> => {
