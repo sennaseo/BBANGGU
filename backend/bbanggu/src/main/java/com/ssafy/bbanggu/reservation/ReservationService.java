@@ -79,6 +79,7 @@ public class ReservationService {
 			.quantity(request.quantity())
 			.totalPrice(request.quantity() * (breadPackage.getPrice() / 2))
 			.status("PENDING")
+			.createdAt(LocalDateTime.now())
 			.paymentKey("PENDING_PAYMENT") // 임시 값 설정
 			.build();
 

@@ -56,7 +56,7 @@ public class Reservation {
 	@Column(name = "pickup_at")
 	private LocalDateTime pickupAt; // 픽업 완료 시간
 
-	@Column(name = "created_at", nullable = false, updatable = false)
+	@Column(name = "created_at", nullable = false)
 	private LocalDateTime createdAt; // 생성일
 
 	@Column(name = "cancelled_at")
