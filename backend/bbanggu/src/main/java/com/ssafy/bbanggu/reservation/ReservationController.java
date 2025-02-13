@@ -15,17 +15,13 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.ssafy.bbanggu.bread.Bread;
-import com.ssafy.bbanggu.breadpackage.BreadPackage;
-import com.ssafy.bbanggu.common.exception.CustomException;
-import com.ssafy.bbanggu.common.exception.ErrorCode;
 import com.ssafy.bbanggu.common.response.ApiResponse;
+import com.ssafy.bbanggu.reservation.dto.ReservationCancelRequest;
 import com.ssafy.bbanggu.reservation.dto.ReservationCreateRequest;
 import com.ssafy.bbanggu.reservation.dto.ReservationDTO;
-import com.ssafy.bbanggu.reservation.dto.checkQuantityRequest;
+import com.ssafy.bbanggu.reservation.dto.ValidReservationRequest;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -49,7 +45,7 @@ public class ReservationController {
 	@PostMapping("/check")
 	public ResponseEntity<ApiResponse> checkQuantity(
 		@AuthenticationPrincipal CustomUserDetails userDetails,
-		@Valid @RequestBody checkQuantityRequest request
+		@Valid @RequestBody ValidReservationRequest request
 	) {
 		log.info("✨ 빵꾸러미 예약 검증 ✨");
 		Map<String, Object> response = reservationService.validateReservation(userDetails, request);
@@ -74,22 +70,21 @@ public class ReservationController {
 		return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse("결제 검증 및 예약 생성에 성공하였습니다.", response));
 	}
 
-	@PostMapping("/cancel")
-	public ResponseEntity<?> cancel(@RequestParam long reservationId, @RequestParam String cancelReason,
-									@RequestHeader("Authorization") String authorization) {
-		if (!reservationService.check(reservationId, authorization)) {
-			return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-				.body(new ApiResponse("사용자의 예약이 아닙니다.", null));
-		}
 
-		try {
-			reservationService.cancelReservation(reservationId, cancelReason);
-			return ResponseEntity.status(HttpStatus.OK)
-				.body(new ApiResponse("예약 및 결제 취소 성공", reservationId));
-		} catch (Exception e) {
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-				.body(new ApiResponse("예약 및 결제 취소 실패", null));
-		}
+	/**
+	 * 예약 취소 API
+	 *
+	 * @param userDetails 현재 로그인한 사용자 정보
+	 * @param request reservationId, cancelReason
+	 * @return reservationId, status
+	 */
+	@PostMapping("/cancel")
+	public ResponseEntity<ApiResponse> cancel(
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@RequestBody ReservationCancelRequest request
+	) {
+		Map<String, Object> response = reservationService.cancelReservation(userDetails, request);
+		return ResponseEntity.ok().body(new ApiResponse("예약 및 결제 취소가 완료되었습니다.", response));
 	}
 
 	@PutMapping("/pickup/{reservationId}")
