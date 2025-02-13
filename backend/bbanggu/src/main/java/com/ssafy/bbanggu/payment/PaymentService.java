@@ -16,14 +16,14 @@ public class PaymentService {
 	@Value("${toss.payments.api-key}")
 	private String tossApiKey;
 
-	public ResponseEntity<String> check(String orderId, String paymentKey, int amount) {
+	public ResponseEntity<String> check(String paymentKey) {
 		// 토스에 결제 검증 요청
 		RestTemplate restTemplate = new RestTemplate();
 		HttpHeaders headers = new HttpHeaders();
 		headers.setBasicAuth(tossApiKey, "");
 		Map<String, Object> requestBody = new HashMap<>();
-		requestBody.put("amount", amount);
-		requestBody.put("orderId", orderId);
+		// requestBody.put("amount", amount);
+		// requestBody.put("orderId", orderId);
 		requestBody.put("paymentKey", paymentKey);
 		HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
 

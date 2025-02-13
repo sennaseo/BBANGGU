@@ -2,6 +2,7 @@ package com.ssafy.bbanggu.reservation;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 import com.ssafy.bbanggu.auth.security.CustomUserDetails;
 import org.springframework.http.HttpStatus;
@@ -17,28 +18,60 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.ssafy.bbanggu.bread.Bread;
+import com.ssafy.bbanggu.breadpackage.BreadPackage;
+import com.ssafy.bbanggu.common.exception.CustomException;
+import com.ssafy.bbanggu.common.exception.ErrorCode;
 import com.ssafy.bbanggu.common.response.ApiResponse;
+import com.ssafy.bbanggu.reservation.dto.ReservationCreateRequest;
+import com.ssafy.bbanggu.reservation.dto.ReservationDTO;
+import com.ssafy.bbanggu.reservation.dto.checkQuantityRequest;
 
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/reservation")
 public class ReservationController {
+
 	private final ReservationService reservationService;
 
-	public ReservationController(ReservationService reservationService) {
-		this.reservationService = reservationService;
+	/**
+	 * 예약 생성 (PENDING) API
+	 *
+	 * @param userDetails 현재 로그인한 사용자 정보
+	 * @param request breadPackageId, quantity
+	 * @return reservationId, status
+	 */
+	@PostMapping("/check")
+	public ResponseEntity<ApiResponse> checkQuantity(
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@Valid @RequestBody checkQuantityRequest request
+	) {
+		log.info("✨ 빵꾸러미 예약 검증 ✨");
+		Map<String, Object> response = reservationService.validateReservation(userDetails, request);
+		return ResponseEntity.ok().body(new ApiResponse("빵꾸러미 예약 검증이 완료되었습니다.", response));
 	}
 
-	@PostMapping("/create")
-	public ResponseEntity<?> create(@RequestBody ReservationDTO reservationDto, @RequestParam String orderId,
-									@RequestParam String paymentKey, @RequestParam int amount) {
-		try {
-			reservationService.createReservation(reservationDto, orderId, paymentKey, amount);
-			return ResponseEntity.status(HttpStatus.CREATED)
-				.body(new ApiResponse("결제 검증 및 예약 생성 성공", null));
-		} catch (Exception e) {
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-				.body(new ApiResponse("결제 검증 및 예약 생성 실패", null));
-		}
+
+	/**
+	 * 예약 생성 API
+	 *
+	 * @param userDetails 현재 로그인한 사용자 정보
+	 * @param reservation reservationId, paymentKey
+	 * @return reservationId, status
+	 */
+	@PostMapping
+	public ResponseEntity<ApiResponse> create(
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@Valid @RequestBody ReservationCreateRequest reservation
+	) {
+		log.info("✨ 빵꾸러미 예약 생성 ✨");
+		Map<String, Object> response = reservationService.createReservation(userDetails, reservation);
+		return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse("결제 검증 및 예약 생성에 성공하였습니다.", response));
 	}
 
 	@PostMapping("/cancel")
