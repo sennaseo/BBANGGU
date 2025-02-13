@@ -13,6 +13,8 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
+      scope: '/',
+      base: '/',
       manifest: {
         name: '빵구앱',
         short_name: '빵구',
