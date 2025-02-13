@@ -30,17 +30,10 @@ const loadKakaoMapScript = () => {
 
 loadKakaoMapScript()
   .then(() => {
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/service-worker.js')
-          .then(registration => {
-            console.log('ServiceWorker 등록 성공:', registration.scope);
-          })
-          .catch(error => {
-            console.log('ServiceWorker 등록 실패:', error);
-          });
-      });
-    }
+    // 서비스 워커 등록 코드를 주석 처리
+    // if ('serviceWorker' in navigator) {
+    //   navigator.serviceWorker.register('/sw.js')
+    // }
 
     const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
     root.render(

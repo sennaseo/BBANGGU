@@ -9,51 +9,52 @@ interface CameraProps {
 const Camera: React.FC<CameraProps> = ({ onCapture, onError, className }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isStreaming, setIsStreaming] = useState(false);
+  const streamRef = useRef<MediaStream | null>(null);  // 스트림 참조 저장
 
+  // 컴포넌트 언마운트 시 스트림 정리
   useEffect(() => {
-    startCamera();
     return () => {
-      if (videoRef.current?.srcObject) {
-        const tracks = (videoRef.current.srcObject as MediaStream).getTracks();
-        tracks.forEach(track => track.stop());
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop());
       }
     };
   }, []);
 
   const startCamera = async () => {
     try {
-      console.log('Starting camera...');
-      
-      // 더 유연한 카메라 설정 사용
+      // 기존 스트림 정리
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop());
+      }
+
       const stream = await navigator.mediaDevices.getUserMedia({
         video: {
-          facingMode: 'environment'  // exact 제거, 더 유연하게 설정
+          facingMode: 'environment',
+          width: { ideal: window.innerWidth },
+          height: { ideal: window.innerHeight }
         },
         audio: false
       });
 
-      console.log('Got stream:', stream);
-      
+      streamRef.current = stream;  // 스트림 참조 저장
+
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
-        setIsStreaming(true);
+        videoRef.current.onloadedmetadata = () => {
+          videoRef.current?.play()
+            .then(() => {
+              setIsStreaming(true);
+              console.log('Camera started successfully');
+            })
+            .catch(err => {
+              console.error('Failed to play video:', err);
+              onError('카메라 시작에 실패했습니다.');
+            });
+        };
       }
     } catch (err) {
-      console.error('Detailed camera error:', err);
-      // 일반 카메라로 시도
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: true,
-          audio: false
-        });
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
-          setIsStreaming(true);
-        }
-      } catch (fallbackErr) {
-        console.error('Fallback camera error:', fallbackErr);
-        onError('카메라 접근에 실패했습니다.');
-      }
+      console.error('Camera error:', err);
+      onError('카메라 접근 권한이 필요합니다.');
     }
   };
 
@@ -76,7 +77,7 @@ const Camera: React.FC<CameraProps> = ({ onCapture, onError, className }) => {
     <div className={`relative ${className}`}>
       <video
         ref={videoRef}
-        autoPlay
+        autoPlay={false}  // autoPlay 비활성화
         playsInline
         muted
         className="absolute inset-0 w-full h-full object-cover"
@@ -86,7 +87,7 @@ const Camera: React.FC<CameraProps> = ({ onCapture, onError, className }) => {
           data-camera-trigger
           onClick={isStreaming ? captureImage : startCamera}
         >
-          {isStreaming ? '사진 촬영' : '카메라 시작'}
+          {isStreaming ? '촬영' : '카메라 시작'}
         </button>
       </div>
     </div>

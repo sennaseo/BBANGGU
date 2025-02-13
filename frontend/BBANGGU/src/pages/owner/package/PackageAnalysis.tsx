@@ -1,5 +1,5 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import Camera from '../../../components/Camera';
 import Header from '../../../components/owner/header/Header';
 import ProgressBar from './components/Progress.Bar';
@@ -7,6 +7,8 @@ import { PACKAGE_STEPS, TOTAL_PACKAGE_STEPS } from './constants/PakageSteps';
 
 const PackageAnalysis: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  console.log('Location state:', location.state);
 
   const handleCapture = (imageData: string) => {
     navigate('/owner/package/preview', { state: { image: imageData } });
@@ -24,7 +26,7 @@ const PackageAnalysis: React.FC = () => {
   return (
     <div className="min-h-screen bg-black flex flex-col">
       <Header 
-        title="재고 촬영!!" 
+        title="재고 촬영" 
         onBack={() => navigate(-1)}
         className="bg-black"
         textColor="text-white"
@@ -44,15 +46,11 @@ const PackageAnalysis: React.FC = () => {
           />
         </div>
 
-        <div className="h-24 bg-black flex items-center px-8 pb-8">
-          <div className="flex-1" />
-          <div className="flex-1 flex justify-center">
-            <button
-              className="w-16 h-16 rounded-full bg-white"
-              onClick={handleCameraClick}
-            />
-          </div>
-          <div className="flex-1" />
+        <div className="h-24 bg-black flex items-center justify-center">
+          <button
+            className="w-16 h-16 rounded-full bg-white"
+            onClick={handleCameraClick}
+          />
         </div>
       </div>
     </div>

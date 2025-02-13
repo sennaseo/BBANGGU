@@ -14,9 +14,7 @@ const PackageGuide: React.FC = () => {
     if ('mediaDevices' in navigator) {
       navigator.mediaDevices.getUserMedia({ video: true })
         .then(() => {
-          navigate('/owner/package/analysis', { 
-            state: { autoStart: true }  // 자동 시작 플래그 전달
-          });
+          navigate('/owner/package/analysis');
         })
         .catch(error => {
           console.error('카메라 권한 거부:', error);
