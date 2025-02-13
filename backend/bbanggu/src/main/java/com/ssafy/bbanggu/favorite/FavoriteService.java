@@ -2,9 +2,15 @@ package com.ssafy.bbanggu.favorite;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.ssafy.bbanggu.bakery.domain.Bakery;
-import com.ssafy.bbanggu.bakery.repository.BakeryRepository;
 import com.ssafy.bbanggu.bakery.dto.BakeryDetailDto;
+import com.ssafy.bbanggu.bakery.repository.BakeryRepository;
 import com.ssafy.bbanggu.bakery.service.BakeryService;
 import com.ssafy.bbanggu.common.exception.CustomException;
 import com.ssafy.bbanggu.common.exception.ErrorCode;
@@ -12,12 +18,6 @@ import com.ssafy.bbanggu.user.domain.User;
 import com.ssafy.bbanggu.user.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
-
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -73,7 +73,8 @@ public class FavoriteService {
 			.map(f -> f.getBakery().getBakeryId())
 			.toList();
 
-		if(bakeryIds.isEmpty()) return Page.empty();
+		if (bakeryIds.isEmpty())
+			return Page.empty();
 
 		Page<Bakery> bakeries = bakeryRepository.findByBakeryIdInAndDeletedAtIsNull(bakeryIds, pageable);
 
@@ -98,9 +99,14 @@ public class FavoriteService {
 
 		return bakeryRepository.findBestBakeriesByLocation(userLat, userLng).stream()
 			.map(bakery -> {
-				double distance = bakeryService.calculateDistance(userLat, userLng, bakery.getLatitude(), bakery.getLongitude());
+				double distance = bakeryService.calculateDistance(userLat, userLng, bakery.getLatitude(),
+					bakery.getLongitude());
 				return BakeryDetailDto.from(bakery, distance);
 			})
 			.toList();
+	}
+
+	public int getBakeryFavorCount(long bakeryId) {
+		return favoriteRepository.countByBakery_BakeryId(bakeryId);
 	}
 }
