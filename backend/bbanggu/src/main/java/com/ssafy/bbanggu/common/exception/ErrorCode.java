@@ -53,7 +53,10 @@ public enum ErrorCode {
 	QUANTITY_EXCEEDED(2302, HttpStatus.BAD_REQUEST, "남은 빵꾸러미 수량보다 많은 개수를 예약할 수 없습니다."),
 	DUPLICATE_RESERVATION(2303, HttpStatus.CONFLICT, "이미 예약된 빵꾸러미가 있습니다. 중복 예약이 불가능합니다."),
 	UNVERIFIED_RESERVATION(2304, HttpStatus.UNAUTHORIZED, "검증되지 않은 예약입니다."),
-	RESERVATION_ALREADY_CANCELED(2305, HttpStatus.CONFLICT, "이미 취소된 예약으로, 중복 취소가 불가능합니다."),
+	RESERVATION_ALREADY_CANCELED(2305, HttpStatus.CONFLICT, "이미 취소된 예약입니다."),
+	NOT_BAKERY_OWNER(2306, HttpStatus.FORBIDDEN, "사장님이 아닌 사용자는 예약 처리 권한이 없습니다."),
+	RESERVATION_IS_NOT_CONFIRMED(2307, HttpStatus.CONFLICT, "현재 예약 상태가 'CONFIRMED'가 아닙니다."),
+	RESERVATION_ALREADY_COMPLETED(2308, HttpStatus.BAD_REQUEST, "이미 픽업이 완료된 예약입니다."),
 
 	// ✅ 이메일 인증 관련 예외 (3000번대)
 	EMAIL_SEND_FAILED(3000, HttpStatus.INTERNAL_SERVER_ERROR, "이메일 전송에 실패하였습니다."),
