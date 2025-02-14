@@ -19,7 +19,7 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
 
 	@Query("""
         SELECT new com.ssafy.bbanggu.reservation.dto.ReservationInfo(
-            u.name, u.profileImageUrl, r.createdAt, r.status, r.quantity
+            u.name, u.profileImageUrl, u.phone, r.createdAt, r.status, r.quantity
         )
         FROM Reservation r
         JOIN r.user u
