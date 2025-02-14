@@ -6,7 +6,7 @@ import cv2
 from io import BytesIO
 from PIL import Image
 
-model = YOLO("./models/best.pt")
+model = YOLO("../models/best.pt")
 class_names = model.names
 
 
