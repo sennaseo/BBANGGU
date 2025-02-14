@@ -105,7 +105,7 @@ export function EditStore() {
         description: formData.description,
         addressRoad: formData.addressRoad,
         addressDetail: formData.addressDetail,
-        photoUrl: profileImage // 프로필 이미지가 있다면 포함
+        photoUrl: profileImage || undefined // null 대신 undefined 사용
       };
 
       await updateBakery(bakeryInfo.bakeryId, updateData);

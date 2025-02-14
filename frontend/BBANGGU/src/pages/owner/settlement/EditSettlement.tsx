@@ -3,17 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { Header } from '../../../components/owner/editprofile/Header';
 import { SubmitButton } from '../../../common/form/SubmitButton';
 import BottomNavigation from '../../../components/owner/navigations/BottomNavigations/BottomNavigation';
-import { IoTrashOutline } from 'react-icons/io5';
 import { updateSettlement } from '../../../api/bakery/bakery';
-
-interface SettlementInfo {
-  settlementId: number;
-  bankName: string;
-  accountHolderName: string;
-  accountNumber: string;
-  emailForTaxInvoice: string;
-  businessLicenseFileUrl: string | null;
-}
 
 export function EditSettlement() {
   const location = useLocation();
