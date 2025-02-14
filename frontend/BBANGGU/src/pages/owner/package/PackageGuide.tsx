@@ -20,25 +20,28 @@ const PackageGuide: React.FC = () => {
         const formData = new FormData();
         formData.append('images', compressedFile);
 
-        // API 호출 수정
-        const response = await fetch('https://i12d102.p.ssafy.io/detect', {  // 전체 URL 사용
+        // FormData 내용 확인
+        for (let pair of formData.entries()) {
+          console.log('FormData 내용:', pair[0], pair[1]); 
+        }
+
+        console.log('요청 시작');
+        const response = await fetch('https://i12d102.p.ssafy.io/detect', {
           method: 'POST',
-          headers: {
-            // Content-Type은 FormData를 사용할 때는 자동으로 설정됨
-            'Accept': 'application/json',
-          },
-          body: formData
+          body: formData  // headers 제거
         });
 
-        console.log('서버 응답:', response.status);
+        console.log('응답 상태:', response.status);
+        const responseText = await response.text();
+        console.log('응답 내용:', responseText);
 
         if (!response.ok) {
-          const errorData = await response.text();
+          const errorData = responseText;
           console.error('서버 에러 응답:', errorData);
           throw new Error(`서버 에러: ${response.status}`);
         }
 
-        const result = await response.json();
+        const result = JSON.parse(responseText);
         console.log('분석 결과:', result);
 
         // 이미지 미리보기용 base64 변환
