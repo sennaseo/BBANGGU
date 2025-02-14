@@ -10,7 +10,17 @@ const PackageGuide: React.FC = () => {
   const navigate = useNavigate();
 
   const handleStartRegister = () => {
-    navigate('/owner/package/analysis');
+    // 카메라 권한 요청 후 분석 페이지로 이동
+    if ('mediaDevices' in navigator) {
+      navigator.mediaDevices.getUserMedia({ video: true })
+        .then(() => {
+          navigate('/owner/package/analysis');  // camera-test에서 analysis로 변경
+        })
+        .catch(error => {
+          console.error('카메라 권한 거부:', error);
+          alert('카메라 접근 권한이 필요합니다.');
+        });
+    }
   };
 
   return (

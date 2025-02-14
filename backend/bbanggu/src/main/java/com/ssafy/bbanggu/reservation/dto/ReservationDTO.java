@@ -1,4 +1,4 @@
-package com.ssafy.bbanggu.reservation;
+package com.ssafy.bbanggu.reservation.dto;
 
 import lombok.Builder;
 import lombok.Getter;

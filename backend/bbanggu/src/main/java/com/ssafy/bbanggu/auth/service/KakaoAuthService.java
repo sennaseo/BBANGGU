@@ -42,7 +42,6 @@ public class KakaoAuthService {
 	 * ✅ 1. 카카오 로그인 URL 생성 (Redirect)
 	 */
 	public String getKakaoLoginUrl() {
-		System.out.println("!!!!!!!!!!!!Kakao Redirect URI: " + kakaoConfig.getRedirectUri());
 		return kakaoConfig.getAuthUri() +
 			"?client_id=" + kakaoConfig.getClientId() +
 			"&redirect_uri=" + kakaoConfig.getRedirectUri() +

@@ -3,7 +3,9 @@ import { IoChevronBack } from "react-icons/io5";
 
 interface HeaderProps {
   title: string;
-  onBack: () => void;
+  onBack?: () => void;
+  className?: string;
+  textColor?: string;
   rightButton?: {
     text: string;
     onClick: () => void;
@@ -11,18 +13,26 @@ interface HeaderProps {
   };
 }
 
-const Header: React.FC<HeaderProps> = ({ title, onBack, rightButton }) => {
+const Header: React.FC<HeaderProps> = ({ 
+  title, 
+  onBack, 
+  className,
+  textColor = 'text-black',
+  rightButton
+}) => {
   return (
-    <div className="relative flex items-center h-14">
+    <div className={`relative flex items-center h-14 ${className}`}>
       <div className="w-full px-4 flex items-center justify-center">
-        <button 
-          onClick={onBack} 
-          className="absolute left-4"
-          aria-label="뒤로가기"
-        >
-          <IoChevronBack className="w-6 h-6" />
-        </button>
-        <h1 className="text-[20px] font-bold">{title}</h1>
+        {onBack && (
+          <button 
+            onClick={onBack} 
+            className={`absolute left-4 ${textColor}`}
+            aria-label="뒤로가기"
+          >
+            <IoChevronBack className="w-6 h-6" />
+          </button>
+        )}
+        <h1 className={`text-[20px] font-bold flex-1 text-center ${textColor}`}>{title}</h1>
         {rightButton && (
           <button
             onClick={rightButton.onClick}

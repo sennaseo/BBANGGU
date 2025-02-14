@@ -2,24 +2,25 @@ package com.ssafy.bbanggu.favorite;
 
 import java.util.List;
 
-import com.ssafy.bbanggu.auth.security.CustomUserDetails;
-import com.ssafy.bbanggu.bakery.dto.BakeryDetailDto;
-import com.ssafy.bbanggu.common.exception.CustomException;
-import com.ssafy.bbanggu.common.exception.ErrorCode;
-import com.ssafy.bbanggu.common.response.ApiResponse;
-import com.ssafy.bbanggu.user.domain.User;
-import com.ssafy.bbanggu.user.repository.UserRepository;
-
-import lombok.RequiredArgsConstructor;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.ssafy.bbanggu.auth.security.CustomUserDetails;
+import com.ssafy.bbanggu.bakery.dto.BakeryDetailDto;
+import com.ssafy.bbanggu.common.response.ApiResponse;
+import com.ssafy.bbanggu.user.repository.UserRepository;
+
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/favorite")
@@ -84,5 +85,13 @@ public class FavoriteController {
 		}
 
 		return ResponseEntity.ok().body(new ApiResponse("BEST 가게 조회에 성공하였습니다.", bestBakeries));
+	}
+
+	@GetMapping("/bakery/{bakeryId}")
+	public ResponseEntity<ApiResponse> getfavoritesByBakeryId(@AuthenticationPrincipal CustomUserDetails userDetails,
+		@PathVariable long bakeryId) {
+
+		Integer count = favoriteService.getBakeryFavorCount(bakeryId);
+		return ResponseEntity.ok().body(new ApiResponse("가게 좋아요 개수 조회 성공", count));
 	}
 }
