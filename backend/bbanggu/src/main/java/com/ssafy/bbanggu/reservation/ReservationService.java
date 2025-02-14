@@ -168,10 +168,12 @@ public class ReservationService {
 		}
 		log.info("✅ 취소되지 않은 {}번 예약이 존재함", request.reservationId());
 
-		if (!reservation.getUser().getUserId().equals(userDetails.getUserId())) {
+		log.info("사장님 ID: {}, 사용자 ID: {}", reservation.getBakery().getUser().getUserId(), userDetails.getUserId());
+		if (!reservation.getUser().getUserId().equals(userDetails.getUserId())
+			&& !reservation.getBakery().getUser().getUserId().equals(userDetails.getUserId())) {
 			throw new CustomException(ErrorCode.UNAUTHORIZED_USER);
 		}
-		log.info("✅ 현재 로그인한 사용자와 예약한 사용자가 일치함");
+		log.info("✅ 현재 로그인한 사용자는 예약 취소 권한이 있음");
 
 		// 결제 취소
 		ResponseEntity<String> response = paymentService.cancelPayment(reservation.getPaymentKey(), request.cancelReason());
