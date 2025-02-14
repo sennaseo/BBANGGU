@@ -29,7 +29,9 @@ import java.util.List;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @RestController
 @RequestMapping("/bakery")
 @RequiredArgsConstructor
@@ -55,6 +57,7 @@ public class BakeryController {
 		@PageableDefault(size = 10) Pageable pageable,
 		@AuthenticationPrincipal CustomUserDetails userDetails
 	) {
+		log.info("✨ 가게 전체 조회 ✨");
 		List<BakeryDetailDto> bakeries = bakeryService.getAllBakeries(userDetails, sortBy, sortOrder, pageable);
 		return ResponseEntity.ok().body(new ApiResponse("모든 가게 조회에 성공하였습니다.", bakeries));
 	}

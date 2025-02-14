@@ -22,6 +22,7 @@ import com.ssafy.bbanggu.user.domain.User;
 import com.ssafy.bbanggu.user.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -36,6 +37,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class BakeryService {
@@ -87,6 +89,7 @@ public class BakeryService {
 				.map(bakery -> {
 					double distance = (userLat == null || userLng == null) ? 0.0
 						: calculateDistance(userLat, userLng, bakery.getLatitude(), bakery.getLongitude());
+
 					boolean is_liked = favoriteRepository.existsByUser_UserIdAndBakery_BakeryId(userDetails.getUserId(), bakery.getBakeryId());
 					PickupTimeDto pickupTime = bakeryPickupService.getPickupTimetable(bakery.getBakeryId());
 					BreadPackage breadPackage = breadPackageService.getPackageById(bakery.getBakeryId());
@@ -94,7 +97,7 @@ public class BakeryService {
 					if (breadPackage != null) {
 						price = breadPackage.getPrice();
 					}
-					return BakeryDetailDto.from(bakery, 0.0, false, pickupTime, price);
+					return BakeryDetailDto.from(bakery, distance, is_liked, pickupTime, price);
 				})
 				.collect(Collectors.toList());
 		}
@@ -112,7 +115,7 @@ public class BakeryService {
 				if (breadPackage != null) {
 					price = breadPackage.getPrice();
 				}
-				return BakeryDetailDto.from(bakery, 0.0, false, pickupTime, price);
+				return BakeryDetailDto.from(bakery, distance, is_liked, pickupTime, price);
 			})
 			.collect(Collectors.toList());
 
