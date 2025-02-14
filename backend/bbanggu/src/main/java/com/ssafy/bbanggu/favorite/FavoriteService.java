@@ -25,7 +25,9 @@ import com.ssafy.bbanggu.user.domain.User;
 import com.ssafy.bbanggu.user.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class FavoriteService {
@@ -39,18 +41,24 @@ public class FavoriteService {
 
 	// 좋아요 추가
 	@Transactional
-	public void addFavorite(Long userId, Long bakeryId) {
-		User user = userRepository.findById(userId)
+	public void addFavorite(CustomUserDetails userDetails, Long bakeryId) {
+		User user = userRepository.findById(userDetails.getUserId())
 			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+		log.info("✅ {}번 사용자 검증 완료", userDetails.getUserId());
 
 		Bakery bakery = bakeryRepository.findById(bakeryId)
 			.orElseThrow(() -> new CustomException(ErrorCode.BAKERY_NOT_FOUND));
+		log.info("✅ {}번 빵집 검증 완료", bakery.getBakeryId());
 
 		// 이미 좋아요한 상태인지 확인
-		if (favoriteRepository.existsByUser_UserIdAndBakery_BakeryId(userId, bakeryId)) {
+		if (favoriteRepository.existsByUser_UserIdAndBakery_BakeryId(user.getUserId(), bakeryId)) {
 			throw new CustomException(ErrorCode.ALREADY_FAVORITE);
 		}
+		log.info("✅ 사용자가 아직 {}번 빵집의 좋아요를 누르지 않음", bakery.getBakeryId());
 
+
+		log.info("📌 user: ", user);
+		log.info("📌 userDetails: ", userDetails);
 		// 새로 좋아요 추가
 		Favorite favorite = Favorite.builder()
 			.user(user)
@@ -58,6 +66,7 @@ public class FavoriteService {
 			.build();
 
 		favoriteRepository.save(favorite);
+		log.info("🩵 좋아요 누르기 완료 🩵");
 	}
 
 	// 좋아요 취소
