@@ -1,16 +1,22 @@
 package com.ssafy.bbanggu.bakery.service;
 
+import com.ssafy.bbanggu.auth.security.CustomUserDetails;
 import com.ssafy.bbanggu.bakery.domain.Bakery;
 import com.ssafy.bbanggu.bakery.domain.BakeryPickupTimetable;
 import com.ssafy.bbanggu.bakery.dto.BakeryPickupTimetableDto;
 import com.ssafy.bbanggu.bakery.dto.PickupTimeDto;
 import com.ssafy.bbanggu.bakery.repository.BakeryPickupTimetableRepository;
+import com.ssafy.bbanggu.bakery.repository.BakeryRepository;
+import com.ssafy.bbanggu.common.exception.CustomException;
+import com.ssafy.bbanggu.common.exception.ErrorCode;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -18,6 +24,7 @@ import java.util.Optional;
 public class BakeryPickupService {
 
 	private final BakeryPickupTimetableRepository bakeryPickupTimetableRepository;
+	private final BakeryRepository bakeryRepository;
 
 	public PickupTimeDto getPickupTimetable(Long bakeryId) {
 		// 현재 요일 가져오기
@@ -64,6 +71,32 @@ public class BakeryPickupService {
 			return null; // 변환 중 오류 발생 시 null 반환
 		}
 	}
+
+
+	public Map<String, PickupTimeDto> getAllPickupTimetable(CustomUserDetails userDetails, Long bakeryId) {
+		Bakery bakery = bakeryRepository.findById(bakeryId)
+			.orElseThrow(() -> new CustomException(ErrorCode.BAKERY_NOT_FOUND));
+		if (!bakery.getUser().getUserId().equals(userDetails.getUserId())) {
+			throw new CustomException(ErrorCode.USER_IS_NOT_OWNER);
+		}
+
+		Optional<BakeryPickupTimetable> optionaltimetable = bakeryPickupTimetableRepository.findByBakery_BakeryId(bakeryId);
+		if (optionaltimetable.isEmpty()) return null;
+
+		BakeryPickupTimetable timetable = optionaltimetable.get();
+
+		Map<String, PickupTimeDto> response = new HashMap<>();
+		response.put("sunday", parsePickupTime(timetable.getSunday()));
+		response.put("monday", parsePickupTime(timetable.getMonday()));
+		response.put("tuesday", parsePickupTime(timetable.getTuesday()));
+		response.put("wednesday", parsePickupTime(timetable.getWednesday()));
+		response.put("thursday", parsePickupTime(timetable.getThursday()));
+		response.put("friday", parsePickupTime(timetable.getFriday()));
+		response.put("saturday", parsePickupTime(timetable.getSaturday()));
+
+		return response;
+	}
+
 
 	@Transactional
 	public void createPickupTime(Bakery bakery, BakeryPickupTimetableDto request) {

@@ -14,6 +14,8 @@ import com.ssafy.bbanggu.bakery.dto.PickupTimeDto;
 import com.ssafy.bbanggu.bakery.repository.BakeryRepository;
 import com.ssafy.bbanggu.bakery.service.BakeryPickupService;
 import com.ssafy.bbanggu.breadpackage.BreadPackageService;
+
+import org.springframework.cglib.core.Local;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -222,6 +224,11 @@ public class ReservationService {
 		reservation.setPickupAt(LocalDateTime.now());
 		Reservation savedReservation = reservationRepository.save(reservation);
 		log.info("🩵 빵꾸러미 판매 성공 (COMPLETED) 🩵");
+
+		if (reservation.getBreadPackage().getQuantity() == 0) {
+			reservation.getBreadPackage().setDeletedAt(LocalDateTime.now());
+			log.info("💖 오늘 빵꾸러미 매진 (DELETED) 💖");
+		}
 
 		Map<String, Object> responseData = new HashMap<>();
 		responseData.put("reservationId", savedReservation.getReservationId());

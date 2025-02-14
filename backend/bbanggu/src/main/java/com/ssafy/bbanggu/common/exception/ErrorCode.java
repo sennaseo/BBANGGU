@@ -22,6 +22,9 @@ public enum ErrorCode {
 	INVALIE_PASSWORD(1010, HttpStatus.BAD_REQUEST, "비밀번호는 8자 이상이어야 합니다."),
 	UNAUTHORIZED_USER(1011, HttpStatus.UNAUTHORIZED, "토큰이 없거나, 인증되지 않은 사용자입니다."),
 	NOT_EQUAL_USER(1012, HttpStatus.FORBIDDEN, "현재 로그인한 사용자와 조회 대상이 일치하지 않습니다."),
+	USER_IS_NOT_OWNER(1013, HttpStatus.UNAUTHORIZED, "현재 로그인한 사용자는 사장님이 아닙니다."),
+	NOT_EQUAL_PASSWORD(1014, HttpStatus.BAD_REQUEST, "입력한 기존 비밀번호가 현재 비밀번호와 일치하지 않습니다."),
+	EQUAL_ORIGIN_AND_NEW_PASSWORD(1015, HttpStatus.BAD_REQUEST, "기존 비밀번호와 동일한 비밀번호로는 변경할 수 없습니다."),
 
 	// ✅ kakao 인증 관련 예외(1500번대)
 	KAKAO_AUTH_FAILED(1501, HttpStatus.BAD_REQUEST, "카카오 인증에 실패하였습니다."),
@@ -33,6 +36,7 @@ public enum ErrorCode {
 	BAKERY_NOT_FOUND(2002, HttpStatus.NOT_FOUND, "가게를 찾을 수 없습니다."),
 	NO_PERMISSION_TO_EDIT_BAKERY(2003, HttpStatus.FORBIDDEN, "해당 가게를 수정할 권한이 없습니다."),
 	NO_KEYWORD_ENTERED(2004, HttpStatus.BAD_REQUEST, "입력된 키워드가 없습니다. 검색어를 입력해주세요."),
+	SETTLEMENT_NOT_FOUND(2005, HttpStatus.NOT_FOUND, "해당 가게의 정산정보가 존재하지 않습니다."),
 
 	// ✅ 빵 관련 예외 (2100번대)
 
