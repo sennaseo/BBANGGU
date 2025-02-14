@@ -82,7 +82,7 @@ public class SecurityConfig {
 			"http://127.0.0.1:5173",
 			"http://localhost:3000"
 		));
-		configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+		configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
 		configuration.setAllowedHeaders(Arrays.asList("*"));
 		configuration.setExposedHeaders(Arrays.asList("Authorization", "Refresh-Token"));
 		configuration.setAllowCredentials(true);
