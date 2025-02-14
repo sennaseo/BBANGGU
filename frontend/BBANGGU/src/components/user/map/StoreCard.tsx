@@ -19,7 +19,7 @@ export function StoreCard({ isVisible, store }: StoreCardProps) {
   if (!isVisible || !store) return null
 
   return (
-    <div className="fixed bottom-[60px] left-0 right-0 mx-auto max-w-[430px] p-4">
+    <div className="fixed bottom-[60px] left-0 right-0 mx-auto max-w-[430px] p-4 z-20">
       <div className="flex items-center bg-white rounded-xl p-4 shadow-lg">
         <img src="/placeholder.svg" alt={store.name} className="w-20 h-20 rounded-lg object-cover" />
         <div className="flex-1 ml-4">
