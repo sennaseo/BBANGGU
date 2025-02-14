@@ -151,15 +151,20 @@ public class BakeryService {
 			throw new CustomException(ErrorCode.BAKERY_NOT_FOUND);
 		}
 
-		double distance = (userLat == null || userLng == null) ? 0.0
-			: calculateDistance(userLat, userLng, bakery.getLatitude(), bakery.getLongitude());
-		boolean is_liked = favoriteRepository.existsByUser_UserIdAndBakery_BakeryId(userDetails.getUserId(), bakery.getBakeryId());
 		PickupTimeDto pickupTime = bakeryPickupService.getPickupTimetable(bakery.getBakeryId());
 		BreadPackage breadPackage = breadPackageService.getPackageById(bakery.getBakeryId());
 		int price = 0;
 		if (breadPackage != null) {
 			price = breadPackage.getPrice();
 		}
+
+		if(userDetails == null) {
+			return BakeryDetailDto.from(bakery, 0.0, false, pickupTime, price);
+		}
+
+		double distance = (userLat == null || userLng == null) ? 0.0
+			: calculateDistance(userLat, userLng, bakery.getLatitude(), bakery.getLongitude());
+		boolean is_liked = favoriteRepository.existsByUser_UserIdAndBakery_BakeryId(userDetails.getUserId(), bakery.getBakeryId());
 		return BakeryDetailDto.from(bakery, distance, is_liked, pickupTime, price);
 	}
 
