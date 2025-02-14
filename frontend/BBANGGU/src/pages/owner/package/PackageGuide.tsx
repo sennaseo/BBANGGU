@@ -10,15 +10,43 @@ const PackageGuide: React.FC = () => {
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleCapture = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleCapture = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
       const reader = new FileReader();
-      reader.onloadend = () => {
-        const imageData = reader.result as string;
-        navigate('/owner/package/preview', { state: { image: imageData } });
+      reader.onloadend = async () => {
+        try {
+          // FormData 생성
+          const formData = new FormData();
+          formData.append('images', file);  // 파일 그대로 전송
+
+          // API 호출
+          const response = await fetch('/bread-package/detect', {
+            method: 'POST',
+            body: formData  // multipart/form-data로 전송
+          });
+
+          if (!response.ok) {
+            throw new Error('이미지 업로드 실패');
+          }
+
+          const result = await response.json();
+          console.log('분석 결과:', result);  // 응답 확인용
+
+          // 분석 결과와 함께 preview 페이지로 이동
+          navigate('/owner/package/preview', { 
+            state: { 
+              image: reader.result,  // 미리보기용 이미지
+              analyzedItems: result.items  // 분석 결과
+            } 
+          });
+
+        } catch (error) {
+          console.error('이미지 분석 중 오류:', error);
+          alert('이미지 분석 중 오류가 발생했습니다.');
+        }
       };
-      reader.readAsDataURL(file);
+      reader.readAsDataURL(file);  // 미리보기용 base64
     }
   };
 
