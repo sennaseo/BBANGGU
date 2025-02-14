@@ -64,15 +64,22 @@ public class BakeryController {
 		return ResponseEntity.ok().body(new ApiResponse("모든 가게 조회에 성공하였습니다.", bakeries));
 	}
 
-	// 가게 추가
+
+	/**
+	 * 가게 등록 API
+	 *
+	 * @param bakery 등록할 가게 정보
+	 * @return 등록된 가게 정보
+	 */
 	@PostMapping
 	public ResponseEntity<ApiResponse> createBakery(@RequestBody @Valid BakeryCreateDto bakery) {
 		BakeryCreateDto createdBakery = bakeryService.createBakery(bakery);
 		return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse("가게 등록이 완료되었습니다.", createdBakery));
 	}
 
+
 	/**
-	 * 가게 정산 정보 등록 api
+	 * 가게 정산 정보 등록 API
 	 */
 	@PostMapping("/settlement")
 	public ResponseEntity<ApiResponse> createSettlement(@RequestBody @Valid BakerySettlementDto settlement) {
@@ -80,7 +87,14 @@ public class BakeryController {
 		return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse("가게 정산 정보 등록이 완료되었습니다.", createSettlement));
 	}
 
-	// 가게 상세 조회
+
+	/**
+	 * 가게 상세 조회 API
+	 *
+	 * @param bakery_id 가게 ID
+	 * @param userDetails 현재 로그인한 사용자 정보
+	 * @return 가게 상세 정보
+	 */
 	@GetMapping("/{bakery_id}")
 	public ResponseEntity<ApiResponse> getBakeryById(
 		@PathVariable Long bakery_id,
