@@ -1,9 +1,11 @@
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
+import { useDispatch } from 'react-redux'
 import { User, Lock } from "lucide-react"
 import { login } from "../../api/common/login/Login"
 import { getKakaoLoginUrl } from "../../api/common/login/KakaoLogin"
-import axios from "axios"
+import { getUserInfo } from "../../api/common/info/UserInfo"
+import { setUserInfo, setLoading, setError } from "../../store/slices/userSlice"
 
 export default function LoginPage() {
   const [formData, setFormData] = useState({
@@ -12,6 +14,7 @@ export default function LoginPage() {
   })
   const [isLoading, setIsLoading] = useState(false)
   const navigate = useNavigate()
+  const dispatch = useDispatch()
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
@@ -30,42 +33,38 @@ export default function LoginPage() {
 
     setIsLoading(true)
     try {
-      console.log('로그인 시도:', formData); // 요청 데이터 로그
-
-      const response = await login(formData)
+      // 로그인 API 호출
+      const loginResponse = await login(formData)
       
-      console.log('로그인 응답:', response); // 성공 응답 로그
+      // 로그인 성공 후 사용자 정보 가져오기
+      const userResponse = await getUserInfo()
       
-      // 로그인 성공 메시지
-      alert(response.message)
+      // 리덕스에 사용자 정보 저장
+      dispatch(setUserInfo(userResponse.data))
+      
+      // 성공 메시지 표시
+      alert(loginResponse.message)
       
       // 사용자 역할에 따른 리다이렉션
-      if (response.data === 'OWNER') {
-        console.log('점주로 로그인 성공, 리다이렉트: /owner/main');
+      if (loginResponse.data.user_type === 'OWNER') {
         navigate('/owner/main')
-      } else if (response.data === 'USER') {
-        console.log('사용자로 로그인 성공, 리다이렉트: /user/main');
+      } else if (loginResponse.data.user_type === 'USER') {
         navigate('/user')
       } else {
-        console.log('역할 없음, 기본 페이지로 리다이렉트');
         navigate('/')
       }
     } catch (error) {
-      console.error('로그인 에러:', error); // 에러 로그
-      if (axios.isAxiosError(error)) {
-        console.error('상세 에러 정보:', {
-          status: error.response?.status,
-          data: error.response?.data,
-          headers: error.response?.headers
-        });
-      }
+      console.error('로그인 에러:', error)
       if (error instanceof Error) {
+        dispatch(setError(error.message))
         alert(error.message)
       } else {
+        dispatch(setError('로그인 중 오류가 발생했습니다.'))
         alert('로그인 중 오류가 발생했습니다.')
       }
     } finally {
       setIsLoading(false)
+      dispatch(setLoading(false))
     }
   }
 
