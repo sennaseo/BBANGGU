@@ -13,40 +13,46 @@ const PackageGuide: React.FC = () => {
   const handleCapture = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = async () => {
-        try {
-          // FormData 생성
-          const formData = new FormData();
-          formData.append('images', file);  // 파일 그대로 전송
+      try {
+        // FormData 생성
+        const formData = new FormData();
+        formData.append('images', file);
 
-          // API 호출
-          const response = await fetch('/bread-package/detect', {
-            method: 'POST',
-            body: formData  // multipart/form-data로 전송
-          });
+        console.log('업로드 시작:', file);  // 디버깅용
 
-          if (!response.ok) {
-            throw new Error('이미지 업로드 실패');
-          }
+        // API 호출
+        const response = await fetch('/detect', {  // 경로 수정
+          method: 'POST',
+          body: formData
+        });
 
-          const result = await response.json();
-          console.log('분석 결과:', result);  // 응답 확인용
+        console.log('서버 응답:', response.status);  // 디버깅용
 
-          // 분석 결과와 함께 preview 페이지로 이동
+        if (!response.ok) {
+          const errorData = await response.text();
+          console.error('서버 에러 응답:', errorData);  // 디버깅용
+          throw new Error(`서버 에러: ${response.status}`);
+        }
+
+        const result = await response.json();
+        console.log('분석 결과:', result);
+
+        // 이미지 미리보기용 base64 변환
+        const reader = new FileReader();
+        reader.onloadend = () => {
           navigate('/owner/package/preview', { 
             state: { 
-              image: reader.result,  // 미리보기용 이미지
-              analyzedItems: result.items  // 분석 결과
+              image: reader.result,
+              analyzedItems: result.items
             } 
           });
+        };
+        reader.readAsDataURL(file);
 
-        } catch (error) {
-          console.error('이미지 분석 중 오류:', error);
-          alert('이미지 분석 중 오류가 발생했습니다.');
-        }
-      };
-      reader.readAsDataURL(file);  // 미리보기용 base64
+      } catch (error) {
+        console.error('상세 에러:', error);  // 디버깅용
+        alert('이미지 분석 중 오류가 발생했습니다.');
+      }
     }
   };
 
