@@ -14,11 +14,6 @@ interface LoginResponse {
   };
 }
 
-interface LoginErrorResponse {
-  code: number;
-  status: string;
-  message: string;
-}
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, '') || 'http://i12d102.p.ssafy.io:8081';
 
