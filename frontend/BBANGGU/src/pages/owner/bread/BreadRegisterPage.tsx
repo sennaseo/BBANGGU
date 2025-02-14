@@ -162,15 +162,21 @@ const BREAD_CATEGORIES: BreadCategory[] = [
 // API_BASE_URL 수정
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://i12d102.p.ssafy.io:8081';
 
-// 이미지 URL을 완성하는 함수 수정
+// getFullImageUrl 함수 수정
 const getFullImageUrl = (imageUrl: string | null): string => {
-  if (!imageUrl) return '';  // null 대신 빈 문자열 반환
+  if (!imageUrl) return '';
   if (imageUrl.startsWith('http')) return imageUrl;
   
-  const token = localStorage.getItem('token'); // 또는 다른 방식으로 토큰 가져오기
-  const baseUrl = API_BASE_URL.endsWith('/') ? API_BASE_URL.slice(0, -1) : API_BASE_URL;
-  const imagePath = imageUrl.startsWith('/') ? imageUrl.slice(1) : imageUrl;
-  return `${baseUrl}/${imagePath}?token=${token}`;
+  // URL 정규화
+  const path = imageUrl.startsWith('/') ? imageUrl : `/uploads/${imageUrl}`;
+  
+  // 개발 환경에서는 /uploads로 시작하는 경로 사용
+  if (import.meta.env.DEV) {
+    return path;  // 프록시가 처리할 수 있도록 상대 경로 유지
+  }
+  
+  // 프로덕션 환경에서는 전체 URL 사용
+  return `https://i12d102.p.ssafy.io${path}`;
 };
 
 // 에러 타입 정의
@@ -371,17 +377,24 @@ export default function BreadRegisterPage() {
 
   // 빵 삭제 핸들러
   const handleDeleteBread = async (breadId: number) => {
-    if (window.confirm('정말 이 빵을 삭제하시겠습니까?')) {
-      try {
-        await deleteBread(breadId);
-        // 목록 새로고침
-        const updatedBreads = await getBakeryBreads(1);  // BreadInfo[] 배열이 직접 반환됨
-        setExistingBreads(updatedBreads);  // 그대로 설정
+    if (!window.confirm('정말 이 빵을 삭제하시겠습니까?')) return;
+
+    try {
+      setIsLoading(true); // 로딩 상태 추가
+      const result = await deleteBread(breadId);
+      console.log('삭제 응답:', result); // 응답 확인용 로그
+
+      if (result.message === "빵 정보 삭제 성공") {
+        // 성공적으로 삭제된 경우 목록에서 제거
+        setExistingBreads(prev => prev.filter(bread => bread.breadId !== breadId));
         alert('빵이 삭제되었습니다.');
-      } catch (error: unknown) {
-        const err = error as FormError;
-        alert(err.response?.data.message || '빵 삭제 중 오류가 발생했습니다.');
       }
+    } catch (error: unknown) {
+      const err = error as FormError;
+      console.error('삭제 실패:', err);
+      alert(err.response?.data.message || '빵 삭제 중 오류가 발생했습니다.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -600,11 +613,9 @@ export default function BreadRegisterPage() {
                           src={getFullImageUrl(bread.breadImageUrl)} 
                           alt={bread.name} 
                           className="w-full h-full object-cover rounded"
-                          onError={() => {
-                            const imgElement = document.querySelector(`[data-bread-id="${bread.breadId}"]`);
-                            if (imgElement) {
-                              imgElement.outerHTML = `<div class="w-full h-full bg-[#FFF5EC] rounded flex items-center justify-center text-2xl">🥖</div>`;
-                            }
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.src = '🥖'; // 이미지 로드 실패시 이모지로 대체
                           }}
                           data-bread-id={bread.breadId}
                         />
