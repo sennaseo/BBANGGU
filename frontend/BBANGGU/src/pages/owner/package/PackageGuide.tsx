@@ -28,12 +28,9 @@ const PackageGuide: React.FC = () => {
         // API 호출 수정
         const response = await fetch('https://i12d102.p.ssafy.io/detect', {
           method: 'POST',
-          headers: {
-            'Access-Control-Allow-Methods': 'POST',
-            'Access-Control-Allow-Origin': '*'
-          },
-          credentials: 'include',
-          body: formData
+          body: formData,
+          mode: 'cors',
+          credentials: 'same-origin'
         });
 
         console.log('응답 상태:', response.status);
