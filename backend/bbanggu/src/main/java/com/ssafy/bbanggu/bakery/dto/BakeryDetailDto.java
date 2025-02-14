@@ -22,9 +22,12 @@ public record BakeryDetailDto(
 	String bakeryBackgroundImgUrl,
 	Double star,
 	Double distance,
-	int reviewCnt
+	int reviewCnt,
+	boolean is_liked,
+	PickupTimeDto pickupTime,
+	int price
 ) {
-	public static BakeryDetailDto from(Bakery bakery, double distance) {
+	public static BakeryDetailDto from(Bakery bakery, double distance, boolean is_liked, PickupTimeDto pickupTime, int price) {
 		return new BakeryDetailDto(
 			bakery.getBakeryId(),
 			bakery.getUser().getUserId(),
@@ -37,7 +40,10 @@ public record BakeryDetailDto(
 			bakery.getBakeryBackgroundImgUrl(),
 			bakery.getStar(),
 			distance,
-			bakery.getReviewCnt()
+			bakery.getReviewCnt(),
+			is_liked,
+			pickupTime,
+			price
 		);
 	}
 }
