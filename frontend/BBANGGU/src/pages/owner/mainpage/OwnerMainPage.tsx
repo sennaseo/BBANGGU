@@ -5,7 +5,6 @@ import { BreadPackageInfo } from './components/BreadPackageInfo';
 import { ReviewSection } from './components/ReviewSection';
 import { CustomerList } from './components/CustomerList';
 import BottomNavigation from '../../../components/owner/navigations/BottomNavigations/BottomNavigation';
-import { getBakeryPackages } from '../../../api/owner/package';
 import { BuildingStorefrontIcon } from '@heroicons/react/24/outline';
 import { useNavigate } from 'react-router-dom';
 
@@ -20,11 +19,11 @@ interface Customer {
 }
 
 interface BreadPackage {
-  packageId: number;
   bakeryId: number;
-  price: number;
-  quantity: number;
+  breadCategoryId: number;
   name: string;
+  price: number;
+  breadImageUrl: string | null;
 }
 
 const OwnerMainPage: React.FC = () => {
@@ -81,12 +80,24 @@ const OwnerMainPage: React.FC = () => {
     const fetchPackages = async () => {
       try {
         setIsLoading(true);
-        const response = await getBakeryPackages(bakeryId);
+        const response = await fetch(`/api/bread-package/bakery/${bakeryId}`, {
+          method: 'GET',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          }
+        });
         
-        console.log('API 전체 응답:', response);
+        if (!response.ok) {
+          throw new Error(`API 요청 실패: ${response.status}`);
+        }
+
+        const responseData = await response.json();
+        console.log('API 응답:', responseData);
         
-        if (response && response.data) {
-          setPackages(response.data);
+        if (responseData.data) {
+          setPackages(responseData.data);
         }
       } catch (err) {
         console.error('패키지 조회 실패:', err);
@@ -172,7 +183,7 @@ const OwnerMainPage: React.FC = () => {
                 <div className="flex items-center gap-2">
                   <BuildingStorefrontIcon className="w-5 h-5" />
                 </div>
-                <span className="font-medium">새로운 빵꾸러미 등록하기</span>
+                <span className="font-medium">우리가게 빵 등록하기</span>
               </button>
             </div>
             <CustomerList 
