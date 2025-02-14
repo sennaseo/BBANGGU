@@ -43,6 +43,12 @@ public class BreadPackageService {
 		}
 		log.info("✅ 현재 로그인한 사용자가 해당 빵집의 사장님입니다^^");
 
+		// ✅ 오늘 날짜의 빵꾸러미가 존재하는지 확인
+		if (breadPackageRepository.findTodayPackageByBakeryId(request.bakeryId()).isPresent()) {
+			log.warn("❌ 오늘 날짜의 빵꾸러미가 이미 존재합니다! 등록 불가 ❌");
+			throw new CustomException(ErrorCode.TODAY_PACKATE_ALREADY_EXIST);
+		}
+
 		log.info("📌 현재 요청으로 들어온 빵꾸러미 정보\n1️⃣ bakery ID: " + request.bakeryId() + "\n2️⃣ price: " + request.price() +
 			"\n3️⃣ quantity: " + request.quantity() + "\n4️⃣ name: " + request.name());
 		// BreadPackage 객체 생성
