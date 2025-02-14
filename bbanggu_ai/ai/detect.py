@@ -15,7 +15,6 @@ def detect_breads_from_image(image_bytes):
     results = model(image, conf=0.2)
     detections = results[0].boxes.cls.tolist()
     counts = Counter(detections)
-    result = []
     output_json = {class_names[int(class_id)]: count for class_id, count in counts.items()}
     return output_json
 
