@@ -226,13 +226,13 @@ public class ReservationService {
 		log.info("🩵 빵꾸러미 판매 성공 (COMPLETED) 🩵");
 
 		if (reservation.getBreadPackage().getQuantity() == 0) {
-			reservation.getBreadPackage().setDeletedAt(LocalDateTime.now());
 			log.info("💖 오늘 빵꾸러미 매진 (DELETED) 💖");
 		}
 
 		Map<String, Object> responseData = new HashMap<>();
 		responseData.put("reservationId", savedReservation.getReservationId());
 		responseData.put("status", savedReservation.getStatus());
+		responseData.put("pending", reservation.getBreadPackage().getQuantity());
 
 		return responseData;
 	}
