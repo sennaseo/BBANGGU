@@ -121,6 +121,7 @@ public class UserController {
 		Map<String, Object> response = new HashMap<>();
 		response.put("access_token", accessToken);
 		response.put("refresh_token", refreshToken);
+		response.put("user_type", user.getRole());
 
 		return ResponseEntity.ok()
 			.header(HttpHeaders.SET_COOKIE, accessTokenCookie.toString())
