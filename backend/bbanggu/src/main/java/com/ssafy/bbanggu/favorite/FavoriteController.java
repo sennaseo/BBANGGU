@@ -56,17 +56,7 @@ public class FavoriteController {
 		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@PageableDefault(size = 10) Pageable pageable
 	) {
-		Double lat = null;
-		Double lng = null;
-
-		if (userDetails.getLatitude() != 0.0 && userDetails.getLongitude() != 0.0) {
-			lat = userDetails.getLatitude();
-			lng = userDetails.getLongitude();
-		}
-
-		Long userId = userDetails.getUserId();
-		Page<BakeryDetailDto> bakeries = favoriteService.findAllFavorites(userId, lat, lng, pageable);
-
+		Page<BakeryDetailDto> bakeries = favoriteService.findAllFavorites(userDetails, pageable);
 		return ResponseEntity.ok().body(new ApiResponse("사용자가 관심가게로 등록한 모든 가게를 조회하였습니다.", bakeries));
 	}
 
@@ -75,14 +65,13 @@ public class FavoriteController {
 	public ResponseEntity<ApiResponse> getBestBakeries(
 		@AuthenticationPrincipal CustomUserDetails userDetails
 	) {
-		List<BakeryDetailDto> bestBakeries;
-
-		if (userDetails == null || userDetails.getLatitude() == 0.0 || userDetails.getLongitude() == 0.0) {
-			bestBakeries = favoriteService.getTop10BestBakeries(null, null);
-		} else {
-			// ✅ 로그인 & 주소 등록한 사용자 → 거리 기반 추천
-			bestBakeries = favoriteService.getTop10BestBakeries(userDetails.getLatitude(), userDetails.getLongitude());
-		}
+		List<BakeryDetailDto> bestBakeries = favoriteService.getTop10BestBakeries(userDetails);
+		// if (userDetails == null || userDetails.getLatitude() == 0.0 || userDetails.getLongitude() == 0.0) {
+		// 	bestBakeries = favoriteService.getTop10BestBakeries(userDetails);
+		// } else {
+		// 	// ✅ 로그인 & 주소 등록한 사용자 → 거리 기반 추천
+		// 	bestBakeries = favoriteService.getTop10BestBakeries(userDetails.getLatitude(), userDetails.getLongitude());
+		// }
 
 		return ResponseEntity.ok().body(new ApiResponse("BEST 가게 조회에 성공하였습니다.", bestBakeries));
 	}

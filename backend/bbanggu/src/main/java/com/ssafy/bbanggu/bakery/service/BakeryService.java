@@ -1,16 +1,23 @@
 package com.ssafy.bbanggu.bakery.service;
 
+import com.ssafy.bbanggu.auth.security.CustomUserDetails;
 import com.ssafy.bbanggu.bakery.domain.Bakery;
 import com.ssafy.bbanggu.bakery.domain.Settlement;
 import com.ssafy.bbanggu.bakery.dto.BakeryCreateDto;
 import com.ssafy.bbanggu.bakery.dto.BakeryLocationDto;
 import com.ssafy.bbanggu.bakery.dto.BakerySettlementDto;
+import com.ssafy.bbanggu.bakery.dto.PickupTimeDto;
 import com.ssafy.bbanggu.bakery.repository.BakeryRepository;
 import com.ssafy.bbanggu.bakery.dto.BakeryDetailDto;
 import com.ssafy.bbanggu.bakery.dto.BakeryDto;
 import com.ssafy.bbanggu.bakery.repository.BakerySettlementRepository;
+import com.ssafy.bbanggu.breadpackage.BreadPackage;
+import com.ssafy.bbanggu.breadpackage.BreadPackageRepository;
+import com.ssafy.bbanggu.breadpackage.BreadPackageService;
+import com.ssafy.bbanggu.breadpackage.dto.BreadPackageDto;
 import com.ssafy.bbanggu.common.exception.CustomException;
 import com.ssafy.bbanggu.common.exception.ErrorCode;
+import com.ssafy.bbanggu.favorite.FavoriteRepository;
 import com.ssafy.bbanggu.user.domain.User;
 import com.ssafy.bbanggu.user.repository.UserRepository;
 
@@ -37,21 +44,57 @@ public class BakeryService {
 	private final GeoService geoService;
 	private final UserRepository userRepository;
 	private final BakerySettlementRepository bakerySettlementRepository;
+	private final FavoriteRepository favoriteRepository;
+	private final BakeryPickupService bakeryPickupService;
+	private final BreadPackageRepository breadPackageRepository;
+	private final BreadPackageService breadPackageService;
 
 	// 삭제되지 않은 모든 가게 조회
 	@Transactional(readOnly = true)
-	public List<BakeryDetailDto> getAllBakeries(String sortBy, String sortOrder, Pageable pageable, Double userLat, Double userLng) {
+	public List<BakeryDetailDto> getAllBakeries(CustomUserDetails userDetails, String sortBy, String sortOrder, Pageable pageable) {
+		// 사용자 위치 정보 추출
+		final Double userLat = Optional.ofNullable(userDetails)
+			.filter(u -> u.getLatitude() != 0.0)
+			.map(CustomUserDetails::getLatitude)
+			.orElse(null);
+
+		final Double userLng = Optional.ofNullable(userDetails)
+			.filter(u -> u.getLongitude() != 0.0)
+			.map(CustomUserDetails::getLongitude)
+			.orElse(null);
+
 		Sort.Direction direction = sortOrder.equalsIgnoreCase("asc") ? Sort.Direction.ASC : Sort.Direction.DESC;
 
 		// ✅ 1. JPA에서 SQL 정렬 & 페이징 적용 (distance가 아닌 경우)
 		if (!"distance".equals(sortBy)) {
 			Pageable sortedPageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(direction, sortBy));
+			if(userDetails == null) {
+				return bakeryRepository.findAllByDeletedAtIsNull(sortedPageable)
+					.stream()
+					.map(bakery -> {
+						PickupTimeDto pickupTime = bakeryPickupService.getPickupTimetable(bakery.getBakeryId());
+						BreadPackage breadPackage = breadPackageService.getPackageById(bakery.getBakeryId());
+						int price = 0;
+						if (breadPackage != null) {
+							price = breadPackage.getPrice();
+						}
+						return BakeryDetailDto.from(bakery, 0.0, false, pickupTime, price);
+					})
+					.collect(Collectors.toList());
+			}
 			return bakeryRepository.findAllByDeletedAtIsNull(sortedPageable)
 				.stream()
 				.map(bakery -> {
 					double distance = (userLat == null || userLng == null) ? 0.0
 						: calculateDistance(userLat, userLng, bakery.getLatitude(), bakery.getLongitude());
-					return BakeryDetailDto.from(bakery, distance);
+					boolean is_liked = favoriteRepository.existsByUser_UserIdAndBakery_BakeryId(userDetails.getUserId(), bakery.getBakeryId());
+					PickupTimeDto pickupTime = bakeryPickupService.getPickupTimetable(bakery.getBakeryId());
+					BreadPackage breadPackage = breadPackageService.getPackageById(bakery.getBakeryId());
+					int price = 0;
+					if (breadPackage != null) {
+						price = breadPackage.getPrice();
+					}
+					return BakeryDetailDto.from(bakery, 0.0, false, pickupTime, price);
 				})
 				.collect(Collectors.toList());
 		}
@@ -62,7 +105,14 @@ public class BakeryService {
 			.map(bakery -> {
 				double distance = (userLat == null || userLng == null) ? 0.0
 					: calculateDistance(userLat, userLng, bakery.getLatitude(), bakery.getLongitude());
-				return BakeryDetailDto.from(bakery, distance);
+				boolean is_liked = favoriteRepository.existsByUser_UserIdAndBakery_BakeryId(userDetails.getUserId(), bakery.getBakeryId());
+				PickupTimeDto pickupTime = bakeryPickupService.getPickupTimetable(bakery.getBakeryId());
+				BreadPackage breadPackage = breadPackageService.getPackageById(bakery.getBakeryId());
+				int price = 0;
+				if (breadPackage != null) {
+					price = breadPackage.getPrice();
+				}
+				return BakeryDetailDto.from(bakery, 0.0, false, pickupTime, price);
 			})
 			.collect(Collectors.toList());
 
@@ -82,7 +132,18 @@ public class BakeryService {
 
 	// ID로 가게 조회
 	@Transactional(readOnly = true)
-	public BakeryDetailDto findById(Long bakery_id, Double userLat, Double userLng) {
+	public BakeryDetailDto findById(CustomUserDetails userDetails, Long bakery_id) {
+		// 사용자 위치 정보 추출
+		final Double userLat = Optional.ofNullable(userDetails)
+			.filter(u -> u.getLatitude() != 0.0)
+			.map(CustomUserDetails::getLatitude)
+			.orElse(null);
+
+		final Double userLng = Optional.ofNullable(userDetails)
+			.filter(u -> u.getLongitude() != 0.0)
+			.map(CustomUserDetails::getLongitude)
+			.orElse(null);
+
 		Bakery bakery = bakeryRepository.findByBakeryIdAndDeletedAtIsNull(bakery_id); // 삭제되지 않은 것만
 		if (bakery == null) {
 			throw new CustomException(ErrorCode.BAKERY_NOT_FOUND);
@@ -90,7 +151,14 @@ public class BakeryService {
 
 		double distance = (userLat == null || userLng == null) ? 0.0
 			: calculateDistance(userLat, userLng, bakery.getLatitude(), bakery.getLongitude());
-		return BakeryDetailDto.from(bakery, distance);
+		boolean is_liked = favoriteRepository.existsByUser_UserIdAndBakery_BakeryId(userDetails.getUserId(), bakery.getBakeryId());
+		PickupTimeDto pickupTime = bakeryPickupService.getPickupTimetable(bakery.getBakeryId());
+		BreadPackage breadPackage = breadPackageService.getPackageById(bakery.getBakeryId());
+		int price = 0;
+		if (breadPackage != null) {
+			price = breadPackage.getPrice();
+		}
+		return BakeryDetailDto.from(bakery, distance, is_liked, pickupTime, price);
 	}
 
 	public double calculateDistance(double lat1, double lng1, double lat2, double lng2) {
@@ -172,7 +240,18 @@ public class BakeryService {
 
 	// 가게 수정
 	@Transactional
-	public BakeryDto update(Bakery bakery, BakeryDto updates) {
+	public BakeryDto update(CustomUserDetails userDetails, Long bakery_id, BakeryDto updates) {
+		Bakery bakery = bakeryRepository.findByBakeryIdAndDeletedAtIsNull(bakery_id);
+		if (bakery == null) {
+			throw new CustomException(ErrorCode.BAKERY_NOT_FOUND);
+		}
+
+		// ✅ 현재 로그인한 사용자가 이 가게의 주인인지 검증
+		Long userId = userDetails.getUserId();
+		if (!bakery.getUser().getUserId().equals(userId)) {
+			throw new CustomException(ErrorCode.NO_PERMISSION_TO_EDIT_BAKERY);
+		}
+
 		// ✅ 수정하려는 가게명 중복 검사
 		if (updates.name() != null && bakeryRepository.existsByNameAndBakeryIdNot(updates.name(), bakery.getBakeryId())) {
 			throw new CustomException(ErrorCode.BAKERY_NAME_ALREADY_IN_USE);
@@ -212,16 +291,34 @@ public class BakeryService {
 
 	// 키워드로 가게 검색 (삭제된 가게 제외)
 	@Transactional(readOnly = true)
-	public Page<BakeryDetailDto> searchByKeyword(String keyword, Pageable pageable, Double userLat, Double userLng) {
+	public Page<BakeryDetailDto> searchByKeyword(CustomUserDetails userDetails, String keyword, Pageable pageable) {
 		if (keyword == null || keyword.trim().isEmpty()) {
 			throw new CustomException(ErrorCode.NO_KEYWORD_ENTERED);
 		}
+
+		// 사용자 위치 정보 추출
+		final Double userLat = Optional.ofNullable(userDetails)
+			.filter(u -> u.getLatitude() != 0.0)
+			.map(CustomUserDetails::getLatitude)
+			.orElse(null);
+
+		final Double userLng = Optional.ofNullable(userDetails)
+			.filter(u -> u.getLongitude() != 0.0)
+			.map(CustomUserDetails::getLongitude)
+			.orElse(null);
 
 		return bakeryRepository.searchByKeyword(keyword, pageable)
 			.map(bakery -> {
 				double distance = (userLat == null || userLng == null) ? 0.0
 					: calculateDistance(userLat, userLng, bakery.getLatitude(), bakery.getLongitude());
-				return BakeryDetailDto.from(bakery, distance);
+				boolean is_liked = favoriteRepository.existsByUser_UserIdAndBakery_BakeryId(userDetails.getUserId(), bakery.getBakeryId());
+				PickupTimeDto pickupTime = bakeryPickupService.getPickupTimetable(bakery.getBakeryId());
+				BreadPackage breadPackage = breadPackageService.getPackageById(bakery.getBakeryId());
+				int price = 0;
+				if (breadPackage != null) {
+					price = breadPackage.getPrice();
+				}
+				return BakeryDetailDto.from(bakery, distance, is_liked, pickupTime, price);
 			});
 	}
 
