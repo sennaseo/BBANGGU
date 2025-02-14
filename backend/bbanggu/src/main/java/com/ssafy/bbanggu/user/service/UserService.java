@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.ssafy.bbanggu.auth.dto.JwtToken;
+import com.ssafy.bbanggu.auth.security.CustomUserDetails;
 import com.ssafy.bbanggu.auth.security.JwtTokenProvider;
 import com.ssafy.bbanggu.bakery.service.BakeryService;
 import com.ssafy.bbanggu.common.exception.CustomException;
@@ -21,7 +22,9 @@ import com.ssafy.bbanggu.user.dto.UserResponse;
 import com.ssafy.bbanggu.user.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserService { // 사용자 관련 비즈니스 로직 처리
@@ -141,14 +144,15 @@ public class UserService { // 사용자 관련 비즈니스 로직 처리
 	/**
 	 * 사용자 정보 조회
 	 */
-	public UserResponse getUserInfo(Long userId) {
-		User user = userRepository.findById(userId)
+	public UserResponse getUserInfo(CustomUserDetails userDetails) {
+		User user = userRepository.findById(userDetails.getUserId())
 			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
 		// 탈퇴한 계정인지 확인
 		if (user.getDeletedAt() != null) {
 			throw new CustomException(ErrorCode.ACCOUNT_DEACTIVATED);
 		}
+		log.info("✅ {}번 사용자 검증 완료", userDetails.getUserId());
 
 		return UserResponse.from(user);
 	}
