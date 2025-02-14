@@ -155,7 +155,7 @@ export const updateBread = async (
 };
 
 // 빵 정보 삭제 API
-export const deleteBread = async (breadId: number) => {
+export const deleteBread = async (breadId: number): Promise<BreadDeleteResponse> => {
   try {
     const response = await fetch(`/api/bread/${breadId}`, {
       method: 'DELETE',
@@ -170,7 +170,7 @@ export const deleteBread = async (breadId: number) => {
     }
 
     const data = await response.json();
-    return data;
+    return data as BreadDeleteResponse;  // 타입 명시
   } catch (error) {
     console.error('빵 삭제 중 오류 발생:', error);
     throw error;

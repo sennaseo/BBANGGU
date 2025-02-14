@@ -159,23 +159,17 @@ const BREAD_CATEGORIES: BreadCategory[] = [
   },
 ];
 
-// API_BASE_URL 수정
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://i12d102.p.ssafy.io:8081';
-
-// getFullImageUrl 함수 수정
+// getFullImageUrl 함수에서 직접 환경변수 사용
 const getFullImageUrl = (imageUrl: string | null): string => {
   if (!imageUrl) return '';
   if (imageUrl.startsWith('http')) return imageUrl;
   
-  // URL 정규화
   const path = imageUrl.startsWith('/') ? imageUrl : `/uploads/${imageUrl}`;
   
-  // 개발 환경에서는 /uploads로 시작하는 경로 사용
   if (import.meta.env.DEV) {
-    return path;  // 프록시가 처리할 수 있도록 상대 경로 유지
+    return path;
   }
   
-  // 프로덕션 환경에서는 전체 URL 사용
   return `https://i12d102.p.ssafy.io${path}`;
 };
 
