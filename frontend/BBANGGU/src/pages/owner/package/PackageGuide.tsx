@@ -25,10 +25,15 @@ const PackageGuide: React.FC = () => {
           console.log('FormData 내용:', pair[0], pair[1]); 
         }
 
-        console.log('요청 시작');
+        // API 호출 수정
         const response = await fetch('https://i12d102.p.ssafy.io/detect', {
           method: 'POST',
-          body: formData  // headers 제거
+          headers: {
+            'Access-Control-Allow-Methods': 'POST',
+            'Access-Control-Allow-Origin': '*'
+          },
+          credentials: 'include',
+          body: formData
         });
 
         console.log('응답 상태:', response.status);
