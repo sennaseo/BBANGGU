@@ -48,7 +48,50 @@ const PackagePreview: React.FC = () => {
   };
 
   const handleAddMore = () => {
-    navigate('/owner/package/analysis'); // 추가 촬영
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = 'image/*';
+    fileInput.capture = 'environment';
+    
+    fileInput.onchange = async (event) => {
+      const file = (event.target as HTMLInputElement).files?.[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onloadend = async () => {
+          try {
+            // TODO: API 엔드포인트 설정 필요
+            const response = await fetch('/bread-package/analyze', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ 
+                image: reader.result 
+              })
+            });
+
+            const result = await response.json();
+            // 분석된 아이템들을 현재 items에 추가
+            setItems(prevItems => [
+              ...prevItems,
+              ...result.items.map((item: any, index: number) => ({
+                id: prevItems.length + index + 1,
+                name: item.name,
+                count: item.count,
+                price: item.price,
+                status: 'confirmed'
+              }))
+            ]);
+          } catch (error) {
+            console.error('이미지 분석 실패:', error);
+            alert('이미지 분석 중 오류가 발생했습니다.');
+          }
+        };
+        reader.readAsDataURL(file);
+      }
+    };
+
+    fileInput.click();
   };
 
   const handleManualAdd = () => {

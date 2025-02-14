@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { SubmitButton } from '../../../common/form/SubmitButton';
 import cameraExample from '@/assets/images/bakery/camera_ex.png';
@@ -8,18 +8,17 @@ import Header from '../../../components/owner/header/Header';
 
 const PackageGuide: React.FC = () => {
   const navigate = useNavigate();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleStartRegister = () => {
-    // 카메라 권한 요청 후 분석 페이지로 이동
-    if ('mediaDevices' in navigator) {
-      navigator.mediaDevices.getUserMedia({ video: true })
-        .then(() => {
-          navigate('/owner/package/analysis');  // camera-test에서 analysis로 변경
-        })
-        .catch(error => {
-          console.error('카메라 권한 거부:', error);
-          alert('카메라 접근 권한이 필요합니다.');
-        });
+  const handleCapture = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const imageData = reader.result as string;
+        navigate('/owner/package/preview', { state: { image: imageData } });
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -74,11 +73,21 @@ const PackageGuide: React.FC = () => {
           </div>
         </div>
 
+        {/* 카메라 input 추가 */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          capture="environment"
+          onChange={handleCapture}
+          className="hidden"
+        />
+
         {/* 하단 버튼 */}
         <div className="mt-auto pt-4">
           <SubmitButton
             text={<span className="font-bold">재고 찍으러 가기</span>}
-            onClick={handleStartRegister}
+            onClick={() => fileInputRef.current?.click()}  // 버튼 클릭시 바로 카메라 열기
             className="w-full"
           />
         </div>
