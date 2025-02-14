@@ -11,9 +11,12 @@ import org.springframework.transaction.annotation.Transactional;
 import com.ssafy.bbanggu.auth.security.CustomUserDetails;
 import com.ssafy.bbanggu.bakery.domain.Bakery;
 import com.ssafy.bbanggu.bakery.repository.BakeryRepository;
+import com.ssafy.bbanggu.bread.Bread;
 import com.ssafy.bbanggu.breadpackage.dto.BreadPackageDto;
+import com.ssafy.bbanggu.breadpackage.dto.TodayBreadPackageDto;
 import com.ssafy.bbanggu.common.exception.CustomException;
 import com.ssafy.bbanggu.common.exception.ErrorCode;
+import com.ssafy.bbanggu.reservation.ReservationRepository;
 import com.ssafy.bbanggu.user.domain.User;
 
 import lombok.RequiredArgsConstructor;
@@ -27,6 +30,7 @@ public class BreadPackageService {
 
 	private final BreadPackageRepository breadPackageRepository;
 	private final BakeryRepository bakeryRepository;
+	private final ReservationRepository reservationRepository;
 
 	/**
 	 * 빵꾸러미 생성
@@ -55,6 +59,7 @@ public class BreadPackageService {
 		BreadPackage breadPackage = BreadPackage.builder()
 			.bakery(bakery)
 			.price(request.price())
+			.initialQuantity(request.quantity())
 			.quantity(request.quantity())
 			.name(request.name())
 			.createdAt(LocalDateTime.now())
@@ -148,5 +153,26 @@ public class BreadPackageService {
 			return -1;
 		}
 		return breadPackage.getQuantity();
+	}
+
+	public TodayBreadPackageDto getTodayPackagesByBakeryId(CustomUserDetails userDetails, Long bakeryId) {
+		Bakery bakery = bakeryRepository.findById(bakeryId)
+			.orElseThrow(() -> new CustomException(ErrorCode.BAKERY_NOT_FOUND));
+		log.info("✅ {}번 빵집 존재 확인 완료", bakeryId);
+
+		if (!bakery.getUser().getUserId().equals(userDetails.getUserId())) {
+			throw new CustomException(ErrorCode.USER_IS_NOT_OWNER);
+		}
+		log.info("✅ 현재 로그인한 사용자가 해당 빵집의 사장님입니다^^");
+
+		BreadPackage breadPackage = breadPackageRepository.findByBakeryIdAndToday(bakeryId)
+			.orElseThrow(() -> new CustomException(ErrorCode.BREAD_PACKAGE_NOT_FOUND));
+		log.info("✅ {}번 빵집에 오늘의 빵꾸러미가 등록되어 있습니다.", bakeryId);
+
+		// 현재 가게의 픽업 완료된 예약들의 빵꾸러미 개수 총합
+		int nowQuantity = reservationRepository.getTotalPickedUpQuantityTodayByBakeryId(bakeryId);
+		log.info("✅ 현재까지 {}번 빵집의 픽업 완료된 빵꾸러미 개수: {}", bakeryId, nowQuantity);
+		int savedMoney = breadPackage.getPrice() * nowQuantity;
+		return TodayBreadPackageDto.from(breadPackage, savedMoney);
 	}
 }
