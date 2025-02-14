@@ -1,17 +1,18 @@
 # pip install python-multipart
-from fastapi import FastAPI, UploadFile, File, Form
-from typing import List
-from pathlib import Path
-from ai import detect, detect_crop, auto_labeling
-from collections import defaultdict
-import shutil
 import os
-import cv2
+import shutil
+from collections import defaultdict
+from pathlib import Path
+from typing import List
+
 import torch
 import torch.nn as nn
-import torchvision.transforms as transforms
 import torchvision.models as models
+import torchvision.transforms as transforms
 from PIL import Image
+from fastapi import FastAPI, UploadFile, File, Form
+
+from ai import detect, detect_crop, auto_labeling
 
 app = FastAPI()
 
