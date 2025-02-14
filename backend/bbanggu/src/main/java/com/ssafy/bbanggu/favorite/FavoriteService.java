@@ -56,9 +56,6 @@ public class FavoriteService {
 		}
 		log.info("✅ 사용자가 아직 {}번 빵집의 좋아요를 누르지 않음", bakery.getBakeryId());
 
-
-		log.info("📌 user: ", user);
-		log.info("📌 userDetails: ", userDetails);
 		// 새로 좋아요 추가
 		Favorite favorite = Favorite.builder()
 			.user(user)
@@ -127,49 +124,59 @@ public class FavoriteService {
 
 	@Transactional(readOnly = true)
 	public List<BakeryDetailDto> getTop10BestBakeries(CustomUserDetails userDetails) {
-		// 사용자 위치 정보 추출
-		final Double userLat = Optional.ofNullable(userDetails)
-			.filter(u -> u.getLatitude() != 0.0)
-			.map(CustomUserDetails::getLatitude)
-			.orElse(null);
+		// 사용자 위치 정보 추출 (로그인 안 했으면 기본값 null)
+		final Double userLat = (userDetails != null && userDetails.getLatitude() != 0.0)
+			? userDetails.getLatitude()
+			: null;
 
-		final Double userLng = Optional.ofNullable(userDetails)
-			.filter(u -> u.getLongitude() != 0.0)
-			.map(CustomUserDetails::getLongitude)
-			.orElse(null);
+		final Double userLng = (userDetails != null && userDetails.getLongitude() != 0.0)
+			? userDetails.getLongitude()
+			: null;
 
+		// 로그인하지 않은 경우, `userId` 없이 좋아요 처리 (is_liked = false)
+		boolean isLoggedIn = (userDetails != null);
+
+		// 로그인하지 않은 사용자도 조회 가능하도록 예외 방지
 		if (userLat == null || userLng == null) {
 			return bakeryRepository.findTop10ByFavorites().stream()
 				.map(b -> {
-					double distance = (userLat == null || userLng == null) ? 0.0
-						: bakeryService.calculateDistance(userLat, userLng, b.getLatitude(), b.getLongitude());
-					boolean is_liked = favoriteRepository.existsByUser_UserIdAndBakery_BakeryId(userDetails.getUserId(), b.getBakeryId());
+					double distance = 0.0; // ✅ 로그인X or 주소 미등록 → 거리 0.0 처리
+
+					boolean is_liked = isLoggedIn
+						? favoriteRepository.existsByUser_UserIdAndBakery_BakeryId(userDetails.getUserId(), b.getBakeryId())
+						: false;
+
 					PickupTimeDto pickupTime = bakeryPickupService.getPickupTimetable(b.getBakeryId());
+
+					// ✅ 빵꾸러미 가격 가져오기 (null 체크 포함)
 					BreadPackage breadPackage = breadPackageService.getPackageById(b.getBakeryId());
-					int price = 0;
-					if (breadPackage != null) {
-						price = breadPackage.getPrice();
-					}
+					int price = (breadPackage != null) ? breadPackage.getPrice() : 0;
+
 					return BakeryDetailDto.from(b, distance, is_liked, pickupTime, price);
-				}) // ✅ 로그인X or 주소 미등록 → 거리 0.0km 처리
+				})
 				.toList();
 		}
 
+		// ✅ 위치 정보가 있는 경우 거리 계산 적용
 		return bakeryRepository.findBestBakeriesByLocation(userLat, userLng).stream()
 			.map(b -> {
-				double distance = (userLat == null || userLng == null) ? 0.0
-					: bakeryService.calculateDistance(userLat, userLng, b.getLatitude(), b.getLongitude());
-				boolean is_liked = favoriteRepository.existsByUser_UserIdAndBakery_BakeryId(userDetails.getUserId(), b.getBakeryId());
+				double distance = bakeryService.calculateDistance(userLat, userLng, b.getLatitude(), b.getLongitude());
+
+				boolean is_liked = isLoggedIn
+					? favoriteRepository.existsByUser_UserIdAndBakery_BakeryId(userDetails.getUserId(), b.getBakeryId())
+					: false;
+
 				PickupTimeDto pickupTime = bakeryPickupService.getPickupTimetable(b.getBakeryId());
+
+				// ✅ 빵꾸러미 가격 가져오기 (null 체크 포함)
 				BreadPackage breadPackage = breadPackageService.getPackageById(b.getBakeryId());
-				int price = 0;
-				if (breadPackage != null) {
-					price = breadPackage.getPrice();
-				}
+				int price = (breadPackage != null) ? breadPackage.getPrice() : 0;
+
 				return BakeryDetailDto.from(b, distance, is_liked, pickupTime, price);
 			})
 			.toList();
 	}
+
 
 	public int getBakeryFavorCount(long bakeryId) {
 		return favoriteRepository.countByBakery_BakeryId(bakeryId);
