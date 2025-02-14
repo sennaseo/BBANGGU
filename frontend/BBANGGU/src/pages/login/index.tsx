@@ -5,7 +5,9 @@ import { User, Lock } from "lucide-react"
 import { login } from "../../api/common/login/Login"
 import { getKakaoLoginUrl } from "../../api/common/login/KakaoLogin"
 import { getUserInfo } from "../../api/common/info/UserInfo"
-import { setUserInfo, setLoading, setError } from "../../store/slices/userSlice"
+import { loginSuccess } from "../../store/slices/authSlice"
+import { setUserInfo } from "../../store/slices/userSlice"
+import { store } from "../../store"
 
 export default function LoginPage() {
   const [formData, setFormData] = useState({
@@ -35,15 +37,24 @@ export default function LoginPage() {
     try {
       // 로그인 API 호출
       const loginResponse = await login(formData)
+      console.log('로그인 응답:', loginResponse)
       
-      // 로그인 성공 후 사용자 정보 가져오기
+      // 리덕스에 로그인 정보 저장
+      dispatch(loginSuccess(loginResponse))
+      
+      // 사용자 정보 가져오기
       const userResponse = await getUserInfo()
+      console.log('사용자 정보 응답:', userResponse)
       
       // 리덕스에 사용자 정보 저장
       dispatch(setUserInfo(userResponse.data))
       
-      // 성공 메시지 표시
-      alert(loginResponse.message)
+      // 리덕스 스토어 전체 상태 확인
+      const state = store.getState()
+      console.log('현재 리덕스 상태:', {
+        auth: state.auth,
+        user: state.user
+      })
       
       // 사용자 역할에 따른 리다이렉션
       if (loginResponse.data.user_type === 'OWNER') {
@@ -56,15 +67,12 @@ export default function LoginPage() {
     } catch (error) {
       console.error('로그인 에러:', error)
       if (error instanceof Error) {
-        dispatch(setError(error.message))
         alert(error.message)
       } else {
-        dispatch(setError('로그인 중 오류가 발생했습니다.'))
         alert('로그인 중 오류가 발생했습니다.')
       }
     } finally {
       setIsLoading(false)
-      dispatch(setLoading(false))
     }
   }
 

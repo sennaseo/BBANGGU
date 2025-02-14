@@ -7,6 +7,9 @@ import ErrorBoundary from "../../../components/ErrorBoundary"
 import { useNavigate } from "react-router-dom"
 import { mockBakeries } from "../../../mocks/user/bakeryMockData"
 import UserBottomNavigation from "../../../components/user/navigations/bottomnavigation/UserBottomNavigation"
+import { useSelector } from 'react-redux'
+import { RootState } from '../../../store'
+
 export default function UserMain() {
   const {
     searchQuery,
@@ -17,6 +20,9 @@ export default function UserMain() {
     error,
     toggleLike,
   } = useUsermain()
+
+  // 리덕스에서 사용자 정보 가져오기
+  const userInfo = useSelector((state: RootState) => state.user.userInfo)
 
   const navigate = useNavigate()
 
@@ -61,7 +67,7 @@ export default function UserMain() {
             <div className="relative h-full flex flex-col justify-between">
               <div className="space-y-2 z-10 pb-8">
                 <h1 className="text-[#fc973b] text-[22px] font-bold">
-                  <span className="text-[#fc973b] text-[30px]">김싸피</span> 님,
+                  <span className="text-[#fc973b] text-[30px]">{userInfo?.name || '고객'}</span> 님,
                 </h1>
                 <p className="text-[#5a5a5a] text-[24px] font-bold">
                   빵꾸러미와 함께 환경을
