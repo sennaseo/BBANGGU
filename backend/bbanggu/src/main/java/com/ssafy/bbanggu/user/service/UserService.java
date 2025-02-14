@@ -161,14 +161,15 @@ public class UserService { // 사용자 관련 비즈니스 로직 처리
 	 * 사용자 정보 수정
 	 */
 	@Transactional
-	public void update(Long userId, UpdateUserRequest updates) {
-		User user = userRepository.findById(userId)
+	public void update(CustomUserDetails userDetails, UpdateUserRequest updates) {
+		User user = userRepository.findById(userDetails.getUserId())
 			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
 		// ✅ 이미 탈퇴한 사용자 처리
 		if (user.isDeleted()) {
 			throw new CustomException(ErrorCode.ACCOUNT_DEACTIVATED);
 		}
+		log.info("✅ {}번 사용자 검증 완료", userDetails.getUserId());
 
 		// ✅ 위치 정보가 바뀌었을 때에만 변경 가능하도록 처리
 		String addrRoad = user.getAddressRoad();

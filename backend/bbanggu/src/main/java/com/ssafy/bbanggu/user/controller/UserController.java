@@ -180,13 +180,11 @@ public class UserController {
      * 회원 정보 수정 API
      */
     @PatchMapping("/update")
-    public ResponseEntity<ApiResponse> updateUser(Authentication authentication,
+    public ResponseEntity<ApiResponse> updateUser(
+		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@RequestBody UpdateUserRequest updates) {
-		// ✅ userId 조회
-		Long userId = Long.parseLong(authentication.getName());
-
 		// ✅ 변경할 필드만 업데이트
-		userService.update(userId, updates);
+		userService.update(userDetails, updates);
 
 		return ResponseEntity.ok(new ApiResponse("회원 정보가 성공적으로 수정되었습니다.", null));
     }
