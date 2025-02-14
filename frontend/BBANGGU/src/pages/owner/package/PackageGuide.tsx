@@ -14,26 +14,27 @@ const PackageGuide: React.FC = () => {
     const file = event.target.files?.[0];
     if (file) {
       try {
-        // 이미지 압축
         const compressedFile = await compressImage(file);
         console.log('원본 크기:', file.size, '압축 후 크기:', compressedFile.size);
 
         const formData = new FormData();
         formData.append('images', compressedFile);
 
-        console.log('업로드 시작:', compressedFile);  // 디버깅용
-
-        // API 호출
-        const response = await fetch('/detect', {  // 경로 수정
+        // API 호출 수정
+        const response = await fetch('https://i12d102.p.ssafy.io/detect', {  // 전체 URL 사용
           method: 'POST',
+          headers: {
+            // Content-Type은 FormData를 사용할 때는 자동으로 설정됨
+            'Accept': 'application/json',
+          },
           body: formData
         });
 
-        console.log('서버 응답:', response.status);  // 디버깅용
+        console.log('서버 응답:', response.status);
 
         if (!response.ok) {
           const errorData = await response.text();
-          console.error('서버 에러 응답:', errorData);  // 디버깅용
+          console.error('서버 에러 응답:', errorData);
           throw new Error(`서버 에러: ${response.status}`);
         }
 
@@ -53,7 +54,7 @@ const PackageGuide: React.FC = () => {
         reader.readAsDataURL(compressedFile);
 
       } catch (error) {
-        console.error('상세 에러:', error);  // 디버깅용
+        console.error('상세 에러:', error);
         alert('이미지 분석 중 오류가 발생했습니다.');
       }
     }
