@@ -27,7 +27,6 @@ import { MapPage } from "./pages/user/map/MapPage";
 import { UserSaveReport } from "./pages/user/mypage/usersavereport/UserSaveReport"
 import { Notification } from "./pages/user/mypage/notification/Notification"
 import PackageGuide from './pages/owner/package/PackageGuide';
-import PackageAnalysis from './pages/owner/package/PackageAnalysis';
 import PackagePreview from './pages/owner/package/PackagePreview';
 import FavoriteBakery from "./pages/user/favorite/FavoriteBakery";
 import UserCustomerSupport from "./pages/user/mypage/support/CustomerSupport";
@@ -82,7 +81,6 @@ export default function App() {
               <Route path="/owner/report" element={<ReportPage />} />
               <Route path="/owner/main" element={<OwnerMainPage />} />
               <Route path="/owner/package/guide" element={<PackageGuide />} />
-              <Route path="/owner/package/analysis" element={<PackageAnalysis />} />
               <Route path="/owner/package/preview" element={<PackagePreview />} />
               <Route path="/owner/package/loading" element={<PackageLoading />} />
               <Route path="/owner/package/register" element={<PackageRegister />} />

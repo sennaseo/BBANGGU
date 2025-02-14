@@ -1,5 +1,6 @@
 package com.ssafy.bbanggu.user.controller;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
@@ -19,6 +20,7 @@ import com.ssafy.bbanggu.user.dto.UserResponse;
 import com.ssafy.bbanggu.user.repository.UserRepository;
 import com.ssafy.bbanggu.user.service.UserService;
 
+import org.springframework.boot.autoconfigure.jms.artemis.ArtemisNoOpBindingRegistry;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
@@ -116,10 +118,15 @@ public class UserController {
 		User user = userRepository.findByEmail(request.getEmail())
 			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
+		Map<String, Object> response = new HashMap<>();
+		response.put("access_token", accessToken);
+		response.put("refresh_token", refreshToken);
+		response.put("user_type", user.getRole());
+
 		return ResponseEntity.ok()
 			.header(HttpHeaders.SET_COOKIE, accessTokenCookie.toString())
 			.header(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString())
-			.body(new ApiResponse("로그인이 성공적으로 완료되었습니다.", user.getRole()));
+			.body(new ApiResponse("로그인이 성공적으로 완료되었습니다.", response));
     }
 
     /**
@@ -154,17 +161,18 @@ public class UserController {
 			.body(new ApiResponse("로그아웃이 완료되었습니다.", null));
     }
 
-	@GetMapping("/{userId}")
+	/**
+	 * 회원 정보 조회
+	 *
+	 * @param userDetails 현재 로그인한 사용자 정보
+	 * @return 현재 로그인한 사용자의 상세 정보
+	 */
+	@GetMapping
 	public ResponseEntity<ApiResponse> getUserInfo(
-		@AuthenticationPrincipal CustomUserDetails userDetails,
-		@PathVariable Long userId
+		@AuthenticationPrincipal CustomUserDetails userDetails
 	) {
-		// 현재 로그인한 사용자와 조회 대상이 일치하는지 확인
-		if (!userDetails.getUserId().equals(userId)) {
-			throw new CustomException(ErrorCode.NOT_EQUAL_USER);
-		}
-
-		UserResponse user = userService.getUserInfo(userId);
+		log.info("✨ 사용자 정보 조회 ✨");
+		UserResponse user = userService.getUserInfo(userDetails);
 		return ResponseEntity.ok(new ApiResponse("회원 정보 조회가 성공적으로 완료되었습니다.", user));
 	}
 

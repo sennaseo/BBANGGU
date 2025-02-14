@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { SubmitButton } from '../../../common/form/SubmitButton';
 import cameraExample from '@/assets/images/bakery/camera_ex.png';
@@ -8,19 +8,108 @@ import Header from '../../../components/owner/header/Header';
 
 const PackageGuide: React.FC = () => {
   const navigate = useNavigate();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleStartRegister = () => {
-    // 카메라 권한 요청 후 분석 페이지로 이동
-    if ('mediaDevices' in navigator) {
-      navigator.mediaDevices.getUserMedia({ video: true })
-        .then(() => {
-          navigate('/owner/package/analysis');  // camera-test에서 analysis로 변경
-        })
-        .catch(error => {
-          console.error('카메라 권한 거부:', error);
-          alert('카메라 접근 권한이 필요합니다.');
+  const handleCapture = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      try {
+        const compressedFile = await compressImage(file);
+        console.log('원본 크기:', file.size, '압축 후 크기:', compressedFile.size);
+
+        const formData = new FormData();
+        formData.append('images', compressedFile);
+
+        // FormData 내용 확인
+        for (let pair of formData.entries()) {
+          console.log('FormData 내용:', pair[0], pair[1]); 
+        }
+
+        // FastAPI 서버로 직접 전송
+        const response = await fetch('https://i12d102.p.ssafy.io/ai/detect', {  // 임시 URL, 실제 FastAPI 서버 URL로 변경 필요
+          method: 'POST',
+          body: formData
         });
+
+        console.log('응답 상태:', response.status);
+        const responseText = await response.text();
+        console.log('응답 내용:', responseText);
+
+        if (!response.ok) {
+          throw new Error(`서버 에러: ${response.status}`);
+        }
+
+        const result = JSON.parse(responseText);
+        console.log('분석 결과:', result);
+
+        // 이미지 미리보기용 base64 변환
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          navigate('/owner/package/preview', { 
+            state: { 
+              image: reader.result,
+              analyzedItems: result.items
+            } 
+          });
+        };
+        reader.readAsDataURL(compressedFile);
+
+      } catch (error) {
+        console.error('상세 에러:', error);
+        alert('이미지 분석 중 오류가 발생했습니다.');
+      }
     }
+  };
+
+  // 이미지 압축 함수
+  const compressImage = (file: File): Promise<File> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const MAX_WIDTH = 1024;  // 최대 너비
+          const MAX_HEIGHT = 1024; // 최대 높이
+          let width = img.width;
+          let height = img.height;
+
+          // 비율 유지하면서 크기 조정
+          if (width > height) {
+            if (width > MAX_WIDTH) {
+              height *= MAX_WIDTH / width;
+              width = MAX_WIDTH;
+            }
+          } else {
+            if (height > MAX_HEIGHT) {
+              width *= MAX_HEIGHT / height;
+              height = MAX_HEIGHT;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx?.drawImage(img, 0, 0, width, height);
+
+          // 압축된 이미지를 Blob으로 변환
+          canvas.toBlob((blob) => {
+            if (blob) {
+              const compressedFile = new File([blob], file.name, {
+                type: 'image/jpeg',
+                lastModified: Date.now(),
+              });
+              resolve(compressedFile);
+            } else {
+              reject(new Error('이미지 압축 실패'));
+            }
+          }, 'image/jpeg', 0.7);  // 품질 0.7로 압축
+        };
+        img.src = event.target?.result as string;
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
   };
 
   return (
@@ -74,11 +163,21 @@ const PackageGuide: React.FC = () => {
           </div>
         </div>
 
+        {/* 카메라 input 추가 */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          capture="environment"
+          onChange={handleCapture}
+          className="hidden"
+        />
+
         {/* 하단 버튼 */}
         <div className="mt-auto pt-4">
           <SubmitButton
             text={<span className="font-bold">재고 찍으러 가기</span>}
-            onClick={handleStartRegister}
+            onClick={() => fileInputRef.current?.click()}  // 버튼 클릭시 바로 카메라 열기
             className="w-full"
           />
         </div>
