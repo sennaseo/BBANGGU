@@ -25,12 +25,10 @@ const PackageGuide: React.FC = () => {
           console.log('FormData 내용:', pair[0], pair[1]); 
         }
 
-        // API 호출 수정
-        const response = await fetch('https://i12d102.p.ssafy.io/detect', {
+        // FastAPI 서버로 직접 전송
+        const response = await fetch('https://i12d102.p.ssafy.io/ai/detect', {  // 임시 URL, 실제 FastAPI 서버 URL로 변경 필요
           method: 'POST',
-          body: formData,
-          mode: 'cors',
-          credentials: 'same-origin'
+          body: formData
         });
 
         console.log('응답 상태:', response.status);
@@ -38,8 +36,6 @@ const PackageGuide: React.FC = () => {
         console.log('응답 내용:', responseText);
 
         if (!response.ok) {
-          const errorData = responseText;
-          console.error('서버 에러 응답:', errorData);
           throw new Error(`서버 에러: ${response.status}`);
         }
 
