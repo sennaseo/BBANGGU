@@ -161,17 +161,18 @@ public class UserController {
 			.body(new ApiResponse("로그아웃이 완료되었습니다.", null));
     }
 
-	@GetMapping("/{userId}")
+	/**
+	 * 회원 정보 조회
+	 *
+	 * @param userDetails 현재 로그인한 사용자 정보
+	 * @return 현재 로그인한 사용자의 상세 정보
+	 */
+	@GetMapping
 	public ResponseEntity<ApiResponse> getUserInfo(
-		@AuthenticationPrincipal CustomUserDetails userDetails,
-		@PathVariable Long userId
+		@AuthenticationPrincipal CustomUserDetails userDetails
 	) {
-		// 현재 로그인한 사용자와 조회 대상이 일치하는지 확인
-		if (!userDetails.getUserId().equals(userId)) {
-			throw new CustomException(ErrorCode.NOT_EQUAL_USER);
-		}
-
-		UserResponse user = userService.getUserInfo(userId);
+		log.info("✨ 사용자 정보 조회 ✨");
+		UserResponse user = userService.getUserInfo(userDetails);
 		return ResponseEntity.ok(new ApiResponse("회원 정보 조회가 성공적으로 완료되었습니다.", user));
 	}
 

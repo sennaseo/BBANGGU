@@ -12,7 +12,9 @@ public record UserResponse(
 	String email,
 	String phone,
 	String role,
-	String profileImageUrl
+	String profileImageUrl,
+	String addressRoad,
+	String addressDetail
 ) {
 	/**
 	 * User 엔티티 객체를 UserResponse로 변환
@@ -27,7 +29,9 @@ public record UserResponse(
 			user.getEmail(),
 			user.getPhone(),
 			user.getRole().name(),
-			user.getProfileImageUrl()
+			user.getProfileImageUrl(),
+			user.getAddressRoad(),
+			user.getAddressDetail()
 		);
 	}
 }
