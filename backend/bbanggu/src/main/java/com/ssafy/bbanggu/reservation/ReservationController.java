@@ -21,6 +21,7 @@ import com.ssafy.bbanggu.common.response.ApiResponse;
 import com.ssafy.bbanggu.reservation.dto.ReservationCancelRequest;
 import com.ssafy.bbanggu.reservation.dto.ReservationCreateRequest;
 import com.ssafy.bbanggu.reservation.dto.ReservationDTO;
+import com.ssafy.bbanggu.reservation.dto.ReservationResponse;
 import com.ssafy.bbanggu.reservation.dto.ValidReservationRequest;
 
 import jakarta.validation.Valid;
@@ -106,42 +107,40 @@ public class ReservationController {
 		return ResponseEntity.ok().body(new ApiResponse("빵꾸러미 픽업 처리가 완료되었습니다.", response));
 	}
 
+
+	/**
+	 * 기간 내 사용자 예약 조회 API
+	 *
+	 * @param userDetails 현재 로그인한 사용자 정보
+	 * @param startDate 시작일
+	 * @param endDate 종료일
+	 * @return 사용자 기간 내 예약 리스트
+	 */
 	@GetMapping("/{startDate}/{endDate}")
 	public ResponseEntity<?> getUserReservationList (
 		@AuthenticationPrincipal CustomUserDetails userDetails,
-		@PathVariable LocalDate startDate,
-		@PathVariable LocalDate endDate
+		@PathVariable LocalDate startDate, @PathVariable LocalDate endDate
 	) {
-		Long userId = userDetails.getUserId();
-		try {
-			List<ReservationDTO> reservationList = reservationService.getUserReservationList(userId, startDate, endDate);
-			if (reservationList.isEmpty()) {
-				ResponseEntity.status(HttpStatus.NO_CONTENT)
-					.body(new ApiResponse("예약이 없습니다.", null));
-			}
-			return ResponseEntity.status(HttpStatus.OK)
-				.body(new ApiResponse("사용자 예약 현황 조회 성공", reservationList));
-		} catch (Exception e) {
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-				.body(new ApiResponse("사용자 예약 현황 조회 실패", null));
+		log.info("✨ 기간 내 사용자 예약 조회 ✨");
+		List<ReservationResponse> reservationList = reservationService.getUserReservationList(userDetails, startDate, endDate);
+		if (reservationList.isEmpty()) {
+			ResponseEntity.status(HttpStatus.NO_CONTENT).body(new ApiResponse("기간 내 사용자 예약이 존재하지 않습니다.", null));
 		}
+		return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse("기간 내 사용자 예약 조회가 완료되었습니다.", reservationList));
 	}
 
+
 	@GetMapping("/bakery/{bakeryId}/{startDate}/{endDate}")
-	public ResponseEntity<?> getOwnerReservationList(@RequestHeader("Authorization") String authorization, @PathVariable long bakeryId,
-													 @PathVariable LocalDate startDate, @PathVariable LocalDate endDate) {
-		try {
-			List<ReservationDTO> reservationList = reservationService.getOwnerReservationList(authorization, bakeryId, startDate, endDate);
-			if (reservationList.isEmpty()) {
-				ResponseEntity.status(HttpStatus.NO_CONTENT)
-					.body(new ApiResponse("예약이 없습니다.", null));
-			}
-			return ResponseEntity.status(HttpStatus.OK)
-				.body(new ApiResponse("가게 예약 현황 조회 성공", reservationList));
-		} catch (Exception e) {
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-				.body(new ApiResponse("가게 예약 현황 조회 실패", null));
+	public ResponseEntity<ApiResponse> getOwnerReservationList(
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@PathVariable long bakeryId,
+		@PathVariable LocalDate startDate, @PathVariable LocalDate endDate
+	) {
+		List<ReservationResponse> reservationList = reservationService.getOwnerReservationList(userDetails, bakeryId, startDate, endDate);
+		if (reservationList.isEmpty()) {
+			ResponseEntity.status(HttpStatus.NO_CONTENT).body(new ApiResponse("예약이 없습니다.", null));
 		}
+		return ResponseEntity.ok().body(new ApiResponse("기간 내 가게 예약 조회가 완료되었습니다.", reservationList));
 	}
 
 }

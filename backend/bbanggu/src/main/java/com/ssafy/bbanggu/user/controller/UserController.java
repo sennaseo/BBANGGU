@@ -1,5 +1,6 @@
 package com.ssafy.bbanggu.user.controller;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
@@ -19,6 +20,7 @@ import com.ssafy.bbanggu.user.dto.UserResponse;
 import com.ssafy.bbanggu.user.repository.UserRepository;
 import com.ssafy.bbanggu.user.service.UserService;
 
+import org.springframework.boot.autoconfigure.jms.artemis.ArtemisNoOpBindingRegistry;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
@@ -116,10 +118,14 @@ public class UserController {
 		User user = userRepository.findByEmail(request.getEmail())
 			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
+		Map<String, Object> response = new HashMap<>();
+		response.put("access_token", accessToken);
+		response.put("refresh_token", refreshToken);
+
 		return ResponseEntity.ok()
 			.header(HttpHeaders.SET_COOKIE, accessTokenCookie.toString())
 			.header(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString())
-			.body(new ApiResponse("로그인이 성공적으로 완료되었습니다.", user.getRole()));
+			.body(new ApiResponse("로그인이 성공적으로 완료되었습니다.", response));
     }
 
     /**

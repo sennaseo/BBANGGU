@@ -39,7 +39,15 @@ public class BakeryController {
 	private final BakeryPickupService bakeryPickupService;
 	private final BakeryRepository bakeryRepository;
 
-	// 모든 가게 조회
+	/**
+	 * 가게 전체 조회 API
+	 *
+	 * @param sortBy 정렬 기준
+	 * @param sortOrder asc or desc
+	 * @param pageable 페이지 수
+	 * @param userDetails 현재 로그인한 사용자 정보
+	 * @return 가게 리스트
+	 */
 	@GetMapping
 	public ResponseEntity<ApiResponse> getAllBakeries(
 		@RequestParam(defaultValue = "createdAt") String sortBy,
@@ -47,15 +55,7 @@ public class BakeryController {
 		@PageableDefault(size = 10) Pageable pageable,
 		@AuthenticationPrincipal CustomUserDetails userDetails
 	) {
-		Double lat = null;
-		Double lng = null;
-
-		if (userDetails != null && userDetails.getLatitude() != 0.0 && userDetails.getLongitude() != 0.0) {
-			lat = userDetails.getLatitude();
-			lng = userDetails.getLongitude();
-		}
-
-		List<BakeryDetailDto> bakeries = bakeryService.getAllBakeries(sortBy, sortOrder, pageable, lat, lng);
+		List<BakeryDetailDto> bakeries = bakeryService.getAllBakeries(userDetails, sortBy, sortOrder, pageable);
 		return ResponseEntity.ok().body(new ApiResponse("모든 가게 조회에 성공하였습니다.", bakeries));
 	}
 
@@ -81,15 +81,7 @@ public class BakeryController {
 		@PathVariable Long bakery_id,
 		@AuthenticationPrincipal CustomUserDetails userDetails
 	) {
-		Double lat = null;
-		Double lng = null;
-
-		if (userDetails != null && userDetails.getLatitude() != 0.0 && userDetails.getLongitude() != 0.0) {
-			lat = userDetails.getLatitude();
-			lng = userDetails.getLongitude();
-		}
-
-		BakeryDetailDto bakery = bakeryService.findById(bakery_id, lat, lng);
+		BakeryDetailDto bakery = bakeryService.findById(userDetails, bakery_id);
 		return ResponseEntity.ok().body(new ApiResponse("가게 정보 조회에 성공하였습니다.", bakery));
 	}
 
@@ -100,22 +92,7 @@ public class BakeryController {
 		@PathVariable Long bakery_id,
 		@RequestBody BakeryDto updates
 	) {
-		if (userDetails == null) {
-			throw new CustomException(ErrorCode.UNAUTHORIZED_USER);
-		}
-
-		Bakery bakery = bakeryRepository.findByBakeryIdAndDeletedAtIsNull(bakery_id);
-		if (bakery == null) {
-			throw new CustomException(ErrorCode.BAKERY_NOT_FOUND);
-		}
-
-		// ✅ 현재 로그인한 사용자가 이 가게의 주인인지 검증
-		Long userId = userDetails.getUserId();
-		if (!bakery.getUser().getUserId().equals(userId)) {
-			throw new CustomException(ErrorCode.NO_PERMISSION_TO_EDIT_BAKERY);
-		}
-
-		BakeryDto updatedBakery = bakeryService.update(bakery, updates);
+		BakeryDto updatedBakery = bakeryService.update(userDetails, bakery_id, updates);
 		return ResponseEntity.ok().body(new ApiResponse("가게 정보가 성공적으로 수정되었습니다.", updatedBakery));
 	}
 
@@ -150,15 +127,7 @@ public class BakeryController {
 		@PageableDefault(size = 10) Pageable pageable,
 		@AuthenticationPrincipal CustomUserDetails userDetails
 	) {
-		Double lat = null;
-		Double lng = null;
-
-		if (userDetails != null && userDetails.getLatitude() != 0.0 && userDetails.getLongitude() != 0.0) {
-			lat = userDetails.getLatitude();
-			lng = userDetails.getLongitude();
-		}
-
-		Page<BakeryDetailDto> bakeries = bakeryService.searchByKeyword(keyword, pageable, lat, lng);
+		Page<BakeryDetailDto> bakeries = bakeryService.searchByKeyword(userDetails, keyword, pageable);
 		return ResponseEntity.ok().body(new ApiResponse("검색 결과 조회에 성공하였습니다.", bakeries));
 	}
 

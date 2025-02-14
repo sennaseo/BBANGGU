@@ -79,8 +79,9 @@ public class BreadPackageService {
 	}
 
 
-	public BreadPackageDto getPackageById(Long breadPackageId) {
-		return null;
+	public BreadPackage getPackageById(Long bakeryId) {
+		return breadPackageRepository.findByBakeryIdAndToday(bakeryId)
+			.orElse(null);
 	}
 
 
