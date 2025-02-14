@@ -1,15 +1,13 @@
 import { Link } from 'react-router-dom';
 import defaultProfile from '@/assets/default-profile.jpg';
-import { useProfile } from '../../../common/context/ProfileContext';
+import { ProfileSectionProps } from '../../../types/owner';
 
-export function ProfileSection() {
-  const { profile } = useProfile();
-
+export function ProfileSection({ userInfo }: ProfileSectionProps) {
   return (
     <div className="px-6 py-6">
       <div className="flex items-center space-x-4">
         <img
-          src={profile.profileImage || defaultProfile}
+          src={userInfo.profilePhotoUrl ? userInfo.profilePhotoUrl : defaultProfile}
           alt="프로필"
           className="w-[60px] h-[60px] rounded-full object-cover bg-gray-100"
           onError={(e) => {
@@ -19,16 +17,22 @@ export function ProfileSection() {
         />
         <div>
           <h2 className="text-lg font-semibold">
-            {profile.name}
+            {userInfo.name}
             <span className="text-gray-600 font-normal ml-1">사장님</span>
           </h2>
-          <p className="text-gray-600 text-sm">{profile.description}</p>
+          <p className="text-gray-600 text-sm">오늘도 빵과 함께 할기찬 하루 보내세요~</p>
         </div>
       </div>
 
       <div className="flex gap-3 mt-4">
         <Link 
           to="/owner/profile/edit"
+          state={{ userInfo: {
+            name: userInfo.name,
+            email: userInfo.email,
+            phone: userInfo.phone,
+            profileImageUrl: userInfo.profilePhotoUrl
+          }}}
           className="flex-1 py-2.5 text-center rounded-xl bg-[#FF9B50] text-white font-medium"
         >
           회원 정보 수정
