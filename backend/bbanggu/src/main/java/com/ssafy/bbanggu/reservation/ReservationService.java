@@ -9,6 +9,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import com.ssafy.bbanggu.bakery.domain.Bakery;
+import com.ssafy.bbanggu.bakery.dto.PickupTimeDto;
+import com.ssafy.bbanggu.bakery.repository.BakeryRepository;
+import com.ssafy.bbanggu.bakery.service.BakeryPickupService;
 import com.ssafy.bbanggu.breadpackage.BreadPackageService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,6 +28,8 @@ import com.ssafy.bbanggu.payment.PaymentService;
 import com.ssafy.bbanggu.reservation.dto.ReservationCancelRequest;
 import com.ssafy.bbanggu.reservation.dto.ReservationCreateRequest;
 import com.ssafy.bbanggu.reservation.dto.ReservationDTO;
+import com.ssafy.bbanggu.reservation.dto.ReservationForOwner;
+import com.ssafy.bbanggu.reservation.dto.ReservationInfo;
 import com.ssafy.bbanggu.reservation.dto.ReservationResponse;
 import com.ssafy.bbanggu.reservation.dto.ValidReservationRequest;
 import com.ssafy.bbanggu.user.domain.User;
@@ -45,6 +51,8 @@ public class ReservationService {
 	private final JwtTokenProvider jwtTokenProvider;
 	private final BreadPackageRepository breadPackageRepository;
 	private final UserRepository userRepository;
+	private final BakeryRepository bakeryRepository;
+	private final BakeryPickupService bakeryPickupService;
 
 	/**
 	 * 예약 검증 메서드 (PENDING)
@@ -238,6 +246,27 @@ public class ReservationService {
 		return reservationDTOList;
 	}
 
+	/**
+	 *  사장님 오늘의 예약 조회 메서드
+	 */
+	public ReservationForOwner getTodayOwnerReservations(CustomUserDetails userDetails, long bakeryId) {
+		User user = userRepository.findById(userDetails.getUserId())
+			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+		Bakery bakery = bakeryRepository.findById(bakeryId)
+			.orElseThrow(() -> new CustomException(ErrorCode.BAKERY_NOT_FOUND));
+		log.info("✅ {}번 빵집이 존재함", bakeryId);
+
+		if (!bakery.getUser().getUserId().equals(user.getUserId())) {
+			throw new CustomException(ErrorCode.USER_NOT_BAKERY_OWNER);
+		}
+		log.info("✅ 현재 로그인한 {}번 유저는 {}번 빵집의 사장님임", user.getUserId(), bakeryId);
+
+		List<ReservationInfo> reservationList = reservationRepository.findTodayReservationsByBakeryId(bakeryId);
+		PickupTimeDto endTime = bakeryPickupService.getPickupTimetable(bakeryId);
+		ReservationForOwner response = new ReservationForOwner(reservationList, reservationList.size(), endTime.getEndTime());
+		return response;
+	}
 
 	/**
 	 * 사장님 예약 조회 메서드
