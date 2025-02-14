@@ -1,38 +1,51 @@
 import { useState, useEffect } from "react"
-import type { ReservationType } from "../../../types/bakery"
+import type { ReservationType, ExtendedBakeryType } from "../../../types/bakery"
 import { ChevronRight } from "lucide-react"
-import { mockReservations } from "../../../mocks/user/reservationMockData"
-import { mockBakeries } from "../../../mocks/user/bakeryMockData"
 import { useNavigate } from "react-router-dom"
 import dayjs from 'dayjs'
 import 'dayjs/locale/ko' // 한국어 로케일 추가
-
 interface ReservationListProps {
   reservations?: ReservationType[]
+  params: {
+    userId: number
+  }
 }
 
-export function ReservationList({ reservations = [] }: ReservationListProps) {
+export function ReservationList({ reservations = [], params }: ReservationListProps) {
   const navigate = useNavigate()
+  const [bakeryList, setBakeryList] = useState<ExtendedBakeryType[]>([])
   const [bakeryNames, setBakeryNames] = useState<Record<string, string>>({})
-  const data = reservations.length > 0 ? reservations : mockReservations
+  const data = reservations.length > 0 ? reservations : []
 
+  // API 기본 URL (env에 설정되어 있음)
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
+
+  // 제빵소 리스트를 백엔드 API로부터 가져옵니다.
   useEffect(() => {
-    // mock 데이터에서 베이커리 정보를 가져오는 함수
-    const fetchBakeryNames = () => {
+    if (!params.userId || params.userId === 0) return; // userId가 유효하지 않을 경우 호출하지 않음
+    async function fetchBakeryList() {
       try {
-        const names: Record<string, string> = {}
-        for (const reservation of data) {
-          const bakery = mockBakeries.find(b => b.bakeryId === reservation.bakeryId)
-          names[reservation.reservation_id] = bakery?.name || '베이커리 정보 없음'
-        }
-        setBakeryNames(names)
+        const response = await fetch(`${API_BASE_URL}/bakery?userId=${params.userId}`)
+        const result = await response.json()
+        // result.data가 BakeryType[]라고 가정합니다.
+        setBakeryList(result.data)
       } catch (error) {
-        console.error('베이커리 정보를 불러오는데 실패했습니다:', error)
+        console.error("베이커리 리스트 로드 실패:", error)
       }
     }
+    fetchBakeryList()
+  }, [params.userId])
 
-    fetchBakeryNames()
-  }, [data])
+  // 예약 데이터와 제빵소 리스트를 기반으로 예약별 제빵소 이름을 설정합니다.
+  useEffect(() => {
+    if (bakeryList.length === 0 || data.length === 0) return; // bakeryList가 비어있거나 예약 데이터가 없으면 실행하지 않음
+    const names: Record<string, string> = {};
+    for (const reservation of data) {
+      const bakery = bakeryList.find(b => b.bakeryId === reservation.bakeryId);
+      names[reservation.reservationId] = bakery?.name ?? "베이커리 정보 없음";
+    }
+    setBakeryNames(names);
+  }, [data, bakeryList]); // bakeryList가 변경될 때만 실행
 
   const getStatusLabel = (status: ReservationType["status"]) => {
     switch (status) {
@@ -47,16 +60,16 @@ export function ReservationList({ reservations = [] }: ReservationListProps) {
 
   const formatPickupDateTime = (reservation: ReservationType) => {
     dayjs.locale('ko')
-    const createdDate = dayjs(reservation.created_at)
-    return `${createdDate.format('YYYY년 M월 D일 dddd')} ${reservation.pickup_at} 픽업`
+    const createdDate = dayjs(reservation.createdAt)
+    return `${createdDate.format('YYYY년 M월 D일 dddd')} ${reservation.pickupAt} 픽업`
   }
 
   const renderReservation = (reservation: ReservationType) => (
     <div className="flex items-center bg-[#fc973b] rounded-xl justify-around shadow-md border-t border-dashed border-gray-200">
       <div 
-        key={reservation.reservation_id} 
+        key={reservation.reservationId} 
         className="p-4 text-white"
-        onClick={() => navigate(`/user/mypage/reservations/${reservation.reservation_id}`)}
+        onClick={() => navigate(`/user/mypage/reservations/${reservation.reservationId}`)}
       >
         <div className="flex justify-between items-center mb-1">
           <div className="flex items-center gap-[14px]">
@@ -64,7 +77,7 @@ export function ReservationList({ reservations = [] }: ReservationListProps) {
               {getStatusLabel(reservation.status)}
             </span>
             <span className="text-base font-bold text-[16px]">
-              {bakeryNames[reservation.reservation_id] || '로딩 중...'}
+              {bakeryNames[reservation.reservationId] || '로딩 중...'}
             </span>
           </div>
         </div>
@@ -77,9 +90,9 @@ export function ReservationList({ reservations = [] }: ReservationListProps) {
   )
 
   const renderEmptyState = () => (
-    <div className="bg-white rounded-xl p-6 text-center">
-      <p className="text-333333 text-sm">아직 주문 내역이 없어요.</p>
-      <p className="text-333333 text-sm mt-1">첫 주문을 시작해보세요!</p>
+    <div className="bg-[#fc973b] rounded-xl p-6 text-center shadow-md border-t border-dashed border-gray-200">
+      <p className="text-white font-bold text-md">아직 주문 내역이 없어요.</p>
+      <p className="text-white text-sm mt-1">첫 주문을 시작해보세요!</p>
     </div>
   )
 
@@ -90,7 +103,7 @@ export function ReservationList({ reservations = [] }: ReservationListProps) {
           {/* 픽업시간이 가장 임박한 주문 표시 */}
           {renderReservation(
             data.sort((a, b) => 
-              new Date(a.reserved_pickup_time).getTime() - new Date(b.reserved_pickup_time).getTime()
+              new Date(a.reservedPickupTime).getTime() - new Date(b.reservedPickupTime).getTime()
             )[0]
           )}
           {data.length > 1 && (

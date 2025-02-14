@@ -1,22 +1,13 @@
 import { HeartIcon as HeartOutline, StarIcon } from "@heroicons/react/24/outline"
 import { MapPinIcon, ChevronDownIcon, HeartIcon as HeartSolid } from "@heroicons/react/24/solid"
-import type { BakeryType, PackageType, FavoriteBakeryType, ReservationType, ReviewType } from "../../../types/bakery"
-
-// 확장 타입 정의: bakery.ts에는 package가 없으므로, 여기서 확장해서 사용합니다.
-interface ExtendedBakeryType extends BakeryType {
-  package: PackageType[]
-  favorite: FavoriteBakeryType[]
-  hours: ReservationType[]
-  reviews: ReviewType[]
-}
-
+import type { ExtendedBakeryType } from "../../../types/bakery"
 interface RecommendedStoresProps {
-  stores: ExtendedBakeryType[]
+  allbakery: ExtendedBakeryType[]
   onToggleLike: (bakeryId: number) => void
   onStoreClick: (id: number) => void
 }
 
-export default function RecommendedStores({ stores, onToggleLike, onStoreClick }: RecommendedStoresProps) {
+export default function RecommendedStores({ allbakery, onStoreClick, onToggleLike }: RecommendedStoresProps) {
   return (
     <section>
       <div className="flex items-center justify-between mb-4">
@@ -26,13 +17,13 @@ export default function RecommendedStores({ stores, onToggleLike, onStoreClick }
         </button>
       </div>
       <div className="space-y-3 -mx-5">
-        {stores.map((store, index) => (
+        {allbakery.map((store, index) => (
           <div
             key={`store-${store.bakeryId ?? index}`}
             className="flex gap-4 p-4 bg-white rounded-[12px] border border-[#e1e1e1] mx-5 cursor-pointer"
             onClick={() => onStoreClick(store.bakeryId)}>
             <img
-              src={store.photoUrl || "/placeholder.svg"}
+              src={store.bakeryImageUrl || "/placeholder.svg"}
               alt={store.name}
               className="w-[100px] h-[100px] object-cover rounded-[12px]"
             />
@@ -46,12 +37,12 @@ export default function RecommendedStores({ stores, onToggleLike, onStoreClick }
                       <StarIcon className="size-3.5 solid fill-[#FFB933] stroke-none" />{" "}
                       {(store.star || 0).toFixed(1)}
                     </span>
-                    <span className="text-[12px] text-[#E1E1E1]">{(store.reviews ?? []).length}</span>
+                    <span className="text-[12px] text-[#E1E1E1]">({store.reviewCnt ?? 0})</span>
                     <span className="flex items-center text-[#D2D2D2] gap-0.5">
                       <MapPinIcon className="size-3.5" /> {store.distance}
                     </span>
                   </div>
-                  <div className="text-[12px] text-[#BFBFBF] mb-1">{(store.hours ?? []).map((hour) => hour.pickup_at).join(", ")}</div>
+                  <div className="text-[12px] text-[#BFBFBF] mb-1">픽업시간 : {(store.pickupTime?.startTime)} - {(store.pickupTime?.endTime)}</div>
                 </div>
                 <div className="flex gap-2">
                   <button
@@ -61,7 +52,7 @@ export default function RecommendedStores({ stores, onToggleLike, onStoreClick }
                       onToggleLike(store.bakeryId)
                     }}>
 
-                    {(store.favorite ?? []).some((favorite) => favorite.user_id === 1) ? (
+                    {store.is_liked ? (
                       <HeartSolid className="w-6 h-6 text-[#fc973b]" />
                     ) : (
                       <HeartOutline className="w-6 h-6 text-[#757575]" />
@@ -72,10 +63,10 @@ export default function RecommendedStores({ stores, onToggleLike, onStoreClick }
               </div>
               <div>
                 <span className="text-[18px] font-bold text-[#333333]">
-                  {((store.package?.[0]?.price || 0) * 0.5).toLocaleString()}원
+                  {(store.package?.data[0]?.price || 0).toLocaleString()}원
                 </span>
                 <span className="text-[14px] text-[#D2D2D2] line-through ml-2">
-                  {(store.package?.[0]?.price || 0).toLocaleString()}원
+                  {((store.package?.data[0]?.price || 0)*2).toLocaleString()}원
                 </span>
               </div>
             </div>

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { getUserMainData, toggleFavoriteForUserMain, searchBakery } from "../../../services/user/usermainService"
+import { fetchBestFavoriteStores, getUserMainData, searchBakery } from "../../../services/user/usermainService"
 import SearchBar from "../../../components/user/usermain/SearchBar"
 import Header from "../../../components/user/usermain/Header"
 import BestPackages from "../../../components/user/usermain/BestPackages"
@@ -7,11 +7,13 @@ import RecommendedStores from "../../../components/user/usermain/RecommendedStor
 import ErrorBoundary from "../../../components/ErrorBoundary"
 import { useNavigate } from "react-router-dom"
 import UserBottomNavigation from "../../../components/user/navigations/bottomnavigation/UserBottomNavigation"
-import type { BakerySearchItem, BestPackageItem, ExtendedBakeryType } from "../../../types/bakery"
+import type { BakerySearchItem, ExtendedBakeryType } from "../../../types/bakery"
+import { toggleFavoriteForUser} from "../../../services/user/usermainService"
+import { bakeryDetailApi } from "../../../api/user/detail/bakeryDetailApi"
 
 export default function UserMain() {
-  const [bestPackages, setBestPackages] = useState<BestPackageItem[]>([])
-  const [recommendedStores, setRecommendedStores] = useState<ExtendedBakeryType[]>([])
+  const [allBakeriesData, setAllBakeriesData] = useState<ExtendedBakeryType[]>([])
+  const [favoritebakery, setFavoritebakery] = useState<ExtendedBakeryType[]>([])
   const [searchQuery, setSearchQuery] = useState<string>("")
   const [searchResults, setSearchResults] = useState<BakerySearchItem[]>([])
   const [isLoading, setIsLoading] = useState(false)
@@ -22,9 +24,14 @@ export default function UserMain() {
   const loadData = async () => {
     setIsLoading(true)
     try {
-      const { updatedStores, bestPackages } = await getUserMainData()
-      setRecommendedStores(updatedStores)
-      setBestPackages(bestPackages)
+      // fetchBestFavoriteStores는 좋아요가 많은 빵집 데이터 기반의 베스트 패키지를 생성하고,
+      // getUserMainData는 전체 베이커리 데이터를 기반으로 추천 빵집(updatedStores)을 생성합니다.
+      const [favoriteBakeryResult, allBakeryResult] = await Promise.all([
+        fetchBestFavoriteStores(),
+        getUserMainData()
+      ])
+      setFavoritebakery(favoriteBakeryResult.favoritebakery)
+      setAllBakeriesData(allBakeryResult.allbakery)
       setSearchResults(searchResults)
     } catch (err) {
       setError(err as Error)
@@ -37,16 +44,17 @@ export default function UserMain() {
     loadData()
   }, [])
 
-  // 좋아요 토글 후 캐시 업데이트 후 상태 반영
-  const handleToggleFavorite = async (bakeryId: number) => {
-    try {
-      await toggleFavoriteForUserMain(bakeryId)
-      const { bestPackages } = await getUserMainData()
-      setBestPackages(bestPackages)
-    } catch (err) {
-      setError(err as Error)
-    }
+// 좋아요 토글 함수 (관심가게 삭제 기능 포함)
+const handleToggleFavorite = async (bakeryId: number) => {
+  try {
+    const targetStore = await bakeryDetailApi.getBakeryById(bakeryId)
+    await toggleFavoriteForUser(bakeryId, targetStore.is_liked);
+  } catch (error) {
+    console.error(`가게(${bakeryId}) 좋아요 토글 실패:`, error);
+    throw error;
   }
+}
+
 
   const handleStoreClick = (bakeryId: number) => {
     navigate(`/user/bakery/${bakeryId}`)
@@ -126,8 +134,8 @@ export default function UserMain() {
             </div>
           </section>
 
-          <BestPackages bestPackages={bestPackages} onToggleLike={handleToggleFavorite} />
-          <RecommendedStores stores={recommendedStores} onToggleLike={handleToggleFavorite} onStoreClick={handleStoreClick} />
+          <BestPackages favoritebakery={favoritebakery} onToggleLike={handleToggleFavorite} />
+          <RecommendedStores allbakery={allBakeriesData} onStoreClick={handleStoreClick} onToggleLike={handleToggleFavorite} />
         </main>
         <UserBottomNavigation />
       </ErrorBoundary>

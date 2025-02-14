@@ -10,7 +10,7 @@ export const mockBakeries: BakeryType[] = [
     businessRegistrationNumber: "123-45-67890",
     addressRoad: "경상북도 진평동 453",
     addressDetail: "1층",
-    photoUrl:
+    bakeryImageUrl:
       "https://images.unsplash.com/photo-1495147466023-ac5c588e2e94?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
     backgroundImageUrl: "https://example.com/bakery1_background.jpg",
     star: 4.3,
@@ -24,7 +24,7 @@ export const mockBakeries: BakeryType[] = [
     businessRegistrationNumber: "123-45-67891",
     addressRoad: "경상북도 중앙동 123",
     addressDetail: "2층",
-    photoUrl:
+    bakeryImageUrl:
       "https://images.unsplash.com/photo-1514517521153-1be72277b32f?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
     backgroundImageUrl: "https://example.com/bakery2_background.jpg",
     star: 4.5,
@@ -38,7 +38,7 @@ export const mockBakeries: BakeryType[] = [
     businessRegistrationNumber: "123-45-67892",
     addressRoad: "경상북도 동성로 456",
     addressDetail: "1층",
-    photoUrl:
+    bakeryImageUrl:
       "https://images.unsplash.com/photo-1563729784474-d77dbb933a9e?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
     backgroundImageUrl: "https://example.com/bakery3_background.jpg",
     star: 4.5,

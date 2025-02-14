@@ -1,85 +1,74 @@
 export interface UserType {
-  user_id: number
+  userId: number
   name: string
-  profile_image_url: string
+  email: string
+  phone: string
+  role: string
+  profileImageUrl: string | null
 }
 
 export interface ReviewType {
-  review_id: number
-  user_id: number
+  reviewId: number
   bakeryId: number
   rating: number
   content: string
-  review_image_url?: string
-  created_at: string
-  deleted_at?: string
+  reviewImageUrl?: string
+  createdAt: string
 }
-
+// 새롭게 API의 응답 구조를 반영하는 타입을 추가합니다.
+export interface PackageResponse {
+  data: PackageType[]
+}
 export interface PackageType {
   packageId: number
   bakeryId: number
   price: number
-  discountRate: number
   quantity: number
   name: string
-  description: string
 }
 
 export interface BakeryType {
   bakeryId: number;
-  user_id: number;
+  userId: number;
   name: string;
   description: string;
   businessRegistrationNumber: string;
   addressRoad: string;
   addressDetail: string;
-  photoUrl: string | null;
-  backgroundImageUrl: string | null;
+  bakeryImageUrl: string | null;
+  bakeryBackgroundImgUrl: string | null;
   star: number;
   distance: number;
+  reviewCnt: number;
+  is_liked: boolean;
+  pickupTime: { startTime: string; endTime: string } | null;
+  price: number | null;
+}
+
+// 새로운 인터페이스: 가게의 평점 정보를 위한 타입 정의
+export interface BakeryRating {
+  bakeryId: number;
+  average: number;
+  star_rating: number[];
 }
 
 export interface ReservationType {
-  reservation_id: number
-  user_id: number
+  reservationId: number
+  userId: number
   bakeryId: number
-  bread_packageId: number
+  breadPackageId: number
   quantity: number
-  total_price: number
-  reserved_pickup_time: string
-  pickup_at: string
-  created_at: string
-  cancelled_at?: string
+  totalPrice: number
+  reservedPickupTime: string
+  pickupAt: string
+  createdAt: string
+  cancelledAt?: string
   status: "pending" | "cancelled" | "completed"
 }
 
 export interface EchoSaveType {
-  echosave_id: number
-  user_id: number
-  saved_money: number
-  reduced_co2: number
-  created_at: string
-  updated_at: string
-  deleted_at?: string
-}
-
-export interface FavoriteBakeryType {
-  user_id: number
-  bakeryId: number
-  created_at: string
-  deleted_at?: string
-}
-
-export interface ExtendedBakeryType extends BakeryType {
-  package: PackageType[];
-  favorite: FavoriteBakeryType[];
-  hours: ReservationType[];
-  reviews: ReviewType[];
-}
-
-export interface BestPackageItem extends PackageType {
-  bakery: BakeryType;
-  favorite: boolean;
+  savedMoney: number
+  reducedCo2e: number
 }
 
 export interface BakerySearchItem {
@@ -90,7 +79,19 @@ export interface BakerySearchItem {
   businessRegistrationNumber: string;
   addressRoad: string;
   addressDetail: string;
-  photoUrl: string;
+  bakeryImageUrl: string;
   star: number;
   distance: number;
+}
+
+// ExtendedBakeryType을 추가하여 package 프로퍼티 포함
+export interface ExtendedBakeryType extends BakeryType {
+  package: PackageResponse;
+  review: ReviewType[];
+  averageRating: BakeryRating;
+}
+
+export interface ExtendedUserType extends UserType {
+  reservation: ReservationType[];
+  echosave: EchoSaveType[];
 }

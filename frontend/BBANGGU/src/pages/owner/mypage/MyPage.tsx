@@ -12,10 +12,10 @@ import { getUserInfo } from '../../../api/common/user';
 function MyPage() {
   const [userInfo, setUserInfo] = useState<{
     name: string;
-    profilePhotoUrl: string | null;
+    profilebakeryImageUrl: string | null;
   }>({
     name: '',
-    profilePhotoUrl: null
+    profilebakeryImageUrl: null
   });
 
   const navigate = useNavigate();
@@ -28,7 +28,7 @@ function MyPage() {
         console.log('Received user data:', data); // 데이터 확인용
         setUserInfo({
           name: data.name,
-          profilePhotoUrl: data.profilePhotoUrl
+          profilebakeryImageUrl: data.profilebakeryImageUrl
         });
       } catch (error) {
         console.error('Error fetching user info:', error);
@@ -64,7 +64,7 @@ function MyPage() {
       <div className="px-6 py-6">
         <div className="flex items-center space-x-4">
           <img
-            src={userInfo.profilePhotoUrl ? userInfo.profilePhotoUrl : defaultProfile}
+            src={userInfo.profilebakeryImageUrl ? userInfo.profilebakeryImageUrl : defaultProfile}
             alt="프로필"
             className="w-[60px] h-[60px] rounded-full object-cover bg-gray-100"
             onError={(e) => {

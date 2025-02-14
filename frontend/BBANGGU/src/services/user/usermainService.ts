@@ -1,14 +1,14 @@
 import { mainApi } from '../../api/user/main/mainApi';
-import type { BakeryType, PackageType, ExtendedBakeryType,BestPackageItem, BakerySearchItem } from '../../types/bakery';
-
+import type { BakeryType, BakerySearchItem, PackageResponse, ExtendedBakeryType } from '../../types/bakery';
+import { getAverageRating } from '../user/review/reviewService';
 // 모듈-레벨 캐시: 페이지 이동 시 재요청 방지
-let cachedData: { updatedStores: ExtendedBakeryType[]; bestPackages: BestPackageItem[] } | null = null;
+let cachedData: { allbakery: ExtendedBakeryType[] } | null = null;
 
 /**
  * UserMain 페이지의 데이터를 가져오는 함수.
  * 이미 데이터를 불러온 적이 있으면 캐시된 데이터를 반환합니다.
  */
-export async function getUserMainData(): Promise<{ updatedStores: ExtendedBakeryType[]; bestPackages: BestPackageItem[] }> {
+export async function getUserMainData(): Promise<{ allbakery: ExtendedBakeryType[] }> {
   if (cachedData) {
     return cachedData;
   }
@@ -18,108 +18,63 @@ export async function getUserMainData(): Promise<{ updatedStores: ExtendedBakery
 }
 
 /**
- * 좋아요 토글 후 캐시된 데이터를 업데이트하는 함수.
- */
-export async function toggleFavoriteForUserMain(bakeryId: number): Promise<void> {
-  await toggleFavorite(bakeryId);
-  if (cachedData) {
-    cachedData.bestPackages = cachedData.bestPackages.map((pkg) =>
-      pkg.bakery.bakeryId === bakeryId ? { ...pkg, favorite: !pkg.favorite } : pkg
-    );
-  }
-}
-
-/**
  * 좋아요가 가장 많은 가게의 데이터를 가져오는 함수.
  */
-export async function getBestFavoriteStoresData(): Promise<{ updatedStores: ExtendedBakeryType[]; bestPackages: BestPackageItem[] }> {
+export async function getBestFavoriteStoresData(): Promise<{ favoritebakery: BakeryType[] }> {
   // 선택 사항: 캐시를 재사용할지 결정
   return await fetchBestFavoriteStores();
 }
 
-export async function fetchAllBakeriesData(): Promise<{ updatedStores: ExtendedBakeryType[]; bestPackages: BestPackageItem[] }> {
+export async function fetchAllBakeriesData(): Promise<{ allbakery: ExtendedBakeryType[] }> {
   try {
     // 전체 베이커리 데이터 가져오기
     const response = await mainApi.getAllBakeries();
     const stores: BakeryType[] = response.data;
-    // 각 베이커리별 패키지 데이터도 함께 요청
-    const updatedStores: ExtendedBakeryType[] = await Promise.all(
-      stores.map(async (store) => {
-        let packages: PackageType[] = [];
+    // 각 베이커리별 패키지 데이터를 포함하여 ExtendedBakeryType 배열로 변환합니다.
+    const allbakery: ExtendedBakeryType[] = await Promise.all(
+      stores.map(async (store: BakeryType): Promise<ExtendedBakeryType> => {
+        let packages: PackageResponse;
         try {
-          packages = await mainApi.getPackagesByBakeryId(store.bakeryId);
+          const packageResponse = await mainApi.getPackagesByBakeryId(store.bakeryId);
+          packages = { data: packageResponse };
         } catch (error) {
-          packages = [];
+          packages = { data: [] };
         }
-        return {
-          ...store,
-          package: packages,
-          favorite: [],
-          hours: [],
-          reviews: [],
-        };
+        const averageRating = await getAverageRating(store.bakeryId);
+        return { ...store, package: packages, review: [], averageRating: averageRating };
       })
     );
-    // 베스트 패키지는 모든 패키지를 가격 내림차순 정렬한 후,
-    // 각 패키지와 관련된 bakery 정보를 결합
-    const allPackages: PackageType[] = updatedStores.flatMap((store) => store.package);
-    const sortedPackages = [...allPackages].sort((a, b) => b.price - a.price);
-    const bestPackages: BestPackageItem[] = sortedPackages.map((pkg) => {
-      const bakery = updatedStores.find((store) => store.bakeryId === pkg.bakeryId)!;
-      return { ...pkg, bakery, favorite: false };
-    });
-    return { updatedStores, bestPackages };
+    return { allbakery };
   } catch (error) {
     console.error("통합 베이커리 데이터 조회 실패:", error);
     throw error;
   }
-}
+} 
 
-export async function fetchBestFavoriteStores(): Promise<{ updatedStores: ExtendedBakeryType[]; bestPackages: BestPackageItem[] }> {
+export async function fetchBestFavoriteStores(): Promise<{ favoritebakery: ExtendedBakeryType[] }> {
   try {
-    // 좋아요가 가장 많은 가게 조회 API 호출
     const response = await mainApi.getFavoriteBest();
     const stores: BakeryType[] = response.data;
-    // 각 가게에 대해 패키지 데이터를 조회
-    const updatedStores: ExtendedBakeryType[] = await Promise.all(
-      stores.map(async (store) => {
-        let packages: PackageType[] = [];
+
+    const favoritebakery: ExtendedBakeryType[] = await Promise.all(
+      stores.map(async (store: BakeryType): Promise<ExtendedBakeryType> => {
+        let packages: PackageResponse;
         try {
-          packages = await mainApi.getPackagesByBakeryId(store.bakeryId);
+          const packageResponse = await mainApi.getPackagesByBakeryId(store.bakeryId);
+          packages = { data: packageResponse };
         } catch (error) {
-          packages = [];
+          packages = { data: [] };
         }
-        return {
-          ...store,
-          package: packages,
-          favorite: [],
-          hours: [],
-          reviews: [],
-        };
+        const averageRating = await getAverageRating(store.bakeryId);
+        return { ...store, package: packages, review: [], averageRating: averageRating };
       })
     );
-    // 각 베이커리의 첫 번째 패키지를 베스트 패키지로 사용 (로직은 필요에 따라 수정)
-    const bestPackages: BestPackageItem[] = updatedStores
-      .map((store) =>
-        store.package.length > 0 ? { ...store.package[0], bakery: store, favorite: false } : null
-      )
-      .filter((item) => item !== null) as BestPackageItem[];
-    return { updatedStores, bestPackages };
+    return { favoritebakery };
   } catch (error) {
     console.error("좋아요 베스트 가게 데이터 조회 실패:", error);
     throw error;
   }
-}
-
-// 좋아요 토글 함수
-export async function toggleFavorite(bakeryId: number): Promise<void> {
-  try {
-    await mainApi.toggleFavorite(bakeryId);
-  } catch (error) {
-    console.error(`가게(${bakeryId}) 좋아요 토글 실패:`, error);
-    throw error;
-  }
-}
+} 
 
 import { searchBakery as searchBakeryApi } from '../../api/user/main/mainApi';
 
@@ -132,5 +87,21 @@ export async function searchBakery(keyword: string): Promise<BakerySearchItem[]>
   const response = await searchBakeryApi(keyword);
   // 응답 구조: { message: string, data: { content: BakerySearchItem[], ... } }
   return response.data.content as BakerySearchItem[];
+}
+
+/**
+ * 통합 좋아요 토글 함수: 현재 좋아요 상태(isLiked)에 따라 좋아요 추가 또는 삭제 API 호출
+ * @param bakeryId 베이커리 ID
+ * @param is_liked 현재 좋아요 상태 (true면 삭제, false면 추가)
+ * @returns API 호출 결과 (boolean 값)
+ */
+export async function toggleFavoriteForUser(bakeryId: number, is_liked: boolean): Promise<boolean> {
+  if (is_liked) {
+    // 현재 좋아요 상태이면 삭제 API 호출
+    return await mainApi.deleteFavorite(bakeryId);
+  } else {
+    // 좋아요 상태가 아니면 추가 API 호출
+    return await mainApi.toggleFavorite(bakeryId);
+  }
 }
 
