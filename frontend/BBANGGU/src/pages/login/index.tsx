@@ -39,6 +39,11 @@ export default function LoginPage() {
       const loginResponse = await login(formData)
       console.log('로그인 응답:', loginResponse)
       
+      // 토큰 저장
+      if (loginResponse.data.access_token) {
+        localStorage.setItem('accessToken', loginResponse.data.access_token)
+      }
+      
       // 리덕스에 로그인 정보 저장
       dispatch(loginSuccess(loginResponse))
       

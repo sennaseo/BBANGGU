@@ -33,14 +33,6 @@ export default function UserBottomNavigation() {
     },
   ];
 
-  const handleMyPageClick = () => {
-    if (userInfo?.userId) {
-      navigate(`/user/${userInfo.userId}/mypage`)
-    } else {
-      navigate('/login')
-    }
-  }
-
   return (
     <nav className="fixed bottom-0 left-1/2 -translate-x-1/2 bg-white border-t max-w-[440px] w-full">
       <div className="max-w-screen-sm mx-auto">
