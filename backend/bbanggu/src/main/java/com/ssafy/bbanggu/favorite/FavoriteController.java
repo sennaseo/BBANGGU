@@ -36,7 +36,7 @@ public class FavoriteController {
 		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@PathVariable Long bakery_id
 	) {
-		favoriteService.addFavorite(userDetails.getUserId(), bakery_id);
+		favoriteService.addFavorite(userDetails, bakery_id);
 		return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse("관심가게 등록이 완료되었습니다.", null));
 	}
 
