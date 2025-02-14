@@ -23,9 +23,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -161,7 +163,7 @@ public class BakeryController {
 	}
 
 	/**
-	 * 픽업 시간 조회
+	 * 오늘 픽업 시간 조회
 	 *
 	 * @param bakeryId 베이커리 아이디
 	 * @return 오늘 요일에 해당하는 픽업시간 반환
@@ -179,6 +181,24 @@ public class BakeryController {
 		PickupTimeDto pickupTimetable = bakeryPickupService.getPickupTimetable(bakeryId);
 		return ResponseEntity.ok().body(new ApiResponse("픽업시간 조회에 성공하였습니다.", pickupTimetable));
 	}
+
+
+	/**
+	 * 전체 픽업 시간 조회
+	 *
+	 * @param userDetails 현재 로그인한 사용자 정보
+	 * @param bakeryId 가게 아이디
+	 * @return 요일별 픽업시간 리스트
+	 */
+	@GetMapping("/{bakery_id}/pickup_all")
+	public ResponseEntity<ApiResponse> getBakeryAllPickupTimatable(
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@PathVariable("bakery_id") Long bakeryId
+	){
+		Map<String, PickupTimeDto> response = bakeryPickupService.getAllPickupTimetable(userDetails, bakeryId);
+		return ResponseEntity.ok().body(new ApiResponse("픽업시간 조회에 성공하였습니다.", response));
+	}
+
 
 	/**
 	 * 픽업 시간 수정
@@ -210,5 +230,15 @@ public class BakeryController {
 	public ResponseEntity<List<BakeryLocationDto>> getAllBakeryLocations() {
 		List<BakeryLocationDto> bakeryLocations = bakeryService.findAllBakeryLocations();
 		return ResponseEntity.ok(bakeryLocations);
+	}
+
+	@GetMapping("/{bakery_id}/settlement")
+	public ResponseEntity<ApiResponse> getBakerySettlement(
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@PathVariable Long bakery_id
+	){
+		log.info("✨ 가게 ID로 정산 정보 조회 ✨");
+		BakerySettlementDto response = bakeryService.getBakerySettlement(userDetails, bakery_id);
+		return ResponseEntity.ok(new ApiResponse("가게 정산 정보 조회가 완료되었습니다.", response));
 	}
 }

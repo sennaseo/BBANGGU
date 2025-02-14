@@ -28,6 +28,10 @@ public class Settlement {
     @JoinColumn(name = "user_id", nullable = false)
     private User user; // 사용자 ID
 
+	@OneToOne
+	@JoinColumn(name = "bakery_id", nullable = false)
+	private Bakery bakery;
+
     @Column(name = "bank_name", nullable = false, length = 100)
     private String bankName; // 은행 이름
 
