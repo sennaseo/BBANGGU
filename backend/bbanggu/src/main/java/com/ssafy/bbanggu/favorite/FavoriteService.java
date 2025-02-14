@@ -56,6 +56,9 @@ public class FavoriteService {
 		}
 		log.info("✅ 사용자가 아직 {}번 빵집의 좋아요를 누르지 않음", bakery.getBakeryId());
 
+
+		log.info("📌 user: ", user);
+		log.info("📌 userDetails: ", userDetails);
 		// 새로 좋아요 추가
 		Favorite favorite = Favorite.builder()
 			.user(user)
