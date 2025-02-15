@@ -7,7 +7,6 @@ import RecommendedStores from "../../../components/user/usermain/RecommendedStor
 import ErrorBoundary from "../../../components/ErrorBoundary"
 import { useNavigate } from "react-router-dom"
 import UserBottomNavigation from "../../../components/user/navigations/bottomnavigation/UserBottomNavigation"
-<<<<<<< frontend/BBANGGU/src/pages/user/main/UserMain.tsx
 import type { BakerySearchItem, ExtendedBakeryType } from "../../../types/bakery"
 import { toggleFavoriteForUser } from "../../../services/user/usermainService"
 import { bakeryDetailApi } from "../../../api/user/detail/bakeryDetailApi"
