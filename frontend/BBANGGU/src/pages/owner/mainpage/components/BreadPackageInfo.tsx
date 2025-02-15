@@ -2,24 +2,37 @@ import React from 'react';
 import { EllipsisVerticalIcon, PencilSquareIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { useNavigate } from 'react-router-dom';
 import breadPackageIcon from '../../../../assets/images/bakery/bread_pakage.svg';
-import { PackageType } from '../../../../types/bakery';
+
+interface BreadPackage {
+  bakeryId: number;
+  breadCategoryId: number;
+  name: string;
+  price: number;
+  breadImageUrl: string | null;
+}
 
 interface BreadPackageInfoProps {
-  packages: PackageType[];
+  packages: BreadPackage[];
 }
 
 export const BreadPackageInfo: React.FC<BreadPackageInfoProps> = ({ packages }) => {
+  console.log('BreadPackageInfo에 전달된 packages:', packages);
   const [showMenu, setShowMenu] = React.useState(false);
   const navigate = useNavigate();
 
-  // packages가 undefined일 때를 대비한 기본값 처리
-  const safePackages = packages || [];
+  // packages가 undefined이거나 빈 배열일 때의 처리
+  const currentPackage = packages?.[0];
+  
+  // 안전한 숫자 변환 함수
+  const safeToLocaleString = (num?: number) => {
+    return num?.toLocaleString() ?? '0';
+  };
 
   const handleEdit = () => {
     navigate('/owner/package/register', {
       state: {
         isEditing: true,
-        packageInfo: safePackages[0] // 현재는 첫 번째 패키지만 수정 가능하도록 설정
+        packageInfo: currentPackage
       }
     });
     setShowMenu(false);
@@ -32,7 +45,8 @@ export const BreadPackageInfo: React.FC<BreadPackageInfoProps> = ({ packages }) 
     }
   };
 
-  if (safePackages.length === 0) {
+  // 패키지가 없는 경우 빈 상태 표시
+  if (!currentPackage) {
     return (
       <div className="flex flex-col items-center justify-center py-12 px-4 bg-[#F9F9F9] rounded-[10px] border border-dashed border-[#E5E5E5] mb-6">
         <img 
@@ -57,6 +71,8 @@ export const BreadPackageInfo: React.FC<BreadPackageInfoProps> = ({ packages }) 
   // 현재는 첫 번째 패키지만 표시 (나중에 여러 패키지 표시로 확장 가능)
   const currentPackage = safePackages[0];
   const packageQuantity = currentPackage.quantity;
+  // 총 판매 수량 계산 (임시로 1로 설정)
+  const quantity = 1;
 
   return (
     <>
@@ -97,26 +113,32 @@ export const BreadPackageInfo: React.FC<BreadPackageInfoProps> = ({ packages }) 
         <div className="flex items-center gap-[6px] mb-8">
           <img 
             src={breadPackageIcon} 
-            alt="빵꾸러미" 
+            alt={currentPackage.name}
             className="w-[24px] h-[24px] mt-1"
           />
           <div className="flex items-center gap-2">
-            <span className="text-[24px] font-bold">{currentPackage.price.toLocaleString()}원</span>
-            <span className="text-[24px] font-bold text-[#FC973B]">× {packageQuantity}개</span>
+            <span className="text-[24px] font-bold">
+              {safeToLocaleString(currentPackage.price)}원
+            </span>
+            <span className="text-[24px] font-bold text-[#FC973B]">
+              × {quantity}개
+            </span>
           </div>
         </div>
 
         <div className="bg-[#FC973B] text-white p-3 rounded-[10px] mb-3">
           <div className="flex justify-between px-2">
             <span className="font-medium">오늘 빵꾸러미로 번 돈</span>
-            <span className="font-bold">{(currentPackage.price * packageQuantity).toLocaleString()}원</span>
+            <span className="font-bold">
+              {safeToLocaleString(currentPackage.price * quantity)}원
+            </span>
           </div>
         </div>
 
         <div className="bg-[#FC973B] text-white p-3 rounded-[10px]">
           <div className="flex justify-between px-2">
             <span className="font-medium">오늘 절약한 환경 수치</span>
-            <span className="font-bold">{packageQuantity * 20}g</span>
+            <span className="font-bold">{quantity * 20}g</span>
           </div>
         </div>
       </div>

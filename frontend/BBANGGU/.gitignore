@@ -30,7 +30,7 @@ bld/
 [Bb]uild[Ll]og.*
 
 # NUNIT
-*.VisualState.xml
+*.VisualState.xmlㄲ
 TestResult.xml
 
 # Build Results of an ATL Project
@@ -197,3 +197,11 @@ FakesAssemblies/
 
 # 환경 변수 파일 제외
 *.env
+
+# Build output
+dist/
+.dist/
+
+
+# TypeScript build info
+*.tsbuildinfo

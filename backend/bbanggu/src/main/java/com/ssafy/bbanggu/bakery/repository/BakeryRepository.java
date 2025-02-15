@@ -8,8 +8,10 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import com.ssafy.bbanggu.bakery.domain.Bakery;
+import com.ssafy.bbanggu.bakery.dto.BakeryDto;
 
 @Repository
 public interface BakeryRepository extends JpaRepository<Bakery, Long> {
@@ -55,6 +57,8 @@ public interface BakeryRepository extends JpaRepository<Bakery, Long> {
 	List<Bakery> findBestBakeriesByLocation(@Param("latitude") double userLat, @Param("longitude") double userLng);
 
 	Page<Bakery> findByNameContainingAndDeletedAtIsNull(String keyword, Pageable pageable);
+
+	Bakery findByUser_UserId(Long userId);
 
 	// // 사용자 ID로 가게 목록 조회
     // List<Bakery> findByUserId(Long userId);

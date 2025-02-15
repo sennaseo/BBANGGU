@@ -16,7 +16,7 @@ public class PaymentService {
 	@Value("${toss.payments.api-key}")
 	private String tossApiKey;
 
-	public ResponseEntity<String> check(String orderId, String paymentKey, int amount) {
+	public ResponseEntity<String> check(String paymentKey, int amount, String orderId) {
 		// 토스에 결제 검증 요청
 		RestTemplate restTemplate = new RestTemplate();
 		HttpHeaders headers = new HttpHeaders();

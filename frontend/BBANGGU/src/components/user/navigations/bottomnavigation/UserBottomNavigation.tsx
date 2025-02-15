@@ -1,11 +1,14 @@
 import { useNavigate, useLocation } from 'react-router-dom';
 import { HomeIcon, MapIcon, HeartIcon, UserIcon } from '@heroicons/react/24/outline';
 import { HomeIcon as HomeIconSolid, MapIcon as MapIconSolid, HeartIcon as HeartIconSolid, UserIcon as UserIconSolid } from '@heroicons/react/24/solid';
+import { useSelector } from 'react-redux'
+import { RootState } from '../../../../store'
 
 export default function UserBottomNavigation() {
   const navigate = useNavigate();
   const location = useLocation();
   const currentPath = location.pathname;
+  const userInfo = useSelector((state: RootState) => state.user.userInfo)
 
   const navigationItems = [
     {
@@ -20,13 +23,13 @@ export default function UserBottomNavigation() {
     },
     {
       label: '관심',
-      path: '/user/:user_id/favorite',
-      icon: currentPath === '/user/:user_id/favorite' ? <HeartIconSolid className="w-6 h-6" /> : <HeartIcon className="w-6 h-6" />,
+      path: `/user/${userInfo?.userId}/favorite`,
+      icon: currentPath === `/user/${userInfo?.userId}/favorite` ? <HeartIconSolid className="w-6 h-6" /> : <HeartIcon className="w-6 h-6" />,
     },
     {
       label: '마이',
-      path: '/user/:user_id/mypage',
-      icon: currentPath === '/user/:user_id/mypage' ? <UserIconSolid className="w-6 h-6" /> : <UserIcon className="w-6 h-6" />,
+      path: `/user/${userInfo?.userId}/mypage`,
+      icon: currentPath === `/user/${userInfo?.userId}/mypage` ? <UserIconSolid className="w-6 h-6" /> : <UserIcon className="w-6 h-6" />,
     },
   ];
 

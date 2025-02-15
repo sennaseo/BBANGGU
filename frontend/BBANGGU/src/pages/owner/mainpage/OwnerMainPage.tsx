@@ -5,9 +5,10 @@ import { BreadPackageInfo } from './components/BreadPackageInfo';
 import { ReviewSection } from './components/ReviewSection';
 import { CustomerList } from './components/CustomerList';
 import BottomNavigation from '../../../components/owner/navigations/BottomNavigations/BottomNavigation';
-import { getBakeryPackages } from '../../../api/owner/package';
-import { PackageType } from '../../../types/bakery';
+import { BuildingStorefrontIcon } from '@heroicons/react/24/outline';
+import { useNavigate } from 'react-router-dom';
 
+// 인터페이스 정의
 interface Customer {
   id: number;
   name: string;
@@ -17,11 +18,20 @@ interface Customer {
   breadCount: number;
 }
 
+interface BreadPackage {
+  bakeryId: number;
+  breadCategoryId: number;
+  name: string;
+  price: number;
+  breadImageUrl: string | null;
+}
+
 const OwnerMainPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'package' | 'review'>('package');
-  const [packages, setPackages] = useState<PackageType[]>([]);
+  const [packages, setPackages] = useState<BreadPackage[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   const initialCustomers: Customer[] = [
     { id: 1, name: '서유민', email: 'youmin77@naver.com', paymentTime: '19:15', isPickedUp: false, breadCount: 1 },
@@ -64,23 +74,35 @@ const OwnerMainPage: React.FC = () => {
   } = useCustomerSort(initialCustomers);
 
   // TODO: 실제 bakeryId는 로그인 정보에서 가져와야 함
-  const bakeryId = 1;
+  const bakeryId = 1; // 현재 토큰의 sub 값이 19입니다
 
   useEffect(() => {
     const fetchPackages = async () => {
       try {
         setIsLoading(true);
-        console.log('Fetching packages...'); // 로딩 시작 로그
-        const data = await getBakeryPackages(bakeryId);
-        console.log('Packages received:', data); // 데이터 수신 로그
-        setPackages(data);
-      } catch (err) {
-        console.error('Error details:', err); // 자세한 에러 로그
-        if (err instanceof Error) {
-          setError(`빵꾸러미 정보를 불러오는데 실패했습니다: ${err.message}`);
-        } else {
-          setError('알 수 없는 오류가 발생했습니다.');
+        const response = await fetch(`/api/bread-package/bakery/${bakeryId}`, {
+          method: 'GET',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          }
+        });
+        
+        if (!response.ok) {
+          throw new Error(`API 요청 실패: ${response.status}`);
         }
+
+        const responseData = await response.json();
+        console.log('API 응답:', responseData);
+        
+        if (responseData.data) {
+          setPackages(responseData.data);
+        }
+      } catch (err) {
+        console.error('패키지 조회 실패:', err);
+        setError('서버 연결에 실패했습니다. 잠시 후 다시 시도해주세요.');
+        setPackages([]);
       } finally {
         setIsLoading(false);
       }
@@ -124,6 +146,7 @@ const OwnerMainPage: React.FC = () => {
   return (
     <div className="pb-16">
       <div className="p-4">
+        {/* 기존 빵꾸러미 정보 */}
         <BreadPackageHeader />
         <div className="flex mb-6">
           <div className="flex flex-1 mx-1 border-b">
@@ -151,7 +174,18 @@ const OwnerMainPage: React.FC = () => {
         </div>
         {activeTab === 'package' ? (
           <>
-            <BreadPackageInfo packages={packages} />  
+            <BreadPackageInfo packages={packages} />
+            <div className="mb-6">
+              <button
+                onClick={() => navigate('/owner/bread/register')}
+                className="w-full flex items-center justify-center gap-3 py-4 bg-gradient-to-r from-[#FFF9F5] to-[#FFF5EC] text-[#FC973B] rounded-xl hover:shadow-md transition-all border border-[#FC973B]/10"
+              >
+                <div className="flex items-center gap-2">
+                  <BuildingStorefrontIcon className="w-5 h-5" />
+                </div>
+                <span className="font-medium">우리가게 빵 등록하기</span>
+              </button>
+            </div>
             <CustomerList 
               customers={customers}
               sortByPaymentTime={sortByPaymentTime}

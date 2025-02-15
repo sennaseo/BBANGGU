@@ -30,10 +30,10 @@ public class EchoSaving {
 	@JoinColumn(name = "user_id", nullable = false, unique = true)
 	private User user;
 
-	@Column(name = "saved_money", nullable = false)
+	@Column(name = "saved_money", nullable = false, columnDefinition = "INT DEFAULT 0")
 	private int savedMoney;
 
-	@Column(name = "reduced_co2e", nullable = false)
+	@Column(name = "reduced_co2e", nullable = false, columnDefinition = "INT DEFAULT 0")
 	private int reducedCo2e;
 
 	@Column(name = "created_at", updatable = false)

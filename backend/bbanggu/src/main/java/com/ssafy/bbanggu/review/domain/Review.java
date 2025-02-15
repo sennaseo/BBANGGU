@@ -40,7 +40,7 @@ public class Review {
     @Column(nullable = false)
     private Integer rating; // 평점
 
-    @Column(length = 1500)
+    @Column(length = 1500, nullable = false)
     private String content; // 내용
 
     @Column(name = "review_image_url", length = 255)

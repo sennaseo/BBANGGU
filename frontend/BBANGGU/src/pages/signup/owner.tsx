@@ -8,34 +8,64 @@ import { PhoneStep } from "./steps/PhoneStep"
 import { StoreInfoStep } from "./steps/StoreInfoStep"
 import { SettlementInfoStep } from "./steps/SettlementInfoStep"
 import { SignupCompleteStep } from "./steps/SignupCompleteStep"
+import { OwnerApi } from "../../api/common/signup/OwnerApi"
 
 type SignupStep = "email" | "password" | "phone" | "store" | "settlement" | "complete"
+
+interface FormData {
+  userId?: number
+  name: string
+  email: string
+  emailVerificationCode: string
+  password: string
+  confirmPassword: string
+  phone: string
+  phoneVerificationCode: string
+  storeName: string
+  storeAddress: string
+  storeAddressDetail: string
+  storePhoto: string
+  accountName: string
+  accountHolder: string
+  accountNumber: string
+  taxEmail: string
+  businessRegistrationNumber: string;
+  storeDescription: string
+  storePhone: string
+  bankName: string
+}
+
+const initialFormData: FormData = {
+  userId: undefined,
+  name: "",
+  email: "",
+  emailVerificationCode: "",
+  password: "",
+  confirmPassword: "",
+  phone: "",
+  phoneVerificationCode: "",
+  storeName: "",
+  storeAddress: "",
+  storeAddressDetail: "",
+  storePhoto: "",
+  accountName: "",
+  accountHolder: "",
+  accountNumber: "",
+  taxEmail: "",
+  businessRegistrationNumber: "", 
+  storeDescription: "",
+  storePhone: "",
+  bankName: "",
+}
 
 export default function OwnerSignupPage() {
   const navigate = useNavigate()
   const [currentStep, setCurrentStep] = useState<SignupStep>("email")
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    emailVerificationCode: "",
-    password: "",
-    confirmPassword: "",
-    phone: "",
-    phoneVerificationCode: "",
-    storeName: "",
-    storeAddress: "",
-    storeAddressDetail: "",
-    storePhoto: "",
-    accountName: "",
-    accountHolder: "",
-    accountNumber: "",
-    taxEmail: "",
-    businessRegistration: "",
-  })
+  const [formData, setFormData] = useState<FormData>(initialFormData)
   const [isEmailVerificationSent, setIsEmailVerificationSent] = useState(false)
   const [isEmailVerified, setIsEmailVerified] = useState(false)
   const [isPhoneVerificationSent, setIsPhoneVerificationSent] = useState(false)
-  const [isPhoneVerified, setIsPhoneVerified] = useState(false)
+  const [isPhoneVerified] = useState(false)
 
   const mainRef = useRef<HTMLDivElement | null>(null)
 
@@ -58,25 +88,32 @@ export default function OwnerSignupPage() {
     }))
   }
 
-  const handleEmailVerification = () => {
-    // TODO: Implement actual email verification logic
-    console.log("Sending verification email to:", formData.email)
-    setIsEmailVerificationSent(true)
+  const handleEmailVerification = async () => {
+    try {
+      await OwnerApi.sendEmailVerification(formData.email);
+      setIsEmailVerificationSent(true);
+    } catch (error: any) {
+      if (error.code === 3001) {
+        alert('너무 많은 요청을 보냈습니다. 나중에 다시 시도하세요.');
+      } else {
+        alert('인증번호 전송에 실패했습니다.');
+      }
+    }
   }
 
-  const handleEmailVerificationSubmit = () => {
-    // TODO: Implement actual email verification logic
-    console.log("Verifying email code:", formData.emailVerificationCode)
-    // Simulating email verification process
-    setTimeout(() => {
-      if (formData.emailVerificationCode === "123456") {
-        // Replace with actual verification logic
-        setIsEmailVerified(true)
+  const handleEmailVerificationSubmit = async () => {
+    try {
+      await OwnerApi.verifyEmail(formData.email, formData.emailVerificationCode);
+      setIsEmailVerified(true);
+    } catch (error: any) {
+      if (error.code === 3002) {
+        alert('인증번호가 일치하지 않습니다. 다시 확인해주세요.');
+      } else if (error.code === 3004) {
+        alert('이미 사용된 인증 코드입니다.');
       } else {
-        // Show error message
-        alert("Invalid verification code. Please try again.")
+        alert('이메일 인증에 실패했습니다.');
       }
-    }, 1000) // Simulate a 1-second delay for verification
+    }
   }
 
   const handlePasswordSubmit = () => {
@@ -89,31 +126,100 @@ export default function OwnerSignupPage() {
     setIsPhoneVerificationSent(true)
   }
 
-  const handlePhoneVerificationSubmit = () => {
-    if (formData.phoneVerificationCode.length === 5) {
-      setIsPhoneVerified(true)
-      setCurrentStep("store")
+  const handlePhoneVerificationSubmit = async () => {
+    if (formData.phone) {
+      try {
+        // 회원가입 진행
+        const userResponse = await OwnerApi.register({
+          name: formData.name,
+          email: formData.email,
+          password: formData.password,
+          phone: formData.phone
+        });
+        
+        // userId를 state에 저장
+        setFormData(prev => ({
+          ...prev,
+          userId: userResponse.data.userId
+        }));
+        
+        setCurrentStep("store");
+      } catch (error: any) {
+        if (error.code === 1006) {
+          alert('이미 사용 중인 이메일입니다.');
+        } else if (error.code === 1008) {
+          alert('이미 사용 중인 전화번호입니다.');
+        } else {
+          alert('회원가입에 실패했습니다.');
+        }
+      }
     }
-  }
+  };
 
-  const handleStoreInfoSubmit = () => {
-    setCurrentStep("settlement")
-  }
+  const handleStoreInfoSubmit = async () => {
+    try {
+      if (!formData.userId) {
+        throw new Error('회원 정보가 없습니다.');
+      }
 
-  const handleSettlementInfoSubmit = () => {
-    setCurrentStep("complete")
-  }
+      const storeData = {
+        userId: formData.userId,
+        name: formData.storeName,
+        description: formData.storeDescription,
+        businessRegistrationNumber: formData.businessRegistrationNumber,
+        addressRoad: formData.storeAddress,
+        addressDetail: formData.storeAddressDetail,
+        bakeryImageUrl: "https://example.com/bakery.jpg",
+        bakryBackgroundImgUrl: "https://example.com/background.jpg"
+      };
+
+      console.log('Store data being sent to API:', storeData);  // API로 보내는 데이터 확인
+      
+      const response = await OwnerApi.registerStore(storeData);
+      console.log('API response:', response);  // API 응답 확인
+      
+      setCurrentStep("settlement");
+    } catch (error: any) {
+      console.error('Store registration error details:', error.response?.data || error);
+      throw error;  // 에러를 다시 던져서 상위에서 처리
+    }
+  };
+
+  const handleSettlementInfoSubmit = async () => {
+    try {
+      if (!formData.userId) {
+        throw new Error('회원 정보가 없습니다.');
+      }
+
+      const settlementData = {
+        userId: formData.userId,
+        bankName: formData.bankName,
+        accountHolderName: formData.accountHolder,
+        accountNumber: formData.accountNumber,
+        emailForTaxInvoice: formData.taxEmail,
+        businessLicenseFileUrl: "https://example.com/license.jpg"  // 임시 URL 사용
+      };
+
+      console.log('Settlement data being sent:', settlementData);
+
+      const response = await OwnerApi.registerSettlement(settlementData);
+      console.log('Settlement registration response:', response);  // 응답 확인
+      
+      setCurrentStep("complete");
+    } catch (error: any) {
+      console.error('Settlement registration error:', error.response?.data || error);
+      
+      if (error.response?.status === 500) {
+        alert('서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+      } else {
+        alert('정산 정보 등록에 실패했습니다. 입력하신 정보를 다시 확인해주세요.');
+      }
+    }
+  };
 
   const isEmailValid = formData.email.includes("@") && formData.email.includes(".")
   const isPasswordValid = formData.password.length >= 8
   const doPasswordsMatch = formData.password === formData.confirmPassword
-  const isStoreInfoValid = formData.storeName && formData.storeAddress && formData.storePhoto
-  const isSettlementInfoValid =
-    formData.accountName &&
-    formData.accountHolder &&
-    formData.accountNumber &&
-    formData.taxEmail &&
-    formData.businessRegistration
 
   const handleBackClick = () => {
     switch (currentStep) {
@@ -138,6 +244,36 @@ export default function OwnerSignupPage() {
     }
   }
 
+  const handleNextClick = async () => {
+    try {
+      switch (currentStep) {
+        case "email":
+          setCurrentStep("password");
+          break;
+        case "password":
+          handlePasswordSubmit();
+          break;
+        case "phone":
+          await handlePhoneVerificationSubmit();
+          break;
+        case "store":
+          await handleStoreInfoSubmit();
+          break;
+        case "settlement":
+          await handleSettlementInfoSubmit();
+          break;
+      }
+    } catch (error: any) {
+      if (error.code === 2001) {
+        alert(`'${formData.storeName}' 은(는) 이미 사용 중인 가게 이름입니다. 다른 이름을 입력해주세요.`);
+      } else if (error.code === 2000) {
+        alert('이미 존재하는 사업자 등록 번호입니다. 다른 번호를 입력해주세요.');
+      } else {
+        alert(error.message || '처리 중 오류가 발생했습니다.');
+      }
+    }
+  };
+
   const renderStep = () => {
     switch (currentStep) {
       case "email":
@@ -146,7 +282,7 @@ export default function OwnerSignupPage() {
             <h1 className="text-[22px] font-bold">이메일 입력</h1>
             <p className="text-[15px] text-gray-600">원활한 서비스 이용을 위해 이메일 인증을 해주세요</p>
             <div className="space-y-6">
-              <InputField label="이름" name="name" value={formData.name} onChange={handleChange} placeholder="권가을" />
+              <InputField label="이름" name="name" value={formData.name} onChange={handleChange} placeholder="홍길동" />
               <div className="space-y-2">
                 <InputField
                   label="EMAIL"
@@ -154,7 +290,7 @@ export default function OwnerSignupPage() {
                   type="email"
                   value={formData.email}
                   onChange={handleChange}
-                  placeholder="KKY@gmail.com"
+                  placeholder="gildong123@gmail.com"
                   actionButton={
                     <Button
                       variant="secondary"
@@ -207,9 +343,9 @@ export default function OwnerSignupPage() {
         )
       case "phone":
         return (
-          <div className="space-y-6">
-            <h1 className="text-[22px] font-bold">전화번호 인증</h1>
-            <p className="text-[15px] text-gray-600">원활한 서비스 이용을 위해 이메일 인증을 해주세요</p>
+          <div className="pt-8">
+            <h1 className="text-[22px] font-bold mb-2">전화번호 입력</h1>
+            <p className="text-[15px] text-gray-600 mb-8">원활한 서비스 이용을 위해 전화번호를 입력해주세요</p>
             <PhoneStep
               formData={{
                 phone: formData.phone,
@@ -238,11 +374,11 @@ export default function OwnerSignupPage() {
             <p className="text-[15px] text-gray-600">모든 항목이 입력되어야, 정산금이 이체됩니다.</p>
             <SettlementInfoStep
               formData={{
-                accountName: formData.accountName,
+                bankName: formData.bankName,
                 accountHolder: formData.accountHolder,
                 accountNumber: formData.accountNumber,
                 taxEmail: formData.taxEmail,
-                businessRegistration: formData.businessRegistration,
+                businessRegistration: formData.businessRegistrationNumber,
               }}
               onChange={handleChange}
               onSubmit={handleSettlementInfoSubmit}
@@ -270,29 +406,19 @@ export default function OwnerSignupPage() {
 
       {/* Bottom Button */}
       {currentStep !== "complete" && (
-        <div className="fixed bottom-0 left-0 right-0 z-10 px-5 py-4 bg-white border-t border-gray-100 max-w-[430px] mx-auto">
+        <div className="fixed bottom-0 left-0 right-0 px-5 py-4 bg-white border-t border-gray-100 max-w-[430px] mx-auto">
           <Button
-            onClick={
-              currentStep === "email"
-                ? () => setCurrentStep("password")
-                : currentStep === "password"
-                  ? handlePasswordSubmit
-                  : currentStep === "phone"
-                    ? handlePhoneVerificationSubmit
-                    : currentStep === "store"
-                      ? handleStoreInfoSubmit
-                      : handleSettlementInfoSubmit
-            }
+            onClick={handleNextClick}
             disabled={
               currentStep === "email"
                 ? !isEmailVerified || !formData.name || !isEmailValid
                 : currentStep === "password"
                   ? !isPasswordValid || !doPasswordsMatch
                   : currentStep === "phone"
-                    ? !isPhoneVerified
+                    ? !formData.phone
                     : currentStep === "store"
-                      ? !isStoreInfoValid
-                      : !isSettlementInfoValid
+                      ? !formData.storeName || !formData.storeAddress || !formData.storePhoto
+                      : !formData.bankName || !formData.accountHolder || !formData.accountNumber
             }
           >
             {currentStep === "settlement" ? "가입 완료" : "다음"}

@@ -7,9 +7,12 @@ import RecommendedStores from "../../../components/user/usermain/RecommendedStor
 import ErrorBoundary from "../../../components/ErrorBoundary"
 import { useNavigate } from "react-router-dom"
 import UserBottomNavigation from "../../../components/user/navigations/bottomnavigation/UserBottomNavigation"
+<<<<<<< frontend/BBANGGU/src/pages/user/main/UserMain.tsx
 import type { BakerySearchItem, ExtendedBakeryType } from "../../../types/bakery"
 import { toggleFavoriteForUser } from "../../../services/user/usermainService"
 import { bakeryDetailApi } from "../../../api/user/detail/bakeryDetailApi"
+import { useSelector } from 'react-redux'
+import { RootState } from '../../../store'
 
 export default function UserMain() {
   const [allBakeriesData, setAllBakeriesData] = useState<ExtendedBakeryType[]>([])
@@ -18,6 +21,9 @@ export default function UserMain() {
   const [searchResults, setSearchResults] = useState<BakerySearchItem[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<Error | null>(null)
+
+  // 리덕스에서 사용자 정보 가져오기
+  const userInfo = useSelector((state: RootState) => state.user.userInfo)
   const navigate = useNavigate()
 
   // API 데이터를 불러와서 캐시된 데이터가 있다면 재요청 없이 사용합니다.
@@ -107,7 +113,7 @@ const handleToggleFavorite = async (bakeryId: number) => {
             <div className="relative h-full flex flex-col justify-between">
               <div className="space-y-2 z-10 pb-8">
                 <h1 className="text-[#fc973b] text-[22px] font-bold">
-                  <span className="text-[#fc973b] text-[30px]">김싸피</span> 님,
+                  <span className="text-[#fc973b] text-[30px]">{userInfo?.name || '고객'}</span> 님,
                 </h1>
                 <p className="text-[#5a5a5a] text-[24px] font-bold">
                   빵꾸러미와 함께 환경을

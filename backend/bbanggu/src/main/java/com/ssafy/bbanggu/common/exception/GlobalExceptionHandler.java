@@ -33,8 +33,10 @@ public class GlobalExceptionHandler {
 
 	@ExceptionHandler(MethodArgumentNotValidException.class)
 	public ResponseEntity<ErrorResponse> handleValidationExceptions(MethodArgumentNotValidException e) {
+		// 첫 번째 오류 메시지만 가져오기
+		String errorMessage = e.getBindingResult().getFieldError().getDefaultMessage();
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-			.body(new ErrorResponse(400, "Validation Error", "잘못된 형식의 요청입니다."));
+			.body(new ErrorResponse(400, "BAD_REQUEST", errorMessage));
 	}
 
 }

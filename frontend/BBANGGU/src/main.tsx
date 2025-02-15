@@ -1,5 +1,7 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
+import { Provider } from 'react-redux'
+import { store } from './store'
 import App from './App'
 import './index.css'
 
@@ -30,10 +32,17 @@ const loadKakaoMapScript = () => {
 
 loadKakaoMapScript()
   .then(() => {
+    // 서비스 워커 등록 코드를 주석 처리
+    // if ('serviceWorker' in navigator) {
+    //   navigator.serviceWorker.register('/sw.js')
+    // }
+
     const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
     root.render(
       <React.StrictMode>
-        <App />
+        <Provider store={store}>
+          <App />
+        </Provider>
       </React.StrictMode>
     )
   })

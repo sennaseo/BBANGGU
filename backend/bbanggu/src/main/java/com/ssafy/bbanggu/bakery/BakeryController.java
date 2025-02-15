@@ -23,13 +23,17 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @RestController
 @RequestMapping("/bakery")
 @RequiredArgsConstructor
@@ -39,7 +43,15 @@ public class BakeryController {
 	private final BakeryPickupService bakeryPickupService;
 	private final BakeryRepository bakeryRepository;
 
-	// 모든 가게 조회
+	/**
+	 * 가게 전체 조회 API
+	 *
+	 * @param sortBy 정렬 기준
+	 * @param sortOrder asc or desc
+	 * @param pageable 페이지 수
+	 * @param userDetails 현재 로그인한 사용자 정보
+	 * @return 가게 리스트
+	 */
 	@GetMapping
 	public ResponseEntity<ApiResponse> getAllBakeries(
 		@RequestParam(defaultValue = "createdAt") String sortBy,
@@ -47,45 +59,48 @@ public class BakeryController {
 		@PageableDefault(size = 10) Pageable pageable,
 		@AuthenticationPrincipal CustomUserDetails userDetails
 	) {
-		Double lat = null;
-		Double lng = null;
-
-		if (userDetails != null && userDetails.getLatitude() != 0.0 && userDetails.getLongitude() != 0.0) {
-			lat = userDetails.getLatitude();
-			lng = userDetails.getLongitude();
-		}
-
-		List<BakeryDetailDto> bakeries = bakeryService.getAllBakeries(sortBy, sortOrder, pageable, lat, lng);
+		log.info("✨ 가게 전체 조회 ✨");
+		List<BakeryDetailDto> bakeries = bakeryService.getAllBakeries(userDetails, sortBy, sortOrder, pageable);
 		return ResponseEntity.ok().body(new ApiResponse("모든 가게 조회에 성공하였습니다.", bakeries));
 	}
 
-	// 가게 추가
+
+	/**
+	 * 가게 등록 API
+	 *
+	 * @param bakery 등록할 가게 정보
+	 * @return 등록된 가게 정보
+	 */
 	@PostMapping
 	public ResponseEntity<ApiResponse> createBakery(@RequestBody @Valid BakeryCreateDto bakery) {
 		BakeryCreateDto createdBakery = bakeryService.createBakery(bakery);
 		return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse("가게 등록이 완료되었습니다.", createdBakery));
 	}
 
-	// @PostMapping("/settlement")
-	// public ResponseEntity<ApiResponse> createSettlement(@RequestBody @Valid BakerySettlementDto settlement) {
-	// 	BakerySettlementDto createSettlement = bakeryService.
-	// }
 
-	// 가게 상세 조회
+	/**
+	 * 가게 정산 정보 등록 API
+	 */
+	@PostMapping("/settlement")
+	public ResponseEntity<ApiResponse> createSettlement(@RequestBody @Valid BakerySettlementDto settlement) {
+		BakerySettlementDto createSettlement = bakeryService.createSettlement(settlement);
+		return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse("가게 정산 정보 등록이 완료되었습니다.", createSettlement));
+	}
+
+
+	/**
+	 * 가게 상세 조회 API
+	 *
+	 * @param bakery_id 가게 ID
+	 * @param userDetails 현재 로그인한 사용자 정보
+	 * @return 가게 상세 정보
+	 */
 	@GetMapping("/{bakery_id}")
 	public ResponseEntity<ApiResponse> getBakeryById(
 		@PathVariable Long bakery_id,
 		@AuthenticationPrincipal CustomUserDetails userDetails
 	) {
-		Double lat = null;
-		Double lng = null;
-
-		if (userDetails != null && userDetails.getLatitude() != 0.0 && userDetails.getLongitude() != 0.0) {
-			lat = userDetails.getLatitude();
-			lng = userDetails.getLongitude();
-		}
-
-		BakeryDetailDto bakery = bakeryService.findById(bakery_id, lat, lng);
+		BakeryDetailDto bakery = bakeryService.findById(userDetails, bakery_id);
 		return ResponseEntity.ok().body(new ApiResponse("가게 정보 조회에 성공하였습니다.", bakery));
 	}
 
@@ -96,22 +111,7 @@ public class BakeryController {
 		@PathVariable Long bakery_id,
 		@RequestBody BakeryDto updates
 	) {
-		if (userDetails == null) {
-			throw new CustomException(ErrorCode.UNAUTHORIZED_USER);
-		}
-
-		Bakery bakery = bakeryRepository.findByBakeryIdAndDeletedAtIsNull(bakery_id);
-		if (bakery == null) {
-			throw new CustomException(ErrorCode.BAKERY_NOT_FOUND);
-		}
-
-		// ✅ 현재 로그인한 사용자가 이 가게의 주인인지 검증
-		Long userId = userDetails.getUserId();
-		if (!bakery.getUser().getUserId().equals(userId)) {
-			throw new CustomException(ErrorCode.NO_PERMISSION_TO_EDIT_BAKERY);
-		}
-
-		BakeryDto updatedBakery = bakeryService.update(bakery, updates);
+		BakeryDto updatedBakery = bakeryService.update(userDetails, bakery_id, updates);
 		return ResponseEntity.ok().body(new ApiResponse("가게 정보가 성공적으로 수정되었습니다.", updatedBakery));
 	}
 
@@ -146,15 +146,7 @@ public class BakeryController {
 		@PageableDefault(size = 10) Pageable pageable,
 		@AuthenticationPrincipal CustomUserDetails userDetails
 	) {
-		Double lat = null;
-		Double lng = null;
-
-		if (userDetails != null && userDetails.getLatitude() != 0.0 && userDetails.getLongitude() != 0.0) {
-			lat = userDetails.getLatitude();
-			lng = userDetails.getLongitude();
-		}
-
-		Page<BakeryDetailDto> bakeries = bakeryService.searchByKeyword(keyword, pageable, lat, lng);
+		Page<BakeryDetailDto> bakeries = bakeryService.searchByKeyword(userDetails, keyword, pageable);
 		return ResponseEntity.ok().body(new ApiResponse("검색 결과 조회에 성공하였습니다.", bakeries));
 	}
 
@@ -185,7 +177,7 @@ public class BakeryController {
 	}
 
 	/**
-	 * 픽업 시간 조회
+	 * 오늘 픽업 시간 조회
 	 *
 	 * @param bakeryId 베이커리 아이디
 	 * @return 오늘 요일에 해당하는 픽업시간 반환
@@ -204,6 +196,24 @@ public class BakeryController {
 		return ResponseEntity.ok().body(new ApiResponse("픽업시간 조회에 성공하였습니다.", pickupTimetable));
 	}
 
+
+	/**
+	 * 전체 픽업 시간 조회
+	 *
+	 * @param userDetails 현재 로그인한 사용자 정보
+	 * @param bakeryId 가게 아이디
+	 * @return 요일별 픽업시간 리스트
+	 */
+	@GetMapping("/{bakery_id}/pickup_all")
+	public ResponseEntity<ApiResponse> getBakeryAllPickupTimatable(
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@PathVariable("bakery_id") Long bakeryId
+	){
+		Map<String, PickupTimeDto> response = bakeryPickupService.getAllPickupTimetable(userDetails, bakeryId);
+		return ResponseEntity.ok().body(new ApiResponse("픽업시간 조회에 성공하였습니다.", response));
+	}
+
+
 	/**
 	 * 픽업 시간 수정
 	 */
@@ -213,6 +223,7 @@ public class BakeryController {
 		@PathVariable("bakery_id") Long bakeryId,
 		@RequestBody BakeryPickupTimetableDto request
 	) {
+		log.info("✨ 픽업 시간 수정 ✨");
 		// ✅ 유효한 빵집인지 검증 (
 		Bakery bakery = bakeryRepository.findByBakeryIdAndDeletedAtIsNull(bakeryId);
 		if (bakery == null) {
@@ -234,5 +245,15 @@ public class BakeryController {
 	public ResponseEntity<List<BakeryLocationDto>> getAllBakeryLocations() {
 		List<BakeryLocationDto> bakeryLocations = bakeryService.findAllBakeryLocations();
 		return ResponseEntity.ok(bakeryLocations);
+	}
+
+	@GetMapping("/{bakery_id}/settlement")
+	public ResponseEntity<ApiResponse> getBakerySettlement(
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@PathVariable Long bakery_id
+	){
+		log.info("✨ 가게 ID로 정산 정보 조회 ✨");
+		BakerySettlementDto response = bakeryService.getBakerySettlement(userDetails, bakery_id);
+		return ResponseEntity.ok(new ApiResponse("가게 정산 정보 조회가 완료되었습니다.", response));
 	}
 }

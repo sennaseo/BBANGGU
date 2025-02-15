@@ -3,25 +3,34 @@ package com.ssafy.bbanggu.user.service;
 import java.util.Map;
 import java.util.Optional;
 
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.ssafy.bbanggu.auth.dto.JwtToken;
+import com.ssafy.bbanggu.auth.security.CustomUserDetails;
 import com.ssafy.bbanggu.auth.security.JwtTokenProvider;
+import com.ssafy.bbanggu.bakery.domain.Bakery;
+import com.ssafy.bbanggu.bakery.dto.BakeryDto;
+import com.ssafy.bbanggu.bakery.repository.BakeryRepository;
 import com.ssafy.bbanggu.bakery.service.BakeryService;
 import com.ssafy.bbanggu.common.exception.CustomException;
 import com.ssafy.bbanggu.common.exception.ErrorCode;
 import com.ssafy.bbanggu.saving.domain.EchoSaving;
 import com.ssafy.bbanggu.saving.repository.EchoSavingRepository;
+import com.ssafy.bbanggu.user.Role;
 import com.ssafy.bbanggu.user.domain.User;
 import com.ssafy.bbanggu.user.dto.CreateUserRequest;
+import com.ssafy.bbanggu.user.dto.PasswordUpdateRequest;
 import com.ssafy.bbanggu.user.dto.UpdateUserRequest;
 import com.ssafy.bbanggu.user.dto.UserResponse;
 import com.ssafy.bbanggu.user.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserService { // 사용자 관련 비즈니스 로직 처리
@@ -31,6 +40,7 @@ public class UserService { // 사용자 관련 비즈니스 로직 처리
 	private final PasswordEncoder passwordEncoder;
 	private final JwtTokenProvider jwtTokenProvider;
 	private final BakeryService bakeryService;
+	private final BakeryRepository bakeryRepository;
 
 	/**
 	 * 회원가입 로직 처리
@@ -50,10 +60,11 @@ public class UserService { // 사용자 관련 비즈니스 로직 처리
 		}
 
 		// 1️⃣ 비밀번호 암호화
-		String encodedPassword = passwordEncoder.encode(request.password());
+		//String encodedPassword = passwordEncoder.encode(request.password());
 
 		// 2️⃣ User 엔티티 생성 및 저장 (회원가입)
-		User user = User.createNormalUser(request.name(), request.email(), encodedPassword, request.phone(), request.toEntity().getRole());
+		// User user = User.createNormalUser(request.name(), request.email(), encodedPassword, request.phone(), request.toEntity().getRole());
+		User user = User.createNormalUser(request.name(), request.email(), request.password(), request.phone(), request.toEntity().getRole());
 		userRepository.save(user);
 
 		// 3️⃣ 절약 정보 자동 생성 및 초기화
@@ -107,9 +118,9 @@ public class UserService { // 사용자 관련 비즈니스 로직 처리
         }
 
 		// 비밀번호 검증
-		if (!passwordEncoder.matches(password, user.getPassword())) {
-			throw new CustomException(ErrorCode.INVALID_PASSWORD);
-        }
+		// if (!passwordEncoder.matches(password, user.getPassword())) {
+		// 	throw new CustomException(ErrorCode.INVALID_PASSWORD);
+        // }
 
         // ✅ JWT 토큰 생성
 		String accessToken = jwtTokenProvider.createAccessToken(user.getUserId());
@@ -140,14 +151,15 @@ public class UserService { // 사용자 관련 비즈니스 로직 처리
 	/**
 	 * 사용자 정보 조회
 	 */
-	public UserResponse getUserInfo(Long userId) {
-		User user = userRepository.findById(userId)
+	public UserResponse getUserInfo(CustomUserDetails userDetails) {
+		User user = userRepository.findById(userDetails.getUserId())
 			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
 		// 탈퇴한 계정인지 확인
 		if (user.getDeletedAt() != null) {
 			throw new CustomException(ErrorCode.ACCOUNT_DEACTIVATED);
 		}
+		log.info("✅ {}번 사용자 검증 완료", userDetails.getUserId());
 
 		return UserResponse.from(user);
 	}
@@ -156,14 +168,15 @@ public class UserService { // 사용자 관련 비즈니스 로직 처리
 	 * 사용자 정보 수정
 	 */
 	@Transactional
-	public void update(Long userId, UpdateUserRequest updates) {
-		User user = userRepository.findById(userId)
+	public void update(CustomUserDetails userDetails, UpdateUserRequest updates) {
+		User user = userRepository.findById(userDetails.getUserId())
 			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
 		// ✅ 이미 탈퇴한 사용자 처리
 		if (user.isDeleted()) {
 			throw new CustomException(ErrorCode.ACCOUNT_DEACTIVATED);
 		}
+		log.info("✅ {}번 사용자 검증 완료", userDetails.getUserId());
 
 		// ✅ 위치 정보가 바뀌었을 때에만 변경 가능하도록 처리
 		String addrRoad = user.getAddressRoad();
@@ -212,5 +225,55 @@ public class UserService { // 사용자 관련 비즈니스 로직 처리
 	 */
 	public boolean existsByEmail(String email) {
 		return userRepository.existsByEmail(email);
+	}
+
+	public BakeryDto getOwnerBakery(CustomUserDetails userDetails) {
+		User user = userRepository.findById(userDetails.getUserId())
+			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+		if (user.getRole().equals(Role.USER)) {
+			throw new CustomException(ErrorCode.USER_IS_NOT_OWNER);
+		}
+		log.info("✅ 현재 로그인한 {}번 사용자가 사장님임이 검증됨", userDetails.getUserId());
+
+		Bakery bakery = bakeryRepository.findByUser_UserId(user.getUserId());
+
+		return new BakeryDto(
+			bakery.getBakeryId(),
+			bakery.getUser().getUserId(),
+			bakery.getName(),
+			bakery.getDescription(),
+			bakery.getBusinessRegistrationNumber(),
+			bakery.getAddressRoad(),
+			bakery.getAddressDetail(),
+			bakery.getBakeryImageUrl(),
+			bakery.getBakeryBackgroundImgUrl(),
+			bakery.getStar(),
+			bakery.getReviewCnt()
+		);
+	}
+
+	/**
+	 * 비밀번호 변경 (마이페이지)
+	 */
+	public void updatePwd(CustomUserDetails userDetails, PasswordUpdateRequest request) {
+		User user = userRepository.findById(userDetails.getUserId())
+			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+		// 비밀번호 검증
+		// if (!passwordEncoder.matches(password, user.getPassword())) {
+		// 	throw new CustomException(ErrorCode.INVALID_PASSWORD);
+		// }
+
+		if (!request.originPassword().equals(user.getPassword())) {
+			throw new CustomException(ErrorCode.NOT_EQUAL_PASSWORD);
+		}
+
+		if(user.getPassword().equals(request.newPassword())) {
+			throw new CustomException(ErrorCode.EQUAL_ORIGIN_AND_NEW_PASSWORD);
+		}
+
+		user.setPassword(request.newPassword());
+		userRepository.save(user);
 	}
 }

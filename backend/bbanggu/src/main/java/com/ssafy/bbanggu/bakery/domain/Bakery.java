@@ -7,6 +7,8 @@ import lombok.*;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import org.hibernate.annotations.Formula;
+
 import com.ssafy.bbanggu.bread.Bread;
 import com.ssafy.bbanggu.breadpackage.BreadPackage;
 import com.ssafy.bbanggu.favorite.Favorite;
@@ -26,6 +28,10 @@ public class Bakery {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "bakery_id", columnDefinition = "INT UNSIGNED")
     private Long bakeryId; // 가게 ID
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "settlement_id", nullable = false)
+	private Settlement settlement;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
@@ -47,7 +53,10 @@ public class Bakery {
     private String addressDetail; // 상세 주소
 
     @Column(name = "bakery_image_url", length = 255, nullable = true)
-    private String bakeryImageUrl; // 사진 URL
+    private String bakeryImageUrl; // 가게 이미지 URL
+
+	@Column(name = "bakery_background_img_url")
+	private String bakeryBackgroundImgUrl; // 가게 배경 이미지 URL
 
     @Column(nullable = false)
     private Double latitude; // 위도
@@ -58,20 +67,23 @@ public class Bakery {
 	@Column(nullable = false, columnDefinition = "DOUBLE DEFAULT 0.0")
 	private Double star;
 
-	@Column(nullable = false, columnDefinition = "INT DEFAULT 0")
+	@Column(name = "rating_1_cnt", nullable = false, columnDefinition = "INT DEFAULT 0")
 	private int rating1Cnt;
 
-	@Column(nullable = false, columnDefinition = "INT DEFAULT 0")
+	@Column(name = "rating_2_cnt", nullable = false, columnDefinition = "INT DEFAULT 0")
 	private int rating2Cnt;
 
-	@Column(nullable = false, columnDefinition = "INT DEFAULT 0")
+	@Column(name = "rating_3_cnt", nullable = false, columnDefinition = "INT DEFAULT 0")
 	private int rating3Cnt;
 
-	@Column(nullable = false, columnDefinition = "INT DEFAULT 0")
+	@Column(name = "rating_4_cnt", nullable = false, columnDefinition = "INT DEFAULT 0")
 	private int rating4Cnt;
 
-	@Column(nullable = false, columnDefinition = "INT DEFAULT 0")
+	@Column(name = "rating_5_cnt", nullable = false, columnDefinition = "INT DEFAULT 0")
 	private int rating5Cnt;
+
+	@Column(name = "review_cnt", nullable = false, columnDefinition = "INT DEFAULT 0")
+	private int reviewCnt;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt; // 생성일
@@ -121,7 +133,10 @@ public class Bakery {
 	@Builder
 	public Bakery(String name, String description, String businessRegistrationNumber,
 		String addressRoad, String addressDetail, String bakeryImageUrl,
-		double latitude, double longitude, double star, User user) {
+		double latitude, double longitude, double star, User user,
+		int reviewCnt, int rating1Cnt, int rating2Cnt, int rating3Cnt,
+		int rating4Cnt, int rating5Cnt
+	) {
 		this.name = name;
 		this.description = description;
 		this.businessRegistrationNumber = businessRegistrationNumber;
@@ -132,6 +147,12 @@ public class Bakery {
 		this.longitude = longitude;
 		this.star = star;
 		this.user = user;
+		this.reviewCnt = reviewCnt;
+		this.rating1Cnt = rating1Cnt;
+		this.rating2Cnt = rating2Cnt;
+		this.rating3Cnt = rating3Cnt;
+		this.rating4Cnt = rating4Cnt;
+		this.rating5Cnt = rating5Cnt;
 	}
 
 }

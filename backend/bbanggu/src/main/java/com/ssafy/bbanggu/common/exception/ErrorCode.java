@@ -20,8 +20,11 @@ public enum ErrorCode {
 	PHONE_NUMBER_ALREADY_EXISTS(1008, HttpStatus.CONFLICT, "이미 사용 중인 전화번호입니다."),
 	SAME_AS_OLD_PASSWORD(1009, HttpStatus.BAD_REQUEST, "이전 비밀번호와 동일한 비밀번호는 사용하실 수 없습니다."),
 	INVALIE_PASSWORD(1010, HttpStatus.BAD_REQUEST, "비밀번호는 8자 이상이어야 합니다."),
-	UNAUTHORIZED_USER(1011, HttpStatus.UNAUTHORIZED, "인증이 필요한 사용자입니다."),
+	UNAUTHORIZED_USER(1011, HttpStatus.UNAUTHORIZED, "토큰이 없거나, 인증되지 않은 사용자입니다."),
 	NOT_EQUAL_USER(1012, HttpStatus.FORBIDDEN, "현재 로그인한 사용자와 조회 대상이 일치하지 않습니다."),
+	USER_IS_NOT_OWNER(1013, HttpStatus.UNAUTHORIZED, "현재 로그인한 사용자는 사장님이 아닙니다."),
+	NOT_EQUAL_PASSWORD(1014, HttpStatus.BAD_REQUEST, "입력한 기존 비밀번호가 현재 비밀번호와 일치하지 않습니다."),
+	EQUAL_ORIGIN_AND_NEW_PASSWORD(1015, HttpStatus.BAD_REQUEST, "기존 비밀번호와 동일한 비밀번호로는 변경할 수 없습니다."),
 
 	// ✅ kakao 인증 관련 예외(1500번대)
 	KAKAO_AUTH_FAILED(1501, HttpStatus.BAD_REQUEST, "카카오 인증에 실패하였습니다."),
@@ -33,20 +36,33 @@ public enum ErrorCode {
 	BAKERY_NOT_FOUND(2002, HttpStatus.NOT_FOUND, "가게를 찾을 수 없습니다."),
 	NO_PERMISSION_TO_EDIT_BAKERY(2003, HttpStatus.FORBIDDEN, "해당 가게를 수정할 권한이 없습니다."),
 	NO_KEYWORD_ENTERED(2004, HttpStatus.BAD_REQUEST, "입력된 키워드가 없습니다. 검색어를 입력해주세요."),
+	SETTLEMENT_NOT_FOUND(2005, HttpStatus.NOT_FOUND, "해당 가게의 정산정보가 존재하지 않습니다."),
 
 	// ✅ 빵 관련 예외 (2100번대)
 
 	// ✅ 빵꾸머리 관련 예외 (2200번대)
-	BREAD_PACKAGE_NOT_FOUND(2200, HttpStatus.NOT_FOUND, "빵꾸러미를 찾을 수 없습니다."),
+	BREAD_PACKAGE_NOT_FOUND(2200, HttpStatus.NOT_FOUND, "존재하지 않는 빵꾸러미입니다."),
 	BREAD_PACKAGE_QUANTITY_CONFLICT(2001, HttpStatus.CONFLICT, "빵꾸러미가 부족합니다."),
+	WRONG_DATE_FORMAT(2002, HttpStatus.BAD_REQUEST, "잘못된 날짜 형식입니다. (예: 2024-02-01 00:00:00)"),
+	PACKAGE_ALREADY_DELETED(2003, HttpStatus.FORBIDDEN, "이미 삭제된 빵꾸러미입니다."),
+	DUPLICATE_BREAD_PACKAGE(2004, HttpStatus.CONFLICT, "동일한 빵꾸러미가 이미 등록되어 있습니다."),
+	TODAY_PACKATE_ALREADY_EXIST(2005, HttpStatus.BAD_REQUEST, "빵꾸러미는 하루에 한 번만 등록할 수 있습니다."),
 
 	// ✅ 관심 가게 관련 예외 (2300번대)
 	ALREADY_FAVORITE(2300, HttpStatus.BAD_REQUEST, "이미 관심가게로 등록된 빵집입니다."),
 	BAKERY_NOT_FAVORITE(2301, HttpStatus.BAD_REQUEST, "좋아요 하지 않은 가게입니다."),
 
-	// 예약 관련 예외 (2300번대)
+	// ✅ 예약 관련 예외 (2300번대)
 	RESERVATION_NOT_FOUND(2300, HttpStatus.NOT_FOUND, "예약 정보를 찾을 수 없습니다."),
 	PAYMENT_NOT_VALID(2301, HttpStatus.BAD_REQUEST, "결제 정보가 다릅니다."),
+	QUANTITY_EXCEEDED(2302, HttpStatus.BAD_REQUEST, "남은 빵꾸러미 수량보다 많은 개수를 예약할 수 없습니다."),
+	DUPLICATE_RESERVATION(2303, HttpStatus.CONFLICT, "이미 예약된 빵꾸러미가 있습니다. 중복 예약이 불가능합니다."),
+	UNVERIFIED_RESERVATION(2304, HttpStatus.UNAUTHORIZED, "검증되지 않은 예약입니다."),
+	RESERVATION_ALREADY_CANCELED(2305, HttpStatus.CONFLICT, "이미 취소된 예약입니다."),
+	NOT_BAKERY_OWNER(2306, HttpStatus.FORBIDDEN, "사장님이 아닌 사용자는 예약 처리 권한이 없습니다."),
+	RESERVATION_IS_NOT_CONFIRMED(2307, HttpStatus.CONFLICT, "현재 예약 상태가 'CONFIRMED'가 아닙니다."),
+	RESERVATION_ALREADY_COMPLETED(2308, HttpStatus.BAD_REQUEST, "이미 픽업이 완료된 예약입니다."),
+	USER_NOT_BAKERY_OWNER(2309, HttpStatus.UNAUTHORIZED, "현재 로그인한 사용자는 해당 빵집의 사장님이 아닙니다."),
 
 	// ✅ 이메일 인증 관련 예외 (3000번대)
 	EMAIL_SEND_FAILED(3000, HttpStatus.INTERNAL_SERVER_ERROR, "이메일 전송에 실패하였습니다."),
@@ -86,6 +102,7 @@ public enum ErrorCode {
 	REVIEW_ALREADY_EXISTS(4601, HttpStatus.CONFLICT, "해당 예약에 대한 리뷰는 이미 작성되었습니다."),
 	FORBIDDEN_REVIEW(4602, HttpStatus.FORBIDDEN, "해당 리뷰에 대한 권한이 없습니다."),
 	ONLY_VIEW_OWN_REVIEW(4603, HttpStatus.UNAUTHORIZED, "본인의 리뷰만 조회할 수 있습니다."),
+	INVALID_RATING(4604, HttpStatus.BAD_REQUEST, "유요하지 않은 평점입니다. 평점은 1~5 사이의 숫자여야 합니다."),
 
 	// ✅ 서버 내부 오류 (5000번대)
 	INTERNAL_SERVER_ERROR(5000, HttpStatus.INTERNAL_SERVER_ERROR, "서버 내부 오류가 발생했습니다.");
