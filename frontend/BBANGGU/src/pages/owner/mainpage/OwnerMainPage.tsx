@@ -7,6 +7,8 @@ import BottomNavigation from '../../../components/owner/navigations/BottomNaviga
 import { BuildingStorefrontIcon } from '@heroicons/react/24/outline';
 import { useNavigate } from 'react-router-dom';
 import { BreadPackage, getBakeryPackages } from '../../../api/owner/package';  // 공통 인터페이스 import
+import { useSelector } from 'react-redux';
+import { selectAuth } from '../../../store/slices/authSlice';
 
 // 인터페이스 정의
 interface ReservationInfo {
@@ -25,7 +27,7 @@ const OwnerMainPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [reservations, setReservations] = useState<ReservationInfo[]>([]);
-  const [isTokenReady, setIsTokenReady] = useState(false);  // 토큰 준비 상태 추가
+  const auth = useSelector(selectAuth);  // Redux auth 상태 가져오기
   const navigate = useNavigate();
 
   const reviewData = {
@@ -55,16 +57,9 @@ const OwnerMainPage: React.FC = () => {
   // TODO: 실제 bakeryId는 로그인 정보에서 가져와야 함
   const bakeryId = 1; // 현재 토큰의 sub 값이 19입니다
 
-  // 토큰 준비 상태 체크
+  // isTokenReady 상태 제거하고 auth.accessToken 사용
   useEffect(() => {
-    if (import.meta.env.VITE_USER_TOKEN) {
-      setIsTokenReady(true);
-    }
-  }, []);
-
-  // 데이터 로딩
-  useEffect(() => {
-    if (!isTokenReady) return;  // 토큰이 준비되지 않았으면 리턴
+    if (!auth.accessToken) return;  // 토큰이 없으면 리턴
 
     const fetchData = async () => {
       try {
@@ -84,7 +79,7 @@ const OwnerMainPage: React.FC = () => {
     };
 
     fetchData();
-  }, [bakeryId, isTokenReady]);  // isTokenReady 의존성 추가
+  }, [bakeryId, auth.accessToken]);  // accessToken을 의존성 배열에 추가
 
   const handleTabChange = (tab: 'package' | 'review') => {
     setActiveTab(tab);

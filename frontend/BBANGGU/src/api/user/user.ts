@@ -1,5 +1,5 @@
-import instance from '../axios';
 import { ApiResponse } from '../../types/api';
+import instance from '../axios_2';
 
 interface UserInfo {
   userId: number;
