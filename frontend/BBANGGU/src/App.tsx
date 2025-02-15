@@ -57,8 +57,8 @@ export default function App() {
 
             {/* 사용자 관련 페이지 */}
             <Route path="/user" element={<UserMain />} />
-            <Route path="/user/bakery/:bakery_id" element={<BakeryDetail />} />
-            <Route path="/user/bakery/:bakery_id/reviews" element={<UserReview />} />
+            <Route path="/user/bakery/:bakeryId" element={<BakeryDetail />} />
+            <Route path="/user/bakery/:bakeryId/reviews" element={<UserReview />} />
             <Route path="/user/:userId/mypage" element={<UserMyPage />} />
             <Route path="/user/:userId/mypage/edit" element={<UserEditProfile />} />
             <Route path="/user/:userId/mypage/user-customer-support" element={<UserCustomerSupport />} />
@@ -86,7 +86,7 @@ export default function App() {
               <Route path="/owner/package/register" element={<PackageRegister />} />
               <Route path="/owner/package/sales-setting" element={<PackageSalesSetting />} />
               <Route path="/owner/package/setting" element={<PackageSettingPage />} />
-              <Route path="/owner/bread/register" element={<BreadRegisterPage />} />
+              <Route path="/owner/bread/register"           element={<BreadRegisterPage />} />
             </Routes>
             <InstallPWA />
           </MobileLayout>

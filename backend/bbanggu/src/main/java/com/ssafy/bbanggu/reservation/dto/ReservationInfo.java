@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 public record ReservationInfo (
+	Long reservationId,
 	String name,
 	String profileImageUrl,
 	String phone,

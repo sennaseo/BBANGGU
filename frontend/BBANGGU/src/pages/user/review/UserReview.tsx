@@ -1,17 +1,41 @@
-import { useParams, useNavigate } from "react-router-dom"
+import { useNavigate, useParams } from "react-router-dom"
 import { ArrowLeft } from "lucide-react"
-import { useReview } from "../../../hooks/user/userReview"
 import RatingSummary from "../../../components/user/review/RatingSummary"
 import ReviewList from "../../../components/user/review/Reviewlist"
-
+import { useState, useEffect } from "react";
+import { getAverageRating, getReviews} from "../../../services/user/review/reviewService";
+import type { BakeryRating, ReviewType, UserType } from "../../../types/bakery";
+import { getUserProfile } from "../../../services/user/mypage/usermypageServices";
 
 export default function UserReview() {
   const navigate = useNavigate();
-  const { bakery_id } = useParams<{ bakery_id: string }>()
-  const { reviews, ratingCounts, averageRating, loading, error, showPhotoOnly, setShowPhotoOnly, sortBy, setSortBy } =
-    useReview(bakery_id!)
+  const { bakeryId } = useParams<{ bakeryId: string }>()
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [reviews, setReviews] = useState<ReviewType[]>([])
+  const [averageRating, setAverageRating] = useState<BakeryRating | null>(null)
+  const [user, setUser] = useState<UserType | null>(null)
 
-  if (loading) {
+  useEffect(() => {
+    const fetchReviews = async () => {
+      try {
+        const reviews = await getReviews(Number(bakeryId))
+        setReviews(reviews)
+        const averageRating = await getAverageRating(Number(bakeryId))
+        setAverageRating(averageRating)
+        const users = await getUserProfile()
+        setUser(users[0])
+      } catch (error) {
+        setError(error instanceof Error ? error.message : "리뷰를 불러오는 데 실패했습니다.")
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchReviews()
+  }, [bakeryId])
+
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#FFB933]" />
@@ -22,7 +46,7 @@ export default function UserReview() {
   if (error) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <p className="text-red-500">Error: {error.message}</p>
+        <p className="text-red-500">Error: {error}</p>
       </div>
     )
   }
@@ -38,16 +62,17 @@ export default function UserReview() {
 
       <main className="bg-[#F2F2F2]">
         <div className="pt-4">
-          <RatingSummary averageRating={averageRating} ratingCounts={ratingCounts} totalReviews={reviews.length} />
+          <RatingSummary averageRating={averageRating?.average || 0} ratingCounts={averageRating?.star_rating || []} totalReviews={reviews.length} />
         </div>
         <div className="bg-white">
-          <ReviewList
-            reviews={reviews}
-            showPhotoOnly={showPhotoOnly}
-            sortBy={sortBy}
-            onPhotoOnlyChange={setShowPhotoOnly}
-            onSortChange={setSortBy}
-          />
+          {user && (
+            <ReviewList
+              reviews={reviews}
+              sortBy="latest"
+              user={user}
+              onSortChange={() => {}}
+            />
+          )}
         </div>
       </main>
     </div>

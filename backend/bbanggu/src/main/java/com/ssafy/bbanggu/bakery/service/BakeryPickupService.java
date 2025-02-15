@@ -11,6 +11,8 @@ import com.ssafy.bbanggu.common.exception.CustomException;
 import com.ssafy.bbanggu.common.exception.ErrorCode;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,6 +21,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class BakeryPickupService {
@@ -123,8 +126,12 @@ public class BakeryPickupService {
 		return timeDto.getStartTime().replace(":", "") + timeDto.getEndTime().replace(":", "");
 	}
 
+	/**
+	 * 픽업시간 수정
+	 */
 	@Transactional
 	public void updatePickupTime(Bakery bakery, BakeryPickupTimetableDto request) {
+		log.info("요청 데이터: {}", request.getSaturday());
 		// 기존 데이터 조회
 		BakeryPickupTimetable timetable = bakeryPickupTimetableRepository.findByBakery_BakeryId(bakery.getBakeryId())
 			.orElse(BakeryPickupTimetable.builder().bakery(bakery).build()); // 없으면 새로 생성

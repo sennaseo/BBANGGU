@@ -16,6 +16,7 @@ interface Coordinates {
 export function MapView({ bakeries = [], onMarkerClick, userAddress }: MapViewProps) {
   const gumiCity: Coordinates = { lat: 36.1193778, lng: 128.3445913 };
   const [center, setCenter] = useState<Coordinates>(gumiCity);
+  const [userLocation, setUserLocation] = useState<Coordinates | null>(null);
 
   useEffect(() => {
     if (userAddress) {
@@ -27,6 +28,12 @@ export function MapView({ bakeries = [], onMarkerClick, userAddress }: MapViewPr
           const lng = Number(result[0].x);
           
           setCenter({
+            lat: lat || gumiCity.lat,
+            lng: lng || gumiCity.lng
+          });
+          
+          // 사용자 위치 설정
+          setUserLocation({
             lat: lat || gumiCity.lat,
             lng: lng || gumiCity.lng
           });
@@ -44,6 +51,27 @@ export function MapView({ bakeries = [], onMarkerClick, userAddress }: MapViewPr
         style={{ width: "100%", height: "100%" }} 
         level={3}
       >
+        {/* 사용자 위치 마커 */}
+        {userLocation && (
+          <MapMarker
+            position={userLocation}
+            image={{
+              src: "/user-location.png",
+              size: {
+                width: 80,
+                height: 80
+              },
+              options: {
+                offset: {
+                  x: 40,
+                  y: 40
+                }
+              }
+            }}
+          />
+        )}
+
+        {/* 베이커리 마커들 */}
         {bakeries && bakeries.length > 0 && bakeries.map((bakery) => {
           console.log('마커 생성:', bakery);
           return (
