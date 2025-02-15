@@ -1,20 +1,25 @@
 import axios from 'axios';
+import { store } from '../store';
 
 const instance = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:5173',
-  headers: {
-    'Accept': 'application/json',
-    'Authorization': 'Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwiaWF0IjoxNzM5MzYzOTMwLCJleHAiOjE3Mzk5Njg3MzB9.79Gl6_V0slKxLZdHJa4o_xDsjXDv6sKFS6zhvh2z7HE'
-  },
-  withCredentials: true
+  baseURL: import.meta.env.VITE_API_BASE_URL,
+});
+
+instance.interceptors.request.use((config) => {
+  const token = store.getState().auth.accessToken;
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  config.headers['Content-Type'] = 'application/json';
+  return config;
 });
 
 instance.interceptors.response.use(
-  response => response,
-  error => {
-    console.error('API Error:', error.response?.data || error);
+  (response) => response,
+  async (error) => {
+    // 토큰 만료 등 에러 처리 로직
     return Promise.reject(error);
   }
 );
 
-export default instance; 
+export default instance;
