@@ -23,7 +23,7 @@ async def detect_breads(images: List[UploadFile]):
 
 
 @app.post("/detectcrop")
-async def detect_breads(images: List[UploadFile]):
+async def detect_breads(images: List[UploadFile], bakeryId: int):
     # 크롭된 이미지 저장할 폴더 생성(요청마다 다른 폴더 생성함)
     unique_id = str(uuid.uuid4())
     cropped_image_dir = os.path.join("cropped_objects", unique_id)
@@ -34,6 +34,7 @@ async def detect_breads(images: List[UploadFile]):
         yolo.detect_and_crop(image_bytes, cropped_image_dir)
 
     # efficientNet으로 분류
-    classified_breads = efficientnet.classify(cropped_image_dir)
+    class_filter = ['bagel', 'pizza', 'tart']
+    classified_breads = efficientnet.classify(cropped_image_dir, class_filter)
 
     return classified_breads
