@@ -86,7 +86,7 @@ export default function App() {
               <Route path="/owner/package/register" element={<PackageRegister />} />
               <Route path="/owner/package/sales-setting" element={<PackageSalesSetting />} />
               <Route path="/owner/package/setting" element={<PackageSettingPage />} />
-              <Route path="/owner/bread/register" element={<BreadRegisterPage />} />
+              <Route path="/owner/bread/register"           element={<BreadRegisterPage />} />
             </Routes>
             <InstallPWA />
           </MobileLayout>
