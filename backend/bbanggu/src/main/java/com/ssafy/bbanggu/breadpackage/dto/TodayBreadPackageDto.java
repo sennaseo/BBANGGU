@@ -7,6 +7,8 @@ public record TodayBreadPackageDto (
 	Long bakeryId,
 	String name,
 	Integer price,
+	Integer initialQuantity,
+	Integer quantity,
 	Integer savedMoney
 ) {
 	public static TodayBreadPackageDto from(BreadPackage breadPackage, int savedMoney) {
@@ -15,6 +17,8 @@ public record TodayBreadPackageDto (
 			breadPackage.getBakery().getBakeryId(),
 			breadPackage.getName(),
 			breadPackage.getPrice(),
+			breadPackage.getInitialQuantity(),
+			breadPackage.getQuantity(),
 			savedMoney
 		);
 	}
