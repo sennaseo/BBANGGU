@@ -223,6 +223,7 @@ public class BakeryController {
 		@PathVariable("bakery_id") Long bakeryId,
 		@RequestBody BakeryPickupTimetableDto request
 	) {
+		log.info("✨ 픽업 시간 수정 ✨");
 		// ✅ 유효한 빵집인지 검증 (
 		Bakery bakery = bakeryRepository.findByBakeryIdAndDeletedAtIsNull(bakeryId);
 		if (bakery == null) {
