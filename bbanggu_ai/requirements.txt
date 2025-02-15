@@ -3,7 +3,7 @@ uvicorn==0.23.1
 python-multipart
 ultralytics~=8.3.75
 opencv-python-headless
-
+httpx
 numpy~=2.0.2
 opencv-python~=4.11.0.86
 pillow~=11.1.0
