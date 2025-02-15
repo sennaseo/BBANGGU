@@ -47,6 +47,7 @@ async def detect_breads(images: List[UploadFile] = File(...), bakeryId: int = Fo
     async with httpx.AsyncClient() as client:
         response = await client.get(f"{SPRING_SERVER_URL}/bread/bakery/{bakeryId}")
         bakery_breads = response.json()
+        print(bakery_breads)
         for bread in bakery_breads:
             category_id = bread['breadCategoryId']
             category_name = class_names[int(category_id) - 1] # id가 1부터 시작해서 1 뺌
@@ -59,4 +60,5 @@ async def detect_breads(images: List[UploadFile] = File(...), bakeryId: int = Fo
     classified_breads = efficientnet.classify(cropped_image_dir, class_filter)
     # 빵 조합 생성
     result = pacakge_maker.distribute_breads(classified_breads, category_infos, class_names)
-    return result, classified_breads
+    filtered_result = pacakge_maker.select_best_combinations(result)
+    return filtered_result, classified_breads

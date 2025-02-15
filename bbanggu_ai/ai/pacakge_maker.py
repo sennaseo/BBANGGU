@@ -89,3 +89,43 @@ def generate_partitions(items, num_groups):
             # 재귀적으로 나머지 아이템들을 나누기
             for sub_partition in generate_partitions(remaining_items, num_groups - 1):
                 yield [list(first_group)] + sub_partition
+
+
+def select_best_combinations(all_distributions, price_limit=10000):
+    valid_combinations = []
+
+    # 모든 분배 조합을 순회하며 평가
+    for num_groups, distribution in all_distributions.items():
+        # 가격 제한 검사
+        if any(group['total_price'] > price_limit for group in distribution):
+            continue
+
+        # 평가 지표 계산
+        group_prices = [group['total_price'] for group in distribution]
+        price_range = max(group_prices) - min(group_prices)
+
+        # 각 그룹의 다양성 점수 계산 (unique한 빵 종류 수)
+        diversity_scores = [len(group['breads']) for group in distribution]
+        avg_diversity = sum(diversity_scores) / len(diversity_scores)
+        min_diversity = min(diversity_scores)
+
+        # 종합 점수 계산
+        price_score = 1 / (price_range + 1)  # 가격 차이가 작을수록 높은 점수
+        diversity_score = avg_diversity + min_diversity
+        total_score = price_score + diversity_score * 2
+
+        # 결과 저장
+        valid_combinations.append((num_groups, distribution, total_score))
+
+    # 점수를 기준으로 정렬
+    valid_combinations.sort(key=lambda x: x[2], reverse=True)
+
+    # 가능한 조합이 3개 미만이면 전체 반환, 아니면 상위 3개 선택
+    max_combinations = min(3, len(valid_combinations))
+    top_combinations = valid_combinations[:max_combinations]
+
+    # 유효한 조합이 없는 경우 빈 리스트 반환
+    if not valid_combinations:
+        print("가격 제한을 만족하는 조합이 없습니다.")
+
+    return top_combinations
