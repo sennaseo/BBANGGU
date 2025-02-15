@@ -9,6 +9,7 @@ import com.ssafy.bbanggu.bakery.dto.BakeryLocationDto;
 import com.ssafy.bbanggu.bakery.dto.BakeryPickupTimetableDto;
 import com.ssafy.bbanggu.bakery.dto.BakerySettlementDto;
 import com.ssafy.bbanggu.bakery.dto.PickupTimeDto;
+import com.ssafy.bbanggu.bakery.dto.SettlementUpdate;
 import com.ssafy.bbanggu.bakery.repository.BakeryRepository;
 import com.ssafy.bbanggu.bakery.service.BakeryPickupService;
 import com.ssafy.bbanggu.bakery.service.BakeryService;
@@ -247,6 +248,13 @@ public class BakeryController {
 		return ResponseEntity.ok(bakeryLocations);
 	}
 
+	/**
+	 * 정산 정보 조회 API
+	 *
+	 * @param userDetails 현재 로그인한 사용자 정보
+	 * @param bakery_id 가게 ID
+	 * @return 가게 정산 정보
+	 */
 	@GetMapping("/{bakery_id}/settlement")
 	public ResponseEntity<ApiResponse> getBakerySettlement(
 		@AuthenticationPrincipal CustomUserDetails userDetails,
@@ -255,5 +263,23 @@ public class BakeryController {
 		log.info("✨ 가게 ID로 정산 정보 조회 ✨");
 		BakerySettlementDto response = bakeryService.getBakerySettlement(userDetails, bakery_id);
 		return ResponseEntity.ok(new ApiResponse("가게 정산 정보 조회가 완료되었습니다.", response));
+	}
+
+
+	/**
+	 * 정산 정보 수정 API
+	 *
+	 * @param userDetails 현재 로그인한 사용자 정보
+	 * @param request 수정된 데이터 항목 (bankName, accountHolderName, accountNumber, emailForTaxInvoice, businessLicenseFileUrl)
+	 * @return pass or fail
+	 */
+	@PostMapping("/update/settlement")
+	public ResponseEntity<ApiResponse> updateBakerySettlement(
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@RequestBody SettlementUpdate request
+	){
+		log.info("✨ 정산 정보 수정 ✨");
+		bakeryService.updateBakerySettlement(userDetails, request);
+		return ResponseEntity.ok(new ApiResponse("가게 정산 정보 수정이 완료되었습니다.", null));
 	}
 }
