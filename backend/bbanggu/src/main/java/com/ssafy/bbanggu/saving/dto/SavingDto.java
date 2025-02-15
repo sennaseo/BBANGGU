@@ -2,11 +2,11 @@ package com.ssafy.bbanggu.saving.dto;
 
 import lombok.Builder;
 
-public record SavingResponse(
+public record SavingDto(
 	int savedMoney,
 	int reducedCo2e
 ) {
 	@Builder
-	public SavingResponse {
+	public SavingDto {
 	}
 }

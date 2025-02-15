@@ -75,3 +75,6 @@ jwt:
 toss:
   payments:
     api-key: ${TOSS_API_KEY}
+
+openai:
+  api-key: ${GPT_API_KEY}

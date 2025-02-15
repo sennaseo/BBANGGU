@@ -1,6 +1,6 @@
 package com.ssafy.bbanggu.user.dto;
 
-import com.ssafy.bbanggu.saving.dto.SavingResponse;
+import com.ssafy.bbanggu.saving.dto.SavingDto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -9,7 +9,7 @@ import lombok.Getter;
 @AllArgsConstructor
 public class MyPageResponse {
 	private UserResponse user;
-	private SavingResponse saving;
+	private SavingDto saving;
 	// private ReservationResponse reservation;
 }
 
