@@ -14,7 +14,7 @@ import { clearUserInfo } from '../../../store/slices/userSlice';
 import { LogoutModal } from "../../../components/user/mypage/LogoutModal"
 
 export default function UserMyPage() {
-  const { user_id } = useParams<{ user_id: string }>()
+  const { userId } = useParams<{ userId: string }>()
   const navigate = useNavigate()
   const [userData, setUserData] = useState<{
     user: ExtendedUserType | null,
@@ -29,7 +29,7 @@ export default function UserMyPage() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (!user_id) {
+    if (!userId) {
       navigate("/login");
     } else {
       getUserProfile()
@@ -44,7 +44,7 @@ export default function UserMyPage() {
         .catch(setError)
         .finally(() => setIsLoading(false));
     }
-  }, [user_id, navigate]);
+  }, [userId, navigate]);
 
   const dispatch = useDispatch()
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
@@ -107,8 +107,8 @@ export default function UserMyPage() {
 
       <main className="px-5 flex flex-col min-h-[calc(100vh-72px)]">
         <div className="space-y-6 flex-1">
-          <TicketShape reservations={userData.currentReservation} userData={userData.user} params={{ userId: parseInt(user_id!) }} />
-          <MenuGrid />
+            <TicketShape reservations={userData.currentReservation} userData={userData.user} params={{ userId: parseInt(userId!) }} />
+            <MenuGrid />
           <StatsCards echoSave={userData.latestEchoSave} />
           <button 
             onClick={() => navigate('/user/mypage/save-report')}
