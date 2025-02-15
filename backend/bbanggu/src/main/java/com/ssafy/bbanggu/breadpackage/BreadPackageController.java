@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.parameters.P;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,6 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.ssafy.bbanggu.auth.security.CustomUserDetails;
 import com.ssafy.bbanggu.breadpackage.dto.BreadPackageDto;
+import com.ssafy.bbanggu.breadpackage.dto.TodayBreadPackageDto;
 import com.ssafy.bbanggu.common.exception.CustomException;
 import com.ssafy.bbanggu.common.exception.ErrorCode;
 import com.ssafy.bbanggu.common.response.ApiResponse;
@@ -63,6 +65,24 @@ public class BreadPackageController {
 		log.info("✨ 빵꾸러미 삭제 ✨");
 		breadPackageService.deletePackage(package_id);
 		return ResponseEntity.ok().body(new ApiResponse("빵꾸러미 삭제가 성공적으로 완료되었습니다.", null));
+	}
+
+
+	/**
+	 * 가게별 빵꾸러미 현황 조회 API
+	 *
+	 * @param userDetails 현재 로그인한 사용자 정보
+	 * @param bakery_id 가게 ID
+	 * @return 해당 가게의 오늘 빵꾸러미 정보
+	 */
+	@GetMapping("/{bakery_id}/today")
+	public ResponseEntity<ApiResponse> getTodayPackagesByBakeryId(
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@PathVariable Long bakery_id
+	){
+		log.info("✨ {}번 빵집 빵꾸러미 현황 ✨", bakery_id);
+		TodayBreadPackageDto response = breadPackageService.getTodayPackagesByBakeryId(userDetails, bakery_id);
+		return ResponseEntity.ok(new ApiResponse("오늘의 빵꾸러미 조회가 완료되었습니다.", response));
 	}
 
 

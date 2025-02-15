@@ -22,7 +22,8 @@ public record BakeryDto(
 	String addressDetail,
 	String bakeryImageUrl,
 	String bakeryBackgroundImgUrl,
-	Double star
+	Double star,
+	int reviewCnt
 ) {
 	public static BakeryDto from(Bakery bakery) {
 		return new BakeryDto(
@@ -35,7 +36,8 @@ public record BakeryDto(
 			bakery.getAddressDetail(),
 			bakery.getBakeryImageUrl(),
 			bakery.getBakeryBackgroundImgUrl(),
-			bakery.getStar()
+			bakery.getStar(),
+			bakery.getReviewCnt()
 		);
 	}
 }

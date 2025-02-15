@@ -10,11 +10,10 @@ import com.ssafy.bbanggu.bakery.dto.PickupTimeDto;
 import com.ssafy.bbanggu.bakery.repository.BakeryRepository;
 import com.ssafy.bbanggu.bakery.dto.BakeryDetailDto;
 import com.ssafy.bbanggu.bakery.dto.BakeryDto;
-import com.ssafy.bbanggu.bakery.repository.BakerySettlementRepository;
+import com.ssafy.bbanggu.bakery.repository.SettlementRepository;
 import com.ssafy.bbanggu.breadpackage.BreadPackage;
 import com.ssafy.bbanggu.breadpackage.BreadPackageRepository;
 import com.ssafy.bbanggu.breadpackage.BreadPackageService;
-import com.ssafy.bbanggu.breadpackage.dto.BreadPackageDto;
 import com.ssafy.bbanggu.common.exception.CustomException;
 import com.ssafy.bbanggu.common.exception.ErrorCode;
 import com.ssafy.bbanggu.favorite.FavoriteRepository;
@@ -45,7 +44,7 @@ public class BakeryService {
 	private final BakeryRepository bakeryRepository;
 	private final GeoService geoService;
 	private final UserRepository userRepository;
-	private final BakerySettlementRepository bakerySettlementRepository;
+	private final SettlementRepository settlementRepository;
 	private final FavoriteRepository favoriteRepository;
 	private final BakeryPickupService bakeryPickupService;
 	private final BreadPackageRepository breadPackageRepository;
@@ -152,15 +151,20 @@ public class BakeryService {
 			throw new CustomException(ErrorCode.BAKERY_NOT_FOUND);
 		}
 
-		double distance = (userLat == null || userLng == null) ? 0.0
-			: calculateDistance(userLat, userLng, bakery.getLatitude(), bakery.getLongitude());
-		boolean is_liked = favoriteRepository.existsByUser_UserIdAndBakery_BakeryId(userDetails.getUserId(), bakery.getBakeryId());
 		PickupTimeDto pickupTime = bakeryPickupService.getPickupTimetable(bakery.getBakeryId());
 		BreadPackage breadPackage = breadPackageService.getPackageById(bakery.getBakeryId());
 		int price = 0;
 		if (breadPackage != null) {
 			price = breadPackage.getPrice();
 		}
+
+		if(userDetails == null) {
+			return BakeryDetailDto.from(bakery, 0.0, false, pickupTime, price);
+		}
+
+		double distance = (userLat == null || userLng == null) ? 0.0
+			: calculateDistance(userLat, userLng, bakery.getLatitude(), bakery.getLongitude());
+		boolean is_liked = favoriteRepository.existsByUser_UserIdAndBakery_BakeryId(userDetails.getUserId(), bakery.getBakeryId());
 		return BakeryDetailDto.from(bakery, distance, is_liked, pickupTime, price);
 	}
 
@@ -228,8 +232,11 @@ public class BakeryService {
 		User user = userRepository.findById(settlement.userId())
 			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
+		Bakery bakery = bakeryRepository.findByUser_UserId(user.getUserId());
+
 		Settlement bakerySet = Settlement.builder()
 			.user(user)
+			.bakery(bakery)
 			.bankName(settlement.bankName())
 			.accountHolderName(settlement.accountHolderName())
 			.accountNumber(settlement.accountNumber())
@@ -237,7 +244,8 @@ public class BakeryService {
 			.businessLicenseFileUrl(settlement.businessLicenseFileUrl())
 			.build();
 
-		Settlement savedSettlement = bakerySettlementRepository.save(bakerySet);
+		Settlement savedSettlement = settlementRepository.save(bakerySet);
+		bakery.setSettlement(savedSettlement);
 		return BakerySettlementDto.from(savedSettlement);
 	}
 
@@ -347,5 +355,23 @@ public class BakeryService {
 		return bakeries.stream()
 			.map(BakeryLocationDto::from)
 			.collect(Collectors.toList());
+	}
+
+
+	/**
+	 * 가게 아이디로 정산 정보 조회 메서드
+	 */
+	public BakerySettlementDto getBakerySettlement(CustomUserDetails userDetails, Long bakeryId) {
+		Bakery bakery = bakeryRepository.findById(bakeryId)
+			.orElseThrow(() -> new CustomException(ErrorCode.BAKERY_NOT_FOUND));
+		if (!bakery.getUser().getUserId().equals(userDetails.getUserId())) {
+			throw new CustomException(ErrorCode.UNAUTHORIZED_USER);
+		}
+		log.info("✅ 현재 로그인한 사용자와 {}번 가게의 사장님이 일치함", bakeryId);
+
+		Settlement settlement = settlementRepository.findByBakery_BakeryId(bakeryId)
+			.orElseThrow(() -> new CustomException(ErrorCode.SETTLEMENT_NOT_FOUND));
+		log.info("🩵 정산 정보 조회 완료 🩵");
+		return BakerySettlementDto.from(settlement);
 	}
 }

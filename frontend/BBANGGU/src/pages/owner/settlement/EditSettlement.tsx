@@ -1,153 +1,150 @@
-import { useState, useRef } from 'react';
+import { useState, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Header } from '../../../components/owner/editprofile/Header';
 import { SubmitButton } from '../../../common/form/SubmitButton';
 import BottomNavigation from '../../../components/owner/navigations/BottomNavigations/BottomNavigation';
-import { IoTrashOutline } from 'react-icons/io5';
-import { useNavigate } from 'react-router-dom';
+import { updateSettlement } from '../../../api/bakery/bakery';
 
-function EditSettlement() {
-  const [businessLicense, setBusinessLicense] = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+export function EditSettlement() {
+  const location = useLocation();
   const navigate = useNavigate();
+  const settlementInfo = location.state?.settlementInfo;
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    // 나중에 여기에 API 호출 로직이 들어갈 예정
-    navigate('/owner/mypage');
-  };
+  const [formData, setFormData] = useState({
+    bankName: '',
+    accountHolderName: '',
+    accountNumber: '',
+    emailForTaxInvoice: '',
+    businessLicenseFileUrl: null as string | null
+  });
 
-  const handleImageClick = () => {
-    fileInputRef.current?.click();
-  };
-
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      if (file.size > 5 * 1024 * 1024) {
-        alert('파일 크기는 5MB 이하여야 합니다.');
-        return;
-      }
-
-      if (!file.type.startsWith('image/')) {
-        alert('이미지 파일만 업로드 가능합니다.');
-        return;
-      }
-
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setBusinessLicense(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+  useEffect(() => {
+    if (settlementInfo) {
+      setFormData({
+        bankName: settlementInfo.bankName,
+        accountHolderName: settlementInfo.accountHolderName,
+        accountNumber: settlementInfo.accountNumber,
+        emailForTaxInvoice: settlementInfo.emailForTaxInvoice,
+        businessLicenseFileUrl: settlementInfo.businessLicenseFileUrl
+      });
     }
+  }, [settlementInfo]);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
   };
 
-  const handleDeleteImage = () => {
-    setBusinessLicense(null);
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    // 필수 입력값 검증
+    if (!formData.bankName.trim()) {
+      alert('은행명을 입력해주세요.');
+      return;
+    }
+    if (!formData.accountHolderName.trim()) {
+      alert('예금주를 입력해주세요.');
+      return;
+    }
+    if (!formData.accountNumber.trim()) {
+      alert('계좌번호를 입력해주세요.');
+      return;
+    }
+    if (!formData.emailForTaxInvoice.trim()) {
+      alert('세금계산서 발행 이메일을 입력해주세요.');
+      return;
+    }
+
+    try {
+      if (!settlementInfo) {
+        throw new Error('정산 정보를 찾을 수 없습니다.');
+      }
+
+      await updateSettlement(settlementInfo.settlementId, {
+        bankName: formData.bankName,
+        accountHolderName: formData.accountHolderName,
+        accountNumber: formData.accountNumber,
+        emailForTaxInvoice: formData.emailForTaxInvoice,
+        businessLicenseFileUrl: formData.businessLicenseFileUrl
+      });
+
+      alert('정산 정보가 성공적으로 수정되었습니다.');
+      navigate('/owner/mypage');
+    } catch (error) {
+      console.error('정산 정보 수정 실패:', error);
+      if (error instanceof Error) {
+        alert(error.message);
+      } else {
+        alert('정산 정보 수정에 실패했습니다.');
+      }
+    }
   };
 
   const inputClassName = "w-full px-4 py-3 rounded-[8px] border border-[#EFEFEF] placeholder-[#8E8E8E] focus:outline-none focus:border-[#FF9B50]";
 
   return (
     <div className="min-h-screen bg-white pb-20">
-      <Header title="정산 정보 수정" />
+      <Header title="거래 및 정산 정보" />
       
       <form onSubmit={handleSubmit} className="space-y-6 p-4">
-        {/* 안내 텍스트 */}
-        <p className="text-[#8E8E8E] text-sm">
-          판매 대금 정산을 위해 모든 항목을 입력해주세요.
-        </p>
-
-        {/* 가게 이름 */}
         <div className="space-y-2">
           <label className="block text-sm">
-            가게 이름
+            은행명
             <span className="text-red-500 ml-1">*</span>
           </label>
           <input
             type="text"
-            placeholder="파리바게트 인동점"
+            name="bankName"
+            value={formData.bankName}
+            onChange={handleInputChange}
             className={inputClassName}
           />
         </div>
 
-        {/* 예금주명 */}
         <div className="space-y-2">
           <label className="block text-sm">
-            예금주명
+            예금주
             <span className="text-red-500 ml-1">*</span>
           </label>
           <input
             type="text"
-            placeholder="중국인러마"
+            name="accountHolderName"
+            value={formData.accountHolderName}
+            onChange={handleInputChange}
             className={inputClassName}
           />
         </div>
 
-        {/* 사업자 계좌번호 */}
         <div className="space-y-2">
           <label className="block text-sm">
-            사업자 계좌번호
+            계좌번호
             <span className="text-red-500 ml-1">*</span>
           </label>
           <input
             type="text"
-            placeholder="127-01-010112"
+            name="accountNumber"
+            value={formData.accountNumber}
+            onChange={handleInputChange}
             className={inputClassName}
           />
         </div>
 
-        {/* 세금계산서 발급용 이메일 */}
         <div className="space-y-2">
           <label className="block text-sm">
-            세금계산서 발급용 이메일
+            세금계산서 발행 이메일
             <span className="text-red-500 ml-1">*</span>
           </label>
           <input
             type="email"
-            placeholder="kky3652@naver.com"
+            name="emailForTaxInvoice"
+            value={formData.emailForTaxInvoice}
+            onChange={handleInputChange}
             className={inputClassName}
           />
-        </div>
-
-        {/* 사업자등록증 사본 */}
-        <div className="space-y-2">
-          <label className="block text-sm">
-            사업자등록증 사본
-            <span className="text-red-500 ml-1">*</span>
-          </label>
-          <input
-            type="file"
-            ref={fileInputRef}
-            onChange={handleImageChange}
-            accept="image/*"
-            className="hidden"
-          />
-          <div className="relative">
-            <button
-              type="button"
-              onClick={handleImageClick}
-              className={`${inputClassName} h-[120px] flex items-center justify-center`}
-            >
-              {businessLicense ? (
-                <img
-                  src={businessLicense}
-                  alt="사업자등록증 미리보기"
-                  className="w-full h-full object-contain"
-                />
-              ) : (
-                <span className="text-[#8E8E8E]">터치하여 업로드</span>
-              )}
-            </button>
-            {businessLicense && (
-              <button
-                type="button"
-                onClick={handleDeleteImage}
-                className="absolute top-2 right-2 p-1.5 bg-black bg-opacity-50 rounded-full text-white hover:bg-opacity-70"
-              >
-                <IoTrashOutline className="w-5 h-5" />
-              </button>
-            )}
-          </div>
         </div>
 
         <SubmitButton
