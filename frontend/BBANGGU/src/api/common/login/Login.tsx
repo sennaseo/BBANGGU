@@ -1,4 +1,5 @@
 import axios from 'axios';
+import instance from '../../axios';
 
 interface LoginRequest {
   email: string;
@@ -14,26 +15,17 @@ interface LoginResponse {
   };
 }
 
-
-const BASE_URL = import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, '') || 'http://i12d102.p.ssafy.io:8081';
-
 export const login = async (loginData: LoginRequest): Promise<LoginResponse> => {
   try {
-    const url = `${BASE_URL}/user/login`;
-    
     const requestData = {
       email: loginData.email.trim(),
       password: loginData.password
     };
 
-    const response = await axios.post<LoginResponse>(
-      url,
+    const response = await instance.post<LoginResponse>(
+      '/user/login',
       requestData,
       {
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
         withCredentials: true,
       }
     );
