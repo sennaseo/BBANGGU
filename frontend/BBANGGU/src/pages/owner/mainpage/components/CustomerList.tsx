@@ -170,6 +170,7 @@ export interface ReservationInfo {
   cancelReason?: string;
 }
 
+
 export const CustomerList: React.FC<CustomerListProps> = ({ bakeryId, onReservationsUpdate }) => {
   const [reservations, setReservations] = useState<ReservationInfo[]>([]);
   const [totalNum, setTotalNum] = useState(0);
