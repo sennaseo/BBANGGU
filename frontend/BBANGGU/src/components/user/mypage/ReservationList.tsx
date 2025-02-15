@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import type { ReservationType, ExtendedBakeryType } from "../../../types/bakery"
 import { ChevronRight } from "lucide-react"
 import { useNavigate } from "react-router-dom"
@@ -15,7 +15,9 @@ export function ReservationList({ reservations = [], params }: ReservationListPr
   const navigate = useNavigate()
   const [bakeryList, setBakeryList] = useState<ExtendedBakeryType[]>([])
   const [bakeryNames, setBakeryNames] = useState<Record<string, string>>({})
-  const data = reservations.length > 0 ? reservations : []
+  const data = useMemo(() => {
+    return reservations.length > 0 ? reservations : []
+  }, [reservations])
 
   // API 기본 URL (env에 설정되어 있음)
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
@@ -34,7 +36,7 @@ export function ReservationList({ reservations = [], params }: ReservationListPr
       }
     }
     fetchBakeryList()
-  }, [params.userId])
+  }, [params.userId, API_BASE_URL])
 
   // 예약 데이터와 제빵소 리스트를 기반으로 예약별 제빵소 이름을 설정합니다.
   useEffect(() => {

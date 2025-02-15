@@ -1,7 +1,8 @@
 import { profileEditApi } from "../../../api/user/mypage/profileedit/profileEditApi"
+import type { UserType } from "../../../types/bakery"
 
 export const userProfileEditService = {
-    updateUserProfile: async (updatedData: any) => {
+    updateUserProfile: async (updatedData: Partial<UserType>) => {
         try {
             const response = await profileEditApi.updateUserProfile(updatedData);
             return response.data;

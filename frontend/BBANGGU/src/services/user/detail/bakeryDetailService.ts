@@ -11,6 +11,7 @@ export async function fetchBakeryDetail(bakeryId: number): Promise<ExtendedBaker
       const packageResponse = await mainApi.getPackagesByBakeryId(bakeryId);
       pkg = { data: packageResponse };
     } catch (error) {
+      console.error("패키지 조회 실패:", error);
       pkg = { data: [] };
     }
     

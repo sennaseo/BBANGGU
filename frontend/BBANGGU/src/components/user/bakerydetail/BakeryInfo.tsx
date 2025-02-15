@@ -1,6 +1,6 @@
 import { StarIcon } from "lucide-react"
 import { Link } from "react-router-dom"
-import type { ExtendedBakeryType, UserType } from "../../../types/bakery"
+import type { ExtendedBakeryType } from "../../../types/bakery"
 import { MapPinIcon } from "@heroicons/react/24/solid"
 import { HeartIcon as HeartOutline } from "@heroicons/react/24/outline"
 import { HeartIcon as HeartSolid } from "@heroicons/react/24/solid"
@@ -9,7 +9,7 @@ import { toggleFavoriteForUser } from "../../../services/user/usermainService"
 
 interface BakeryInfoProps {
   bakery: ExtendedBakeryType
-  onFavoriteUpdate: (newFavorites: any) => void
+  onFavoriteUpdate: (newFavorites: boolean) => void
 }
 
 export default function BakeryInfo({ bakery, onFavoriteUpdate }: BakeryInfoProps) {

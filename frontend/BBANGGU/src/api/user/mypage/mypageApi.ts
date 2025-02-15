@@ -29,8 +29,16 @@ export const mypageApi = {
     getReservationsApi: async () => {
       try {
         const token = localStorage.getItem("accessToken") || import.meta.env.VITE_MOCK_ACCESS_TOKEN || "";
+
+        // 오늘 날짜를 yyyy-mm-dd 형식으로 생성
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, "0");
+        const dd = String(today.getDate()).padStart(2, "0");
+        const formattedDate = `${yyyy}-${mm}-${dd}`;
+
         const response = await axios.get<ApiResponse<ReservationType[]>>(
-          `${BASE_URL}/reservation`,
+          `${BASE_URL}/reservation/${formattedDate}/${formattedDate}`,
           {
             withCredentials: true,
             headers: {
@@ -50,7 +58,7 @@ export const mypageApi = {
       try {
         const token = localStorage.getItem("accessToken") || import.meta.env.VITE_MOCK_ACCESS_TOKEN || "";
         const response = await axios.get<ApiResponse<EchoSaveType[]>>(
-          `${BASE_URL}/echosave`,
+          `${BASE_URL}/saving`,
           {
             withCredentials: true,
             headers: {
@@ -61,7 +69,7 @@ export const mypageApi = {
         console.log("절약 데이터", response.data.data);
         return response.data.data;
       } catch (error) {
-        console.error('절약 데이터터 조회 실패:', error);
+        console.error('절약 데이터 조회 실패:', error);
         throw error;
       }
     },

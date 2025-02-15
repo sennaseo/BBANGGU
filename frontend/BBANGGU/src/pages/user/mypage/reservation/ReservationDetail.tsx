@@ -2,7 +2,6 @@ import { ChevronLeft, ChevronDown, ChevronUp } from "lucide-react"
 import { useNavigate, useParams } from "react-router-dom"
 import { useState } from "react"
 import { mockReservations } from "../../../../mocks/user/reservationMockData"
-import { mockBakeries } from "../../../../mocks/user/bakeryMockData"
 // import { Map } from "./Map" // 지도 컴포넌트는 별도로 구현 필요
 
 export function ReservationDetail() {
@@ -13,11 +12,10 @@ export function ReservationDetail() {
 
   // URL 파라미터로 전달된 reservation_id로 예약 찾기
   const reservation = mockReservations.find(
-    r => r.reservation_id === Number(reservation_id)
+    r => r.reservationId === Number(reservation_id)
   );
-  const bakery = mockBakeries.find(b => b.bakeryId === reservation?.bakeryId);
 
-  if (!reservation || !bakery) {
+  if (!reservation) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-fc973b"></div>
@@ -50,7 +48,7 @@ export function ReservationDetail() {
     };
   };
 
-  const pickupTime = formatDate(reservation.reserved_pickup_time);
+  const pickupTime = formatDate(reservation.reservedPickupTime);
 
   return (
     <div className="flex flex-col min-h-screen bg-[#F9F9F9] pb-[80px] relative max-w-[480px] mx-auto">
@@ -72,7 +70,7 @@ export function ReservationDetail() {
               <div className="inline-block px-3 py-1 bg-white/20 rounded-full text-sm w-fit">
                 {statusMap[reservation.status]}
               </div>
-              <div className="text-xl font-bold leading-tight">{bakery.name}</div>
+              <div className="text-xl font-bold leading-tight">{reservation.bakeryId}</div>
               <div className="text-sm">
                 {pickupTime.date} {pickupTime.time} ~ {parseInt(pickupTime.time.split(':')[0]) + 1}:00 방문
               </div>
@@ -84,16 +82,16 @@ export function ReservationDetail() {
             <div className="flex justify-between items-center">
               <div className="flex gap-2">
                 <span className="text-gray-600">{reservation.quantity}x</span>
-                <span className="font-medium">{bakery.bread_package[0].name}</span>
+                <span className="font-medium">{reservation.bakeryId}</span>
               </div>
               <div>
-                {reservation.total_price.toLocaleString()}원
+                {reservation.totalPrice.toLocaleString()}원
               </div>
             </div>
 
             <div className="flex justify-between font-bold mt-3 pt-3 border-t border-gray-200">
               <span>합계</span>
-              <span>{reservation.total_price.toLocaleString()}원</span>
+              <span>{reservation.totalPrice.toLocaleString()}원</span>
             </div>
           </div>
         </div>
@@ -108,7 +106,7 @@ export function ReservationDetail() {
           <div className="flex gap-4 items-center">
             <div className="text-[#333333] text-[16px]">위치안내</div>
             <div className="text-[11px] text-left text-[#BDBDBD]">
-              {bakery.address_road} {bakery.address_detail}
+              {reservation.bakeryId} {reservation.bakeryId}
             </div>
           </div>
 

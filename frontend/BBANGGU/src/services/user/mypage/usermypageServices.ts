@@ -15,7 +15,7 @@ export async function getUserProfile(): Promise<ExtendedUserType[]> {
         try {
           reservations = await mypageApi.getReservationsApi();
           echosaves = await mypageApi.getEchoSavesApi();
-        } catch (error) {
+        } catch {
           // 에러 발생 시 빈 배열 사용
           reservations = [];
           echosaves = [];
@@ -24,8 +24,7 @@ export async function getUserProfile(): Promise<ExtendedUserType[]> {
       }
 
       return extendedUsers;
-    } catch (error) {
-      console.error("통합 유저 데이터 조회 실패:", error);
-      throw error;
+    } catch {
+      throw new Error("통합 유저 데이터 조회 실패");
     }
 } 

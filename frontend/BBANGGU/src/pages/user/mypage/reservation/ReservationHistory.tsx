@@ -1,7 +1,6 @@
 import { ChevronLeft, ChevronDown } from "lucide-react"
 import { useNavigate } from "react-router-dom"
 import { mockReservations } from "../../../../mocks/user/reservationMockData" 
-import { mockBakeries } from "../../../../mocks/user/bakeryMockData"
 import { useState } from "react"
 
 
@@ -25,7 +24,6 @@ export function ReservationHistory() {
   }
 
   const ReservationItem = ({ reservation }: { reservation: typeof mockReservations[0] }) => {
-    const bakery = mockBakeries.find(b => b.bakeryId === reservation.bakeryId)
     
     const getStatusText = (status: string) => {
       switch(status) {
@@ -56,19 +54,19 @@ export function ReservationHistory() {
     return (
       <button 
         className="mb-3 w-full text-left"
-        onClick={() => navigate(`/user/mypage/reservation/${reservation.reservation_id}`)}
+        onClick={() => navigate(`/user/mypage/reservation/${reservation.reservationId}`)}
       >
         <div className="w-full bg-gray-50 rounded-xl p-4 relative shadow-md">
           <div className="flex flex-col gap-1 mb-1">
             <div className={`${getStatusColor(reservation.status)} text-white text-xs px-[11px] py-[4px] rounded-full w-fit`}>
               {getStatusText(reservation.status)}
             </div>
-            <span className="font-bold text-[20px] text[#333333}">{bakery?.name}</span>
+            <span className="font-bold text-[20px] text[#333333]">{reservation.bakeryId}</span>
           </div>
           <div className="text-gray-600">
             <span>
-              {`${formatDate(reservation.reserved_pickup_time)}, ${reservation.pickup_at} ~ ${
-                new Date(new Date(reservation.reserved_pickup_time).getTime() + 60 * 60 * 1000).toLocaleTimeString('ko-KR', {
+              {`${formatDate(reservation.reservedPickupTime)}, ${reservation.pickupAt} ~ ${
+                new Date(new Date(reservation.reservedPickupTime).getTime() + 60 * 60 * 1000).toLocaleTimeString('ko-KR', {
                   hour: 'numeric',
                   minute: 'numeric',
                 }
@@ -101,7 +99,7 @@ export function ReservationHistory() {
           {/* 현재 진행중인 예약 */}
           {currentReservations.length > 0 ? (
             currentReservations.map((reservation) => (
-              <ReservationItem key={reservation.reservation_id} reservation={reservation} />
+              <ReservationItem key={reservation.reservationId} reservation={reservation} />
             ))
           ) : (
             <div className="h-[200px] flex items-center justify-center text-gray-500">
@@ -127,7 +125,7 @@ export function ReservationHistory() {
         {isPastReservationsOpen && (
           pastReservations.length > 0 ? (
             pastReservations.map((reservation) => (
-              <ReservationItem key={reservation.reservation_id} reservation={reservation} />
+              <ReservationItem key={reservation.reservationId} reservation={reservation} />
             ))
           ) : (
             <div className="h-[200px] flex items-center justify-center text-gray-500">

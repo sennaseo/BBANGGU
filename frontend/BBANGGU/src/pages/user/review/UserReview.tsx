@@ -33,7 +33,7 @@ export default function UserReview() {
     }
 
     fetchReviews()
-  }, [])
+  }, [bakeryId])
 
   if (isLoading) {
     return (

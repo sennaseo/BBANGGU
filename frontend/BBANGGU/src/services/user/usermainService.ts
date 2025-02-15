@@ -37,7 +37,7 @@ export async function fetchAllBakeriesData(): Promise<{ allbakery: ExtendedBaker
         try {
           const packageResponse = await mainApi.getPackagesByBakeryId(store.bakeryId);
           packages = { data: packageResponse };
-        } catch (error) {
+        } catch {
           packages = { data: [] };
         }
         const averageRating = await getAverageRating(store.bakeryId);
@@ -62,7 +62,7 @@ export async function fetchBestFavoriteStores(): Promise<{ favoritebakery: Exten
         try {
           const packageResponse = await mainApi.getPackagesByBakeryId(store.bakeryId);
           packages = { data: packageResponse };
-        } catch (error) {
+        } catch {
           packages = { data: [] };
         }
         const averageRating = await getAverageRating(store.bakeryId);
@@ -104,4 +104,3 @@ export async function toggleFavoriteForUser(bakeryId: number, is_liked: boolean)
     return await mainApi.toggleFavorite(bakeryId);
   }
 }
-

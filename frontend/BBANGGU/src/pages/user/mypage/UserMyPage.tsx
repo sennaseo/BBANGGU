@@ -24,25 +24,23 @@ export default function UserMyPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // URL에 user_id가 없으면 로그인 페이지로 리다이렉트 또는 오류 메시지 처리
-  if (!user_id) {
-    navigate("/login");
-    return null;
-  }
-
   useEffect(() => {
-    getUserProfile()
-      .then((data) => {
-         // 예시에서는 첫 번째 유저의 데이터를 사용합니다.
-         setUserData({
-           user: data[0],
-           currentReservation: data[0].reservation[0] || null,
-           latestEchoSave: data[0].echosave[data[0].echosave.length - 1] || null,
-         });
-      })
-      .catch(setError)
-      .finally(() => setIsLoading(false));
-  }, []);
+    if (!user_id) {
+      navigate("/login");
+    } else {
+      getUserProfile()
+        .then((data) => {
+          // 예시에서는 첫 번째 유저의 데이터를 사용합니다.
+          setUserData({
+            user: data[0],
+            currentReservation: data[0].reservation[0] || null,
+            latestEchoSave: data[0].echosave[data[0].echosave.length - 1] || null,
+          });
+        })
+        .catch(setError)
+        .finally(() => setIsLoading(false));
+    }
+  }, [user_id, navigate]);
 
   if (isLoading) {
     return (

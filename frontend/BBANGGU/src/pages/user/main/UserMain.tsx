@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { fetchBestFavoriteStores, getUserMainData, searchBakery } from "../../../services/user/usermainService"
 import SearchBar from "../../../components/user/usermain/SearchBar"
 import Header from "../../../components/user/usermain/Header"
@@ -8,7 +8,7 @@ import ErrorBoundary from "../../../components/ErrorBoundary"
 import { useNavigate } from "react-router-dom"
 import UserBottomNavigation from "../../../components/user/navigations/bottomnavigation/UserBottomNavigation"
 import type { BakerySearchItem, ExtendedBakeryType } from "../../../types/bakery"
-import { toggleFavoriteForUser} from "../../../services/user/usermainService"
+import { toggleFavoriteForUser } from "../../../services/user/usermainService"
 import { bakeryDetailApi } from "../../../api/user/detail/bakeryDetailApi"
 
 export default function UserMain() {
@@ -21,7 +21,7 @@ export default function UserMain() {
   const navigate = useNavigate()
 
   // API 데이터를 불러와서 캐시된 데이터가 있다면 재요청 없이 사용합니다.
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     setIsLoading(true)
     try {
       // fetchBestFavoriteStores는 좋아요가 많은 빵집 데이터 기반의 베스트 패키지를 생성하고,
@@ -32,17 +32,17 @@ export default function UserMain() {
       ])
       setFavoritebakery(favoriteBakeryResult.favoritebakery)
       setAllBakeriesData(allBakeryResult.allbakery)
-      setSearchResults(searchResults)
+      setSearchResults([])
     } catch (err) {
       setError(err as Error)
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [])
 
   useEffect(() => {
     loadData()
-  }, [])
+  }, [loadData])
 
 // 좋아요 토글 함수 (관심가게 삭제 기능 포함)
 const handleToggleFavorite = async (bakeryId: number) => {
@@ -138,6 +138,15 @@ const handleToggleFavorite = async (bakeryId: number) => {
           <RecommendedStores allbakery={allBakeriesData} onStoreClick={handleStoreClick} onToggleLike={handleToggleFavorite} />
         </main>
         <UserBottomNavigation />
+        {searchResults.length > 0 && (
+          <div className="p-4">
+            <ul>
+              {searchResults.map((result) => (
+                <li key={result.bakeryId}>{result.name}</li>
+              ))}
+            </ul>
+          </div>
+        )}
       </ErrorBoundary>
     </div>
   )
