@@ -79,22 +79,7 @@ export default defineConfig({
       '/api': {
         target: 'http://i12d102.p.ssafy.io:8081',
         changeOrigin: true,
-        secure: false,
-        rewrite: (path) => path.replace(/^\/api/, ''),
-        configure: (proxy, _options) => {
-          proxy.on('proxyReq', (proxyReq, _req, _res) => {
-            proxyReq.removeHeader('origin');
-            proxyReq.removeHeader('referer');
-          });
-
-          proxy.on('proxyRes', (_proxyRes, _req, res) => {
-            res.removeHeader('Access-Control-Allow-Origin');
-            res.setHeader('Access-Control-Allow-Origin', 'http://localhost:5173');
-            res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
-            res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-            res.setHeader('Access-Control-Allow-Credentials', 'true');
-          });
-        }
+        rewrite: (path) => path.replace(/^\/api/, '')
       },
       '/uploads': {
         target: 'https://i12d102.p.ssafy.io',
