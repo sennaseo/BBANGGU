@@ -11,7 +11,6 @@ import { logout } from '../../../api/common/logout/logoutApi';
 import { useDispatch } from 'react-redux';
 import { logout as authLogout } from '../../../store/slices/authSlice';
 import { clearUserInfo } from '../../../store/slices/userSlice';
-import { useState } from 'react'
 import { LogoutModal } from "../../../components/user/mypage/LogoutModal"
 
 export default function UserMyPage() {
@@ -48,7 +47,6 @@ export default function UserMyPage() {
   }, [user_id, navigate]);
 
   const dispatch = useDispatch()
-  const { user, currentReservation, latestEchoSave, isLoading, error } = useUserMypage(user_id!)
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
 
   if (isLoading) {
