@@ -9,6 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import { BreadPackage, getBakeryPackages } from '../../../api/owner/package';  // 공통 인터페이스 import
 import { useSelector } from 'react-redux';
 import { selectAuth } from '../../../store/slices/authSlice';
+import instance from '../../../api/axiosInstance';
 
 // 인터페이스 정의
 interface ReservationInfo {
@@ -26,8 +27,9 @@ const OwnerMainPage: React.FC = () => {
   const [packages, setPackages] = useState<BreadPackage[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [bakeryId, setBakeryId] = useState<number | null>(null);
   const [reservations, setReservations] = useState<ReservationInfo[]>([]);
-  const auth = useSelector(selectAuth);  // Redux auth 상태 가져오기
+  const auth = useSelector(selectAuth);
   const navigate = useNavigate();
 
   const reviewData = {
@@ -54,20 +56,50 @@ const OwnerMainPage: React.FC = () => {
     ]
   };
 
-  // TODO: 실제 bakeryId는 로그인 정보에서 가져와야 함
-  const bakeryId = 1; // 현재 토큰의 sub 값이 19입니다
-
-  // isTokenReady 상태 제거하고 auth.accessToken 사용
+  // 점주 권한 체크
   useEffect(() => {
-    if (!auth.accessToken) return;  // 토큰이 없으면 리턴
+    if (!auth.accessToken) {
+      navigate('/login');
+      return;
+    }
+    
+    // 점주가 아닌 경우 메인으로 리다이렉트
+    if (auth.userType !== 'OWNER') {
+      navigate('/');
+      return;
+    }
 
+    // 점주 정보 조회
+    const fetchOwnerInfo = async () => {
+      try {
+        const response = await instance.get('/user');
+        if (response.data?.data?.userId) {
+          setBakeryId(response.data.data.userId);
+        }
+      } catch (err) {
+        console.error('점주 정보 조회 실패:', err);
+        setError('점주 정보를 불러올 수 없습니다.');
+      }
+    };
+
+    fetchOwnerInfo();
+  }, [auth.accessToken, auth.userType, navigate]);
+
+  // 빵꾸러미 조회
+  useEffect(() => {
     const fetchData = async () => {
+      if (!bakeryId) return;
+
       try {
         setIsLoading(true);
+        setError(null);
+        
         const response = await getBakeryPackages(bakeryId);
         
         if (response.data) {
           setPackages([response.data]);
+        } else {
+          setPackages([]);
         }
       } catch (err) {
         console.error('데이터 로딩 실패:', err);
@@ -79,7 +111,7 @@ const OwnerMainPage: React.FC = () => {
     };
 
     fetchData();
-  }, [bakeryId, auth.accessToken]);  // accessToken을 의존성 배열에 추가
+  }, [bakeryId]);
 
   const handleTabChange = (tab: 'package' | 'review') => {
     setActiveTab(tab);
@@ -166,7 +198,7 @@ const OwnerMainPage: React.FC = () => {
               </button>
             </div>
             <CustomerList 
-              bakeryId={bakeryId}
+              bakeryId={bakeryId || 0}
               onReservationsUpdate={handleReservationsUpdate}
             />
           </>
