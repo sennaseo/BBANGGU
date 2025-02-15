@@ -9,7 +9,7 @@ import numpy as np
 from PIL import Image
 from ultralytics import YOLO
 
-model = YOLO("../models/best.pt")
+model = YOLO("./models/best.pt")
 class_names = model.names
 
 
