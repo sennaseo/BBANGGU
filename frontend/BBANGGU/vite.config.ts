@@ -76,11 +76,6 @@ export default defineConfig({
     host: 'localhost',
     port: 5173,
     proxy: {
-      '/api': {
-        target: 'http://i12d102.p.ssafy.io:8081',
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api/, '')
-      },
       '/uploads': {
         target: 'https://i12d102.p.ssafy.io',
         changeOrigin: true,
