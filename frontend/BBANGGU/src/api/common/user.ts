@@ -7,7 +7,7 @@ interface UserInfo {
   email: string;
   phone: string;
   role: string;
-  profilePhotoUrl: string | null;
+  profilebakeryImageUrl: string | null;
 }
 
 export const getUserInfo = async (userId: number): Promise<UserInfo> => {

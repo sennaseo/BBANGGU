@@ -68,6 +68,9 @@ export const BreadPackageInfo: React.FC<BreadPackageInfoProps> = ({ packages }) 
     );
   }
 
+  // 현재는 첫 번째 패키지만 표시 (나중에 여러 패키지 표시로 확장 가능)
+  const currentPackage = safePackages[0];
+  const packageQuantity = currentPackage.quantity;
   // 총 판매 수량 계산 (임시로 1로 설정)
   const quantity = 1;
 
