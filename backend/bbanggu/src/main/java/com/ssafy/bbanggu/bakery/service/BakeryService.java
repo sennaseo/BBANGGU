@@ -18,6 +18,7 @@ import com.ssafy.bbanggu.breadpackage.BreadPackageService;
 import com.ssafy.bbanggu.common.exception.CustomException;
 import com.ssafy.bbanggu.common.exception.ErrorCode;
 import com.ssafy.bbanggu.favorite.FavoriteRepository;
+import com.ssafy.bbanggu.user.Role;
 import com.ssafy.bbanggu.user.domain.User;
 import com.ssafy.bbanggu.user.repository.UserRepository;
 
@@ -380,6 +381,10 @@ public class BakeryService {
 	public void updateBakerySettlement(CustomUserDetails userDetails, SettlementUpdate request) {
 		User user = userRepository.findById(userDetails.getUserId())
 			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+		if (!user.getRole().equals(Role.OWNER)) {
+			throw new CustomException(ErrorCode.USER_NOT_BAKERY_OWNER);
+		}
 
 		Settlement settlement = settlementRepository.findByUser_UserId(user.getUserId())
 			.orElseThrow(() -> new CustomException(ErrorCode.SETTLEMENT_NOT_FOUND));
