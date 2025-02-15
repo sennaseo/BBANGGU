@@ -47,7 +47,12 @@ export const login = async (loginData: LoginRequest): Promise<LoginResponse> => 
     return response.data;
   } catch (error) {
     if (axios.isAxiosError(error)) {
+      console.log('Error Response:', error.response); // 전체 에러 응답 확인
       const errorData = error.response?.data;
+      
+      if (error.response?.status === 403) {
+        throw new Error('접근이 거부되었습니다. 권한을 확인해주세요.');
+      }
       
       switch (errorData?.code) {
         case 1000:
