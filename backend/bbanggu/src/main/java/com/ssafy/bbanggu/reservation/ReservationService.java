@@ -272,8 +272,11 @@ public class ReservationService {
 		log.info("✅ 현재 로그인한 {}번 유저는 {}번 빵집의 사장님임", user.getUserId(), bakeryId);
 
 		List<ReservationInfo> reservationList = reservationRepository.findTodayReservationsByBakeryId(bakeryId);
-		PickupTimeDto endTime = bakeryPickupService.getPickupTimetable(bakeryId);
-		ReservationForOwner response = new ReservationForOwner(reservationList, reservationList.size(), endTime.getEndTime());
+		String endTime = null;
+		if (!reservationList.isEmpty()) {
+			endTime = bakeryPickupService.getPickupTimetable(bakeryId).getEndTime();
+		}
+		ReservationForOwner response = new ReservationForOwner(reservationList, reservationList.size(), endTime);
 		return response;
 	}
 
