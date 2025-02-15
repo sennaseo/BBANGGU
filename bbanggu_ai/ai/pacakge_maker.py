@@ -127,5 +127,9 @@ def select_best_combinations(all_distributions, price_limit=10000):
     # 유효한 조합이 없는 경우 빈 리스트 반환
     if not valid_combinations:
         print("가격 제한을 만족하는 조합이 없습니다.")
+        return []
 
-    return top_combinations
+    return [combination[1] for combination in top_combinations]
+
+
+
