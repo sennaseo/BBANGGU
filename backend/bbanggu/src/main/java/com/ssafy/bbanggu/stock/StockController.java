@@ -108,7 +108,7 @@ public class StockController {
 	}
 
 	// TOP3 재고 조회
-	@GetMapping("/bakery/{bakeryId}/top32/{period}")
+	@GetMapping("/bakery/{bakeryId}/top3/{period}")
 	public ResponseEntity<?> getTop3Stock(@PathVariable long bakeryId, @PathVariable String period) {
 		try {
 			List<Object[]> stockList = stockService.getTop3StockByPeriod(bakeryId, period);
