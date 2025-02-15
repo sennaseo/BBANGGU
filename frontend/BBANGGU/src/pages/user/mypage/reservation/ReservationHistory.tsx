@@ -1,11 +1,12 @@
 import { ChevronLeft, ChevronDown } from "lucide-react"
-import { useNavigate } from "react-router-dom"
+import { useNavigate, useParams } from "react-router-dom"
 import { mockReservations } from "../../../../mocks/user/reservationMockData" 
 import { useState } from "react"
 
 
 export function ReservationHistory() {
   const navigate = useNavigate()
+  const { userId } = useParams<{ userId: string }>();
   const [isPastReservationsOpen, setIsPastReservationsOpen] = useState(true)
 
   // 예약 상태에 따른 분류
@@ -54,7 +55,7 @@ export function ReservationHistory() {
     return (
       <button 
         className="mb-3 w-full text-left"
-        onClick={() => navigate(`/user/mypage/reservation/${reservation.reservationId}`)}
+        onClick={() => navigate(`/user/${userId}/mypage/reservation/${reservation.reservationId}`)}
       >
         <div className="w-full bg-gray-50 rounded-xl p-4 relative shadow-md">
           <div className="flex flex-col gap-1 mb-1">

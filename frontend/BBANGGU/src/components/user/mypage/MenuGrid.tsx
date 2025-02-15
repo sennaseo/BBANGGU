@@ -63,7 +63,7 @@ export function MenuGrid() {
         </svg>
       ),
       label: "고객센터",
-      path: "/user/mypage/user-customer-support"
+      path: `/user/${userId}/mypage/user-customer-support`
     },
   ]
 

@@ -100,7 +100,7 @@ export default function UserMyPage() {
           />
           <Settings 
             className="w-6 h-6 text-333333 cursor-pointer" 
-            onClick={() => navigate('/user/mypage/edit')}
+            onClick={() => navigate(`/user/${userId}/mypage/edit`)}
           />
         </div>
       </header>
