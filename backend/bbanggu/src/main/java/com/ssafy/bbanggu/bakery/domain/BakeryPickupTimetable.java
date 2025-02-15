@@ -62,7 +62,7 @@ public class BakeryPickupTimetable {
 	 */
 	private String updateTime(PickupTimeDto newTime, String currentTime) {
 		if (newTime == null || newTime.getStartTime() == null || newTime.getEndTime() == null) {
-			return currentTime; // 새로운 값이 없으면 기존 값 유지
+			return null; // 새로운 값이 없으면 기존 값 유지
 		}
 		return newTime.getStartTime().replace(":", "") + newTime.getEndTime().replace(":", "");
 	}
