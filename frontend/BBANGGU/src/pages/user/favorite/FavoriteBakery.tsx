@@ -1,35 +1,41 @@
 import { useState, useEffect } from 'react';
 import { BakeryType } from '../../../types/bakery';
-import { useNavigate, useParams } from 'react-router-dom';
-import { HeartIcon } from "lucide-react"
+import { useNavigate } from 'react-router-dom';
+import { HeartIcon, StarIcon } from "lucide-react"
 import { MapPinIcon } from "@heroicons/react/24/solid";
 import UserBottomNavigation from '../../../components/user/navigations/bottomnavigation/UserBottomNavigation';  
+import { getFavoriteBakery } from '../../../services/user/favorite/userFavoriteService';
 import { bakeryDetailApi } from '../../../api/user/detail/bakeryDetailApi';
-
 
 export const FavoriteBakery = () => {
   const navigate = useNavigate();
-  const { bakeryId } = useParams();
-  const [bakery, setBakery] = useState<BakeryType | null>(null);
+  const [bakeries, setBakeries] = useState<BakeryType[]>([]);
 
   const handleBakeryClick = (bakeryId: number) => {
     navigate(`/user/bakery/${bakeryId}`);
   };
 
   useEffect(() => {
-    const fetchBakery = async () => {
-      if (!bakeryId) return;
+    const fetchBakeries = async () => {
       try {
-        const bakeryData = await bakeryDetailApi.getBakeryById(Number(bakeryId));
-        setBakery(bakeryData);
+        const bakeryData = await getFavoriteBakery();
+        console.log("bakeryData", bakeryData);
+        // bakeryData.content는 { bakeryId: number }[] 형태이므로
+        // 각 bakeryId에 대해 전체 BakeryType을 가져옵니다.
+        const fullBakeries: BakeryType[] = await Promise.all(
+          bakeryData.content.map((item: { bakeryId: number }) =>
+            bakeryDetailApi.getBakeryById(item.bakeryId)
+          )
+        );
+        setBakeries(fullBakeries);
       } catch (error) {
         console.error("베이커리 데이터를 불러오는데 실패했습니다.", error);
       }
     };
-    fetchBakery();
-  }, [bakeryId]);
+    fetchBakeries();
+  }, []);
 
-  if (!bakeryId) {
+  if (bakeries.length === 0) {
     return (
       <div className="min-h-screen bg-white flex flex-col">
         {/* 헤더 */}
@@ -84,16 +90,8 @@ export const FavoriteBakery = () => {
     );
   }
 
-  if (!bakery) {
-    return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        Loading...
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen bg-white flex flex-col">
+    <div className="min-h-screen bg-white flex flex-col pb-20">
       {/* 헤더 */}
       <div className="px-5 py-4">
         <div className="flex items-center">
@@ -105,16 +103,16 @@ export const FavoriteBakery = () => {
       {/* 관심가게 목록 */}
       <div className="px-5 flex-1">
         <div className="flex flex-col gap-5">
-          {bakeryId && (
+          {bakeries.map(bakery => (
             <div
-              key={bakeryId}
+              key={bakery.bakeryId}
               className="bg-white rounded-xl shadow-md overflow-hidden cursor-pointer"
-              onClick={() => handleBakeryClick(Number(bakeryId))}
+              onClick={() => handleBakeryClick(bakery.bakeryId)}
             >
               <div className="relative">
                 <img 
-                  src={bakery?.bakeryImageUrl || "/src/assets/logo.png"}
-                  alt={bakery?.name || ""}
+                  src={bakery.bakeryImageUrl || "/src/assets/logo.png"}
+                  alt={bakery.name || ""}
                   className="w-full h-[160px] object-cover" 
                 />
                 <div className="absolute top-3 left-3 flex gap-2">
@@ -134,35 +132,37 @@ export const FavoriteBakery = () => {
 
               <div className="p-4">
                 <div className="flex items-center gap-2">
-                  <span className="text-xl font-bold">{bakery?.name}</span>
+                  <span className="text-xl font-bold">{bakery.name}</span>
                   <div className="flex items-center gap-0.5 text-[#C0C0C0]">
                     <MapPinIcon className="size-3.5" />
-                    <span className="text-sm">{bakery?.distance}</span>
+                    <span className="text-sm">{bakery.distance}km</span>
                   </div>
                 </div>
                 <div className="text-sm text-[#C0C0C0] mt-1">
-                  픽업시간 : {bakery?.pickupTime?.startTime} ~ {bakery?.pickupTime?.endTime}
+                  픽업시간 : {bakery.pickupTime?.startTime} ~ {bakery.pickupTime?.endTime}
                 </div>
                 <div className="flex items-center justify-between mt-2 relative">
                   <div className="flex items-center gap-1">
-                    <span className="text-[#FC973B]">★</span>
-                    <span className="text-[#787878] font-semibold">{bakery?.star}</span>
-                    <span className="text-xs text-[#E1E1E1]">({bakery?.reviewCnt})</span>
+                    <span className="text-[#FC973B]">
+                      <StarIcon className="size-4 solid fill-[#FFB933] stroke-none" />
+                    </span>
+                    <span className="text-[#787878] font-semibold">{bakery.star}</span>
+                    <span className="text-xs text-[#E1E1E1]">({bakery.reviewCnt})</span>
                   </div>
                   <div className="absolute right-0 -top-6">
                     <span className="text-sm text-[#D9D9D9] line-through">
-                      {bakery?.price?.toLocaleString()}원
+                      {bakery.price?.toLocaleString()}원
                     </span>
                   </div>
                   <div className="absolute right-0 top-0">
                     <span className="text-base font-bold text-xl">
-                      {bakery?.price?.toLocaleString()}원
+                      {bakery.price?.toLocaleString()}원
                     </span>
                   </div>
                 </div>
               </div>
             </div>
-          )}
+          ))}
         </div>
       </div>
       <UserBottomNavigation />

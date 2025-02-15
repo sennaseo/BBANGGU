@@ -95,3 +95,21 @@ export interface ExtendedUserType extends UserType {
   reservation: ReservationType[];
   echosave: EchoSaveType[];
 }
+
+export interface FavoriteBakeryResponse {
+  content: { bakeryId: number }[]; // 필요한 경우 기타 속성도 추가
+  pageable: any;
+  totalElements: number;
+  totalPages: number;
+  last: boolean;
+  first: boolean;
+  number: number;
+  numberOfElements: number;
+  size: number;
+  sort: { sorted: boolean; unsorted: boolean; empty: boolean; };
+}
+
+export interface UserReviewResponse {
+  data: ReviewType[];
+}
+

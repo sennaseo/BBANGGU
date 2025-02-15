@@ -37,6 +37,7 @@ import PackageSalesSetting from './pages/owner/package/PackageSalesSetting';
 import PackageSettingPage from './pages/owner/package/PackageSettingPage';
 import BreadRegisterPage from './pages/owner/bread/BreadRegisterPage';
 import { InstallPWA } from './components/InstallPWA';
+import UserMyReview from "./pages/user/mypage/myreview/UserMyReview";
 
 
 export default function App() {
@@ -65,7 +66,8 @@ export default function App() {
             <Route path="/user/:userId/mypage/save-report" element={<UserSaveReport />} />
             <Route path="/user/:userId/mypage/notifications" element={<Notification />} />
             <Route path="/user/:userId/mypage/reservations" element={<ReservationHistory />} />
-            <Route path="/user/:userId/mypage/reservation/:reservation_id" element={<ReservationDetail />} />
+            <Route path="/user/:userId/mypage/reservation/:reservationId" element={<ReservationDetail />} />
+            <Route path="/user/:userId/mypage/myreviews" element={<UserMyReview />} />
             <Route path="/user/:userId/favorite" element={<FavoriteBakery />} />
             <Route path="/user/payment" element={<UserPayment />} />
             <Route path="/user/map" element={<MapPage />} />
@@ -86,7 +88,7 @@ export default function App() {
               <Route path="/owner/package/register" element={<PackageRegister />} />
               <Route path="/owner/package/sales-setting" element={<PackageSalesSetting />} />
               <Route path="/owner/package/setting" element={<PackageSettingPage />} />
-              <Route path="/owner/bread/register"           element={<BreadRegisterPage />} />
+              <Route path="/owner/bread/register" element={<BreadRegisterPage />} />
             </Routes>
             <InstallPWA />
           </MobileLayout>

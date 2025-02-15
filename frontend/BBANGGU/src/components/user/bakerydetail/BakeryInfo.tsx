@@ -56,7 +56,7 @@ export default function BakeryInfo({ bakery, onFavoriteUpdate }: BakeryInfoProps
           </div>
         </div>
         <button
-          className="w-8 h-8 flex items-center justify-center"
+          className="w-10 h-10 flex items-center justify-center bg-[#F9F9F9] rounded-full hover:bg-[#E1E1E1]"
           onClick={handleToggleFavorite}
         >
           {isFavorite ? (

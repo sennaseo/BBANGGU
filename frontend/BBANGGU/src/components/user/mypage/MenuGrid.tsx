@@ -1,7 +1,8 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
 export function MenuGrid() {
   const navigate = useNavigate();
+  const { userId } = useParams<{ userId: string }>();
 
   const menuItems = [
     {
@@ -14,7 +15,7 @@ export function MenuGrid() {
         </svg>
       ),
       label: "주문 내역",
-      path: "/user/mypage/reservations"
+      path: `/user/${userId}/mypage/reservations`
     },
     {
       icon: (
@@ -26,7 +27,7 @@ export function MenuGrid() {
         </svg>
       ),
       label: "관심 뱃찌",
-      path: "/user/101/favorite"
+      path: `/user/${userId}/favorite`
     },
     {
       icon: (
@@ -38,7 +39,7 @@ export function MenuGrid() {
         </svg>
       ),
       label: "나의 리뷰",
-      path: "/user/reviews"
+      path: `/user/${userId}/mypage/myreviews`
     },
     {
       icon: (

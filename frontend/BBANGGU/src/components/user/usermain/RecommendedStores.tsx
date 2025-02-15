@@ -46,18 +46,16 @@ export default function RecommendedStores({ allbakery, onStoreClick, onToggleLik
                 </div>
                 <div className="flex gap-2">
                   <button
-                    className="w-8 h-8 flex items-center justify-center"
+                    className="w-8 h-8 flex items-center justify-center bg-[#F9F9F9] rounded-full hover:bg-[#E1E1E1]"
                     onClick={(e) => {
                       e.stopPropagation()
                       onToggleLike(store.bakeryId)
                     }}>
-
                     {store.is_liked ? (
                       <HeartSolid className="w-6 h-6 text-[#fc973b]" />
                     ) : (
                       <HeartOutline className="w-6 h-6 text-[#757575]" />
                     )}
-
                   </button>
                 </div>
               </div>

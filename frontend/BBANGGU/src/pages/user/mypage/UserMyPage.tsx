@@ -111,7 +111,7 @@ export default function UserMyPage() {
             <MenuGrid />
           <StatsCards echoSave={userData.latestEchoSave} />
           <button 
-            onClick={() => navigate('/user/mypage/save-report')}
+            onClick={() => navigate(`/user/${userId}/mypage/save-report`)}
             className="w-full text-center bg-[#F9F9F9] py-4 font-bold text-[14px] text-[#454545] shadow-md"
           >
             나의 절약 리포트 {">"}
@@ -121,12 +121,12 @@ export default function UserMyPage() {
         <div className="mt-auto py-6 space-y-4">
           <div className="flex justify-between items-center pt-4 border-t border-gray-200">
             <button 
-              className="text-[#333333]"
+              className="text-[14px] text-[#333333]"
               onClick={handleLogoutClick}
             >
               로그아웃
             </button>
-            <button className="text-red-500">회원탈퇴</button>
+            <button className="text-red-500 text-[14px]">회원탈퇴</button>
           </div>
         </div>
 
