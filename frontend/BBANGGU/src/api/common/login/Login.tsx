@@ -1,4 +1,5 @@
 import axios from 'axios';
+import instance from '../../axios';
 
 interface LoginRequest {
   email: string;
@@ -7,66 +8,54 @@ interface LoginRequest {
 
 interface LoginResponse {
   message: string;
-  data: "OWNER" | "USER" | null;
+  data: {
+    access_token: string;
+    refresh_token: string;
+    user_type: "OWNER" | "USER";
+  };
 }
-
-interface LoginErrorResponse {
-  code: number;
-  status: string;
-  message: string;
-}
-
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://i12d102.p.ssafy.io:8081';
 
 export const login = async (loginData: LoginRequest): Promise<LoginResponse> => {
   try {
-    console.log('API 요청 데이터:', loginData);
-    const url = `${BASE_URL}/user/login`;
-    console.log('요청 URL:', url);
-
-    // 요청 데이터 형식 확인
     const requestData = {
       email: loginData.email.trim(),
       password: loginData.password
     };
 
-    const response = await axios.post<LoginResponse>(
-      url,
+    const response = await instance.post<LoginResponse>(
+      '/user/login',
       requestData,
       {
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
         withCredentials: true,
-        timeout: 10000, // 10초 타임아웃 설정
       }
     );
 
-    console.log('API 응답:', response.data);
+    // 로그인 성공 시 토큰 저장
+    if (response.data.data.access_token) {
+      localStorage.setItem('access_token', response.data.data.access_token);
+      localStorage.setItem('refresh_token', response.data.data.refresh_token);
+    }
+
     return response.data;
   } catch (error) {
-    console.error('API 에러:', error);
     if (axios.isAxiosError(error)) {
-      console.error('상세 에러 정보:', {
-        status: error.response?.status,
-        statusText: error.response?.statusText,
-        data: error.response?.data,
-        headers: error.response?.headers,
-        config: {
-          url: error.config?.url,
-          method: error.config?.method,
-          data: error.config?.data
-        }
-      });
-
-      // 서버 에러(500) 처리
-      if (error.response?.status === 500) {
-        throw new Error('서버와의 통신 중 문제가 발생했습니다. 잠시 후 다시 시도해주세요.');
+      console.log('Error Response:', error.response); // 전체 에러 응답 확인
+      const errorData = error.response?.data;
+      
+      if (error.response?.status === 403) {
+        throw new Error('접근이 거부되었습니다. 권한을 확인해주세요.');
       }
-
-      const errorData = error.response?.data as LoginErrorResponse;
-      throw new Error(errorData.message || '로그인에 실패했습니다.');
+      
+      switch (errorData?.code) {
+        case 1000:
+          throw new Error('잘못된 요청입니다.');
+        case 1001:
+          throw new Error('해당 사용자를 찾을 수 없습니다.');
+        case 1002:
+          throw new Error('비밀번호가 올바르지 않습니다.');
+        default:
+          throw new Error('로그인 중 오류가 발생했습니다.');
+      }
     }
     throw new Error('로그인 중 오류가 발생했습니다.');
   }

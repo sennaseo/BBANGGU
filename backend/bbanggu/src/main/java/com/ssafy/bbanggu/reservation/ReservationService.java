@@ -9,7 +9,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import com.ssafy.bbanggu.bakery.domain.Bakery;
+import com.ssafy.bbanggu.bakery.dto.PickupTimeDto;
+import com.ssafy.bbanggu.bakery.repository.BakeryRepository;
+import com.ssafy.bbanggu.bakery.service.BakeryPickupService;
 import com.ssafy.bbanggu.breadpackage.BreadPackageService;
+
+import org.springframework.cglib.core.Local;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -24,6 +30,8 @@ import com.ssafy.bbanggu.payment.PaymentService;
 import com.ssafy.bbanggu.reservation.dto.ReservationCancelRequest;
 import com.ssafy.bbanggu.reservation.dto.ReservationCreateRequest;
 import com.ssafy.bbanggu.reservation.dto.ReservationDTO;
+import com.ssafy.bbanggu.reservation.dto.ReservationForOwner;
+import com.ssafy.bbanggu.reservation.dto.ReservationInfo;
 import com.ssafy.bbanggu.reservation.dto.ReservationResponse;
 import com.ssafy.bbanggu.reservation.dto.ValidReservationRequest;
 import com.ssafy.bbanggu.user.domain.User;
@@ -45,14 +53,20 @@ public class ReservationService {
 	private final JwtTokenProvider jwtTokenProvider;
 	private final BreadPackageRepository breadPackageRepository;
 	private final UserRepository userRepository;
+	private final BakeryRepository bakeryRepository;
+	private final BakeryPickupService bakeryPickupService;
 
 	/**
 	 * 예약 검증 메서드 (PENDING)
 	 */
 	public Map<String, Object> validateReservation(CustomUserDetails userDetails, ValidReservationRequest request) {
-		BreadPackage breadPackage = breadPackageRepository.findById(request.breadPackageId())
-			.orElseThrow(() -> new CustomException(ErrorCode.BREAD_PACKAGE_NOT_FOUND));
-		log.info("✅ {}번 빵꾸러미가 존재함", request.breadPackageId());
+		Bakery bakery = bakeryRepository.findById(request.bakeryId())
+			.orElseThrow(() -> new CustomException(ErrorCode.BAKERY_NOT_FOUND));
+		BreadPackage breadPackage = breadPackageRepository.findByBakeryIdAndToday(bakery.getBakeryId());
+		if (breadPackage == null) {
+			throw new CustomException(ErrorCode.BREAD_PACKAGE_NOT_FOUND);
+		}
+		log.info("✅ {}번 빵꾸러미가 존재함", breadPackage.getPackageId());
 
 		User user = userRepository.findById(userDetails.getUserId())
 			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
@@ -158,10 +172,12 @@ public class ReservationService {
 		}
 		log.info("✅ 취소되지 않은 {}번 예약이 존재함", request.reservationId());
 
-		if (!reservation.getUser().getUserId().equals(userDetails.getUserId())) {
+		log.info("사장님 ID: {}, 사용자 ID: {}", reservation.getBakery().getUser().getUserId(), userDetails.getUserId());
+		if (!reservation.getUser().getUserId().equals(userDetails.getUserId())
+			&& !reservation.getBakery().getUser().getUserId().equals(userDetails.getUserId())) {
 			throw new CustomException(ErrorCode.UNAUTHORIZED_USER);
 		}
-		log.info("✅ 현재 로그인한 사용자와 예약한 사용자가 일치함");
+		log.info("✅ 현재 로그인한 사용자는 예약 취소 권한이 있음");
 
 		// 결제 취소
 		ResponseEntity<String> response = paymentService.cancelPayment(reservation.getPaymentKey(), request.cancelReason());
@@ -215,9 +231,14 @@ public class ReservationService {
 		Reservation savedReservation = reservationRepository.save(reservation);
 		log.info("🩵 빵꾸러미 판매 성공 (COMPLETED) 🩵");
 
+		if (reservation.getBreadPackage().getQuantity() == 0) {
+			log.info("💖 오늘 빵꾸러미 매진 (DELETED) 💖");
+		}
+
 		Map<String, Object> responseData = new HashMap<>();
 		responseData.put("reservationId", savedReservation.getReservationId());
 		responseData.put("status", savedReservation.getStatus());
+		responseData.put("pending", reservation.getBreadPackage().getQuantity());
 
 		return responseData;
 	}
@@ -238,6 +259,30 @@ public class ReservationService {
 		return reservationDTOList;
 	}
 
+	/**
+	 *  사장님 오늘의 예약 조회 메서드
+	 */
+	public ReservationForOwner getTodayOwnerReservations(CustomUserDetails userDetails, long bakeryId) {
+		User user = userRepository.findById(userDetails.getUserId())
+			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+		Bakery bakery = bakeryRepository.findById(bakeryId)
+			.orElseThrow(() -> new CustomException(ErrorCode.BAKERY_NOT_FOUND));
+		log.info("✅ {}번 빵집이 존재함", bakeryId);
+
+		if (!bakery.getUser().getUserId().equals(user.getUserId())) {
+			throw new CustomException(ErrorCode.USER_NOT_BAKERY_OWNER);
+		}
+		log.info("✅ 현재 로그인한 {}번 유저는 {}번 빵집의 사장님임", user.getUserId(), bakeryId);
+
+		List<ReservationInfo> reservationList = reservationRepository.findTodayReservationsByBakeryId(bakeryId);
+		String endTime = null;
+		if (!reservationList.isEmpty()) {
+			endTime = bakeryPickupService.getPickupTimetable(bakeryId).getEndTime();
+		}
+		ReservationForOwner response = new ReservationForOwner(reservationList, reservationList.size(), endTime);
+		return response;
+	}
 
 	/**
 	 * 사장님 예약 조회 메서드

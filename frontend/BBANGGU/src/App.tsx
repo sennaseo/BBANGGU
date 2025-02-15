@@ -57,18 +57,18 @@ export default function App() {
 
             {/* 사용자 관련 페이지 */}
             <Route path="/user" element={<UserMain />} />
-            <Route path="/user/bakery/:bakery_id" element={<BakeryDetail />} />
-            <Route path="/user/bakery/:bakery_id/reviews" element={<UserReview />} />
-            <Route path="/user/:user_id/mypage" element={<UserMyPage />} />
-            <Route path="/user/mypage/edit" element={<UserEditProfile />} />
-            <Route path="/user/mypage/user-customer-support" element={<UserCustomerSupport />} />
-            <Route path="/user/mypage/save-report" element={<UserSaveReport />} />
-            <Route path="/user/mypage/notifications" element={<Notification />} />
-            <Route path="/user/mypage/reservations" element={<ReservationHistory />} />
-            <Route path="/user/mypage/reservation/:reservation_id" element={<ReservationDetail />} />
+            <Route path="/user/bakery/:bakeryId" element={<BakeryDetail />} />
+            <Route path="/user/bakery/:bakeryId/reviews" element={<UserReview />} />
+            <Route path="/user/:userId/mypage" element={<UserMyPage />} />
+            <Route path="/user/:userId/mypage/edit" element={<UserEditProfile />} />
+            <Route path="/user/:userId/mypage/user-customer-support" element={<UserCustomerSupport />} />
+            <Route path="/user/:userId/mypage/save-report" element={<UserSaveReport />} />
+            <Route path="/user/:userId/mypage/notifications" element={<Notification />} />
+            <Route path="/user/:userId/mypage/reservations" element={<ReservationHistory />} />
+            <Route path="/user/:userId/mypage/reservation/:reservation_id" element={<ReservationDetail />} />
+            <Route path="/user/:userId/favorite" element={<FavoriteBakery />} />
             <Route path="/user/payment" element={<UserPayment />} />
             <Route path="/user/map" element={<MapPage />} />
-            <Route path="/user/:user_id/favorite" element={<FavoriteBakery />} />
 
 
               {/* 점주 관련 페이지 */}
@@ -86,7 +86,7 @@ export default function App() {
               <Route path="/owner/package/register" element={<PackageRegister />} />
               <Route path="/owner/package/sales-setting" element={<PackageSalesSetting />} />
               <Route path="/owner/package/setting" element={<PackageSettingPage />} />
-              <Route path="/owner/bread/register" element={<BreadRegisterPage />} />
+              <Route path="/owner/bread/register"           element={<BreadRegisterPage />} />
             </Routes>
             <InstallPWA />
           </MobileLayout>

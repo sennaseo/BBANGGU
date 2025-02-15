@@ -21,6 +21,7 @@ import com.ssafy.bbanggu.common.response.ApiResponse;
 import com.ssafy.bbanggu.reservation.dto.ReservationCancelRequest;
 import com.ssafy.bbanggu.reservation.dto.ReservationCreateRequest;
 import com.ssafy.bbanggu.reservation.dto.ReservationDTO;
+import com.ssafy.bbanggu.reservation.dto.ReservationForOwner;
 import com.ssafy.bbanggu.reservation.dto.ReservationResponse;
 import com.ssafy.bbanggu.reservation.dto.ValidReservationRequest;
 
@@ -40,7 +41,7 @@ public class ReservationController {
 	 * 예약 생성 (PENDING) API
 	 *
 	 * @param userDetails 현재 로그인한 사용자 정보
-	 * @param request breadPackageId, quantity
+	 * @param request bakeryId, quantity
 	 * @return reservationId, status
 	 */
 	@PostMapping("/check")
@@ -127,6 +128,23 @@ public class ReservationController {
 			ResponseEntity.status(HttpStatus.NO_CONTENT).body(new ApiResponse("기간 내 사용자 예약이 존재하지 않습니다.", null));
 		}
 		return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse("기간 내 사용자 예약 조회가 완료되었습니다.", reservationList));
+	}
+
+
+	/**
+	 * 사장님 오늘의 예약 조회
+	 *
+	 * @param userDetails 현재 로그인한 사용자 정보
+	 * @param bakeryId 빵집 ID
+	 * @return List<Reservation>, total, endTime
+	 */
+	@GetMapping("/{bakeryId}")
+	public ResponseEntity<ApiResponse> getOwnerReservationList(
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@PathVariable long bakeryId
+	){
+		ReservationForOwner response = reservationService.getTodayOwnerReservations(userDetails, bakeryId);
+		return ResponseEntity.ok().body(new ApiResponse("오늘의 예약 내역 조회에 성공하였습니다.", response));
 	}
 
 

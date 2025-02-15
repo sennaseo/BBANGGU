@@ -1,19 +1,115 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Header } from '../../../components/owner/editprofile/Header';
 import { SubmitButton } from '../../../common/form/SubmitButton';
 import BottomNavigation from '../../../components/owner/navigations/BottomNavigations/BottomNavigation';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { ClockIcon } from '@heroicons/react/24/outline';
+import { updatePickupTime } from '../../../api/pickup/pickup';
+
+interface PickupTime {
+  startTime: string;
+  endTime: string;
+}
+
+interface PickupTimes {
+  monday: PickupTime | null;
+  tuesday: PickupTime | null;
+  wednesday: PickupTime | null;
+  thursday: PickupTime | null;
+  friday: PickupTime | null;
+  saturday: PickupTime | null;
+  sunday: PickupTime | null;
+}
+
+interface LocationState {
+  bakeryId: number;
+  pickupTimes: PickupTimes;
+}
 
 function PickupTime() {
-  const [selectedDays, setSelectedDays] = useState<string[]>([]);
-  const days = ['월', '화', '수', '목', '금', '토', '일'];
+  const location = useLocation();
   const navigate = useNavigate();
+  const { bakeryId, pickupTimes } = location.state as LocationState;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [selectedDays, setSelectedDays] = useState<string[]>([]);
+  const [timeData, setTimeData] = useState<{ [key: string]: PickupTime }>({});
+  
+  const dayMapping = {
+    '월': 'monday',
+    '화': 'tuesday',
+    '수': 'wednesday',
+    '목': 'thursday',
+    '금': 'friday',
+    '토': 'saturday',
+    '일': 'sunday'
+  };
+
+  // 초기 데이터 설정
+  useEffect(() => {
+    const initialSelectedDays: string[] = [];
+    const initialTimeData: { [key: string]: PickupTime } = {};
+
+    Object.entries(pickupTimes).forEach(([key, value]) => {
+      if (value) {
+        const koreanDay = Object.entries(dayMapping).find(([_, eng]) => eng === key)?.[0];
+        if (koreanDay) {
+          initialSelectedDays.push(koreanDay);
+          initialTimeData[koreanDay] = value;
+        }
+      }
+    });
+
+    // 모든 요일의 시간 데이터를 미리 저장
+    Object.keys(dayMapping).forEach(day => {
+      if (!initialTimeData[day]) {
+        initialTimeData[day] = {
+          startTime: '',
+          endTime: ''
+        };
+      }
+    });
+
+    setSelectedDays(initialSelectedDays);
+    setTimeData(initialTimeData);
+  }, [pickupTimes]);
+
+  // 시간 데이터가 변경될 때마다 localStorage에 저장
+  useEffect(() => {
+    localStorage.setItem(`pickupTimes_${bakeryId}`, JSON.stringify(timeData));
+  }, [timeData, bakeryId]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // 나중에 여기에 API 호출 로직이 들어갈 예정
-    navigate('/owner/mypage');
+
+    try {
+      const requestData: { [key: string]: PickupTime | null } = {
+        monday: null,
+        tuesday: null,
+        wednesday: null,
+        thursday: null,
+        friday: null,
+        saturday: null,
+        sunday: null
+      };
+      
+      selectedDays.forEach(day => {
+        const engDay = dayMapping[day as keyof typeof dayMapping];
+        if (timeData[day]) {
+          requestData[engDay] = timeData[day];
+        }
+      });
+
+      await updatePickupTime(bakeryId, requestData);
+      alert('픽업 시간이 성공적으로 수정되었습니다.');
+      navigate('/owner/mypage');
+    } catch (error) {
+      console.error('픽업 시간 수정 실패:', error);
+      if (error instanceof Error) {
+        alert(error.message);
+      } else {
+        alert('픽업 시간 수정에 실패했습니다.');
+      }
+    }
   };
 
   const handleDayClick = (day: string) => {
@@ -22,6 +118,16 @@ function PickupTime() {
         ? prev.filter(d => d !== day)
         : [...prev, day]
     );
+  };
+
+  const handleTimeChange = (day: string, type: 'startTime' | 'endTime', value: string) => {
+    setTimeData(prev => ({
+      ...prev,
+      [day]: {
+        ...prev[day],
+        [type]: value
+      }
+    }));
   };
 
   const inputClassName = "w-full px-4 py-3 rounded-[8px] border border-[#EFEFEF] placeholder-[#8E8E8E] focus:outline-none focus:border-[#FF9B50]";
@@ -55,7 +161,7 @@ function PickupTime() {
             </p>
           </div>
           <div className="flex justify-between gap-2">
-            {days.map((day) => (
+            {Object.keys(dayMapping).map((day) => (
               <button
                 key={day}
                 type="button"
@@ -84,8 +190,10 @@ function PickupTime() {
           </div>
 
           <div className="space-y-3">
-            {days.map((day) => {
+            {Object.keys(dayMapping).map((day) => {
               const isSelected = selectedDays.includes(day);
+              const dayTime = timeData[day] || { startTime: '', endTime: '' };
+              
               return (
                 <div key={day} className={`flex items-center gap-3 ${!isSelected && 'opacity-50'}`}>
                   <span className="w-16 text-[14px] text-[#242424] font-medium">{day}요일</span>
@@ -93,8 +201,9 @@ function PickupTime() {
                     <div className="flex-1 relative">
                       <select
                         disabled={!isSelected}
+                        value={dayTime.startTime}
+                        onChange={(e) => handleTimeChange(day, 'startTime', e.target.value)}
                         className={`${isSelected ? inputClassName : disabledInputClassName} appearance-none`}
-                        defaultValue=""
                       >
                         <option value="" disabled>시간 선택</option>
                         {timeOptions.map((time) => (
@@ -111,8 +220,9 @@ function PickupTime() {
                     <div className="flex-1 relative">
                       <select
                         disabled={!isSelected}
+                        value={dayTime.endTime}
+                        onChange={(e) => handleTimeChange(day, 'endTime', e.target.value)}
                         className={`${isSelected ? inputClassName : disabledInputClassName} appearance-none`}
-                        defaultValue=""
                       >
                         <option value="" disabled>시간 선택</option>
                         {timeOptions.map((time) => (

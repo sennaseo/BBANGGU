@@ -29,6 +29,10 @@ public class Bakery {
     @Column(name = "bakery_id", columnDefinition = "INT UNSIGNED")
     private Long bakeryId; // 가게 ID
 
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "settlement_id", nullable = false)
+	private Settlement settlement;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user; // 사용자 ID (연관 관계)

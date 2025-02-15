@@ -7,21 +7,23 @@ import com.ssafy.bbanggu.bakery.dto.BakeryCreateDto;
 import com.ssafy.bbanggu.bakery.dto.BakeryLocationDto;
 import com.ssafy.bbanggu.bakery.dto.BakerySettlementDto;
 import com.ssafy.bbanggu.bakery.dto.PickupTimeDto;
+import com.ssafy.bbanggu.bakery.dto.SettlementUpdate;
 import com.ssafy.bbanggu.bakery.repository.BakeryRepository;
 import com.ssafy.bbanggu.bakery.dto.BakeryDetailDto;
 import com.ssafy.bbanggu.bakery.dto.BakeryDto;
-import com.ssafy.bbanggu.bakery.repository.BakerySettlementRepository;
+import com.ssafy.bbanggu.bakery.repository.SettlementRepository;
 import com.ssafy.bbanggu.breadpackage.BreadPackage;
 import com.ssafy.bbanggu.breadpackage.BreadPackageRepository;
 import com.ssafy.bbanggu.breadpackage.BreadPackageService;
-import com.ssafy.bbanggu.breadpackage.dto.BreadPackageDto;
 import com.ssafy.bbanggu.common.exception.CustomException;
 import com.ssafy.bbanggu.common.exception.ErrorCode;
 import com.ssafy.bbanggu.favorite.FavoriteRepository;
+import com.ssafy.bbanggu.user.Role;
 import com.ssafy.bbanggu.user.domain.User;
 import com.ssafy.bbanggu.user.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -36,6 +38,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class BakeryService {
@@ -43,7 +46,7 @@ public class BakeryService {
 	private final BakeryRepository bakeryRepository;
 	private final GeoService geoService;
 	private final UserRepository userRepository;
-	private final BakerySettlementRepository bakerySettlementRepository;
+	private final SettlementRepository settlementRepository;
 	private final FavoriteRepository favoriteRepository;
 	private final BakeryPickupService bakeryPickupService;
 	private final BreadPackageRepository breadPackageRepository;
@@ -87,6 +90,7 @@ public class BakeryService {
 				.map(bakery -> {
 					double distance = (userLat == null || userLng == null) ? 0.0
 						: calculateDistance(userLat, userLng, bakery.getLatitude(), bakery.getLongitude());
+
 					boolean is_liked = favoriteRepository.existsByUser_UserIdAndBakery_BakeryId(userDetails.getUserId(), bakery.getBakeryId());
 					PickupTimeDto pickupTime = bakeryPickupService.getPickupTimetable(bakery.getBakeryId());
 					BreadPackage breadPackage = breadPackageService.getPackageById(bakery.getBakeryId());
@@ -94,7 +98,7 @@ public class BakeryService {
 					if (breadPackage != null) {
 						price = breadPackage.getPrice();
 					}
-					return BakeryDetailDto.from(bakery, 0.0, false, pickupTime, price);
+					return BakeryDetailDto.from(bakery, distance, is_liked, pickupTime, price);
 				})
 				.collect(Collectors.toList());
 		}
@@ -112,7 +116,7 @@ public class BakeryService {
 				if (breadPackage != null) {
 					price = breadPackage.getPrice();
 				}
-				return BakeryDetailDto.from(bakery, 0.0, false, pickupTime, price);
+				return BakeryDetailDto.from(bakery, distance, is_liked, pickupTime, price);
 			})
 			.collect(Collectors.toList());
 
@@ -149,15 +153,20 @@ public class BakeryService {
 			throw new CustomException(ErrorCode.BAKERY_NOT_FOUND);
 		}
 
-		double distance = (userLat == null || userLng == null) ? 0.0
-			: calculateDistance(userLat, userLng, bakery.getLatitude(), bakery.getLongitude());
-		boolean is_liked = favoriteRepository.existsByUser_UserIdAndBakery_BakeryId(userDetails.getUserId(), bakery.getBakeryId());
 		PickupTimeDto pickupTime = bakeryPickupService.getPickupTimetable(bakery.getBakeryId());
 		BreadPackage breadPackage = breadPackageService.getPackageById(bakery.getBakeryId());
 		int price = 0;
 		if (breadPackage != null) {
 			price = breadPackage.getPrice();
 		}
+
+		if(userDetails == null) {
+			return BakeryDetailDto.from(bakery, 0.0, false, pickupTime, price);
+		}
+
+		double distance = (userLat == null || userLng == null) ? 0.0
+			: calculateDistance(userLat, userLng, bakery.getLatitude(), bakery.getLongitude());
+		boolean is_liked = favoriteRepository.existsByUser_UserIdAndBakery_BakeryId(userDetails.getUserId(), bakery.getBakeryId());
 		return BakeryDetailDto.from(bakery, distance, is_liked, pickupTime, price);
 	}
 
@@ -225,8 +234,11 @@ public class BakeryService {
 		User user = userRepository.findById(settlement.userId())
 			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
+		Bakery bakery = bakeryRepository.findByUser_UserId(user.getUserId());
+
 		Settlement bakerySet = Settlement.builder()
 			.user(user)
+			.bakery(bakery)
 			.bankName(settlement.bankName())
 			.accountHolderName(settlement.accountHolderName())
 			.accountNumber(settlement.accountNumber())
@@ -234,7 +246,8 @@ public class BakeryService {
 			.businessLicenseFileUrl(settlement.businessLicenseFileUrl())
 			.build();
 
-		Settlement savedSettlement = bakerySettlementRepository.save(bakerySet);
+		Settlement savedSettlement = settlementRepository.save(bakerySet);
+		bakery.setSettlement(savedSettlement);
 		return BakerySettlementDto.from(savedSettlement);
 	}
 
@@ -344,5 +357,43 @@ public class BakeryService {
 		return bakeries.stream()
 			.map(BakeryLocationDto::from)
 			.collect(Collectors.toList());
+	}
+
+
+	/**
+	 * 가게 아이디로 정산 정보 조회 메서드
+	 */
+	public BakerySettlementDto getBakerySettlement(CustomUserDetails userDetails, Long bakeryId) {
+		Bakery bakery = bakeryRepository.findById(bakeryId)
+			.orElseThrow(() -> new CustomException(ErrorCode.BAKERY_NOT_FOUND));
+		if (!bakery.getUser().getUserId().equals(userDetails.getUserId())) {
+			throw new CustomException(ErrorCode.UNAUTHORIZED_USER);
+		}
+		log.info("✅ 현재 로그인한 사용자와 {}번 가게의 사장님이 일치함", bakeryId);
+
+		Settlement settlement = settlementRepository.findByBakery_BakeryId(bakeryId)
+			.orElseThrow(() -> new CustomException(ErrorCode.SETTLEMENT_NOT_FOUND));
+		log.info("🩵 정산 정보 조회 완료 🩵");
+		return BakerySettlementDto.from(settlement);
+	}
+
+	@Transactional
+	public void updateBakerySettlement(CustomUserDetails userDetails, SettlementUpdate request) {
+		User user = userRepository.findById(userDetails.getUserId())
+			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+		if (!user.getRole().equals(Role.OWNER)) {
+			throw new CustomException(ErrorCode.USER_NOT_BAKERY_OWNER);
+		}
+
+		Settlement settlement = settlementRepository.findByUser_UserId(user.getUserId())
+			.orElseThrow(() -> new CustomException(ErrorCode.SETTLEMENT_NOT_FOUND));
+
+		// 요청된 필드만 업데이트 (null이 아닌 경우만 반영)
+		if (request.bankName() != null) settlement.setBankName(request.bankName());
+		if (request.accountHolderName() != null) settlement.setAccountHolderName(request.accountHolderName());
+		if (request.accountNumber() != null) settlement.setAccountNumber(request.accountNumber());
+		if (request.emailForTaxInvoice() != null) settlement.setEmailForTaxInvoice(request.emailForTaxInvoice());
+		if (request.businessLicenseFileUrl() != null) settlement.setBusinessLicenseFileUrl(request.businessLicenseFileUrl());
 	}
 }
