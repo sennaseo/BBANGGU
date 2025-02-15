@@ -9,7 +9,5 @@ import com.ssafy.bbanggu.bakery.domain.Settlement;
 
 @Repository
 public interface SettlementRepository extends JpaRepository<Settlement, Long> {
-	Optional<Settlement> findByBakery_BakeryId(Long bakeryId);
-
 	Optional<Settlement> findByUser_UserId(Long userId);
 }

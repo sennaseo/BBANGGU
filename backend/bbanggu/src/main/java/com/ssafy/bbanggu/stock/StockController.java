@@ -76,7 +76,8 @@ public class StockController {
 	@GetMapping("/bakery/{bakeryId}/week")
 	public ResponseEntity<?> getStockWeekly(@PathVariable long bakeryId) {
 		try {
-			List<StockDTO> stockList = stockService.getStockByPeriod(LocalDate.now().minusWeeks(1), LocalDate.now(), bakeryId);
+			List<StockDTO> stockList = stockService.getStockByPeriod(LocalDate.now().minusWeeks(1), LocalDate.now(),
+				bakeryId);
 			return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse("재고 조회 성공", stockList));
 		} catch (Exception e) {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("재고 조회 실패");
@@ -97,7 +98,7 @@ public class StockController {
 	// 기간 기준 조회
 	@GetMapping("/bakery/{bakeryId}/{startDate}/{endDate}")
 	public ResponseEntity<?> getStockByPeriod(@PathVariable long bakeryId, @PathVariable LocalDate startDate,
-											  @PathVariable LocalDate endDate) {
+		@PathVariable LocalDate endDate) {
 		try {
 			List<StockDTO> stockList = stockService.getStockByPeriod(startDate, endDate, bakeryId);
 			return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse("재고 조회 성공", stockList));
@@ -105,4 +106,16 @@ public class StockController {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("재고 조회 실패");
 		}
 	}
+
+	// TOP3 재고 조회
+	@GetMapping("/bakery/{bakeryId}/top32/{period}")
+	public ResponseEntity<?> getTop3Stock(@PathVariable long bakeryId, @PathVariable String period) {
+		try {
+			List<Object[]> stockList = stockService.getTop3StockByPeriod(bakeryId, period);
+			return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse("재고 조회 성공", stockList));
+		} catch (Exception e) {
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("재고 조회 실패");
+		}
+	}
+
 }
