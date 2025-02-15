@@ -91,8 +91,7 @@ public class BreadPackageService {
 
 
 	public BreadPackage getPackageById(Long bakeryId) {
-		return breadPackageRepository.findByBakeryIdAndToday(bakeryId)
-			.orElse(null);
+		return breadPackageRepository.findByBakeryIdAndToday(bakeryId);
 	}
 
 
@@ -165,8 +164,10 @@ public class BreadPackageService {
 		}
 		log.info("✅ 현재 로그인한 사용자가 해당 빵집의 사장님입니다^^");
 
-		BreadPackage breadPackage = breadPackageRepository.findByBakeryIdAndToday(bakeryId)
-			.orElseThrow(() -> new CustomException(ErrorCode.BREAD_PACKAGE_NOT_FOUND));
+		BreadPackage breadPackage = breadPackageRepository.findByBakeryIdAndToday(bakeryId);
+		if (breadPackage == null) {
+			throw new CustomException(ErrorCode.BREAD_PACKAGE_NOT_FOUND);
+		}
 		log.info("✅ {}번 빵집에 오늘의 빵꾸러미가 등록되어 있습니다.", bakeryId);
 
 		// 현재 가게의 픽업 완료된 예약들의 빵꾸러미 개수 총합
