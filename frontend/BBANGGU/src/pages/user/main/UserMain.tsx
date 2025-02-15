@@ -51,6 +51,10 @@ export default function UserMain() {
 
 // 좋아요 토글 함수 (관심가게 삭제 기능 포함)
 const handleToggleFavorite = async (bakeryId: number) => {
+  if (Number.isNaN(bakeryId)) {
+    console.error("잘못된 bakeryId:", bakeryId);
+    return;
+  }
   try {
     const targetStore = await bakeryDetailApi.getBakeryById(bakeryId)
     await toggleFavoriteForUser(bakeryId, targetStore.is_liked);
