@@ -61,4 +61,9 @@ async def detect_breads(images: List[UploadFile] = File(...), bakeryId: int = Fo
     # 빵 조합 생성
     result = pacakge_maker.distribute_breads(classified_breads, category_infos, class_names)
     filtered_result = pacakge_maker.select_best_combinations(result)
-    return filtered_result, classified_breads
+
+    detected_breads = {}
+    for bread in classified_breads:
+        detected_breads.setdefault(class_names.index(bread)+1, classified_breads.get(bread))
+
+    return filtered_result, detected_breads
