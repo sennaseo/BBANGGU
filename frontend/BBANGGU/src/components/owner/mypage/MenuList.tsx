@@ -87,7 +87,7 @@ export function MenuList() {
         className="w-full flex items-center justify-between p-4 rounded-2xl border border-[#D9D9D9] bg-[#F2F2F2]"
       >
         <span className="text-gray-900 font-medium">
-          {isLoading ? '로딩중...' : '픽업 시간 설정'}
+          픽업 시간 설정
         </span>
         <img src={pickupTimeIcon} alt="픽업 시간" className="w-5 h-5" />
       </button>
@@ -98,7 +98,7 @@ export function MenuList() {
         className="w-full flex items-center justify-between p-4 rounded-2xl border border-[#D9D9D9] bg-[#F2F2F2]"
       >
         <span className="text-gray-900 font-medium">
-          {isLoading ? '로딩중...' : '거래 및 정산'}
+          거래 및 정산
         </span>
         <img src={settlementIcon} alt="거래 및 정산" className="w-6 h-6" />
       </button>

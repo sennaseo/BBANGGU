@@ -82,8 +82,8 @@ public class SecurityConfig {
 			"http://127.0.0.1:5173",
 			"http://localhost:3000",
 			"https://i12d102.p.ssafy.io",
-			"http://i12d102.p.ssafy.io"
-			
+			"http://i12d102.p.ssafy.io",
+			"https://localhost:5173"  // HTTPS도 추가
 		));
 		configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
 		configuration.setAllowedHeaders(Arrays.asList("*"));
