@@ -1,4 +1,4 @@
-import axiosInstance from '../axios';
+import axiosInstance from '../axios_2';
 
 interface PackageResponse {
   message: string;

@@ -1,4 +1,4 @@
-import instance from '../axios';
+import instance from '../axios_2';
 
 interface PickupTime {
   startTime: string;

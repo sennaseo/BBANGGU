@@ -1,5 +1,5 @@
 import axios from 'axios';
-import instance from '../../axios';
+import instance from '../../axios_2';
 
 interface LoginRequest {
   email: string;

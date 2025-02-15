@@ -1,4 +1,4 @@
-import instance from '../axios';
+import instance from '../axios_2';
 import { ApiResponse } from '../../types/api';
 
 interface BakeryInfo {
