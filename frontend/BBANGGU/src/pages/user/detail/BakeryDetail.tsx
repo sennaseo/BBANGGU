@@ -1,3 +1,5 @@
+import { useSelector } from 'react-redux'
+import { RootState } from '../../../store'
 import { useParams } from "react-router-dom"
 import BakeryHeader from "../../../components/user/bakerydetail/BakeryHeader"
 import BakeryInfo from "../../../components/user/bakerydetail/BakeryInfo"
@@ -13,6 +15,8 @@ import { toggleFavoriteForUser } from "../../../services/user/usermainService"
 
 export default function BakeryDetail() {
   const { bakeryId } = useParams<{ bakeryId: string }>()
+  const userInfo = useSelector((state: RootState) => state.user.userInfo)
+  console.log("bakeryId:", bakeryId, "userInfo:", userInfo)
   const [bakery, setBakery] = useState<ExtendedBakeryType | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
