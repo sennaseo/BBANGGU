@@ -5,6 +5,7 @@ spring:
   jackson:
     serialization:
       indent-output: true
+    time-zone: Asia/Seoul
   config:
     import: optional:file:.env[.properties]
   application:

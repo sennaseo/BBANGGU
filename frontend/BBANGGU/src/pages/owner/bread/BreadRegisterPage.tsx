@@ -183,6 +183,11 @@ interface FormError extends Error {
   };
 }
 
+// 이미 등록된 빵의 카테고리 ID 목록을 추출하는 함수
+const getUsedCategoryIds = (breads: BreadInfo[]) => {
+  return new Set(breads.map(bread => bread.breadCategoryId));
+};
+
 export default function BreadRegisterPage() {
   const navigate = useNavigate();
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
@@ -392,6 +397,19 @@ export default function BreadRegisterPage() {
     }
   };
 
+  // 카테고리 선택 핸들러 수정
+  const handleCategorySelect = (categoryId: number) => {
+    const usedCategories = getUsedCategoryIds(existingBreads);
+    
+    // 이미 해당 카테고리의 빵이 등록되어 있다면 알림
+    if (usedCategories.has(categoryId)) {
+      alert('이미 해당 카테고리의 빵이 등록되어 있습니다.');
+      return;
+    }
+    
+    setSelectedCategory(categoryId);
+  };
+
   return (
     <div className="min-h-screen bg-white">
       <div className="fixed top-0 left-0 right-0 bg-white border-b z-10">
@@ -424,7 +442,11 @@ export default function BreadRegisterPage() {
             </p>
             <p className="flex items-start gap-2">
               <span className="text-[#FC973B] font-medium">3.</span>
-              <span>등록된 빵은 AI 카메라로 재고 확인 시 자동으로 인식됩니다</span>
+              <span>등록된 빵은 AI 카메라에서 자동으로 인식됩니다</span>
+            </p>
+            <p className="flex items-start gap-2">
+              <span className="text-[#FC973B] font-medium">4.</span>
+              <span>빵 카테고리 1개당 1개의 상품만 등록할 수 있어요</span>
             </p>
           </div>
         </div>
@@ -436,19 +458,30 @@ export default function BreadRegisterPage() {
             카테고리
           </label>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-[240px] overflow-y-auto rounded-lg border border-gray-200 p-2">
-            {BREAD_CATEGORIES.map((category) => (
-              <button
-                key={category.id}
-                onClick={() => setSelectedCategory(category.id)}
-                className={`p-3 rounded-lg text-sm transition-all active:scale-[0.98]
-                  ${selectedCategory === category.id
-                    ? 'bg-[#FC973B] text-white font-medium'
-                    : 'bg-gray-50 text-gray-700 active:bg-[#FFF5EC] active:text-[#FC973B]'
-                  }`}
-              >
-                {category.name}
-              </button>
-            ))}
+            {BREAD_CATEGORIES.map((category) => {
+              const isUsed = getUsedCategoryIds(existingBreads).has(category.id);
+              
+              return (
+                <button
+                  key={category.id}
+                  onClick={() => handleCategorySelect(category.id)}
+                  disabled={isUsed}
+                  className={`h-[72px] p-4 rounded-lg transition-colors text-center
+                    ${selectedCategory === category.id 
+                      ? 'bg-[#FC973B] text-white font-medium border-2 border-[#FC973B]' 
+                      : isUsed 
+                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200'
+                        : 'bg-white hover:border-[#FC973B] hover:text-[#FC973B] border border-gray-200'
+                    }
+                  `}
+                >
+                  <span className="block text-sm">
+                    {category.name}
+                    {isUsed && <span className="block text-xs mt-1">(등록됨)</span>}
+                  </span>
+                </button>
+              );
+            })}
           </div>
 
           {/* 선택된 카테고리 표시 */}
@@ -609,7 +642,7 @@ export default function BreadRegisterPage() {
                           className="w-full h-full object-cover rounded"
                           onError={(e) => {
                             const target = e.target as HTMLImageElement;
-                            target.src = '🥖'; // 이미지 로드 실패시 이모지로 대체
+                            target.src = '🥖'; // 다시 이모지로 변경
                           }}
                           data-bread-id={bread.breadId}
                         />
