@@ -1,5 +1,6 @@
 package com.ssafy.bbanggu.bakery;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -123,7 +124,7 @@ public class BakeryController {
 		@RequestBody BakeryDto updates,
 		@RequestPart(name = "bakeryImage", required = false) MultipartFile bakeryImage, // ✅ 이미지 파일 받기
 		@RequestPart(name = "bakeryBackgroundImage", required = false) MultipartFile bakeryBackgroundImage // ✅ 배경 이미지 파일 받기
-	) {
+	) throws IOException {
 		BakeryDto updatedBakery = bakeryService.update(userDetails, bakery_id, updates, bakeryImage, bakeryBackgroundImage);
 		return ResponseEntity.ok().body(new ApiResponse("가게 정보가 성공적으로 수정되었습니다.", updatedBakery));
 	}
