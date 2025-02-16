@@ -25,6 +25,14 @@ interface PickupTimeAllResponse {
   monday: PickupTime | null;
 }
 
+interface PickupTimeResponse {
+  message: string;
+  data: {
+    startTime: string;
+    endTime: string;
+  } | null;
+}
+
 // 픽업 시간 등록
 export const createPickupTime = async (bakeryId: number, data: PickupTimeRequest): Promise<void> => {
   try {
@@ -37,11 +45,14 @@ export const createPickupTime = async (bakeryId: number, data: PickupTimeRequest
 };
 
 // 픽업 시간 조회 (오늘)
-export const getPickupTime = async (bakeryId: number): Promise<PickupTime | null> => {
+export const getPickupTime = async (bakeryId: number): Promise<PickupTimeResponse> => {
   try {
-    const response = await instance.get(`/bakery/${bakeryId}/pickup`);
-    return response.data.data;
-  } catch (error) {
+    const response = await instance.get<PickupTimeResponse>(`/bakery/${bakeryId}/pickup`);
+    return response.data;
+  } catch (error: any) {
+    if (error.response?.status === 401) {
+      throw new Error('인증이 필요합니다.');
+    }
     console.error('Error fetching pickup time:', error);
     throw error;
   }
@@ -52,7 +63,10 @@ export const updatePickupTime = async (bakeryId: number, data: PickupTimeRequest
   try {
     const response = await instance.put(`/bakery/${bakeryId}/pickup`, data);
     return response.data.data;
-  } catch (error) {
+  } catch (error: any) {
+    if (error.response?.status === 401) {
+      throw new Error('인증이 필요합니다.');
+    }
     console.error('Error updating pickup time:', error);
     throw error;
   }
