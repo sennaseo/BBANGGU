@@ -31,6 +31,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -184,10 +185,11 @@ public class UserController {
     @PatchMapping("/update")
     public ResponseEntity<ApiResponse> updateUser(
 		@AuthenticationPrincipal CustomUserDetails userDetails,
-		@RequestBody UpdateUserRequest updates) {
+		@RequestPart("user") UpdateUserRequest updates,
+		@RequestPart(value = "profileImage", required = false) MultipartFile file
+	) {
 		// ✅ 변경할 필드만 업데이트
-		userService.update(userDetails, updates);
-
+		userService.update(userDetails, updates, file);
 		return ResponseEntity.ok(new ApiResponse("회원 정보가 성공적으로 수정되었습니다.", null));
     }
 
