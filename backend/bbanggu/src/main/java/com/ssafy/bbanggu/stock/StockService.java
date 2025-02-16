@@ -137,6 +137,7 @@ public class StockService {
 			.stockId(stock.getStockId())
 			.bakeryId(stock.getBakery().getBakeryId())
 			.breadId(stock.getBread().getBreadId())
+			.breadName(stock.getBread().getName())
 			.quantity(stock.getQuantity())
 			.date(stock.getDate())
 			.build();
