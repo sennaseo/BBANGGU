@@ -12,11 +12,11 @@ from selenium.webdriver.common.by import By
 from tqdm import tqdm
 
 # 🔹 크롤링할 검색어 및 저장 폴더 지정
-SEARCH_QUERY = "휘낭시에"  # 원하는 검색어로 변경 가능
+SEARCH_QUERY = "크로와상"  # 원하는 검색어로 변경 가능
 SAVE_FOLDER = f"images/{SEARCH_QUERY.replace(' ', '_')}"
 
 # 🔹 다운로드할 이미지 개수
-NUM_IMAGES = 100  # 원하는 개수 지정
+NUM_IMAGES = 200  # 원하는 개수 지정
 
 # 🔹 Chrome WebDriver 설정
 CHROME_DRIVER_PATH = "chromedriver.exe"  # 크롬 드라이버 경로 지정 (운영체제에 맞게 변경)

@@ -6,16 +6,10 @@ import { MapView } from "../../../components/user/map/MapView"
 import { StoreCard } from "../../../components/user/map/StoreCard"
 import UserBottomNavigation from "../../../components/user/navigations/bottomnavigation/UserBottomNavigation"
 import { UserAddressApi } from "../../../api/user/map/UserAddressApi"
-
-interface StoreInfo {
-  id: string
-  name: string
-  rating: number
-  distance: string
-  operatingHours: string
-  price: number
-  originalPrice: number
-}
+import { useDispatch, useSelector } from 'react-redux';
+import { AppDispatch, RootState } from '../../../store';
+import { fetchBakeryList, BakeryInfo } from '../../../store/slices/bakerySlice';
+import { setUserInfo } from '../../../store/slices/userSlice';
 
 interface PostcodeData {
   roadAddress: string;
@@ -33,13 +27,19 @@ declare global {
 }
 
 export function MapPage() {
-  const [selectedStore, setSelectedStore] = useState<StoreInfo | null>(null)
+  const [selectedStore, setSelectedStore] = useState<BakeryInfo | null>(null)
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false)
   const [isPostcodeLoaded, setIsPostcodeLoaded] = useState(false)
   const [address, setAddress] = useState("")
   const [addressDetail, setAddressDetail] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const dispatch = useDispatch<AppDispatch>();
+  const { bakeryList, loading, error: bakeryError } = useSelector((state: RootState) => state.bakery);
+  const { userInfo, isAuthenticated } = useSelector((state: RootState) => state.user);
+  const [userAddress, setUserAddress] = useState<string>("위치를 설정해주세요");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filteredBakeries, setFilteredBakeries] = useState<BakeryInfo[]>([]);
 
   // Daum Postcode 스크립트 로드
   useEffect(() => {
@@ -53,6 +53,42 @@ export function MapPage() {
       document.body.removeChild(script)
     }
   }, [])
+
+  useEffect(() => {
+    // 가게 정보 로드
+    dispatch(fetchBakeryList());
+  }, [dispatch]);
+
+  // bakeryList가 변경될 때마다 콘솔에 출력
+  useEffect(() => {
+    console.log('현재 저장된 가게 정보:', bakeryList);
+  }, [bakeryList]);
+
+  useEffect(() => {
+    // 로그인 상태 확인
+    console.log('현재 로그인한 사용자:', userInfo);
+    console.log('로그인 상태:', isAuthenticated);
+  }, [userInfo, isAuthenticated]);
+
+  // 컴포넌트 마운트 시 사용자 주소 설정
+  useEffect(() => {
+    if (userInfo?.addressRoad) {
+      setUserAddress(userInfo.addressRoad);
+    }
+  }, [userInfo]);
+
+  // 검색어가 변경될 때마다 필터링
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      setFilteredBakeries(bakeryList);
+      return;
+    }
+
+    const filtered = bakeryList.filter(bakery => 
+      bakery.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+    setFilteredBakeries(filtered);
+  }, [searchQuery, bakeryList]);
 
   // 주소 검색 팝업
   const openAddressSearch = () => {
@@ -83,6 +119,18 @@ export function MapPage() {
 
   // 주소 등록 처리
   const handleAddressSubmit = async () => {
+    console.log('로그인 상태 체크:', {
+      isAuthenticated,
+      userInfo,
+      accessToken: localStorage.getItem('accessToken')
+    });
+
+    if (!isAuthenticated || !localStorage.getItem('accessToken')) {
+      // 로그인 페이지로 리다이렉트
+      window.location.href = '/login';
+      return;
+    }
+
     if (!address || !addressDetail) {
       setError('주소를 모두 입력해주세요.');
       return;
@@ -92,22 +140,41 @@ export function MapPage() {
     setError(null);
 
     try {
-      await UserAddressApi.updateAddress({
+      const response = await UserAddressApi.updateAddress({
         addressRoad: address,
         addressDetail: addressDetail
       });
+      
+      console.log('주소 업데이트 성공:', response);
+      
+      // 사용자 정보 업데이트
+      if (userInfo) {
+        dispatch(setUserInfo({
+          ...userInfo,
+          addressRoad: address,
+          addressDetail: addressDetail
+        }));
+      }
+
+      // 주소 업데이트 후 가게 목록 다시 불러오기
+      console.log('가게 목록 새로고침 시작');
+      await dispatch(fetchBakeryList()).unwrap();
+      console.log('가게 목록 새로고침 완료');
 
       setIsAddressModalOpen(false);
-      // 성공 시 상단 주소 표시 업데이트
-      // TODO: 상단 주소 텍스트를 state로 관리하여 업데이트
     } catch (err: any) {
-      setError(err.message);
+      console.error('주소 업데이트 실패:', err);
+      if (err.message.includes('로그인이 필요합니다')) {
+        window.location.href = '/login';
+      } else {
+        setError(err.message);
+      }
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleMarkerClick = (storeInfo: StoreInfo) => {
+  const handleMarkerClick = (storeInfo: BakeryInfo) => {
     setSelectedStore(storeInfo)
   }
 
@@ -123,7 +190,7 @@ export function MapPage() {
             <svg viewBox="0 0 24 24" className="w-5 h-5 mr-2" fill="currentColor">
               <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
             </svg>
-            <span>위치를 설정해주세요</span>
+            <span>{userAddress}</span>
           </button>
           <div className="flex items-center gap-4">
             <button>
@@ -138,6 +205,8 @@ export function MapPage() {
           <div className="relative">
             <input
               type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="가게 이름을 입력해주세요"
               className="w-full py-2 pl-10 pr-4 rounded-full border border-gray-200"
             />
@@ -209,7 +278,17 @@ export function MapPage() {
       {/* Map Container */}
       <main className="flex-1 mt-[116px] relative w-full h-full">
         <div className="absolute inset-0">
-          <MapView onMarkerClick={handleMarkerClick} />
+          {loading ? (
+            <div>로딩 중...</div>
+          ) : bakeryError ? (
+            <div>에러: {bakeryError}</div>
+          ) : (
+            <MapView 
+              bakeries={filteredBakeries} 
+              onMarkerClick={handleMarkerClick}
+              userAddress={userInfo?.addressRoad}
+            />
+          )}
         </div>
       </main>
 

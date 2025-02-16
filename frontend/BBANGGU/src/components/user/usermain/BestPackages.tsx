@@ -1,17 +1,16 @@
 import { HeartIcon as HeartOutline, ChevronRightIcon } from "@heroicons/react/24/outline"
 import { HeartIcon as HeartSolid } from "@heroicons/react/24/solid"
-import { useRef, useMemo } from "react"
+import { useRef } from "react"
 import DraggableScroller from "./DraggableScroller"
-import type { PackageType, BakeryType } from "../../../types/bakery"
 import { useNavigate } from "react-router-dom"
+import type { ExtendedBakeryType } from "../../../types/bakery"
 
 interface BestPackagesProps {
-  packages: PackageType[]
-  bakeries: BakeryType[]
-  onToggleLike: (bakery_id: number) => void
+  favoritebakery: ExtendedBakeryType[]
+  onToggleLike: (bakeryId: number) => void
 }
 
-export default function BestPackages({ packages, bakeries, onToggleLike }: BestPackagesProps) {
+export default function BestPackages({ favoritebakery, onToggleLike }: BestPackagesProps) {
   const scrollRef = useRef<HTMLDivElement>(null)
   const navigate = useNavigate()
 
@@ -26,12 +25,9 @@ export default function BestPackages({ packages, bakeries, onToggleLike }: BestP
     }
   }
 
-  const handlePackageClick = (bakery_id: number) => {
-    navigate(`/user/bakery/${bakery_id}`)
+  const handlePackageClick = (bakeryId: number) => {
+    navigate(`/user/bakery/${bakeryId}`)
   }
-
-  // Sort packages by price (descending order) and memoize the result
-  const sortedPackages = useMemo(() => [...packages].sort((a, b) => b.price - a.price), [packages])
 
   return (
     <section className="mb-8 relative">
@@ -42,38 +38,36 @@ export default function BestPackages({ packages, bakeries, onToggleLike }: BestP
         </button>
       </div>
       <DraggableScroller ref={scrollRef} className="flex gap-4 overflow-x-scroll scrollbar-hide -mx-5 px-5">
-        {sortedPackages.map((pkg) => {
-          const bakery = bakeries.find((b) => b.bakery_id === pkg.packageId)
-          if (!bakery) return null
-
+        {favoritebakery.map((item) => {
+          // bakery 정보가 있을 경우에만 접근하도록 옵셔널 체이닝 사용
           return (
             <div
-              key={`package-${pkg.packageId}`}
+              key={`package-${item.bakeryId ?? 'no-id'}`}
               className="flex-none w-[130px] text-center cursor-pointer"
-              onClick={() => handlePackageClick(pkg.packageId)}
+              onClick={() => item && handlePackageClick(item.bakeryId)}
             >
               <div className="relative aspect-square mb-2">
                 <img
-                  src={bakery.photo_url || "/placeholder.svg"}
-                  alt={bakery.name}
+                  src={item.bakeryImageUrl || "/placeholder.svg"}
+                  alt={item.name || "빵집 이미지"}
                   className="w-full h-full object-cover rounded-[12px]"
                 />
                 <button
                   className="absolute right-2 bottom-2 p-1.5 rounded-full bg-white/80 backdrop-blur-sm hover:bg-white transition-colors"
                   onClick={(e) => {
-                    e.stopPropagation()
-                    onToggleLike(pkg.packageId)
+                    e.stopPropagation();
+                    onToggleLike(item.bakeryId);
                   }}
-                >
-                  {bakery.is_liked ? (
+                > 
+                  {item.is_liked ? (
                     <HeartSolid className="w-5 h-5 text-[#fc973b]" />
                   ) : (
                     <HeartOutline className="w-5 h-5 text-[#B4B4B4]" />
                   )}
                 </button>
               </div>
-              <h3 className="font-medium text-[16px] text-[#454545] font-semibold mb-1 line-clamp-1">{pkg.name}</h3>
-              <p className="text-[12px] text-[#B4B4B4] line-clamp-1">{bakery.name}</p>
+              <h3 className="font-medium text-[16px] text-[#454545] font-semibold mb-1 line-clamp-1">{item.package.data[0].name}</h3>
+              <p className="text-[12px] text-[#B4B4B4] line-clamp-1">{item.name || "알 수 없음"}</p>
             </div>
           )
         })}

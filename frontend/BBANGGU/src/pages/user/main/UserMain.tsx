@@ -1,36 +1,85 @@
-import { useUsermain } from "../../../hooks/user/useUsermain"
+import { useState, useEffect, useCallback } from "react"
+import { fetchBestFavoriteStores, getUserMainData, searchBakery } from "../../../services/user/usermainService"
 import SearchBar from "../../../components/user/usermain/SearchBar"
 import Header from "../../../components/user/usermain/Header"
 import BestPackages from "../../../components/user/usermain/BestPackages"
 import RecommendedStores from "../../../components/user/usermain/RecommendedStores"
 import ErrorBoundary from "../../../components/ErrorBoundary"
 import { useNavigate } from "react-router-dom"
-import { mockBakeries } from "../../../mocks/user/bakeryMockData"
 import UserBottomNavigation from "../../../components/user/navigations/bottomnavigation/UserBottomNavigation"
+import type { BakerySearchItem, ExtendedBakeryType } from "../../../types/bakery"
+import { toggleFavoriteForUser } from "../../../services/user/usermainService"
+import { bakeryDetailApi } from "../../../api/user/detail/bakeryDetailApi"
 import { useSelector } from 'react-redux'
 import { RootState } from '../../../store'
 
 export default function UserMain() {
-  const {
-    searchQuery,
-    setSearchQuery,
-    bestPackages,
-    recommendedStores,
-    loading,
-    error,
-    toggleLike,
-  } = useUsermain()
+  const [allBakeriesData, setAllBakeriesData] = useState<ExtendedBakeryType[]>([])
+  const [favoritebakery, setFavoritebakery] = useState<ExtendedBakeryType[]>([])
+  const [searchQuery, setSearchQuery] = useState<string>("")
+  const [searchResults, setSearchResults] = useState<BakerySearchItem[]>([])
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<Error | null>(null)
 
   // 리덕스에서 사용자 정보 가져오기
   const userInfo = useSelector((state: RootState) => state.user.userInfo)
-
   const navigate = useNavigate()
 
-  const handleStoreClick = (bakery_id: number) => {
-    navigate(`/user/bakery/${bakery_id}`)
+  // API 데이터를 불러와서 캐시된 데이터가 있다면 재요청 없이 사용합니다.
+  const loadData = useCallback(async () => {
+    setIsLoading(true)
+    try {
+      // fetchBestFavoriteStores는 좋아요가 많은 빵집 데이터 기반의 베스트 패키지를 생성하고,
+      // getUserMainData는 전체 베이커리 데이터를 기반으로 추천 빵집(updatedStores)을 생성합니다.
+      const [favoriteBakeryResult, allBakeryResult] = await Promise.all([
+        fetchBestFavoriteStores(),
+        getUserMainData()
+      ])
+      setFavoritebakery(favoriteBakeryResult.favoritebakery)
+      setAllBakeriesData(allBakeryResult.allbakery)
+      setSearchResults([])
+    } catch (err) {
+      setError(err as Error)
+    } finally {
+      setIsLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    loadData()
+  }, [loadData])
+
+// 좋아요 토글 함수 (관심가게 삭제 기능 포함)
+const handleToggleFavorite = async (bakeryId: number) => {
+  if (Number.isNaN(bakeryId)) {
+    console.error("잘못된 bakeryId:", bakeryId);
+    return;
+  }
+  try {
+    const targetStore = await bakeryDetailApi.getBakeryById(bakeryId)
+    await toggleFavoriteForUser(bakeryId, targetStore.is_liked);
+  } catch (error) {
+    console.error(`가게(${bakeryId}) 좋아요 토글 실패:`, error);
+    throw error;
+  }
+}
+
+
+  const handleStoreClick = (bakeryId: number) => {
+    navigate(`/user/bakery/${bakeryId}`)
   }
 
-  if (loading) {
+  // 검색 실행 함수: 입력받은 검색어로 API 요청 후 결과를 상태에 업데이트합니다.
+  const handleSearch = async (keyword: string) => {
+    try {
+      const results = await searchBakery(keyword)
+      setSearchResults(results)
+    } catch (error) {
+      console.error("검색 실패:", error)
+    }
+  }
+
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center h-screen">
         <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-[#fc973b]"></div>
@@ -81,7 +130,7 @@ export default function UserMain() {
                 </p>
               </div>
               <div className="relative z-10">
-                <SearchBar value={searchQuery} onChange={setSearchQuery} />
+                <SearchBar value={searchQuery} onChange={setSearchQuery} onSearch={handleSearch} />
                 {/* Bread icon */}
                 <div className="absolute right-[1vh] top-[-130px] z-0">
                   <img
@@ -94,10 +143,19 @@ export default function UserMain() {
             </div>
           </section>
 
-          <BestPackages packages={bestPackages} bakeries={mockBakeries} onToggleLike={toggleLike} />
-          <RecommendedStores stores={recommendedStores} onToggleLike={toggleLike} onStoreClick={handleStoreClick} />
+          <BestPackages favoritebakery={favoritebakery} onToggleLike={handleToggleFavorite} />
+          <RecommendedStores allbakery={allBakeriesData} onStoreClick={handleStoreClick} onToggleLike={handleToggleFavorite} />
         </main>
         <UserBottomNavigation />
+        {searchResults.length > 0 && (
+          <div className="p-4">
+            <ul>
+              {searchResults.map((result) => (
+                <li key={result.bakeryId}>{result.name}</li>
+              ))}
+            </ul>
+          </div>
+        )}
       </ErrorBoundary>
     </div>
   )

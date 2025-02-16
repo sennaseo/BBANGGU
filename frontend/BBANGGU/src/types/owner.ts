@@ -14,3 +14,12 @@ export interface BreadPackage {
   quantity: number;
   name: string;
 }
+
+export interface ProfileSectionProps {
+  userInfo: {
+    name: string;
+    profilePhotoUrl: string | null;
+    email?: string;
+    phone?: string;
+  };
+}

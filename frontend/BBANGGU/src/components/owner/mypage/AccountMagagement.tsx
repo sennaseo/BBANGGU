@@ -1,11 +1,15 @@
 import { Link } from 'react-router-dom';
 
-export function AccountManagement() {
+interface AccountManagementProps {
+  onLogout: () => void;
+}
+
+export function AccountManagement({ onLogout }: AccountManagementProps) {
   return (
     <div className="mt-8 px-6">
       <div className="flex items-center justify-center">
         <button 
-          onClick={() => {/* 로그아웃 처리 */}}
+          onClick={onLogout}
           className="text-gray-500 text-sm px-4"
         >
           로그아웃
@@ -20,4 +24,4 @@ export function AccountManagement() {
       </div>
     </div>
   );
-}
+} 

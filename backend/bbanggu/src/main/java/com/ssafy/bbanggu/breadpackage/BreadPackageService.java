@@ -166,14 +166,23 @@ public class BreadPackageService {
 
 		BreadPackage breadPackage = breadPackageRepository.findByBakeryIdAndToday(bakeryId);
 		if (breadPackage == null) {
-			throw new CustomException(ErrorCode.BREAD_PACKAGE_NOT_FOUND);
+			log.info("빵집 ID: {}의 오늘 빵꾸러미가 없습니다", bakeryId);
+			// 빈 빵꾸러미 리턴
+			return new TodayBreadPackageDto(
+				null,    // packageId (Long)
+				bakeryId,// bakeryId (Long)
+				"",      // name (String)
+				0,       // price (Integer)
+				0,       // initialQuantity (Integer)
+				0,       // quantity (Integer)
+				0        // savedMoney (Integer)
+			);
 		}
-		log.info("✅ {}번 빵집에 오늘의 빵꾸러미가 등록되어 있습니다.", bakeryId);
-
-		// 현재 가게의 픽업 완료된 예약들의 빵꾸러미 개수 총합
+		
 		int nowQuantity = reservationRepository.getTotalPickedUpQuantityTodayByBakeryId(bakeryId);
-		log.info("✅ 현재까지 {}번 빵집의 픽업 완료된 빵꾸러미 개수: {}", bakeryId, nowQuantity);
 		int savedMoney = breadPackage.getPrice() * nowQuantity;
+		log.info("빵집 ID: {}, 픽업 완료 수량: {}, 절약 금액: {}", bakeryId, nowQuantity, savedMoney);
+		
 		return TodayBreadPackageDto.from(breadPackage, savedMoney);
 	}
 }

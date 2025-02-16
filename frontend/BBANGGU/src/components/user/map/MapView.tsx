@@ -1,98 +1,103 @@
 import { Map, MapMarker } from "react-kakao-maps-sdk"
-import { useEffect, useState } from 'react';
-import { MapApi } from "../../../api/user/map/MapApi";
+import { BakeryInfo } from "../../../store/slices/bakerySlice";
+import { useEffect, useState } from "react";
 
 interface MapViewProps {
-  onMarkerClick: (storeInfo: StoreInfo) => void
+  bakeries: BakeryInfo[];
+  onMarkerClick: (storeInfo: BakeryInfo) => void;
+  userAddress?: string | null;  // 사용자 주소 prop 추가
 }
 
-interface StoreInfo {
-  id: string
-  name: string
-  rating: number
-  distance: string
-  operatingHours: string
-  price: number
-  originalPrice: number
-  location: { lat: number; lng: number }
+interface Coordinates {
+  lat: number;
+  lng: number;
 }
 
-interface BakeryLocation {
-  bakeryId: number
-  name: string
-  latitude: number
-  longitude: number
-}
-
-export function MapView({ onMarkerClick }: MapViewProps) {
-  const [bakeries, setBakeries] = useState<BakeryLocation[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  
-  // 서울 시청 좌표 (기본 중심점)
-  const seoulCity = { lat: 37.5666805, lng: 126.9784147 }
+export function MapView({ bakeries = [], onMarkerClick, userAddress }: MapViewProps) {
+  const gumiCity: Coordinates = { lat: 36.1193778, lng: 128.3445913 };
+  const [center, setCenter] = useState<Coordinates>(gumiCity);
+  const [userLocation, setUserLocation] = useState<Coordinates | null>(null);
 
   useEffect(() => {
-    // 이미지 로드 확인을 위한 로그
-    console.log('마커 이미지 경로:', '/marker.png');
-    
-    const fetchBakeries = async () => {
-      try {
-        const data = await MapApi.getAllBakeries();
-        console.log('받아온 베이커리 데이터:', data);
-        setBakeries(data);
-      } catch (error) {
-        console.error('베이커리 데이터 로딩 실패:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+    if (userAddress) {
+      const geocoder = new kakao.maps.services.Geocoder();
+      
+      geocoder.addressSearch(userAddress, (result: any[], status: string) => {
+        if (status === kakao.maps.services.Status.OK && result[0]) {
+          const lat = Number(result[0].y);
+          const lng = Number(result[0].x);
+          
+          setCenter({
+            lat: lat || gumiCity.lat,
+            lng: lng || gumiCity.lng
+          });
+          
+          // 사용자 위치 설정
+          setUserLocation({
+            lat: lat || gumiCity.lat,
+            lng: lng || gumiCity.lng
+          });
+        }
+      });
+    }
+  }, [userAddress]);
 
-    fetchBakeries();
-  }, []);
-
-  const handleMarkerClick = (bakery: BakeryLocation) => {
-    // API 데이터를 StoreInfo 형식으로 변환
-    const storeInfo: StoreInfo = {
-      id: bakery.bakeryId.toString(),
-      name: bakery.name,
-      rating: 0, // API에서 제공되지 않는 정보는 기본값 설정
-      distance: "계산 필요", // 현재 위치 기반으로 계산 필요
-      operatingHours: "정보 없음", // API에서 제공되지 않는 정보
-      price: 0, // API에서 제공되지 않는 정보
-      originalPrice: 0, // API에서 제공되지 않는 정보
-      location: { lat: bakery.latitude, lng: bakery.longitude }
-    };
-    
-    onMarkerClick(storeInfo);
-  };
+  console.log('MapView에 전달된 bakeries:', bakeries);
 
   return (
     <div className="w-full h-full z-10">
       <Map 
-        center={seoulCity} 
+        center={center}
         style={{ width: "100%", height: "100%" }} 
         level={3}
       >
-        {!isLoading && bakeries.map((bakery) => (
+        {/* 사용자 위치 마커 */}
+        {userLocation && (
           <MapMarker
-            key={bakery.bakeryId}
-            position={{ lat: bakery.latitude, lng: bakery.longitude }}
-            onClick={() => handleMarkerClick(bakery)}
+            position={userLocation}
             image={{
-              src: "/marker.png",  // 이미지 경로 확인
+              src: "/user-location.png",
               size: {
-                width: 40,  // 크기 조정
-                height: 40
+                width: 80,
+                height: 80
               },
               options: {
                 offset: {
-                  x: 20,
-                  y: 20
+                  x: 40,
+                  y: 40
                 }
               }
             }}
           />
-        ))}
+        )}
+
+        {/* 베이커리 마커들 */}
+        {bakeries && bakeries.length > 0 && bakeries.map((bakery) => {
+          console.log('마커 생성:', bakery);
+          return (
+            <MapMarker
+              key={bakery.bakeryId}
+              position={{ 
+                lat: bakery.latitude || 0, 
+                lng: bakery.longitude || 0 
+              }}
+              onClick={() => onMarkerClick(bakery)}
+              image={{
+                src: "/marker.png",
+                size: {
+                  width: 40,
+                  height: 40
+                },
+                options: {
+                  offset: {
+                    x: 20,
+                    y: 20
+                  }
+                }
+              }}
+            />
+          );
+        })}
       </Map>
     </div>
   )

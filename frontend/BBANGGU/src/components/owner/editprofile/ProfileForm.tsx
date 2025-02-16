@@ -1,64 +1,94 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { IoEyeOutline, IoEyeOffOutline, IoTrashOutline } from 'react-icons/io5';
-import { usePhoneNumber } from '../../../hooks/usePhoneNumber';
+// import { usePhoneNumber } from '../../../hooks/usePhoneNumber';
 import { SubmitButton } from '../../../common/form/SubmitButton';
 import { useProfile } from '../../../common/context/ProfileContext';
 import { useNavigate } from 'react-router-dom';
+import { ProfileSectionProps } from '../../../types/owner';
+import { updateUserInfo, updatePassword } from '../../../api/user/user';
 
-export function ProfileForm() {
-  const { phoneNumber, handleChange } = usePhoneNumber();
+interface ProfileFormProps {
+  userInfo: ProfileSectionProps['userInfo'];
+}
+
+interface FormData {
+  name: string;
+  email: string;
+  phone: string;
+  profileImage: string | null;
+  currentPassword: string;
+  newPassword: string;
+}
+
+export function ProfileForm({ userInfo }: ProfileFormProps) {
+  // const { phoneNumber, handleChange } = usePhoneNumber();
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
-  const { profile, updateProfile } = useProfile();
-  const [name, setName] = useState(profile.name);
+  const { updateProfile } = useProfile();
+  const [formData, setFormData] = useState<FormData>({
+    name: '',
+    email: '',
+    phone: '',
+    profileImage: null,
+    currentPassword: '',
+    newPassword: '',
+  });
   const [nameError, setNameError] = useState('');
-  const [profileImage, setProfileImage] = useState<string | null>(profile.profileImage);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [currentPassword, setCurrentPassword] = useState('');
-  const [newPassword, setNewPassword] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    // 이름 유효성 검사
-    if (!name.trim()) {
-      setNameError('이름을 입력해주세요.');
-      return;
+  useEffect(() => {
+    if (userInfo) {
+      setFormData(prev => ({
+        ...prev,
+        name: userInfo.name || '',
+        email: userInfo.email || '',
+        phone: userInfo.phone || '',
+        profileImage: userInfo.profilePhotoUrl,
+      }));
+    }
+  }, [userInfo]);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+
+    if (name === 'name') {
+      setNameError(!value.trim() ? '이름을 입력해주세요.' : '');
     }
 
-    updateProfile({
-      name,
-      profileImage
-    });
-    navigate('/owner/mypage');
-  };
-
-  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setName(value);
-    if (!value.trim()) {
-      setNameError('이름을 입력해주세요.');
-    } else {
-      setNameError('');
+    if (name === 'newPassword') {
+      setPasswordError(validatePassword(value));
     }
   };
 
-  const handleImageClick = () => {
-    fileInputRef.current?.click();
+  const formatPhoneNumber = (value: string) => {
+    const numbers = value.replace(/[^\d]/g, '');
+    if (numbers.length <= 3) return numbers;
+    if (numbers.length <= 7) return `${numbers.slice(0, 3)}-${numbers.slice(3)}`;
+    return `${numbers.slice(0, 3)}-${numbers.slice(3, 7)}-${numbers.slice(7, 11)}`;
+  };
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formatted = formatPhoneNumber(e.target.value);
+    setFormData(prev => ({
+      ...prev,
+      phone: formatted
+    }));
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      // 파일 크기 체크 (예: 5MB)
       if (file.size > 5 * 1024 * 1024) {
         alert('파일 크기는 5MB 이하여야 합니다.');
         return;
       }
 
-      // 이미지 파일 타입 체크
       if (!file.type.startsWith('image/')) {
         alert('이미지 파일만 업로드 가능합니다.');
         return;
@@ -66,35 +96,97 @@ export function ProfileForm() {
 
       const reader = new FileReader();
       reader.onloadend = () => {
-        const imageUrl = reader.result as string;
-        setProfileImage(imageUrl);
+        setFormData(prev => ({
+          ...prev,
+          profileImage: reader.result as string
+        }));
       };
       reader.readAsDataURL(file);
     }
   };
 
   const handleDeleteImage = () => {
-    setProfileImage(null);
+    setFormData(prev => ({
+      ...prev,
+      profileImage: null
+    }));
   };
 
-  // 비밀번호 유효성 검사 함수 수정
   const validatePassword = (password: string) => {
-    if (password.length < 10) {
-      return '비밀번호는 10자리 이상이어야 합니다.';
-    }
-    if (!/[a-zA-Z]/.test(password)) {
-      return '영문을 포함해야 합니다.';
-    }
-    if (!/[!@#$%^&*]/.test(password)) {
-      return '특수문자(!@#$%^&*)를 포함해야 합니다.';
-    }
+    if (password.length < 10) return '비밀번호는 10자리 이상이어야 합니다.';
+    if (!/[a-zA-Z]/.test(password)) return '영문을 포함해야 합니다.';
+    if (!/[!@#$%^&*]/.test(password)) return '특수문자(!@#$%^&*)를 포함해야 합니다.';
     return '';
   };
 
-  const handleNewPasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newValue = e.target.value;
-    setNewPassword(newValue);
-    setPasswordError(validatePassword(newValue));
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formData.name.trim()) {
+      setNameError('이름을 입력해주세요.');
+      return;
+    }
+
+    // 비밀번호 변경 시 유효성 검사 추가
+    if (formData.newPassword || formData.currentPassword) {
+      // 둘 중 하나만 입력된 경우 체크
+      if (!formData.currentPassword) {
+        alert('현재 비밀번호를 입력해주세요.');
+        return;
+      }
+      if (!formData.newPassword) {
+        alert('새 비밀번호를 입력해주세요.');
+        return;
+      }
+
+      // 새 비밀번호 유효성 검사
+      const passwordValidation = validatePassword(formData.newPassword);
+      if (passwordValidation) {
+        setPasswordError(passwordValidation);
+        return;
+      }
+    }
+
+    try {
+      // 기본 사용자 정보 업데이트
+      const updateData = {
+        name: formData.name,
+        phone: formData.phone,
+      };
+
+      await updateUserInfo(updateData);
+
+      // 비밀번호 변경이 요청된 경우
+      if (formData.newPassword && formData.currentPassword) {
+        try {
+          await updatePassword({
+            originPassword: formData.currentPassword,
+            newPassword: formData.newPassword
+          });
+        } catch (error) {
+          if (error instanceof Error) {
+            alert(error.message);
+            return;
+          }
+          throw error;
+        }
+      }
+
+      // Context 업데이트
+      updateProfile({
+        name: formData.name,
+        profileImage: formData.profileImage
+      });
+
+      // 성공 시 마이페이지로 이동
+      navigate('/owner/mypage');
+    } catch (error) {
+      console.error('회원정보 수정 실패:', error);
+      if (error instanceof Error) {
+        alert(error.message);
+      } else {
+        alert('회원정보 수정에 실패했습니다.');
+      }
+    }
   };
 
   const inputClassName = "w-full px-4 py-3 rounded-[8px] border border-[#EFEFEF] placeholder-[#8E8E8E] focus:outline-none focus:border-[#FF9B50]";
@@ -109,16 +201,13 @@ export function ProfileForm() {
         </label>
         <input
           type="text"
-          value={name}
-          onChange={handleNameChange}
+          name="name"
+          value={formData.name}
+          onChange={handleInputChange}
           placeholder="ex) 서유민"
-          className={`${inputClassName} ${
-            nameError ? 'border-red-500 focus:border-red-500' : ''
-          }`}
+          className={`${inputClassName} ${nameError ? 'border-red-500' : ''}`}
         />
-        {nameError && (
-          <p className="text-sm text-red-500 mt-1">{nameError}</p>
-        )}
+        {nameError && <p className="text-sm text-red-500 mt-1">{nameError}</p>}
       </div>
 
       {/* 이메일 입력 */}
@@ -126,8 +215,12 @@ export function ProfileForm() {
         <label className="block text-sm">Email</label>
         <input
           type="email"
+          name="email"
+          value={formData.email}
+          onChange={handleInputChange}
           placeholder="ex) example@example.com"
-          className={inputClassName}
+          className={`${inputClassName} bg-gray-100 cursor-not-allowed`}
+          disabled
         />
       </div>
 
@@ -136,8 +229,9 @@ export function ProfileForm() {
         <label className="block text-sm">전화번호</label>
         <input
           type="tel"
-          value={phoneNumber}
-          onChange={handleChange}
+          name="phone"
+          value={formData.phone}
+          onChange={handlePhoneChange}
           placeholder="ex) 010-0000-0000"
           className={inputClassName}
           maxLength={13}
@@ -157,12 +251,12 @@ export function ProfileForm() {
         <div className="relative">
           <button 
             type="button" 
-            onClick={handleImageClick}
+            onClick={() => fileInputRef.current?.click()}
             className="w-full h-[100px] border border-[#EFEFEF] rounded-[8px] flex items-center justify-center overflow-hidden"
           >
-            {profileImage ? (
+            {formData.profileImage ? (
               <img 
-                src={profileImage} 
+                src={formData.profileImage} 
                 alt="프로필 미리보기" 
                 className="w-full h-full object-cover"
               />
@@ -172,7 +266,7 @@ export function ProfileForm() {
               </svg>
             )}
           </button>
-          {profileImage && (
+          {formData.profileImage && (
             <button
               type="button"
               onClick={handleDeleteImage}
@@ -192,8 +286,11 @@ export function ProfileForm() {
         <div className="relative">
           <input
             type={showCurrentPassword ? "text" : "password"}
-            value={currentPassword}
-            onChange={(e) => setCurrentPassword(e.target.value)}
+            value={formData.currentPassword}
+            onChange={(e) => setFormData(prev => ({
+              ...prev,
+              currentPassword: e.target.value
+            }))}
             placeholder="현재 비밀번호 입력"
             className={inputClassName}
           />
@@ -215,8 +312,14 @@ export function ProfileForm() {
           <div className="relative">
             <input
               type={showNewPassword ? "text" : "password"}
-              value={newPassword}
-              onChange={handleNewPasswordChange}
+              value={formData.newPassword}
+              onChange={(e) => {
+                setFormData(prev => ({
+                  ...prev,
+                  newPassword: e.target.value
+                }));
+                setPasswordError(validatePassword(e.target.value));
+              }}
               placeholder="새 비밀번호 입력"
               className={`${inputClassName} ${passwordError ? 'border-red-500' : ''}`}
             />
@@ -232,18 +335,20 @@ export function ProfileForm() {
               )}
             </button>
           </div>
-          {passwordError && (
+          {passwordError ? (
             <p className="text-sm text-red-500 mt-1">{passwordError}</p>
+          ) : (
+            <p className="text-xs text-[#8E8E8E] mt-1">
+              10자 이상, 영문, 특수문자(!@#$%^&*) 포함
+            </p>
           )}
-          <p className="text-xs text-[#8E8E8E] mt-1">
-            10자 이상, 영문, 특수문자(!@#$%^&*) 포함
-          </p>
         </div>
       </div>
 
       <SubmitButton
         text="수정"
         className="mt-8"
+        type="submit"
       />
     </form>
   );

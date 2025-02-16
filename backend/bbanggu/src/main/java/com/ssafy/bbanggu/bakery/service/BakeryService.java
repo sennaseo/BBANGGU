@@ -29,6 +29,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -230,15 +231,13 @@ public class BakeryService {
 	 * 가게 정산 정보 등록
 	 */
 	@Transactional
-	public BakerySettlementDto createSettlement(BakerySettlementDto settlement) {
-		User user = userRepository.findById(settlement.userId())
-			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
-
-		Bakery bakery = bakeryRepository.findByUser_UserId(user.getUserId());
+	public BakerySettlementDto createSettlement(BakerySettlementDto settlement, CustomUserDetails userDetails) {
+		User user = User.builder()
+			.userId(userDetails.getUserId())
+			.build();
 
 		Settlement bakerySet = Settlement.builder()
 			.user(user)
-			.bakery(bakery)
 			.bankName(settlement.bankName())
 			.accountHolderName(settlement.accountHolderName())
 			.accountNumber(settlement.accountNumber())
@@ -247,7 +246,6 @@ public class BakeryService {
 			.build();
 
 		Settlement savedSettlement = settlementRepository.save(bakerySet);
-		bakery.setSettlement(savedSettlement);
 		return BakerySettlementDto.from(savedSettlement);
 	}
 
@@ -364,14 +362,15 @@ public class BakeryService {
 	 * 가게 아이디로 정산 정보 조회 메서드
 	 */
 	public BakerySettlementDto getBakerySettlement(CustomUserDetails userDetails, Long bakeryId) {
-		Bakery bakery = bakeryRepository.findById(bakeryId)
-			.orElseThrow(() -> new CustomException(ErrorCode.BAKERY_NOT_FOUND));
-		if (!bakery.getUser().getUserId().equals(userDetails.getUserId())) {
-			throw new CustomException(ErrorCode.UNAUTHORIZED_USER);
-		}
-		log.info("✅ 현재 로그인한 사용자와 {}번 가게의 사장님이 일치함", bakeryId);
+		/* 아래 코드는 필요하면 활성화 */
+		// Bakery bakery = bakeryRepository.findById(bakeryId)
+		// 	.orElseThrow(() -> new CustomException(ErrorCode.BAKERY_NOT_FOUND));
+		// if (!bakery.getUser().getUserId().equals(userDetails.getUserId())) {
+		// 	throw new CustomException(ErrorCode.UNAUTHORIZED_USER);
+		// }
+		// log.info("✅ 현재 로그인한 사용자와 {}번 가게의 사장님이 일치함", bakeryId);
 
-		Settlement settlement = settlementRepository.findByBakery_BakeryId(bakeryId)
+		Settlement settlement = settlementRepository.findByUser_UserId(userDetails.getUserId())
 			.orElseThrow(() -> new CustomException(ErrorCode.SETTLEMENT_NOT_FOUND));
 		log.info("🩵 정산 정보 조회 완료 🩵");
 		return BakerySettlementDto.from(settlement);

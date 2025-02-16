@@ -2,14 +2,16 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { HomeIcon, MapIcon, HeartIcon, UserIcon } from '@heroicons/react/24/outline';
 import { HomeIcon as HomeIconSolid, MapIcon as MapIconSolid, HeartIcon as HeartIconSolid, UserIcon as UserIconSolid } from '@heroicons/react/24/solid';
 import { useSelector } from 'react-redux'
-import { RootState } from '../../../../store'
+import type { RootState } from '../../../../store'
 
 export default function UserBottomNavigation() {
   const navigate = useNavigate();
   const location = useLocation();
   const currentPath = location.pathname;
   const userInfo = useSelector((state: RootState) => state.user.userInfo)
+  const userId = userInfo?.userId || "defaultUserId";
 
+  
   const navigationItems = [
     {
       label: '홈',
@@ -23,23 +25,15 @@ export default function UserBottomNavigation() {
     },
     {
       label: '관심',
-      path: `/user/${userInfo?.userId}/favorite`,
-      icon: currentPath === `/user/${userInfo?.userId}/favorite` ? <HeartIconSolid className="w-6 h-6" /> : <HeartIcon className="w-6 h-6" />,
+      path: `/user/${userId}/favorite`,
+      icon: currentPath === `/user/${userId}/favorite` ? <HeartIconSolid className="w-6 h-6" /> : <HeartIcon className="w-6 h-6" />,
     },
     {
       label: '마이',
-      path: `/user/${userInfo?.userId}/mypage`,
-      icon: currentPath === `/user/${userInfo?.userId}/mypage` ? <UserIconSolid className="w-6 h-6" /> : <UserIcon className="w-6 h-6" />,
+      path: `/user/${userId}/mypage`,
+      icon: currentPath === `/user/${userId}/mypage` ? <UserIconSolid className="w-6 h-6" /> : <UserIcon className="w-6 h-6" />,
     },
   ];
-
-  const handleMyPageClick = () => {
-    if (userInfo?.userId) {
-      navigate(`/user/${userInfo.userId}/mypage`)
-    } else {
-      navigate('/login')
-    }
-  }
 
   return (
     <nav className="fixed bottom-0 left-1/2 -translate-x-1/2 bg-white border-t max-w-[440px] w-full">
