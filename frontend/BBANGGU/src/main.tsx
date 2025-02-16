@@ -32,10 +32,26 @@ const loadKakaoMapScript = () => {
 
 loadKakaoMapScript()
   .then(() => {
-    // 서비스 워커 등록 코드를 주석 처리
-    // if ('serviceWorker' in navigator) {
-    //   navigator.serviceWorker.register('/sw.js')
-    // }
+    // 서비스 워커 등록 코드 수정
+    if ('serviceWorker' in navigator) {
+      let deferredPrompt: any;
+      
+      window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        console.log('PWA 설치 준비됨');
+      });
+
+      navigator.serviceWorker.register('/dev-sw.js', {
+        type: process.env.NODE_ENV === 'development' ? 'module' : 'classic'
+      })
+        .then(registration => {
+          console.log('서비스 워커가 등록되었습니다:', registration);
+        })
+        .catch(error => {
+          console.log('서비스 워커 등록 실패:', error);
+        });
+    }
 
     const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
     root.render(
