@@ -1,7 +1,6 @@
 package com.ssafy.bbanggu.bread;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
@@ -46,20 +45,9 @@ public class BreadController {
 	@GetMapping("/{breadId}")
 	public ResponseEntity<?> getBread(@PathVariable("breadId") long breadId) {
 		try {
-			Bread bread = breadService.getBread(breadId);
-			if (bread != null) {
-				BreadDTO breadDto = new BreadDTO();
-				breadDto.setBreadCategoryId(bread.getBreadCategory().getBreadCategoryId());
-				breadDto.setName(bread.getName());
-				breadDto.setPrice(bread.getPrice());
-				breadDto.setBakeryId(bread.getBakery().getBakeryId());
-				String imageUrl = bread.getBreadImageUrl();
-				if (imageUrl != null && !imageUrl.isEmpty()) {
-					breadDto.setBreadImageUrl(imageUrl.replace("\\", "/"));
-				} else {
-					breadDto.setBreadImageUrl(null);
-				}
-				return ResponseEntity.ok(breadDto);
+			BreadDTO breadDTO = breadService.getBread(breadId);
+			if (breadDTO != null) {
+				return ResponseEntity.ok(breadDTO);
 			} else {
 				return ResponseEntity.status(HttpStatus.NOT_FOUND).body("빵 정보를 찾을 수 없습니다.");
 			}
@@ -72,30 +60,10 @@ public class BreadController {
 	@GetMapping("/bakery/{bakeryId}")
 	public ResponseEntity<?> getBreadsByBakeryId(@PathVariable("bakeryId") long bakeryId) {
 		try {
-			List<Bread> breadList = breadService.getBreadByBakeryId(bakeryId);
+			List<BreadDTO> breadList = breadService.getBreadByBakeryId(bakeryId);
 
 			if (breadList != null) {
-				List<BreadDTO> breadDtoList = new ArrayList<>();
-				int size = breadList.size();
-				for (Bread bread : breadList) {
-					BreadDTO breadDto = new BreadDTO();
-					long breadCategoryIdTemp = bread.getBreadCategory().getBreadCategoryId();
-					long bakeryIdTemp = bread.getBakery().getBakeryId();
-
-					breadDto.setBreadCategoryId(breadCategoryIdTemp);
-					breadDto.setBakeryId(bakeryIdTemp);
-					breadDto.setBreadId(bread.getBreadId());
-					breadDto.setName(bread.getName());
-					breadDto.setPrice(bread.getPrice());
-					String imageUrl = bread.getBreadImageUrl();
-					if (imageUrl != null && !imageUrl.isEmpty()) {
-						breadDto.setBreadImageUrl(imageUrl.replace("\\", "/"));
-					} else {
-						breadDto.setBreadImageUrl(null);
-					}
-					breadDtoList.add(breadDto);
-				}
-				return ResponseEntity.ok(breadDtoList);
+				return ResponseEntity.ok(breadList);
 			} else {
 				return ResponseEntity.status(HttpStatus.NOT_FOUND).body("빵 정보를 찾을 수 없습니다.");
 			}

@@ -18,17 +18,16 @@ function MyPage() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   
-  // Redux store에서 사용자 정보 가져오기
-  const { userInfo } = useSelector((state: RootState) => state.user);
   const { accessToken } = useSelector((state: RootState) => state.auth);
+  const { userInfo } = useSelector((state: RootState) => state.user);
 
   useEffect(() => {
-    if (!accessToken) {
-      navigate('/login');
-      return;
-    }
-
     const fetchUserInfo = async () => {
+      if (!accessToken) {
+        navigate('/login');
+        return;
+      }
+
       try {
         const data = await getUserInfo();
         dispatch(setUserInfo({

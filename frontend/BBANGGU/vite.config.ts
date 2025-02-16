@@ -12,6 +12,9 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
+      devOptions: {
+        enabled: true // 개발 환경에서도 PWA 활성화
+      },
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
       scope: '/',
       base: '/',
@@ -52,18 +55,7 @@ export default defineConfig({
         ]
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,jpg}'],
-        runtimeCaching: [
-          {
-            urlPattern: /^https:\/\/i12d102\.p\.ssafy\.io/,
-            handler: 'NetworkFirst',
-            options: {
-              cacheName: 'api-cache',
-              networkTimeoutSeconds: 5,
-            },
-          }
-        ],
-        navigateFallback: 'index.html'
+        globPatterns: ['**/*.{js,css,html,ico,png,svg}']
       }
     })
   ],

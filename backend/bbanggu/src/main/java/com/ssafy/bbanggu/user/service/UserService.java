@@ -1,5 +1,6 @@
 package com.ssafy.bbanggu.user.service;
 
+import java.io.IOException;
 import java.util.Map;
 import java.util.Optional;
 
@@ -26,6 +27,7 @@ import com.ssafy.bbanggu.user.dto.PasswordUpdateRequest;
 import com.ssafy.bbanggu.user.dto.UpdateUserRequest;
 import com.ssafy.bbanggu.user.dto.UserResponse;
 import com.ssafy.bbanggu.user.repository.UserRepository;
+import com.ssafy.bbanggu.util.image.ImageService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -41,6 +43,7 @@ public class UserService { // 사용자 관련 비즈니스 로직 처리
 	private final JwtTokenProvider jwtTokenProvider;
 	private final BakeryService bakeryService;
 	private final BakeryRepository bakeryRepository;
+	private final ImageService imageService;
 
 	/**
 	 * 회원가입 로직 처리
@@ -199,11 +202,20 @@ public class UserService { // 사용자 관련 비즈니스 로직 처리
 			);
 		}
 
+		String profileImageUrl = user.getProfileImageUrl(); // 기존 URL 유지
+		if (updates.profileImageUrl() != null && !updates.profileImageUrl().isEmpty()) {
+			try {
+				profileImageUrl = imageService.saveImage(updates.profileImageUrl()); // 새 이미지 저장
+			} catch (IOException e) {
+				throw new CustomException(ErrorCode.PROFILE_IMAGE_UPLOAD_FAILED);
+			}
+		}
+
 		// ✅ 특정 필드만 변경 가능하도록 처리
 		user.updateUserInfo(
 			updates.name(),
 			updates.phone(),
-			updates.profileImageUrl()
+			profileImageUrl
 		);
 	}
 
@@ -254,6 +266,8 @@ public class UserService { // 사용자 관련 비즈니스 로직 처리
 			bakery.getAddressDetail(),
 			bakery.getBakeryImageUrl(),
 			bakery.getBakeryBackgroundImgUrl(),
+			null,
+			null,
 			bakery.getStar(),
 			bakery.getReviewCnt()
 		);

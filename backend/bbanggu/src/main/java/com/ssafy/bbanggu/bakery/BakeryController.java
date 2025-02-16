@@ -1,5 +1,6 @@
 package com.ssafy.bbanggu.bakery;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -12,13 +13,16 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.ssafy.bbanggu.auth.security.CustomUserDetails;
 import com.ssafy.bbanggu.bakery.domain.Bakery;
@@ -113,13 +117,15 @@ public class BakeryController {
 	}
 
 	// 가게 수정
-	@PutMapping("/{bakery_id}")
+	@PatchMapping("/{bakery_id}")
 	public ResponseEntity<ApiResponse> updateBakery(
 		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@PathVariable Long bakery_id,
-		@RequestBody BakeryDto updates
-	) {
-		BakeryDto updatedBakery = bakeryService.update(userDetails, bakery_id, updates);
+		@RequestPart(name = "bakery", required = false) BakeryDto updates,
+		@RequestPart(name = "bakeryImage", required = false) MultipartFile bakeryImage, // ✅ 이미지 파일 받기
+		@RequestPart(name = "bakeryBackgroundImage", required = false) MultipartFile bakeryBackgroundImage // ✅ 배경 이미지 파일 받기
+	) throws IOException {
+		BakeryDto updatedBakery = bakeryService.update(userDetails, bakery_id, updates, bakeryImage, bakeryBackgroundImage);
 		return ResponseEntity.ok().body(new ApiResponse("가게 정보가 성공적으로 수정되었습니다.", updatedBakery));
 	}
 

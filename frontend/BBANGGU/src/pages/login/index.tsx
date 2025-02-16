@@ -51,7 +51,7 @@ export default function LoginPage() {
       const userResponse = await getUserInfo()
       console.log('사용자 정보 응답:', userResponse)
       
-      // 리덕스에 사용자 정보 저장
+      // 리덕스에 사용자 정보 저장 (이제 localStorage에도 자동으로 저장됨)
       dispatch(setUserInfo(userResponse.data))
       
       // 리덕스 스토어 전체 상태 확인
@@ -60,6 +60,8 @@ export default function LoginPage() {
         auth: state.auth,
         user: state.user
       })
+
+      setIsLoading(true)
       
       // 사용자 역할에 따른 리다이렉션
       if (loginResponse.data.user_type === 'OWNER') {
@@ -85,8 +87,8 @@ export default function LoginPage() {
     setIsLoading(true)
     try {
       const response = await getKakaoLoginUrl()
-      if (response.data) {
-        window.location.href = response.data
+      if (response.data.data) {
+        window.location.href = response.data.data
       }
     } catch (error) {
       if (error instanceof Error) {

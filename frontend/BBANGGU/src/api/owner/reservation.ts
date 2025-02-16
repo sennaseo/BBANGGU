@@ -58,25 +58,28 @@ export const getTodayReservations = async (bakeryId: number) => {
   try {
     // 오늘 날짜의 시작과 끝 시간 계산
     const today = new Date();
-    today.setHours(0, 0, 0, 0);
     const tomorrow = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + 1);
+
+    // ISO 문자열 형식을 서버가 기대하는 형식으로 변경
+    const startDate = today.toISOString().split('T')[0] + 'T00:00:00.000Z';
+    const endDate = tomorrow.toISOString().split('T')[0] + 'T00:00:00.000Z';
 
     console.log('API 요청 정보:', {
       url: `/reservation/${bakeryId}`,
       params: {
-        startDate: today.toISOString(),
-        endDate: tomorrow.toISOString()
-      },
-      headers: axiosInstance.defaults.headers
+        startDate,
+        endDate
+      }
     });
 
     const response = await axiosInstance.get<ReservationResponse>(
       `/reservation/${bakeryId}`,
       {
         params: {
-          startDate: today.toISOString(),
-          endDate: tomorrow.toISOString()
+          bakeryId,
+          startDate,
+          endDate
         }
       }
     );

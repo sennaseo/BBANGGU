@@ -1,5 +1,5 @@
 import axios from 'axios';
-import instance from '../../axios_2';
+import instance from '../../axios';
 
 interface LoginRequest {
   email: string;
@@ -30,8 +30,9 @@ export const login = async (loginData: LoginRequest): Promise<LoginResponse> => 
       }
     );
 
-    // 로그인 성공 시 토큰 저장
+    // axios 인스턴스의 기본 헤더에 토큰 설정
     if (response.data.data.access_token) {
+      instance.defaults.headers.common['Authorization'] = `Bearer ${response.data.data.access_token}`;
       localStorage.setItem('access_token', response.data.data.access_token);
       localStorage.setItem('refresh_token', response.data.data.refresh_token);
     }

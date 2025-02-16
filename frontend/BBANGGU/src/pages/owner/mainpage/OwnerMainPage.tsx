@@ -7,6 +7,12 @@ import BottomNavigation from '../../../components/owner/navigations/BottomNaviga
 import { BuildingStorefrontIcon } from '@heroicons/react/24/outline';
 import { useNavigate } from 'react-router-dom';
 import { BreadPackage, getBakeryPackages } from '../../../api/owner/package';  // 공통 인터페이스 import
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState } from '../../../store';
+import { logout } from '../../../store/slices/authSlice';
+import { setUserInfo, clearUserInfo } from '../../../store/slices/userSlice';
+import { getUserInfo } from '../../../api/user/user';
+import breadPackageIcon from '../../../assets/images/bakery/빵꾸러미.png';
 
 // 인터페이스 정의
 interface ReservationInfo {
@@ -20,59 +26,74 @@ interface ReservationInfo {
 }
 
 const OwnerMainPage: React.FC = () => {
+  const dispatch = useDispatch();
   const [activeTab, setActiveTab] = useState<'package' | 'review'>('package');
   const [packages, setPackages] = useState<BreadPackage[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [bakeryId, setBakeryId] = useState<number | null>(null);
   const [reservations, setReservations] = useState<ReservationInfo[]>([]);
-  const [isTokenReady, setIsTokenReady] = useState(false);  // 토큰 준비 상태 추가
+  
+  // auth 상태와 userInfo 상태 모두 가져오기
+  const { accessToken } = useSelector((state: RootState) => state.auth);
   const navigate = useNavigate();
 
-  const reviewData = {
-    stats: {
-      average: 5.0,
-      total: 125,
-      distribution: {
-        5: 1232,
-        4: 13,
-        3: 2,
-        2: 1,
-        1: 3
+  // 점주 권한 체크 및 유저 정보 조회
+  useEffect(() => {
+    const fetchUserInfo = async () => {
+      if (!accessToken) {
+        navigate('/login');
+        return;
       }
-    },
-    reviews: [
-      {
-        id: 1,
-        userName: "하얀",
-        rating: 5,
-        content: "매번 맛나게 먹고있습니다 정말좋습니다!!",
-        date: "47분전",
-        imageUrl: "/path/to/image.jpg"
-      },
-    ]
-  };
 
-  // TODO: 실제 bakeryId는 로그인 정보에서 가져와야 함
-  const bakeryId = 1; // 현재 토큰의 sub 값이 19입니다
+      try {
+        const data = await getUserInfo();
+        dispatch(setUserInfo({
+          name: data.name,
+          profileImageUrl: data.profileImageUrl,
+          email: data.email,
+          phone: data.phone,
+          userId: data.userId,
+          role: data.role as 'OWNER' | 'USER',
+          addressRoad: data.addressRoad,
+          addressDetail: data.addressDetail
+        }));
 
-  // 토큰 준비 상태 체크
+        // 점주가 아닌 경우 메인으로 리다이렉트
+        if (data.role !== 'OWNER') {
+          dispatch(logout());
+          dispatch(clearUserInfo());
+          navigate('/');
+          return;
+        }
+
+        setBakeryId(data.userId);
+      } catch (error) {
+        console.error('Error fetching user info:', error);
+        dispatch(logout());
+        dispatch(clearUserInfo());
+        navigate('/login');
+      }
+    };
+
+    fetchUserInfo();
+  }, [dispatch, navigate, accessToken]);
+
+  // 빵꾸러미 조회
   useEffect(() => {
-    if (import.meta.env.VITE_USER_TOKEN) {
-      setIsTokenReady(true);
-    }
-  }, []);
-
-  // 데이터 로딩
-  useEffect(() => {
-    if (!isTokenReady) return;  // 토큰이 준비되지 않았으면 리턴
-
     const fetchData = async () => {
+      if (!bakeryId) return;
+
       try {
         setIsLoading(true);
+        setError(null);
+        
         const response = await getBakeryPackages(bakeryId);
         
-        if (response.data) {
+        if (response.data && response.data.packageId !== null) {
           setPackages([response.data]);
+        } else {
+          setPackages([]); // packageId가 null인 경우 빈 배열로 설정
         }
       } catch (err) {
         console.error('데이터 로딩 실패:', err);
@@ -84,7 +105,7 @@ const OwnerMainPage: React.FC = () => {
     };
 
     fetchData();
-  }, [bakeryId, isTokenReady]);  // isTokenReady 의존성 추가
+  }, [bakeryId]);
 
   const handleTabChange = (tab: 'package' | 'review') => {
     setActiveTab(tab);
@@ -154,11 +175,38 @@ const OwnerMainPage: React.FC = () => {
         </div>
         {activeTab === 'package' ? (
           <>
-            <BreadPackageInfo 
-              currentPackage={packages[0]}
-              reservations={reservations}
-              onPackageDeleted={() => {}}
-            />
+            {packages.length > 0 ? (
+              <BreadPackageInfo 
+                currentPackage={packages[0]}
+                reservations={reservations}
+                onPackageDeleted={() => {
+                  setPackages([]);
+                }}
+              />
+            ) : (
+              // 빵꾸러미가 없을 때 보여줄 빈 상태 화면
+              <div className="bg-white rounded-[20px] border border-gray-100 p-8 mb-6 flex flex-col items-center">
+                <div className="w-16 h-16 mb-4">
+                  <img 
+                    src={breadPackageIcon} 
+                    alt="빵꾸러미" 
+                    className="w-full h-full object-contain"
+                  />
+                </div>
+                <h3 className="text-[20px] font-bold text-[#242424] mb-2">
+                  등록된 빵꾸러미가 없습니다
+                </h3>
+                <p className="text-gray-500 mb-6">
+                  새로운 빵꾸러미를 등록해보세요!
+                </p>
+                <button
+                  onClick={() => navigate('/owner/package/guide')}
+                  className="px-6 py-3 bg-[#FC973B] text-white rounded-full font-medium hover:bg-[#e88a34] transition-colors"
+                >
+                  빵꾸러미 등록하기
+                </button>
+              </div>
+            )}
             <div className="mb-6">
               <button
                 onClick={() => navigate('/owner/bread/register')}
@@ -171,14 +219,13 @@ const OwnerMainPage: React.FC = () => {
               </button>
             </div>
             <CustomerList 
-              bakeryId={bakeryId}
+              bakeryId={bakeryId || 0}
               onReservationsUpdate={handleReservationsUpdate}
             />
           </>
         ) : (
           <ReviewSection 
-            stats={reviewData.stats}
-            reviews={reviewData.reviews}
+            bakeryId={bakeryId || 0}
           />
         )}
       </div>
