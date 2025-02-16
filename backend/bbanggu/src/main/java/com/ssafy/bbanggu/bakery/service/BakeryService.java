@@ -272,7 +272,7 @@ public class BakeryService {
 	public BakeryDto update(
 		CustomUserDetails userDetails, Long bakery_id, BakeryDto updates,
 		MultipartFile bakeryImage, MultipartFile bakeryBackgroundImage
-	) {
+	) throws IOException {
 		Bakery bakery = bakeryRepository.findByBakeryIdAndDeletedAtIsNull(bakery_id);
 		if (bakery == null) {
 			throw new CustomException(ErrorCode.BAKERY_NOT_FOUND);
@@ -299,13 +299,23 @@ public class BakeryService {
 			bakery.setLongitude(latLng[1]);
 		}
 
+		// ✅ 가게 이미지 저장 (파일이 있는 경우)
+		if (bakeryImage != null && !bakeryImage.isEmpty()) {
+			String bakeryImageUrl = imageService.saveImage(bakeryImage);
+			bakery.setBakeryImageUrl(bakeryImageUrl);
+		}
+
+		// ✅ 배경 이미지 저장 (파일이 있는 경우)
+		if (bakeryBackgroundImage != null && !bakeryBackgroundImage.isEmpty()) {
+			String bakeryBackgroundImgUrl = imageService.saveImage(bakeryBackgroundImage);
+			bakery.setBakeryBackgroundImgUrl(bakeryBackgroundImgUrl);
+		}
+
 		// ✅ 수정 가능한 정보만 업데이트
 		bakery.setName(Optional.ofNullable(updates.name()).orElse(bakery.getName()));
 		bakery.setDescription(Optional.ofNullable(updates.description()).orElse(bakery.getDescription()));
 		bakery.setAddressRoad(newAddrRoad);
 		bakery.setAddressDetail(newAddrDetail);
-		bakery.setBakeryImageUrl(Optional.ofNullable(updates.bakeryImageUrl()).orElse(bakery.getBakeryImageUrl()));
-		bakery.setBakeryBackgroundImgUrl(Optional.ofNullable(updates.bakeryBackgroundImgUrl()).orElse(bakery.getBakeryBackgroundImgUrl()));
 		bakery.setUpdatedAt(LocalDateTime.now());
 
 		Bakery updatedBakery = bakeryRepository.save(bakery);
