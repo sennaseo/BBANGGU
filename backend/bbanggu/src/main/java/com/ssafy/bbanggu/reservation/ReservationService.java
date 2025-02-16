@@ -251,12 +251,7 @@ public class ReservationService {
 		LocalDateTime startDateTime = startDate.atStartOfDay();
 		LocalDateTime endDateTime = endDate.atTime(LocalTime.MAX);
 
-		List<Reservation> reservationList = reservationRepository.findByUser_UserIdAndCreatedAtBetween(userDetails.getUserId(), startDateTime, endDateTime);
-		List<ReservationResponse> reservationDTOList = new ArrayList<>();
-		// for (Reservation reservation : reservationList) {
-		// 	reservationDTOList.add(entityToDto(reservation));
-		// }
-		return reservationDTOList;
+		return reservationRepository.findByUser_UserIdAndCreatedAtBetween(userDetails.getUserId(), startDateTime, endDateTime);
 	}
 
 	/**
