@@ -51,7 +51,7 @@ export default function LoginPage() {
       const userResponse = await getUserInfo()
       console.log('사용자 정보 응답:', userResponse)
       
-      // 리덕스에 사용자 정보 저장
+      // 리덕스에 사용자 정보 저장 (이제 localStorage에도 자동으로 저장됨)
       dispatch(setUserInfo(userResponse.data))
       
       // 리덕스 스토어 전체 상태 확인
