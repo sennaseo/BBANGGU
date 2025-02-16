@@ -204,8 +204,7 @@ const OwnerMainPage: React.FC = () => {
           </>
         ) : (
           <ReviewSection 
-            stats={reviewData.stats}
-            reviews={reviewData.reviews}
+            bakeryId={bakeryId || 0}
           />
         )}
       </div>
