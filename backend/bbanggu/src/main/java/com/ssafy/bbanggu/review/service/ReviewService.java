@@ -72,23 +72,37 @@ public class ReviewService {
 			.build();
 
 		Review savedReview = reviewRepository.save(review);
-		updateBakeryReviewState(bakery, request.rating());
+		updateBakeryReviewState(bakery, request.rating(), true);
 		return ReviewDto.from(savedReview);
 	}
+
 
 	/**
 	 * 가게 리뷰 정보 업데이트 (평점, 리뷰 수)
 	 */
-	private void updateBakeryReviewState(Bakery bakery, Integer rating) {
-		bakery.setReviewCnt(bakery.getReviewCnt() + 1);
+	private void updateBakeryReviewState(Bakery bakery, Integer rating, boolean is_created) {
+		if (is_created) {
+			bakery.setReviewCnt(bakery.getReviewCnt() + 1);
 
-		switch (rating) {
-			case 1 -> bakery.setRating1Cnt(bakery.getRating1Cnt() + 1);
-			case 2 -> bakery.setRating2Cnt(bakery.getRating2Cnt() + 1);
-			case 3 -> bakery.setRating3Cnt(bakery.getRating3Cnt() + 1);
-			case 4 -> bakery.setRating4Cnt(bakery.getRating4Cnt() + 1);
-			case 5 -> bakery.setRating5Cnt(bakery.getRating5Cnt() + 1);
-			default -> throw new CustomException(ErrorCode.INVALID_RATING);
+			switch (rating) {
+				case 1 -> bakery.setRating1Cnt(bakery.getRating1Cnt() + 1);
+				case 2 -> bakery.setRating2Cnt(bakery.getRating2Cnt() + 1);
+				case 3 -> bakery.setRating3Cnt(bakery.getRating3Cnt() + 1);
+				case 4 -> bakery.setRating4Cnt(bakery.getRating4Cnt() + 1);
+				case 5 -> bakery.setRating5Cnt(bakery.getRating5Cnt() + 1);
+				default -> throw new CustomException(ErrorCode.INVALID_RATING);
+			}
+		} else {
+			bakery.setReviewCnt(bakery.getReviewCnt() - 1);
+
+			switch (rating) {
+				case 1 -> bakery.setRating1Cnt(bakery.getRating1Cnt() - 1);
+				case 2 -> bakery.setRating2Cnt(bakery.getRating2Cnt() - 1);
+				case 3 -> bakery.setRating3Cnt(bakery.getRating3Cnt() - 1);
+				case 4 -> bakery.setRating4Cnt(bakery.getRating4Cnt() - 1);
+				case 5 -> bakery.setRating5Cnt(bakery.getRating5Cnt() - 1);
+				default -> throw new CustomException(ErrorCode.INVALID_RATING);
+			}
 		}
 
 		double newRating = calculateNewRatingAverage(bakery);
@@ -96,6 +110,7 @@ public class ReviewService {
 
 		bakeryRepository.save(bakery);
 	}
+
 
 	/**
 	 * 새로운 평균 평점 계산
@@ -112,6 +127,7 @@ public class ReviewService {
 		return (double) totalRatingSum / totalReviews;
 	}
 
+
 	/**
 	 * 리뷰 삭제
 	 */
@@ -126,6 +142,8 @@ public class ReviewService {
 
 		review.setDeletedAt(LocalDateTime.now());
 		reviewRepository.save(review);
+
+		updateBakeryReviewState(review.getBakery(), review.getRating(), false);
 	}
 
 	/**
@@ -147,6 +165,7 @@ public class ReviewService {
 				review.getCreatedAt()
 			)).collect(Collectors.toList());
 	}
+
 
 	/**
 	 * 가게 리뷰 조회
@@ -174,6 +193,7 @@ public class ReviewService {
 				review.getCreatedAt()
 			)).collect(Collectors.toList());
 	}
+
 
 	/**
 	 * 가게 평점 조회
