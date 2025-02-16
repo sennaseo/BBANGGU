@@ -284,14 +284,15 @@ public class BakeryService {
 			throw new CustomException(ErrorCode.NO_PERMISSION_TO_EDIT_BAKERY);
 		}
 
-		// ✅ 수정하려는 가게명 중복 검사
-		if (updates.name() != null && bakeryRepository.existsByNameAndBakeryIdNot(updates.name(), bakery.getBakeryId())) {
+		// ✅ 가게명 중복 검사
+		if (updates != null && updates.name() != null
+			&& bakeryRepository.existsByNameAndBakeryIdNot(updates.name(), bakery.getBakeryId())) {
 			throw new CustomException(ErrorCode.BAKERY_NAME_ALREADY_IN_USE);
 		}
 
 		// ✅ 주소 변경 확인 후 위경도 업데이트
-		String newAddrRoad = Optional.ofNullable(updates.addressRoad()).orElse(bakery.getAddressRoad());
-		String newAddrDetail = Optional.ofNullable(updates.addressDetail()).orElse(bakery.getAddressDetail());
+		String newAddrRoad = updates != null ? Optional.ofNullable(updates.addressRoad()).orElse(bakery.getAddressRoad()) : bakery.getAddressRoad();
+		String newAddrDetail = updates != null ? Optional.ofNullable(updates.addressDetail()).orElse(bakery.getAddressDetail()) : bakery.getAddressDetail();
 
 		if (!newAddrRoad.equals(bakery.getAddressRoad()) || !newAddrDetail.equals(bakery.getAddressDetail())) {
 			double[] latLng = getLatitudeLongitude(newAddrRoad, newAddrDetail);
@@ -312,15 +313,20 @@ public class BakeryService {
 		}
 
 		// ✅ 수정 가능한 정보만 업데이트
-		bakery.setName(Optional.ofNullable(updates.name()).orElse(bakery.getName()));
-		bakery.setDescription(Optional.ofNullable(updates.description()).orElse(bakery.getDescription()));
+		if (updates != null) {
+			bakery.setName(Optional.ofNullable(updates.name()).orElse(bakery.getName()));
+			bakery.setDescription(Optional.ofNullable(updates.description()).orElse(bakery.getDescription()));
+		}
 		bakery.setAddressRoad(newAddrRoad);
 		bakery.setAddressDetail(newAddrDetail);
 		bakery.setUpdatedAt(LocalDateTime.now());
 
 		Bakery updatedBakery = bakeryRepository.save(bakery);
+		System.out.println("✅ bakeryImageUrl: " + updatedBakery.getBakeryImageUrl());
+		System.out.println("✅ bakeryBackgroundImgUrl: " + updatedBakery.getBakeryBackgroundImgUrl());
 		return BakeryDto.from(updatedBakery);
 	}
+
 
 
 	// 가게 삭제 (Soft Delete)

@@ -121,7 +121,7 @@ public class BakeryController {
 	public ResponseEntity<ApiResponse> updateBakery(
 		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@PathVariable Long bakery_id,
-		@RequestBody BakeryDto updates,
+		@RequestPart(name = "bakery", required = false) BakeryDto updates,
 		@RequestPart(name = "bakeryImage", required = false) MultipartFile bakeryImage, // ✅ 이미지 파일 받기
 		@RequestPart(name = "bakeryBackgroundImage", required = false) MultipartFile bakeryBackgroundImage // ✅ 배경 이미지 파일 받기
 	) throws IOException {
