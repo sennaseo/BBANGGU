@@ -139,7 +139,24 @@ public class StockService {
 			.build();
 	}
 
-	public int countTotalStock(long bakeryId) {
-		return stockRepository.findSumQuantityByBakery_BakeryId(bakeryId);
+	public int countTotalStock(long bakeryId, String period) {
+		int result = -1;
+		if ("day".equals(period)) {
+			result = stockRepository.findSumQuantityByBakery_BakeryIdAndDateBetween(bakeryId, LocalDate.now(),
+				LocalDate.now());
+		} else if ("week".equals(period)) {
+			result = stockRepository.findSumQuantityByBakery_BakeryIdAndDateBetween(bakeryId,
+				LocalDate.now().minusWeeks(1),
+				LocalDate.now());
+		} else if ("month".equals(period)) {
+			result = stockRepository.findSumQuantityByBakery_BakeryIdAndDateBetween(bakeryId,
+				LocalDate.now().minusMonths(1),
+				LocalDate.now());
+		} else if ("year".equals(period)) {
+			result = stockRepository.findSumQuantityByBakery_BakeryIdAndDateBetween(bakeryId,
+				LocalDate.now().minusYears(1),
+				LocalDate.now());
+		}
+		return result;
 	}
 }
