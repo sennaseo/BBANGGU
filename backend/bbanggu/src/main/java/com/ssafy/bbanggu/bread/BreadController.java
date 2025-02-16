@@ -34,6 +34,7 @@ public class BreadController {
 		try {
 			ObjectMapper objectMapper = new ObjectMapper();
 			BreadDTO breadDto = objectMapper.readValue(breadDtoJson, BreadDTO.class);
+			System.out.println("mapper");
 			Bread insertedBread = breadService.insertBread(breadDto, file);
 			return ResponseEntity.ok("빵 등록 성공: ID = " + insertedBread.getBreadId());
 		} catch (IOException e) {
