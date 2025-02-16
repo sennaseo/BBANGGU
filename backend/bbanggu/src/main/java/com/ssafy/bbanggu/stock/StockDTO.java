@@ -13,6 +13,7 @@ public class StockDTO {
 	private Long stockId;
 	private Long bakeryId;
 	private Long breadId;
+	private String breadName;
 	private Integer quantity;
 	private LocalDate date;
 }
