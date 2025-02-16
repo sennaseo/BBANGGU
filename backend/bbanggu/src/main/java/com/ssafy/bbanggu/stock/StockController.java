@@ -77,8 +77,7 @@ public class StockController {
 	@GetMapping("/bakery/{bakeryId}/week")
 	public ResponseEntity<?> getStockWeekly(@PathVariable long bakeryId) {
 		try {
-			List<StockDTO> stockList = stockService.getStockByPeriod(LocalDate.now().minusWeeks(1), LocalDate.now(),
-				bakeryId);
+			List<StockWeekDTO> stockList = stockService.getLast7DaysStockSummary(bakeryId);
 			return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse("재고 조회 성공", stockList));
 		} catch (Exception e) {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("재고 조회 실패");

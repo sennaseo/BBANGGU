@@ -9,6 +9,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,6 +40,29 @@ public class StockService {
 
 	public void deleteStock(long stockId) {
 		stockRepository.deleteById(stockId);
+	}
+
+	public List<StockWeekDTO> getLast7DaysStockSummary(long bakeryId) {
+		LocalDate endDate = LocalDate.now();
+		LocalDate startDate = endDate.minusDays(6);
+
+		List<StockWeekDTO> summaries = stockRepository
+			.findDailySummaryByBakeryAndDateRange(bakeryId, startDate, endDate);
+
+		Map<LocalDate, Integer> summaryMap = summaries.stream()
+			.collect(Collectors.toMap(
+				StockWeekDTO::getDate,
+				StockWeekDTO::getTotalQuantity
+			));
+
+		List<StockWeekDTO> result = new ArrayList<>();
+		for (int i = 6; i >= 0; i--) {
+			LocalDate date = endDate.minusDays(i);
+			Integer quantity = summaryMap.getOrDefault(date, 0);
+			result.add(new StockWeekDTO(date, quantity));
+		}
+
+		return result;
 	}
 
 	public List<StockDTO> getStockByPeriod(LocalDate startDate, LocalDate endDate, long bakeryId) {
