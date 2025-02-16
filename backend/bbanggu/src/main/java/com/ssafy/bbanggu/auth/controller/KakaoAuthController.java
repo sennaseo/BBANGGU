@@ -50,7 +50,7 @@ public class KakaoAuthController {
 	public void kakaoLogin(@RequestParam("code") String authCode, HttpServletResponse response) throws IOException {
 		try {
 			JwtToken jwtToken = kakaoAuthService.handleKakaoLogin(authCode);
-			KakaoUserInfo userInfo = kakaoAuthService.getKakaoUserInfo(jwtToken.getAccessToken());
+			KakaoUserInfo userInfo = kakaoAuthService.getKakaoUserInfo(getAccessToken(authCode));
 
 			// ✅ Access Token과 Refresh Token을 쿠키에 저장
 			ResponseCookie accessTokenCookie = ResponseCookie.from("accessToken", jwtToken.getAccessToken())
