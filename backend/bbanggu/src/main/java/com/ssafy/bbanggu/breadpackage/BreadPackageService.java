@@ -169,14 +169,13 @@ public class BreadPackageService {
 			log.info("빵집 ID: {}의 오늘 빵꾸러미가 없습니다", bakeryId);
 			// 빈 빵꾸러미 리턴
 			return new TodayBreadPackageDto(
-				null,    // packageId
-				null,    // bakeryId
-				0,       // price
-				0,       // initialQuantity
-				0,       // quantity
-				null,    // name
-				null,    // createdAt
-				0        // savedMoney
+				null,    // packageId (Long)
+				bakeryId,// bakeryId (Long)
+				"",      // name (String)
+				0,       // price (Integer)
+				0,       // initialQuantity (Integer)
+				0,       // quantity (Integer)
+				0        // savedMoney (Integer)
 			);
 		}
 		
