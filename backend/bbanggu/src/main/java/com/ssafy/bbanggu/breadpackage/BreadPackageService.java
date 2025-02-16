@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -178,11 +179,37 @@ public class BreadPackageService {
 				0        // savedMoney (Integer)
 			);
 		}
-		
+
 		int nowQuantity = reservationRepository.getTotalPickedUpQuantityTodayByBakeryId(bakeryId);
 		int savedMoney = breadPackage.getPrice() * nowQuantity;
 		log.info("빵집 ID: {}, 픽업 완료 수량: {}, 절약 금액: {}", bakeryId, nowQuantity, savedMoney);
-		
+
 		return TodayBreadPackageDto.from(breadPackage, savedMoney);
+	}
+
+	/**
+	 * 특정 가게의 하루 지난 빵꾸러미를 삭제 처리
+	 * @param bakeryId 가게 ID
+	 */
+	@Transactional
+	public void processExpiredPackages(Long bakeryId) {
+		LocalDateTime now = LocalDateTime.now();
+		int updatedCount = breadPackageRepository.deleteExpiredPackages(bakeryId, now);
+		if (updatedCount > 0) {
+			System.out.println("🗑️ [" + bakeryId + "] 하루 지난 빵꾸러미 삭제 완료! (삭제된 패키지 수: " + updatedCount + ")");
+		}
+	}
+
+	/**
+	 * **매일 자정(00:00:00)에 실행**되는 스케줄러
+	 */
+	@Scheduled(cron = "0 0 0 * * *") // 매일 00:00:00에 실행
+	public void scheduleExpiredPackagesProcessing() {
+		// 특정 가게 ID 리스트 가져오기
+		List<Long> bakeryIds = reservationRepository.findAllActiveBakeryIdsWithPackages();
+
+		for (Long bakeryId : bakeryIds) {
+			processExpiredPackages(bakeryId);
+		}
 	}
 }
