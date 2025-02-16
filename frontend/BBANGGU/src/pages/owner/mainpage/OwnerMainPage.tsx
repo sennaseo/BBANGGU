@@ -32,30 +32,6 @@ const OwnerMainPage: React.FC = () => {
   const auth = useSelector(selectAuth);
   const navigate = useNavigate();
 
-  const reviewData = {
-    stats: {
-      average: 5.0,
-      total: 125,
-      distribution: {
-        5: 1232,
-        4: 13,
-        3: 2,
-        2: 1,
-        1: 3
-      }
-    },
-    reviews: [
-      {
-        id: 1,
-        userName: "하얀",
-        rating: 5,
-        content: "매번 맛나게 먹고있습니다 정말좋습니다!!",
-        date: "47분전",
-        imageUrl: "/path/to/image.jpg"
-      },
-    ]
-  };
-
   // 점주 권한 체크
   useEffect(() => {
     if (!auth.accessToken) {
