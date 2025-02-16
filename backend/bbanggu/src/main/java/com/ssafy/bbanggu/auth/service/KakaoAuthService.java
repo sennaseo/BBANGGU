@@ -47,7 +47,7 @@ public class KakaoAuthService {
 			"?client_id=" + kakaoConfig.getClientId() +
 			"&redirect_uri=" + kakaoConfig.getRedirectUri() +
 			"&response_type=code" +
-			"&prompt=login"; // 항상 로그인 페이지를 띄우도록 설정
+			"&prompt=select_account"; // 간편 로그인
 	}
 
 	/**
@@ -77,7 +77,8 @@ public class KakaoAuthService {
 	 */
 	public KakaoUserInfo getKakaoUserInfo(String kakaoAccessToken) {
 		HttpHeaders headers = new HttpHeaders();
-		headers.setBearerAuth(kakaoAccessToken);  // Bearer 토큰 설정
+		headers.setBearerAuth(kakaoAccessToken);
+		headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
 		HttpEntity<?> entity = new HttpEntity<>(headers);
 
