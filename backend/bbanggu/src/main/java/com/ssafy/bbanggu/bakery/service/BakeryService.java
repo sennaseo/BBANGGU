@@ -21,6 +21,7 @@ import com.ssafy.bbanggu.favorite.FavoriteRepository;
 import com.ssafy.bbanggu.user.Role;
 import com.ssafy.bbanggu.user.domain.User;
 import com.ssafy.bbanggu.user.repository.UserRepository;
+import com.ssafy.bbanggu.util.image.ImageService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,6 +34,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
@@ -52,6 +54,7 @@ public class BakeryService {
 	private final BakeryPickupService bakeryPickupService;
 	private final BreadPackageRepository breadPackageRepository;
 	private final BreadPackageService breadPackageService;
+	private final ImageService imageService;
 
 	// 삭제되지 않은 모든 가게 조회
 	@Transactional(readOnly = true)
@@ -193,6 +196,20 @@ public class BakeryService {
 		User user = userRepository.findById(bakeryDto.userId())
 			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
+		String bakeryImageUrl = null;
+		String bakeryBackgroundImgUrl = null;
+
+		try {
+			if (bakeryDto.bakeryImage() != null && !bakeryDto.bakeryImage().isEmpty()) {
+				bakeryImageUrl = imageService.saveImage(bakeryDto.bakeryImage());
+			}
+			if (bakeryDto.bakeryBackgroundImage() != null && !bakeryDto.bakeryBackgroundImage().isEmpty()) {
+				bakeryBackgroundImgUrl = imageService.saveImage(bakeryDto.bakeryBackgroundImage());
+			}
+		} catch (IOException e) {
+			throw new CustomException(ErrorCode.BAKERY_IMAGE_UPLOAD_FAILED);
+		}
+
 		// 주소 기반 위경도 가져오기
 		double[] latLng = getLatitudeLongitude(bakeryDto.addressRoad(), bakeryDto.addressDetail());
 		double latitude = latLng[0];
@@ -202,8 +219,8 @@ public class BakeryService {
 		Bakery bakery = Bakery.builder()
 				.name(bakeryDto.name())
 				.description(bakeryDto.description())
-				.bakeryImageUrl(bakeryDto.bakeryImageUrl())
-				.bakeryBackgroundImgUrl(bakeryDto.bakryBackgroundImgUrl())
+				.bakeryImageUrl(bakeryImageUrl)
+				.bakeryBackgroundImgUrl(bakeryBackgroundImgUrl)
 				.addressRoad(bakeryDto.addressRoad())
 				.addressDetail(bakeryDto.addressDetail())
 				.businessRegistrationNumber(bakeryDto.businessRegistrationNumber())
