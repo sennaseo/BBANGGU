@@ -1,4 +1,5 @@
 import axios from 'axios';
+import instance from '../../axios';
 
 interface LoginRequest {
   email: string;
@@ -14,32 +15,24 @@ interface LoginResponse {
   };
 }
 
-
-const BASE_URL = import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, '') || 'http://i12d102.p.ssafy.io:8081';
-
 export const login = async (loginData: LoginRequest): Promise<LoginResponse> => {
   try {
-    const url = `${BASE_URL}/user/login`;
-    
     const requestData = {
       email: loginData.email.trim(),
       password: loginData.password
     };
 
-    const response = await axios.post<LoginResponse>(
-      url,
+    const response = await instance.post<LoginResponse>(
+      '/user/login',
       requestData,
       {
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
         withCredentials: true,
       }
     );
 
-    // 로그인 성공 시 토큰 저장
+    // axios 인스턴스의 기본 헤더에 토큰 설정
     if (response.data.data.access_token) {
+      instance.defaults.headers.common['Authorization'] = `Bearer ${response.data.data.access_token}`;
       localStorage.setItem('access_token', response.data.data.access_token);
       localStorage.setItem('refresh_token', response.data.data.refresh_token);
     }
@@ -47,7 +40,12 @@ export const login = async (loginData: LoginRequest): Promise<LoginResponse> => 
     return response.data;
   } catch (error) {
     if (axios.isAxiosError(error)) {
+      console.log('Error Response:', error.response); // 전체 에러 응답 확인
       const errorData = error.response?.data;
+      
+      if (error.response?.status === 403) {
+        throw new Error('접근이 거부되었습니다. 권한을 확인해주세요.');
+      }
       
       switch (errorData?.code) {
         case 1000:

@@ -41,7 +41,7 @@ public class ReservationController {
 	 * 예약 생성 (PENDING) API
 	 *
 	 * @param userDetails 현재 로그인한 사용자 정보
-	 * @param request breadPackageId, quantity
+	 * @param request bakeryId, quantity
 	 * @return reservationId, status
 	 */
 	@PostMapping("/check")

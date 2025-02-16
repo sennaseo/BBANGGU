@@ -5,6 +5,7 @@ spring:
   jackson:
     serialization:
       indent-output: true
+    time-zone: Asia/Seoul
   config:
     import: optional:file:.env[.properties]
   application:
@@ -75,3 +76,6 @@ jwt:
 toss:
   payments:
     api-key: ${TOSS_API_KEY}
+
+openai:
+  api-key: ${GPT_API_KEY}

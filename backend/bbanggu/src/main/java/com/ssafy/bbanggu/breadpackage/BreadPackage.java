@@ -35,7 +35,7 @@ public class BreadPackage {
     @Column(nullable = false)
     private Integer price; // 가격
 
-	@Column(nullable = false)
+	@Column(nullable = false, updatable = false)
 	private Integer initialQuantity; // 수량
 
     @Column(nullable = false)

@@ -60,6 +60,8 @@ export default function LoginPage() {
         auth: state.auth,
         user: state.user
       })
+
+      setIsLoading(true)
       
       // 사용자 역할에 따른 리다이렉션
       if (loginResponse.data.user_type === 'OWNER') {

@@ -1,7 +1,14 @@
 import { useSelector } from 'react-redux'
 import { RootState } from '../../../store'
+import type { UserType } from "../../../types/bakery"
+// import { useNavigate } from "react-router-dom" 
 
-export function ProfileSection() {
+interface ProfileSectionProps {
+  user: UserType | null
+}
+
+export function ProfileSection({ user }: ProfileSectionProps) {
+  // const navigate = useNavigate();
   // 리덕스에서 사용자 정보 가져오기
   const userInfo = useSelector((state: RootState) => state.user.userInfo)
 

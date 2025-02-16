@@ -117,23 +117,29 @@ public class UserService { // 사용자 관련 비즈니스 로직 처리
 			throw new CustomException(ErrorCode.ACCOUNT_DEACTIVATED);
         }
 
-		// 비밀번호 검증
-		// if (!passwordEncoder.matches(password, user.getPassword())) {
-		// 	throw new CustomException(ErrorCode.INVALID_PASSWORD);
+        // // 비밀번호 검증
+        // if (!passwordEncoder.matches(password, user.getPassword())) {
+        //  throw new CustomException(ErrorCode.INVALID_PASSWORD);
         // }
 
-        // ✅ JWT 토큰 생성
+		// 단순 문자열 비교로 변경
+		if (!password.equals(user.getPassword())) {
+			throw new CustomException(ErrorCode.INVALID_PASSWORD);
+		}
+
+
+		// ✅ JWT 토큰 생성
 		String accessToken = jwtTokenProvider.createAccessToken(user.getUserId());
 		String refreshToken = jwtTokenProvider.createRefreshToken(user.getUserId());
 
-        // ✅ Refresh Token을 DB 저장
-        user.setRefreshToken(refreshToken);
-        userRepository.save(user);
+		// ✅ Refresh Token을 DB 저장
+		user.setRefreshToken(refreshToken);
+		userRepository.save(user);
 
-        // ✅ 응답 데이터 생성
+		// ✅ 응답 데이터 생성
 		JwtToken tokens = new JwtToken(accessToken, refreshToken);
-        return tokens;
-    }
+		return tokens;
+	}
 
 	/**
 	 * 로그아웃: RefreshToken 삭제

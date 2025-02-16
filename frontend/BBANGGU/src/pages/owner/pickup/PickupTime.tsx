@@ -59,15 +59,38 @@ function PickupTime() {
       }
     });
 
+    // 모든 요일의 시간 데이터를 미리 저장
+    Object.keys(dayMapping).forEach(day => {
+      if (!initialTimeData[day]) {
+        initialTimeData[day] = {
+          startTime: '',
+          endTime: ''
+        };
+      }
+    });
+
     setSelectedDays(initialSelectedDays);
     setTimeData(initialTimeData);
   }, [pickupTimes]);
+
+  // 시간 데이터가 변경될 때마다 localStorage에 저장
+  useEffect(() => {
+    localStorage.setItem(`pickupTimes_${bakeryId}`, JSON.stringify(timeData));
+  }, [timeData, bakeryId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     try {
-      const requestData: { [key: string]: PickupTime } = {};
+      const requestData: { [key: string]: PickupTime | null } = {
+        monday: null,
+        tuesday: null,
+        wednesday: null,
+        thursday: null,
+        friday: null,
+        saturday: null,
+        sunday: null
+      };
       
       selectedDays.forEach(day => {
         const engDay = dayMapping[day as keyof typeof dayMapping];

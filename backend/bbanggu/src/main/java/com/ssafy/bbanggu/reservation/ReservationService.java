@@ -60,9 +60,13 @@ public class ReservationService {
 	 * 예약 검증 메서드 (PENDING)
 	 */
 	public Map<String, Object> validateReservation(CustomUserDetails userDetails, ValidReservationRequest request) {
-		BreadPackage breadPackage = breadPackageRepository.findById(request.breadPackageId())
-			.orElseThrow(() -> new CustomException(ErrorCode.BREAD_PACKAGE_NOT_FOUND));
-		log.info("✅ {}번 빵꾸러미가 존재함", request.breadPackageId());
+		Bakery bakery = bakeryRepository.findById(request.bakeryId())
+			.orElseThrow(() -> new CustomException(ErrorCode.BAKERY_NOT_FOUND));
+		BreadPackage breadPackage = breadPackageRepository.findByBakeryIdAndToday(bakery.getBakeryId());
+		if (breadPackage == null) {
+			throw new CustomException(ErrorCode.BREAD_PACKAGE_NOT_FOUND);
+		}
+		log.info("✅ {}번 빵꾸러미가 존재함", breadPackage.getPackageId());
 
 		User user = userRepository.findById(userDetails.getUserId())
 			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
@@ -246,13 +250,9 @@ public class ReservationService {
 	public List<ReservationResponse> getUserReservationList(CustomUserDetails userDetails, LocalDate startDate, LocalDate endDate) {
 		LocalDateTime startDateTime = startDate.atStartOfDay();
 		LocalDateTime endDateTime = endDate.atTime(LocalTime.MAX);
+		log.info("startDateTime: " + startDateTime + "\nendDateTime: " + endDateTime);
 
-		List<Reservation> reservationList = reservationRepository.findByUser_UserIdAndCreatedAtBetween(userDetails.getUserId(), startDateTime, endDateTime);
-		List<ReservationResponse> reservationDTOList = new ArrayList<>();
-		// for (Reservation reservation : reservationList) {
-		// 	reservationDTOList.add(entityToDto(reservation));
-		// }
-		return reservationDTOList;
+		return reservationRepository.findByUser_UserIdAndCreatedAtBetween(userDetails.getUserId(), startDateTime, endDateTime);
 	}
 
 	/**

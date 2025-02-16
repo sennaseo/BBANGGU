@@ -11,9 +11,21 @@ import org.springframework.data.repository.query.Param;
 
 import com.ssafy.bbanggu.breadpackage.BreadPackage;
 import com.ssafy.bbanggu.reservation.dto.ReservationInfo;
+import com.ssafy.bbanggu.reservation.dto.ReservationResponse;
 
 public interface ReservationRepository extends JpaRepository<Reservation, Long> {
-	List<Reservation> findByUser_UserIdAndCreatedAtBetween(long userId, LocalDateTime startDate, LocalDateTime endDate);
+
+	@Query("""
+        SELECT new com.ssafy.bbanggu.reservation.dto.ReservationResponse(
+            r.bakery.bakeryId, r.bakery.name, r.createdAt, r.pickupAt, r.status
+        )
+        FROM Reservation r
+        JOIN r.user u
+        WHERE r.user.userId = :userId
+        AND r.createdAt BETWEEN :startDate AND :endDate
+        ORDER BY r.createdAt DESC
+    """)
+	List<ReservationResponse> findByUser_UserIdAndCreatedAtBetween(long userId, LocalDateTime startDate, LocalDateTime endDate);
 	List<Reservation> findByBakery_BakeryIdAndCreatedAtBetween(long bakeryId, LocalDateTime startDate, LocalDateTime endDate);
 	Optional<Reservation> findByUser_UserIdAndBreadPackageAndStatus(long userId, BreadPackage breadPackage, String status);
 
