@@ -35,34 +35,30 @@ export default function LoginPage() {
 
     setIsLoading(true)
     try {
-      // 로그인 API 호출
+      // 1. 로그인 API 호출
       const loginResponse = await login(formData)
-      console.log('로그인 응답:', loginResponse)
+      console.log('1. 로그인 응답:', loginResponse)
       
-      // 토큰 저장
+      // 2. 토큰 저장
       if (loginResponse.data.access_token) {
         localStorage.setItem('accessToken', loginResponse.data.access_token)
       }
       
-      // 리덕스에 로그인 정보 저장
+      // 3. 리덕스에 로그인 정보 저장
       dispatch(loginSuccess(loginResponse))
       
-      // 사용자 정보 가져오기
+      // 4. 사용자 정보 가져오기
       const userResponse = await getUserInfo()
-      console.log('사용자 정보 응답:', userResponse)
+      console.log('4. 사용자 정보 응답:', userResponse)
       
-      // 리덕스에 사용자 정보 저장 (이제 localStorage에도 자동으로 저장됨)
+      // 5. Redux store에 저장되는 데이터 확인
+      console.log('5. Redux store에 저장될 데이터:', userResponse.data)
       dispatch(setUserInfo(userResponse.data))
       
-      // 리덕스 스토어 전체 상태 확인
+      // 6. 최종 Redux 상태 확인
       const state = store.getState()
-      console.log('현재 리덕스 상태:', {
-        auth: state.auth,
-        user: state.user
-      })
+      console.log('6. 최종 Redux 상태:', state)
 
-      setIsLoading(true)
-      
       // 사용자 역할에 따른 리다이렉션
       if (loginResponse.data.user_type === 'OWNER') {
         navigate('/owner/main')
