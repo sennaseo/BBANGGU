@@ -1,56 +1,25 @@
 import axios from 'axios';
+import { store } from '../store';
 
-const axiosInstance = axios.create({
-  baseURL: 'http://i12d102.p.ssafy.io:8081',  // API 서버 URL 직접 사용
-  headers: {
-    'Accept': 'application/json',
-    'Authorization': `Bearer ${import.meta.env.VITE_USER_TOKEN}`
-  },
-  withCredentials: true
+const instance = axios.create({
+  baseURL: import.meta.env.VITE_API_BASE_URL,
 });
 
-// 요청 URL 로깅
-axiosInstance.interceptors.request.use(
-  config => {
-    console.log('요청 시작 >>>>>', {
-      url: config.url,
-      method: config.method,
-      headers: config.headers
-    });
-    return config;
+instance.interceptors.request.use((config) => {
+  const token = store.getState().auth.accessToken;
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
   }
-);
+  config.headers['Content-Type'] = 'application/json';
+  return config;
+});
 
-// 요청 순서 확인을 위한 인터셉터
-axiosInstance.interceptors.request.use(
-  config => {
-    console.log('요청 시작 >>>>>', {
-      url: config.url,
-      method: config.method,
-      headers: config.headers
-    });
-    return config;
-  }
-);
-
-// 응답 순서 확인을 위한 인터셉터
-axiosInstance.interceptors.response.use(
-  response => {
-    console.log('응답 완료 <<<<<', {
-      url: response.config.url,
-      status: response.status,
-      data: response.data
-    });
-    return response;
-  },
-  error => {
-    console.error('API 에러:', {
-      url: error.config?.url,
-      status: error.response?.status,
-      message: error.message
-    });
+instance.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    // 토큰 만료 등 에러 처리 로직
     return Promise.reject(error);
   }
 );
 
-export default axiosInstance; 
+export default instance;

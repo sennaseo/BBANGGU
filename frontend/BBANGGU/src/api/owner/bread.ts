@@ -1,4 +1,4 @@
-import axiosInstance from '../axios_2';
+import axiosInstance from '../axios';
 
 interface BreadRegisterRequest {
   bakeryId: number;
