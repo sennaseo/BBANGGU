@@ -39,6 +39,7 @@ public enum ErrorCode {
 	NO_KEYWORD_ENTERED(2004, HttpStatus.BAD_REQUEST, "입력된 키워드가 없습니다. 검색어를 입력해주세요."),
 	SETTLEMENT_NOT_FOUND(2005, HttpStatus.NOT_FOUND, "해당 가게의 정산정보가 존재하지 않습니다."),
 	BAKERY_IMAGE_UPLOAD_FAILED(2006, HttpStatus.INTERNAL_SERVER_ERROR, "가게 이미지 저장에 실패하였습니다."),
+	BAKERY_BACKGROUND_IMAGE_UPLOAD_FAILED(2007, HttpStatus.INTERNAL_SERVER_ERROR, "가게 배경 이미지 저장에 실패하였습니다."),
 
 	// ✅ 빵 관련 예외 (2100번대)
 

@@ -21,8 +21,6 @@ public record BakeryDto(
 	String addressDetail,
 	String bakeryImageUrl, // ✅ EC2 저장된 이미지 URL
 	String bakeryBackgroundImgUrl, // ✅ EC2 저장된 배경 이미지 URL
-	MultipartFile bakeryImage, // ✅ 요청 데이터에서 받을 이미지 파일
-	MultipartFile bakeryBackgroundImage, // ✅ 요청 데이터에서 받을 배경 이미지 파일
 	Double star,
 	int reviewCnt
 ) {
@@ -37,8 +35,6 @@ public record BakeryDto(
 			bakery.getAddressDetail(),
 			bakery.getBakeryImageUrl(),
 			bakery.getBakeryBackgroundImgUrl(),
-			null, // `MultipartFile`은 응답에 포함되지 않음
-			null, // `MultipartFile`은 응답에 포함되지 않음
 			bakery.getStar(),
 			bakery.getReviewCnt()
 		);

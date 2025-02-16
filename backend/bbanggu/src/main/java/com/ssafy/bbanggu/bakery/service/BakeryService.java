@@ -272,7 +272,7 @@ public class BakeryService {
 	public BakeryDto update(
 		CustomUserDetails userDetails, Long bakery_id, BakeryDto updates,
 		MultipartFile bakeryImage, MultipartFile bakeryBackgroundImage
-	) throws IOException {
+	){
 		Bakery bakery = bakeryRepository.findByBakeryIdAndDeletedAtIsNull(bakery_id);
 		if (bakery == null) {
 			throw new CustomException(ErrorCode.BAKERY_NOT_FOUND);
@@ -302,14 +302,26 @@ public class BakeryService {
 
 		// ✅ 가게 이미지 저장 (파일이 있는 경우)
 		if (bakeryImage != null && !bakeryImage.isEmpty()) {
-			String bakeryImageUrl = imageService.saveImage(bakeryImage);
-			bakery.setBakeryImageUrl(bakeryImageUrl);
+			try {
+				String bakeryImageUrl = imageService.saveImage(bakeryImage); // 새 이미지 저장
+				if (bakeryImageUrl != null) {
+					bakery.setBakeryImageUrl(bakeryImageUrl);
+				}
+			} catch (IOException e) {
+				throw new CustomException(ErrorCode.BAKERY_IMAGE_UPLOAD_FAILED);
+			}
 		}
 
 		// ✅ 배경 이미지 저장 (파일이 있는 경우)
 		if (bakeryBackgroundImage != null && !bakeryBackgroundImage.isEmpty()) {
-			String bakeryBackgroundImgUrl = imageService.saveImage(bakeryBackgroundImage);
-			bakery.setBakeryBackgroundImgUrl(bakeryBackgroundImgUrl);
+			try {
+				String bakeryBackgroundImageUrl = imageService.saveImage(bakeryBackgroundImage); // 새 이미지 저장
+				if (bakeryBackgroundImageUrl != null) {
+					bakery.setBakeryBackgroundImgUrl(bakeryBackgroundImageUrl);
+				}
+			} catch (IOException e) {
+				throw new CustomException(ErrorCode.BAKERY_BACKGROUND_IMAGE_UPLOAD_FAILED);
+			}
 		}
 
 		// ✅ 수정 가능한 정보만 업데이트
@@ -326,8 +338,6 @@ public class BakeryService {
 		System.out.println("✅ bakeryBackgroundImgUrl: " + updatedBakery.getBakeryBackgroundImgUrl());
 		return BakeryDto.from(updatedBakery);
 	}
-
-
 
 	// 가게 삭제 (Soft Delete)
 	@Transactional
