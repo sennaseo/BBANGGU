@@ -9,7 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import { BreadPackage, getBakeryPackages } from '../../../api/owner/package';  // 공통 인터페이스 import
 import { useSelector } from 'react-redux';
 import { selectAuth } from '../../../store/slices/authSlice';
-import instance from '../../../api/axiosInstance';
+import instance from '../../../api/axios';
 
 // 인터페이스 정의
 interface ReservationInfo {
