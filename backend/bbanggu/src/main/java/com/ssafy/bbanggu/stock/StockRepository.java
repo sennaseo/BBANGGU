@@ -13,7 +13,17 @@ public interface StockRepository extends JpaRepository<Stock, Long> {
 
 	List<Stock> findByBakery_BakeryIdAndDateBetween(long bakeryId, LocalDate startDate, LocalDate endDate);
 
-	List<InventoryItemDto> findByBakery_BakeryId(Long bakeryId);
+	@Query("SELECT NEW com.ssafy.bbanggu.stock.StockWeekDTO(s.date, CAST(SUM(s.quantity) AS integer)) " +
+		"FROM Stock s " +
+		"WHERE s.bakery.bakeryId = :bakeryId " +
+		"AND s.date BETWEEN :startDate AND :endDate " +
+		"GROUP BY s.date " +
+		"ORDER BY s.date ASC")
+	List<StockWeekDTO> findDailySummaryByBakeryAndDateRange(
+		@Param("bakeryId") long bakeryId,
+		@Param("startDate") LocalDate startDate,
+		@Param("endDate") LocalDate endDate
+	);
 
 	@Query("SELECT s.bread.name, SUM(s.quantity) " +
 		"FROM Stock s " +
