@@ -170,4 +170,21 @@ public class ReservationController {
 		return ResponseEntity.ok("✅ [" + bakeryId + "] 노쇼 예약이 자동 픽업 처리되었습니다.");
 	}
 
+
+	/**
+	 * 예약 ID로 예약 상세 조회 API
+	 *
+	 * @param userDetails 현재 로그인한 사용자 정보
+	 * @param reservationId 예약 ID
+	 * @return 해당 예약 상세 정보
+	 */
+	@GetMapping("/{reservationId}/detail")
+	public ResponseEntity<ApiResponse> getReservationInfo(
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@PathVariable Long reservationId
+	){
+		Map<String, Object> response = reservationService.getReservationInfo(userDetails, reservationId);
+		return ResponseEntity.ok(new ApiResponse("해당 예약 정보를 불러오는데에 성공하였습니다.", response));
+	}
+
 }

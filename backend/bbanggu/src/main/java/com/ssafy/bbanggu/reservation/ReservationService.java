@@ -340,4 +340,26 @@ public class ReservationService {
 			processMissedReservations(bakeryId);
 		}
 	}
+
+	public Map<String, Object> getReservationInfo(CustomUserDetails userDetails, Long reservationId) {
+		Reservation reservation = reservationRepository.findById(reservationId)
+			.orElseThrow(() -> new CustomException(ErrorCode.RESERVATION_NOT_FOUND));
+
+		if (!reservation.getUser().getUserId().equals(userDetails.getUserId())) {
+			throw new CustomException(ErrorCode.USER_NOT_RESERVATION_USER);
+		}
+
+		Map<String, Object> response = new HashMap<>();
+		response.put("status", reservation.getStatus());
+		response.put("bakeryName", reservation.getBakery().getName());
+		response.put("pickupAt", reservation.getPickupAt());
+		response.put("packageName", reservation.getBreadPackage().getName());
+		response.put("price", reservation.getTotalPrice());
+		response.put("addressRoad", reservation.getBakery().getAddressRoad());
+		response.put("addressDetail", reservation.getBakery().getAddressDetail());
+		response.put("latitude", reservation.getBakery().getLatitude());
+		response.put("longitude", reservation.getBakery().getLongitude());
+
+		return response;
+	}
 }

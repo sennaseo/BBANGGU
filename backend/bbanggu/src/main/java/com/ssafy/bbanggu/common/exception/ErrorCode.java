@@ -65,6 +65,7 @@ public enum ErrorCode {
 	RESERVATION_IS_NOT_CONFIRMED(2307, HttpStatus.CONFLICT, "현재 예약 상태가 'CONFIRMED'가 아닙니다."),
 	RESERVATION_ALREADY_COMPLETED(2308, HttpStatus.BAD_REQUEST, "이미 픽업이 완료된 예약입니다."),
 	USER_NOT_BAKERY_OWNER(2309, HttpStatus.UNAUTHORIZED, "현재 로그인한 사용자는 해당 빵집의 사장님이 아닙니다."),
+	USER_NOT_RESERVATION_USER(2310, HttpStatus.UNAUTHORIZED, "현재 로그인한 사용자는 예약자가 아닙니다."),
 
 	// ✅ 이메일 인증 관련 예외 (3000번대)
 	EMAIL_SEND_FAILED(3000, HttpStatus.INTERNAL_SERVER_ERROR, "이메일 전송에 실패하였습니다."),
