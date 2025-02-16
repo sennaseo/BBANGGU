@@ -86,10 +86,10 @@ public class StockController {
 	}
 
 	// 월(지난 30일) 조회
-	@GetMapping("/bakery/{bakeryId}/year/{year}")
-	public ResponseEntity<?> getStockMonthly(@PathVariable long bakeryId, @PathVariable int year) {
+	@GetMapping("/bakery/{bakeryId}/year")
+	public ResponseEntity<?> getStockMonthly(@PathVariable long bakeryId) {
 		try {
-			Map<Integer, List<StockMonthDTO>> stockList = stockService.getYearlyStock(year, bakeryId);
+			Map<Integer, List<StockMonthDTO>> stockList = stockService.getYearlyStock(bakeryId);
 			return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse("재고 조회 성공", stockList));
 		} catch (Exception e) {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("재고 조회 실패");
