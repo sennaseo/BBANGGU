@@ -8,6 +8,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.ssafy.bbanggu.auth.dto.JwtToken;
 import com.ssafy.bbanggu.auth.security.CustomUserDetails;
@@ -78,7 +79,7 @@ public class UserService { // 사용자 관련 비즈니스 로직 처리
 			.build();
 
 		echoSavingRepository.save(echoSaving);
-		return UserResponse.from(user);
+		return UserResponse.from(user, null);
 	}
 
 	/**
@@ -170,14 +171,19 @@ public class UserService { // 사용자 관련 비즈니스 로직 처리
 		}
 		log.info("✅ {}번 사용자 검증 완료", userDetails.getUserId());
 
-		return UserResponse.from(user);
+		Long bakeryId = null;
+		if (user.getRole().equals(Role.OWNER)) {
+			bakeryId = bakeryRepository.findByUser_UserId(user.getUserId()).getBakeryId();
+		}
+
+		return UserResponse.from(user, bakeryId);
 	}
 
 	/**
 	 * 사용자 정보 수정
 	 */
 	@Transactional
-	public void update(CustomUserDetails userDetails, UpdateUserRequest updates) {
+	public void update(CustomUserDetails userDetails, UpdateUserRequest updates, MultipartFile profileImg) {
 		User user = userRepository.findById(userDetails.getUserId())
 			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
@@ -203,9 +209,9 @@ public class UserService { // 사용자 관련 비즈니스 로직 처리
 		}
 
 		String profileImageUrl = user.getProfileImageUrl(); // 기존 URL 유지
-		if (updates.profileImageUrl() != null && !updates.profileImageUrl().isEmpty()) {
+		if (profileImg != null && !profileImg.isEmpty()) {
 			try {
-				profileImageUrl = imageService.saveImage(updates.profileImageUrl()); // 새 이미지 저장
+				profileImageUrl = imageService.saveImage(profileImg); // 새 이미지 저장
 			} catch (IOException e) {
 				throw new CustomException(ErrorCode.PROFILE_IMAGE_UPLOAD_FAILED);
 			}
