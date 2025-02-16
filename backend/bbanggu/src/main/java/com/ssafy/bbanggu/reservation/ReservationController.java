@@ -161,4 +161,13 @@ public class ReservationController {
 		return ResponseEntity.ok().body(new ApiResponse("기간 내 가게 예약 조회가 완료되었습니다.", reservationList));
 	}
 
+	/**
+	 * 특정 가게의 노쇼 예약을 수동 처리하는 API
+	 */
+	@PostMapping("/process-missed/{bakeryId}")
+	public ResponseEntity<String> processMissedReservations(@PathVariable Long bakeryId) {
+		reservationService.processMissedReservations(bakeryId);
+		return ResponseEntity.ok("✅ [" + bakeryId + "] 노쇼 예약이 자동 픽업 처리되었습니다.");
+	}
+
 }

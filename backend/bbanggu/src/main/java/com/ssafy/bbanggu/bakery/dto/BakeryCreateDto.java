@@ -1,6 +1,7 @@
 package com.ssafy.bbanggu.bakery.dto;
 
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.ssafy.bbanggu.bakery.domain.Bakery;
 
@@ -20,8 +21,10 @@ public record BakeryCreateDto(
 	@NotBlank(message = "도로명 주소는 필수 입력 값입니다.")
 	String addressRoad,
 	String addressDetail,
-	String bakeryImageUrl,
-	String bakryBackgroundImgUrl
+	String bakeryImageUrl, // ✅ EC2에 저장된 이미지 URL을 위한 필드
+	String bakeryBackgroundImgUrl, // ✅ EC2에 저장된 배경 이미지 URL을 위한 필드
+	MultipartFile bakeryImage, // ✅ 요청 데이터에서 받는 MultipartFile
+	MultipartFile bakeryBackgroundImage // ✅ 요청 데이터에서 받는 MultipartFile
 ) {
 	public static BakeryCreateDto from(Bakery bakery) {
 		return new BakeryCreateDto(
@@ -33,7 +36,9 @@ public record BakeryCreateDto(
 			bakery.getAddressRoad(),
 			bakery.getAddressDetail(),
 			bakery.getBakeryImageUrl(),
-			bakery.getBakeryBackgroundImgUrl()
+			bakery.getBakeryBackgroundImgUrl(),
+			null,
+			null
 		);
 	}
 }
