@@ -53,7 +53,7 @@ public class KakaoAuthService {
 	/**
 	 * ✅ 2. Kakao 인증 코드 → Access Token 요청
 	 */
-	private String getKakaoAccessToken(String authCode) {
+	public String getKakaoAccessToken(String authCode) {
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
