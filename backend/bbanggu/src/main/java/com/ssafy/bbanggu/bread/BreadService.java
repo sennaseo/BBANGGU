@@ -18,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @Transactional
 public class BreadService {
+
 	private final BreadRepository breadRepository;
 	private final ImageService imageService;
 

@@ -266,6 +266,8 @@ public class UserService { // 사용자 관련 비즈니스 로직 처리
 			bakery.getAddressDetail(),
 			bakery.getBakeryImageUrl(),
 			bakery.getBakeryBackgroundImgUrl(),
+			null,
+			null,
 			bakery.getStar(),
 			bakery.getReviewCnt()
 		);

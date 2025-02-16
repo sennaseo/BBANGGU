@@ -33,6 +33,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -268,7 +269,10 @@ public class BakeryService {
 
 	// 가게 수정
 	@Transactional
-	public BakeryDto update(CustomUserDetails userDetails, Long bakery_id, BakeryDto updates) {
+	public BakeryDto update(
+		CustomUserDetails userDetails, Long bakery_id, BakeryDto updates,
+		MultipartFile bakeryImage, MultipartFile bakeryBackgroundImage
+	) {
 		Bakery bakery = bakeryRepository.findByBakeryIdAndDeletedAtIsNull(bakery_id);
 		if (bakery == null) {
 			throw new CustomException(ErrorCode.BAKERY_NOT_FOUND);
