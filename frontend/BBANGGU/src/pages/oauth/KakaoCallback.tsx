@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { loginSuccess } from '../../store/slices/authSlice';
 import { setUserInfo } from '../../store/slices/userSlice';
+import { getUserInfo } from '../../api/user/user';
 
 export default function KakaoCallback() {
   const navigate = useNavigate();
@@ -14,9 +15,6 @@ export default function KakaoCallback() {
       const searchParams = new URLSearchParams(location.search);
       const auth = searchParams.get('auth');
       const token = searchParams.get('token');
-      const email = searchParams.get('email');
-      const nickname = searchParams.get('nickname');
-      const profileImage = searchParams.get('profileImage');
 
       if (auth === 'success' && token) {
         try {
@@ -29,15 +27,9 @@ export default function KakaoCallback() {
             }
           }));
 
-          // 2. 카카오에서 받아온 사용자 정보를 리덕스에 저장
-          dispatch(setUserInfo({
-            email,
-            nickname,
-            profileImage,
-            // 필요한 다른 기본값들 설정
-            role: 'USER',
-            // ... 기타 필요한 필드들
-          }));
+          // 2. getUserInfo를 사용하여 사용자 정보 조회 및 저장
+          const userInfo = await getUserInfo();
+          dispatch(setUserInfo(userInfo));
 
           // 3. 사용자 메인 페이지로 이동
           navigate('/user');

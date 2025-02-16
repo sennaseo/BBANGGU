@@ -50,8 +50,6 @@ public class KakaoAuthController {
 	public void kakaoLogin(@RequestParam("code") String authCode, HttpServletResponse response) throws IOException {
 		try {
 			JwtToken jwtToken = kakaoAuthService.handleKakaoLogin(authCode);
-			String kakaoAccessToken = kakaoAuthService.getKakaoAccessToken(authCode);
-			KakaoUserInfo userInfo = kakaoAuthService.getKakaoUserInfo(kakaoAccessToken);
 
 			// ✅ Access Token과 Refresh Token을 쿠키에 저장
 			ResponseCookie accessTokenCookie = ResponseCookie.from("accessToken", jwtToken.getAccessToken())
@@ -74,11 +72,8 @@ public class KakaoAuthController {
 			response.addHeader(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString());
 
 			// ✅ 리다이렉트 URL에 사용자 정보도 함께 전달
-			String redirectUrl = String.format("https://i12d102.p.ssafy.io/oauth/kakao/callback?auth=success&token=%s&email=%s&nickname=%s&profileImage=%s",
-				URLEncoder.encode(jwtToken.getAccessToken(), StandardCharsets.UTF_8),
-				URLEncoder.encode(userInfo.getEmail(), StandardCharsets.UTF_8),
-				URLEncoder.encode(userInfo.getNickname(), StandardCharsets.UTF_8),
-				URLEncoder.encode(userInfo.getProfileImage(), StandardCharsets.UTF_8));
+			String redirectUrl = String.format("https://i12d102.p.ssafy.io/oauth/kakao/callback?auth=success&token=%s",
+				URLEncoder.encode(jwtToken.getAccessToken(), StandardCharsets.UTF_8));
 
 			response.setStatus(HttpServletResponse.SC_FOUND);
 			response.setHeader("Location", redirectUrl);
