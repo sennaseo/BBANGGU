@@ -157,15 +157,22 @@ export const updateBread = async (
 // 빵 정보 삭제 API
 export const deleteBread = async (breadId: number): Promise<BreadDeleteResponse> => {
   try {
-    const response = await axiosInstance.delete<BreadDeleteResponse>(`/bread/${breadId}`);
-    return response.data;
-  } catch (error: unknown) {
-    const err = error as ApiError;
-    console.error('=== 빵 정보 삭제 실패 ===');
-    if (err.response) {
-      console.error('에러 상태:', err.response.status);
-      console.error('에러 데이터:', err.response.data);
+    const response = await fetch(`/api/bread/${breadId}`, {
+      method: 'DELETE',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error('빵 삭제 실패');
     }
-    throw new Error(err.response?.data?.message || '빵 정보 삭제에 실패했습니다.');
+
+    const data = await response.json();
+    return data as BreadDeleteResponse;  // 타입 명시
+  } catch (error) {
+    console.error('빵 삭제 중 오류 발생:', error);
+    throw error;
   }
 }; 

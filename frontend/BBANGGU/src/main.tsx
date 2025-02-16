@@ -1,5 +1,7 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
+import { Provider } from 'react-redux'
+import { store } from './store'
 import App from './App'
 import './index.css'
 
@@ -30,15 +32,23 @@ const loadKakaoMapScript = () => {
 
 loadKakaoMapScript()
   .then(() => {
-    // 서비스 워커 등록 코드를 주석 처리
-    // if ('serviceWorker' in navigator) {
-    //   navigator.serviceWorker.register('/sw.js')
-    // }
+    // 서비스 워커 등록 코드 수정
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js')
+        .then(registration => {
+          console.log('서비스 워커가 등록되었습니다:', registration);
+        })
+        .catch(error => {
+          console.log('서비스 워커 등록 실패:', error);
+        });
+    }
 
     const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
     root.render(
       <React.StrictMode>
-        <App />
+        <Provider store={store}>
+          <App />
+        </Provider>
       </React.StrictMode>
     )
   })

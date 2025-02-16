@@ -1,21 +1,21 @@
 import { EllipsisVertical } from "lucide-react"
-import type { ReviewType } from "../../../types/bakery"
-import { mockUsers } from "../../../mocks/user/mockUserData"
-
+import type { ReviewType, UserType } from "../../../types/bakery"
 interface ReviewCardProps {
   review: ReviewType
+  user: UserType
 }
 
-export default function ReviewCard({ review }: ReviewCardProps) {
-  const user = mockUsers[review.user_id]
-  const timeAgo = new Date(review.created_at).toLocaleDateString()
-
+export default function ReviewCard({ review, user }: ReviewCardProps) {
+  const timeAgo = new Date(review.createdAt).toLocaleDateString()
+  console.log("user", user);
+  console.log("review", review);
+  console.log("timeAgo", timeAgo);
   return (
     <div className="px-5 py-4 border-b border-[#F2F2F2] last:border-b-0">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
           <img
-            src={user.profile_image_url || "/placeholder.svg"}
+            src={user.profileImageUrl || "/placeholder.svg"}
             alt={user.name}
             className="w-10 h-10 rounded-full object-cover"
           />
@@ -44,9 +44,9 @@ export default function ReviewCard({ review }: ReviewCardProps) {
           <EllipsisVertical className="w-5 h-5 text-[#757575]" />
         </button>
       </div>
-      {review.review_image_url && (
+      {review.reviewImageUrl && (
         <img
-          src={review.review_image_url || "/placeholder.svg"}
+          src={review.reviewImageUrl || "/placeholder.svg"}
           alt="Review"
           className="w-full h-[200px] object-cover rounded-xl mb-3"
         />

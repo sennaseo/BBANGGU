@@ -8,6 +8,7 @@ import com.ssafy.bbanggu.auth.dto.EmailRequest;
 import com.ssafy.bbanggu.auth.dto.JwtToken;
 import com.ssafy.bbanggu.auth.security.CustomUserDetails;
 import com.ssafy.bbanggu.auth.service.EmailService;
+import com.ssafy.bbanggu.bakery.dto.BakeryDto;
 import com.ssafy.bbanggu.common.exception.CustomException;
 import com.ssafy.bbanggu.common.exception.ErrorCode;
 import com.ssafy.bbanggu.common.response.ApiResponse;
@@ -15,6 +16,7 @@ import com.ssafy.bbanggu.user.domain.User;
 import com.ssafy.bbanggu.user.dto.CreateUserRequest;
 import com.ssafy.bbanggu.user.dto.LoginRequest;
 import com.ssafy.bbanggu.user.dto.PasswordResetConfirmRequest;
+import com.ssafy.bbanggu.user.dto.PasswordUpdateRequest;
 import com.ssafy.bbanggu.user.dto.UpdateUserRequest;
 import com.ssafy.bbanggu.user.dto.UserResponse;
 import com.ssafy.bbanggu.user.repository.UserRepository;
@@ -180,13 +182,11 @@ public class UserController {
      * 회원 정보 수정 API
      */
     @PatchMapping("/update")
-    public ResponseEntity<ApiResponse> updateUser(Authentication authentication,
+    public ResponseEntity<ApiResponse> updateUser(
+		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@RequestBody UpdateUserRequest updates) {
-		// ✅ userId 조회
-		Long userId = Long.parseLong(authentication.getName());
-
 		// ✅ 변경할 필드만 업데이트
-		userService.update(userId, updates);
+		userService.update(userDetails, updates);
 
 		return ResponseEntity.ok(new ApiResponse("회원 정보가 성공적으로 수정되었습니다.", null));
     }
@@ -221,5 +221,38 @@ public class UserController {
 
 		userService.updatePassword(request.getEmail(), request.getNewPassword()); // 비밀번호 업데이트
 		return ResponseEntity.ok(new ApiResponse("비밀번호가 성공적으로 변경되었습니다.", null));
+	}
+
+
+	/**
+	 * 사장님 가게 정보 조회 API
+	 *
+	 * @param userDetails 현재 로그인한 사용자 정보
+	 * @return 사장님 빵집 정보
+	 */
+	@GetMapping("/bakery")
+	public ResponseEntity<ApiResponse> getOwnerBakery(@AuthenticationPrincipal CustomUserDetails userDetails) {
+		log.info("✨ 사장님 가게 정보 조회 ✨");
+		BakeryDto bakery = userService.getOwnerBakery(userDetails);
+		log.info("🩵 사장님 가게 정보 조회 성공 🩵");
+		return ResponseEntity.ok(new ApiResponse("사장님의 아이디로 가게 정보를 조회하였습니다.", bakery));
+	}
+
+	/**
+	 * 비밀번호 변경 (마이페이지) API
+	 *
+	 * @param userDetails 현재 로그인한 사용자 정보
+	 * @param request originPwd, newPwd
+	 * @return pass or fail
+	 */
+	@PostMapping("/update/password")
+	public ResponseEntity<ApiResponse> updatePassword(
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@RequestBody PasswordUpdateRequest request
+	) {
+		log.info("✨ 비밀번호 변경 (마이페이지) ✨");
+		userService.updatePwd(userDetails, request);
+		log.info("🩵 비밀번호 변경 (마이페이지) 성공 🩵");
+		return ResponseEntity.ok(new ApiResponse("비밀번호 변경이 완료되었습니다.", null));
 	}
 }

@@ -1,21 +1,124 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Header } from '../../../components/owner/editprofile/Header';
 import BottomNavigation from '../../../components/owner/navigations/BottomNavigations/BottomNavigation';
 import { SubmitButton } from '../../../common/form/SubmitButton';
 import { IoTrashOutline } from 'react-icons/io5';
+import { getBakeryByUserId, updateBakery } from '../../../api/bakery/bakery';
 
-function EditStore() {
+interface BakeryInfo {
+  bakeryId: number;
+  name: string;
+  description: string;
+  addressRoad: string;
+  addressDetail: string;
+  bakeryImageUrl: string | null;
+  bakeryBackgroundImgUrl: string | null;
+}
+
+export function EditStore() {
   const navigate = useNavigate();
   const [storeImage, setStoreImage] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const profileImageRef = useRef<HTMLInputElement>(null);
+  const [bakeryInfo, setBakeryInfo] = useState<BakeryInfo | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // 폼 데이터 상태 추가
+  const [formData, setFormData] = useState({
+    name: '',
+    description: '',
+    addressRoad: '',
+    addressDetail: ''
+  });
+
+  useEffect(() => {
+    const fetchBakeryInfo = async () => {
+      try {
+        const data = await getBakeryByUserId();
+        setBakeryInfo(data);
+        // 가게 정보를 폼 데이터에 설정
+        setFormData({
+          name: data.name,
+          description: data.description,
+          addressRoad: data.addressRoad,
+          addressDetail: data.addressDetail
+        });
+        // 이미지 상태 설정
+        setStoreImage(data.bakeryBackgroundImgUrl);
+        setProfileImage(data.bakeryImageUrl);
+      } catch (error) {
+        console.error('가게 정보 조회 실패:', error);
+        if (error instanceof Error) {
+          setError(error.message);
+        } else {
+          setError('가게 정보를 불러오는데 실패했습니다.');
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchBakeryInfo();
+  }, []);
+
+  // 입력 핸들러 추가
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // 나중에 여기에 API 호출 로직이 들어갈 예정
-    navigate('/owner/mypage');
+
+    if (!bakeryInfo) {
+      alert('가게 정보를 찾을 수 없습니다.');
+      return;
+    }
+
+    // 필수 입력값 검증
+    if (!formData.name.trim()) {
+      alert('가게 이름을 입력해주세요.');
+      return;
+    }
+    if (!formData.description.trim()) {
+      alert('가게 설명을 입력해주세요.');
+      return;
+    }
+    if (!formData.addressRoad.trim()) {
+      alert('도로명 주소를 입력해주세요.');
+      return;
+    }
+    if (!formData.addressDetail.trim()) {
+      alert('상세 주소를 입력해주세요.');
+      return;
+    }
+
+    try {
+      const updateData = {
+        name: formData.name,
+        description: formData.description,
+        addressRoad: formData.addressRoad,
+        addressDetail: formData.addressDetail,
+        photoUrl: profileImage || undefined // null 대신 undefined 사용
+      };
+
+      await updateBakery(bakeryInfo.bakeryId, updateData);
+      alert('가게 정보가 성공적으로 수정되었습니다.');
+      navigate('/owner/mypage');
+    } catch (error) {
+      console.error('가게 정보 수정 실패:', error);
+      if (error instanceof Error) {
+        alert(error.message);
+      } else {
+        alert('가게 정보 수정에 실패했습니다.');
+      }
+    }
   };
 
   const handleImageClick = () => {
@@ -78,6 +181,18 @@ function EditStore() {
 
   const inputClassName = "w-full px-4 py-3 rounded-[8px] border border-[#EFEFEF] placeholder-[#8E8E8E] focus:outline-none focus:border-[#FF9B50]";
 
+  if (isLoading) {
+    return <div className="p-4 text-center">로딩중...</div>;
+  }
+
+  if (error) {
+    return <div className="p-4 text-center text-red-500">{error}</div>;
+  }
+
+  if (!bakeryInfo) {
+    return <div className="p-4 text-center">가게 정보를 찾을 수 없습니다.</div>;
+  }
+
   return (
     <div className="min-h-screen bg-white pb-20">
       <Header title="가게정보 수정" />
@@ -91,7 +206,9 @@ function EditStore() {
           </label>
           <input
             type="text"
-            placeholder="가롯빵집"
+            name="name"
+            value={formData.name}
+            onChange={handleInputChange}
             className={inputClassName}
           />
         </div>
@@ -103,7 +220,9 @@ function EditStore() {
             <span className="text-red-500 ml-1">*</span>
           </label>
           <textarea
-            placeholder="예) 20년 경력의 베이커리 장인이 만드는 건강한 빵집입니다.&#13;&#10;당일 생산 당일 판매를 원칙으로 하며, 대표 메뉴는 크로와상과 통밀식빵입니다.&#13;&#10;글루텐프리 빵도 준비되어 있습니다."
+            name="description"
+            value={formData.description}
+            onChange={handleInputChange}
             className={`${inputClassName} h-24 resize-none`}
           />
         </div>
@@ -117,12 +236,16 @@ function EditStore() {
           <div className="space-y-2">
             <input
               type="text"
-              placeholder="진평동 453"
+              name="addressRoad"
+              value={formData.addressRoad}
+              onChange={handleInputChange}
               className={inputClassName}
             />
             <input
               type="text"
-              placeholder="타워티 305호"
+              name="addressDetail"
+              value={formData.addressDetail}
+              onChange={handleInputChange}
               className={inputClassName}
             />
           </div>

@@ -1,3 +1,4 @@
+
 interface RatingSummaryProps {
     averageRating: number
     ratingCounts: number[]

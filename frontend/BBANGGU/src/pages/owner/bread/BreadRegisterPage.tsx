@@ -159,18 +159,18 @@ const BREAD_CATEGORIES: BreadCategory[] = [
   },
 ];
 
-// API_BASE_URL 수정
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://i12d102.p.ssafy.io:8081';
-
-// 이미지 URL을 완성하는 함수 수정
+// getFullImageUrl 함수에서 직접 환경변수 사용
 const getFullImageUrl = (imageUrl: string | null): string => {
-  if (!imageUrl) return '';  // null 대신 빈 문자열 반환
+  if (!imageUrl) return '';
   if (imageUrl.startsWith('http')) return imageUrl;
   
-  const token = localStorage.getItem('token'); // 또는 다른 방식으로 토큰 가져오기
-  const baseUrl = API_BASE_URL.endsWith('/') ? API_BASE_URL.slice(0, -1) : API_BASE_URL;
-  const imagePath = imageUrl.startsWith('/') ? imageUrl.slice(1) : imageUrl;
-  return `${baseUrl}/${imagePath}?token=${token}`;
+  const path = imageUrl.startsWith('/') ? imageUrl : `/uploads/${imageUrl}`;
+  
+  if (import.meta.env.DEV) {
+    return path;
+  }
+  
+  return `https://i12d102.p.ssafy.io${path}`;
 };
 
 // 에러 타입 정의
@@ -182,6 +182,11 @@ interface FormError extends Error {
     };
   };
 }
+
+// 이미 등록된 빵의 카테고리 ID 목록을 추출하는 함수
+const getUsedCategoryIds = (breads: BreadInfo[]) => {
+  return new Set(breads.map(bread => bread.breadCategoryId));
+};
 
 export default function BreadRegisterPage() {
   const navigate = useNavigate();
@@ -371,18 +376,38 @@ export default function BreadRegisterPage() {
 
   // 빵 삭제 핸들러
   const handleDeleteBread = async (breadId: number) => {
-    if (window.confirm('정말 이 빵을 삭제하시겠습니까?')) {
-      try {
-        await deleteBread(breadId);
-        // 목록 새로고침
-        const updatedBreads = await getBakeryBreads(1);  // BreadInfo[] 배열이 직접 반환됨
-        setExistingBreads(updatedBreads);  // 그대로 설정
+    if (!window.confirm('정말 이 빵을 삭제하시겠습니까?')) return;
+
+    try {
+      setIsLoading(true); // 로딩 상태 추가
+      const result = await deleteBread(breadId);
+      console.log('삭제 응답:', result); // 응답 확인용 로그
+
+      if (result.message === "빵 정보 삭제 성공") {
+        // 성공적으로 삭제된 경우 목록에서 제거
+        setExistingBreads(prev => prev.filter(bread => bread.breadId !== breadId));
         alert('빵이 삭제되었습니다.');
-      } catch (error: unknown) {
-        const err = error as FormError;
-        alert(err.response?.data.message || '빵 삭제 중 오류가 발생했습니다.');
       }
+    } catch (error: unknown) {
+      const err = error as FormError;
+      console.error('삭제 실패:', err);
+      alert(err.response?.data.message || '빵 삭제 중 오류가 발생했습니다.');
+    } finally {
+      setIsLoading(false);
     }
+  };
+
+  // 카테고리 선택 핸들러 수정
+  const handleCategorySelect = (categoryId: number) => {
+    const usedCategories = getUsedCategoryIds(existingBreads);
+    
+    // 이미 해당 카테고리의 빵이 등록되어 있다면 알림
+    if (usedCategories.has(categoryId)) {
+      alert('이미 해당 카테고리의 빵이 등록되어 있습니다.');
+      return;
+    }
+    
+    setSelectedCategory(categoryId);
   };
 
   return (
@@ -417,7 +442,11 @@ export default function BreadRegisterPage() {
             </p>
             <p className="flex items-start gap-2">
               <span className="text-[#FC973B] font-medium">3.</span>
-              <span>등록된 빵은 AI 카메라로 재고 확인 시 자동으로 인식됩니다</span>
+              <span>등록된 빵은 AI 카메라에서 자동으로 인식됩니다</span>
+            </p>
+            <p className="flex items-start gap-2">
+              <span className="text-[#FC973B] font-medium">4.</span>
+              <span>빵 카테고리 1개당 1개의 상품만 등록할 수 있어요</span>
             </p>
           </div>
         </div>
@@ -429,19 +458,30 @@ export default function BreadRegisterPage() {
             카테고리
           </label>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-[240px] overflow-y-auto rounded-lg border border-gray-200 p-2">
-            {BREAD_CATEGORIES.map((category) => (
-              <button
-                key={category.id}
-                onClick={() => setSelectedCategory(category.id)}
-                className={`p-3 rounded-lg text-sm transition-all active:scale-[0.98]
-                  ${selectedCategory === category.id
-                    ? 'bg-[#FC973B] text-white font-medium'
-                    : 'bg-gray-50 text-gray-700 active:bg-[#FFF5EC] active:text-[#FC973B]'
-                  }`}
-              >
-                {category.name}
-              </button>
-            ))}
+            {BREAD_CATEGORIES.map((category) => {
+              const isUsed = getUsedCategoryIds(existingBreads).has(category.id);
+              
+              return (
+                <button
+                  key={category.id}
+                  onClick={() => handleCategorySelect(category.id)}
+                  disabled={isUsed}
+                  className={`h-[72px] p-4 rounded-lg transition-colors text-center
+                    ${selectedCategory === category.id 
+                      ? 'bg-[#FC973B] text-white font-medium border-2 border-[#FC973B]' 
+                      : isUsed 
+                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200'
+                        : 'bg-white hover:border-[#FC973B] hover:text-[#FC973B] border border-gray-200'
+                    }
+                  `}
+                >
+                  <span className="block text-sm">
+                    {category.name}
+                    {isUsed && <span className="block text-xs mt-1">(등록됨)</span>}
+                  </span>
+                </button>
+              );
+            })}
           </div>
 
           {/* 선택된 카테고리 표시 */}
@@ -600,11 +640,9 @@ export default function BreadRegisterPage() {
                           src={getFullImageUrl(bread.breadImageUrl)} 
                           alt={bread.name} 
                           className="w-full h-full object-cover rounded"
-                          onError={() => {
-                            const imgElement = document.querySelector(`[data-bread-id="${bread.breadId}"]`);
-                            if (imgElement) {
-                              imgElement.outerHTML = `<div class="w-full h-full bg-[#FFF5EC] rounded flex items-center justify-center text-2xl">🥖</div>`;
-                            }
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.src = '🥖'; // 다시 이모지로 변경
                           }}
                           data-bread-id={bread.breadId}
                         />

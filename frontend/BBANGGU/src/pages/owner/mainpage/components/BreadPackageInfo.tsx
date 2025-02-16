@@ -1,71 +1,55 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { EllipsisVerticalIcon, PencilSquareIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { useNavigate } from 'react-router-dom';
 import breadPackageIcon from '../../../../assets/images/bakery/bread_pakage.svg';
+import { deletePackage } from '../../../../api/owner/package';
+import { ReservationStatus } from '../../../../api/owner/reservation';
+import { BreadPackage } from '../../../../api/owner/package';
 
 interface BreadPackageInfoProps {
-  packages: {
-    packageId: number;
-    bakeryId: number;
-    price: number;
-    quantity: number;
-    name: string;
-  }[];
+  currentPackage: BreadPackage;
+  reservations: Array<{
+    status: ReservationStatus;
+    quantitiy: number;
+  }>;
+  onPackageDeleted?: () => void;
 }
 
-export const BreadPackageInfo: React.FC<BreadPackageInfoProps> = ({ packages }) => {
-  console.log('BreadPackageInfo에 전달된 packages:', packages);
-  const [showMenu, setShowMenu] = React.useState(false);
+export const BreadPackageInfo: React.FC<BreadPackageInfoProps> = ({ 
+  currentPackage,
+  onPackageDeleted
+}) => {
+  console.log('currentPackage', currentPackage);
+  const [showMenu, setShowMenu] = useState(false);
   const navigate = useNavigate();
-
-  // packages가 undefined일 때를 대비한 기본값 처리
-  const safePackages = packages || [];
+ 
+  // 안전한 숫자 변환 함수
+  const safeToLocaleString = (num: number) => num?.toLocaleString() || '0';
 
   const handleEdit = () => {
-    navigate('/owner/package/register', {
+    navigate('/owner/package/setting', {
       state: {
         isEditing: true,
-        packageInfo: safePackages[0] // 현재는 첫 번째 패키지만 수정 가능하도록 설정
+        packageData: currentPackage  // 현재 패키지 정보를 전달
       }
     });
     setShowMenu(false);
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (window.confirm('빵꾸러미를 삭제하시겠습니까?')) {
-      // TODO: 삭제 API 호출
-      setShowMenu(false);
+      try {
+        await deletePackage(currentPackage.packageId);
+        alert('빵꾸러미가 삭제되었습니다.');
+        setShowMenu(false);
+        if (onPackageDeleted) {
+          onPackageDeleted();
+        }
+      } catch (error: any) {
+        alert(error.response?.data?.message || '빵꾸러미 삭제 중 오류가 발생했습니다.');
+      }
     }
   };
-
-  // 현재는 첫 번째 패키지만 표시 (나중에 여러 패키지 표시로 확장 가능)
-  const currentPackage = safePackages[0];
-  
-  // packageQuantity 계산 수정
-  const packageQuantity = currentPackage?.quantity || 0;  // items 관련 로직 제거
-
-  // 패키지가 없는 경우 빈 상태 표시
-  if (!currentPackage) {
-    return (
-      <div className="flex flex-col items-center justify-center py-12 px-4 bg-[#F9F9F9] rounded-[10px] border border-dashed border-[#E5E5E5] mb-6">
-        <img 
-          src={breadPackageIcon} 
-          alt="빵꾸러미" 
-          className="w-16 h-16 mb-4 opacity-50"
-        />
-        <p className="text-[#6B7280] text-center mb-6">
-          등록된 빵꾸러미가 없습니다<br/>
-          새로운 빵꾸러미를 등록해보세요!
-        </p>
-        <button
-          onClick={() => navigate('/owner/package/guide')}
-          className="px-6 py-3 bg-[#FC973B] text-white rounded-[8px] hover:bg-[#e88934] transition-colors"
-        >
-          빵꾸러미 등록하기
-        </button>
-      </div>
-    );
-  }
 
   return (
     <>
@@ -100,36 +84,76 @@ export const BreadPackageInfo: React.FC<BreadPackageInfoProps> = ({ packages }) 
         </div>
       </div>
 
-      <div className="bg-[#F9F9F9] rounded-[10px] p-4 mb-6 mx-auto border border-[#FC973B] w-[400px] h-[251px] flex-shrink-0">
-        <p className="text-sm text-[#333333] font-bold mb-3">빵꾸러미 1개당</p>
+      <div className="bg-white rounded-[20px] border border-gray-100 p-6 shadow-[0_1px_3px_rgba(0,0,0,0.05)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.05)] transition-shadow">
+        {/* 빵꾸러미 이름 */}
+        <div className="flex items-center gap-2 mb-6">
+          <h2 className="text-[20px] font-bold text-[#242424]">
+            {currentPackage.name}
+          </h2>
+          <span className="px-2 py-1 bg-[#FFF9F5] text-[#FC973B] text-xs font-medium rounded-full">
+            오늘의 빵꾸러미
+          </span>
+        </div>
         
-        <div className="flex items-center gap-[6px] mb-8">
-          <img 
-            src={breadPackageIcon} 
-            alt="빵꾸러미" 
-            className="w-[24px] h-[24px] mt-1"
-          />
-          <div className="flex items-center gap-2">
-            <span className="text-[24px] font-bold">
-              {currentPackage.price.toLocaleString()}원
-            </span>
-            <span className="text-[24px] font-bold text-[#FC973B]">
-              × {packageQuantity}개
-            </span>
+        {/* 가격과 수량 정보 */}
+        <div className="bg-[#FAFAFA] rounded-xl p-4 mb-8 border border-gray-50">
+          <div className="flex items-center gap-6">
+            {/* 가격 정보 */}
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-sm">
+                <img src={breadPackageIcon} alt="빵꾸러미" className="w-6 h-6" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-gray-400 line-through text-sm">
+                  {safeToLocaleString(currentPackage.price * 2)}원
+                </span>
+                <div className="flex items-center">
+                  <span className="text-[24px] font-bold text-[#242424]">
+                    {safeToLocaleString(currentPackage.price)}
+                  </span>
+                  <span className="text-[#FC973B] font-medium ml-1">원</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="h-10 w-[1px] bg-gray-200"></div>
+
+            {/* 수량 정보 */}
+            <div className="flex flex-col">
+              <div className="flex items-center -ml-1">
+                <span className="text-[24px] font-bold text-[#242424]">
+                  {currentPackage.quantity}
+                </span>
+                <span className="text-gray-500 ml-1">/ {currentPackage.initialQuantity}개</span>
+              </div>
+              <div className="flex items-center -ml-1">
+                <span className="text-[14px] text-gray-400">현재 남은 수량</span>
+              </div>
+            </div>
           </div>
         </div>
 
-        <div className="bg-[#FC973B] text-white p-3 rounded-[10px] mb-3">
-          <div className="flex justify-between px-2">
-            <span className="font-medium">오늘 빵꾸러미로 번 돈</span>
-            <span className="font-bold">{(currentPackage.price * packageQuantity).toLocaleString()}원</span>
+        {/* 통계 카드 */}
+        <div className="grid grid-cols-2 gap-3">
+          <div className="bg-gradient-to-br from-[#FFF9F5] to-[#FFF5EC] rounded-2xl p-4 border border-[#FC973B]/10 shadow-[0_2px_8px_rgba(252,151,59,0.05)]">
+            <div className="flex flex-col">
+              <span className="text-gray-600 text-sm mb-1">
+                오늘 빵꾸러미로 번 돈
+              </span>
+              <span className="text-[#FC973B] text-xl font-bold">
+                {safeToLocaleString(currentPackage.savedMoney)}원
+              </span>
+            </div>
           </div>
-        </div>
-
-        <div className="bg-[#FC973B] text-white p-3 rounded-[10px]">
-          <div className="flex justify-between px-2">
-            <span className="font-medium">오늘 절약한 환경 수치</span>
-            <span className="font-bold">{packageQuantity * 20}g</span>
+          <div className="bg-gradient-to-br from-[#FFF9F5] to-[#FFF5EC] rounded-2xl p-4 border border-[#FC973B]/10 shadow-[0_2px_8px_rgba(252,151,59,0.05)]">
+            <div className="flex flex-col">
+              <span className="text-gray-600 text-sm mb-1">
+                오늘 절약한 환경 수치
+              </span>
+              <span className="text-[#FC973B] text-xl font-bold">
+                {currentPackage.savedMoney / currentPackage.price * 20}g
+              </span>
+            </div>
           </div>
         </div>
       </div>

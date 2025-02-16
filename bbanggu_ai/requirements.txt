@@ -1,5 +1,13 @@
 fastapi==0.95.0
 uvicorn==0.23.1
 python-multipart
-ultralytics
+ultralytics~=8.3.75
 opencv-python-headless
+httpx
+numpy~=2.0.2
+opencv-python~=4.11.0.86
+pillow~=11.1.0
+requests~=2.32.3
+tqdm~=4.67.1
+torch~=2.6.0
+torchvision~=0.21.0

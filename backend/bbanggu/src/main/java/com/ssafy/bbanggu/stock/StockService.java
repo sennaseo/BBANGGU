@@ -1,7 +1,12 @@
 package com.ssafy.bbanggu.stock;
 
 import java.time.LocalDate;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -83,6 +88,23 @@ public class StockService {
 				aggregationList.add(new StockMonthDTO(entry.getKey(), entry.getValue()));
 			}
 			result.put(month, aggregationList);
+		}
+		return result;
+	}
+
+	public List<Object[]> getTop3StockByPeriod(long bakeryId, String period) {
+		List<Object[]> result = null;
+		if ("day".equals(period)) {
+			result = stockRepository.findTop3BreadsByQuantityBetweenDates(bakeryId, LocalDate.now(), LocalDate.now());
+		} else if ("week".equals(period)) {
+			result = stockRepository.findTop3BreadsByQuantityBetweenDates(bakeryId, LocalDate.now().minusWeeks(1),
+				LocalDate.now());
+		} else if ("month".equals(period)) {
+			result = stockRepository.findTop3BreadsByQuantityBetweenDates(bakeryId, LocalDate.now().minusMonths(1),
+				LocalDate.now());
+		} else if ("year".equals(period)) {
+			result = stockRepository.findTop3BreadsByQuantityBetweenDates(bakeryId, LocalDate.now().minusYears(1),
+				LocalDate.now());
 		}
 		return result;
 	}

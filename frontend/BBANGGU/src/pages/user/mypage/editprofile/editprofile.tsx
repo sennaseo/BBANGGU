@@ -1,19 +1,41 @@
 import { ChevronLeft, Eye, EyeOff } from "lucide-react"
 import { useNavigate } from "react-router-dom"
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { userProfileEditService } from "../../../../services/user/profileedit/userprofileEditService"
+import { getUserProfile } from "../../../../services/user/mypage/usermypageServices"
 
 export function UserEditProfile() {
   const navigate = useNavigate()
   const [showCurrentPassword, setShowCurrentPassword] = useState(false)
   const [showNewPassword, setShowNewPassword] = useState(false)
   const [formData, setFormData] = useState({
-    name: "이름",
-    email: "dmscks312@gmail.com",
-    phone: "010-1234-1234",
-    profileImage: "",
+    name: "",
+    email: "",
+    phone: "",
     currentPassword: "",
     newPassword: "",
   })
+
+  // 사용자 정보를 API로부터 가져오는 useEffect
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const response = await getUserProfile() // 사용자 정보 조회 API 호출
+        const userData = response[0] // API 응답에서 사용자 데이터 가져오기
+        setFormData({
+          name: userData.name,
+          email: userData.email,
+          phone: userData.phone,
+          currentPassword: "",
+          newPassword: "",
+        })
+      } catch (error) {
+        console.error('사용자 정보 조회 중 오류 발생:', error)
+      }
+    }
+
+    fetchUserData()
+  }, [])
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
@@ -23,10 +45,22 @@ export function UserEditProfile() {
     }))
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // TODO: 회원정보 수정 API 호출
-    navigate(-1)
+    try {
+      // API 호출하여 프로필 업데이트
+      const updatedData = {
+        name: formData.name,
+        phone: formData.phone,
+        // 추가적인 필드가 필요할 경우 여기에 추가
+        // 예: addressRoad: formData.addressRoad, addressDetail: formData.addressDetail
+      }
+
+      await userProfileEditService.updateUserProfile(updatedData) // formData를 전달
+      navigate(-1) // 성공적으로 업데이트 후 이전 페이지로 이동
+    } catch (error) {
+      console.error('프로필 수정 중 오류 발생:', error)
+    }
   }
 
   return (
@@ -84,7 +118,7 @@ export function UserEditProfile() {
           <div className="w-full p-4 rounded-xl border border-gray-200 flex items-center justify-center">
             <button type="button" className="text-[#666666]">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                <path d="M19 3H5C3.89543 3 3 3.89543 3 5V19C3 20.1046 3.89543 21 5 21H19C20.1046 21 21 20.1046 21 19V5C21 3.89543 20.1046 3 19 3Z" stroke="#666666" strokeWidth="2"/>
+                <path d="M19 3H5C4.9 3 4 3.89543 4 5V19C4 20.1046 4.9 21 5 21H19C20.1046 21 21 20.1046 21 19V5C21 3.89543 20.1046 3 19 3Z" stroke="#666666" strokeWidth="2"/>
                 <path d="M12 8V16M8 12H16" stroke="#666666" strokeWidth="2" strokeLinecap="round"/>
               </svg>
             </button>

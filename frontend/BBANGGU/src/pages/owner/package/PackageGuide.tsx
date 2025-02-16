@@ -14,29 +14,40 @@ const PackageGuide: React.FC = () => {
     const file = event.target.files?.[0];
     if (file) {
       try {
+        // 파일 정보 로깅
+        console.log('원본 파일 정보:', {
+          name: file.name,
+          type: file.type,
+          size: file.size
+        });
+
         const compressedFile = await compressImage(file);
-        console.log('원본 크기:', file.size, '압축 후 크기:', compressedFile.size);
+        console.log('압축 파일 정보:', {
+          name: compressedFile.name,
+          type: compressedFile.type,
+          size: compressedFile.size
+        });
 
         const formData = new FormData();
         formData.append('images', compressedFile);
 
-        // FormData 내용 확인
-        for (let pair of formData.entries()) {
-          console.log('FormData 내용:', pair[0], pair[1]); 
-        }
-
-        // FastAPI 서버로 직접 전송
-        const response = await fetch('https://i12d102.p.ssafy.io/ai/detect', {  // 임시 URL, 실제 FastAPI 서버 URL로 변경 필요
+        // 요청 시작 로깅
+        console.log('API 요청 시작');
+        
+        const response = await fetch('https://i12d102.p.ssafy.io/ai/detect', {
           method: 'POST',
           body: formData
         });
 
+        // 응답 상세 로깅
         console.log('응답 상태:', response.status);
+        console.log('응답 헤더:', Object.fromEntries(response.headers.entries()));
+        
         const responseText = await response.text();
         console.log('응답 내용:', responseText);
 
         if (!response.ok) {
-          throw new Error(`서버 에러: ${response.status}`);
+          throw new Error(`서버 에러: ${response.status}\n응답: ${responseText}`);
         }
 
         const result = JSON.parse(responseText);
@@ -54,9 +65,16 @@ const PackageGuide: React.FC = () => {
         };
         reader.readAsDataURL(compressedFile);
 
-      } catch (error) {
-        console.error('상세 에러:', error);
-        alert('이미지 분석 중 오류가 발생했습니다.');
+      } catch (err) {
+        // 에러 객체 타입 처리
+        const error = err as Error;
+        
+        // 상세 에러 로깅
+        console.error('에러 타입:', error.constructor.name);
+        console.error('에러 메시지:', error.message);
+        console.error('전체 에러:', error);
+        
+        alert(`이미지 분석 중 오류가 발생했습니다.\n${error.message}`);
       }
     }
   };
