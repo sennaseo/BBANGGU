@@ -285,31 +285,36 @@ export default function BreadRegisterPage() {
 
     setIsLoading(true);
     try {
+      // 각 빵 데이터 전송 전에 로그 출력
+      console.log('userInfo:', userInfo);
+      console.log('breadList:', breadList);
+
       for (const bread of breadList) {
+        // 빵 데이터 구성
         const breadData = {
-          bakeryId: userInfo.bakeryId,
+          bakeryId: userInfo.bakeryId,  // bakeryId를 userInfo에서 가져옴
           breadCategoryId: bread.categoryId,
           name: bread.name,
-          price: bread.price
+          price: Number(bread.price)  // 숫자로 확실하게 변환
         };
+
+        console.log('전송할 빵 데이터:', breadData);  // 전송 직전 데이터 확인
 
         let imageFile: File | undefined;
         if (bread.image && bread.image.startsWith('blob:')) {
           const response = await fetch(bread.image);
           const blob = await response.blob();
-          imageFile = new File([blob], `bread-${bread.id}.jpg`, { type: 'image/jpeg' });
+          imageFile = new File([blob], `bread-${Date.now()}.jpg`, { type: 'image/jpeg' });
         }
 
-        const result = await registerBread(breadData, imageFile);
-        console.log('빵 등록 성공:', result);
+        await registerBread(breadData, imageFile);
       }
 
       alert('빵 등록이 완료되었습니다.');
       navigate(-1);
-    } catch (error: unknown) {
-      const err = error as FormError;
-      console.error(err.response);
-      alert(err.response?.data.message || '빵 등록 중 오류가 발생했습니다. 다시 시도해주세요.');
+    } catch (error: any) {
+      console.error('빵 등록 실패:', error);
+      alert(error.response?.data?.message || '빵 등록 중 오류가 발생했습니다.');
     } finally {
       setIsLoading(false);
     }

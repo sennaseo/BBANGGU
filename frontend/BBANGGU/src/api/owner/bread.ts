@@ -63,29 +63,33 @@ export const registerBread = async (
   try {
     const formData = new FormData();
     
-    // bread 필드에 JSON 데이터를 문자열로 변환하여 추가
-    formData.append('bread', JSON.stringify(breadData));
+    // bread 필드에 JSON 문자열로 직접 추가
+    formData.append('bread', JSON.stringify({
+      bakeryId: breadData.bakeryId,
+      breadCategoryId: breadData.breadCategoryId,
+      name: breadData.name,
+      price: breadData.price
+    }));
 
     // 이미지가 있으면 추가
     if (breadImage) {
       formData.append('breadImage', breadImage);
     }
 
-    // 요청 데이터 확인
+    // 디버깅을 위한 로그
     console.log('=== 전송 데이터 ===');
     formData.forEach((value, key) => {
-      console.log(`${key}:`, value);
-    });
-
-    const response = await instance.post<BreadRegisterResponse>('/bread', formData, {
-      headers: {
-        // Content-Type을 설정하지 않음 (axios가 자동으로 설정)
+      if (key === 'bread') {
+        console.log('bread:', JSON.parse(value as string));
+      } else {
+        console.log(`${key}:`, value);
       }
     });
 
+    const response = await instance.post('/bread', formData);
     return response.data;
-  } catch (error) {
-    console.error('빵 등록 실패:', error);
+  } catch (error: any) {
+    console.error('빵 등록 실패:', error.response?.data || error);
     throw error;
   }
 };
@@ -141,20 +145,8 @@ export const updateBread = async (
 // 빵 정보 삭제 API
 export const deleteBread = async (breadId: number): Promise<BreadDeleteResponse> => {
   try {
-    const response = await fetch(`/api/bread/${breadId}`, {
-      method: 'DELETE',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-      }
-    });
-
-    if (!response.ok) {
-      throw new Error('빵 삭제 실패');
-    }
-
-    const data = await response.json();
-    return data as BreadDeleteResponse;  // 타입 명시
+    const response = await instance.delete<BreadDeleteResponse>(`/bread/${breadId}`);
+    return response.data;
   } catch (error) {
     console.error('빵 삭제 중 오류 발생:', error);
     throw error;
