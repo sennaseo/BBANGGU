@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.ssafy.bbanggu.bakery.domain.Bakery;
 import com.ssafy.bbanggu.bread.Bread;
+import com.ssafy.bbanggu.bread.BreadService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -21,6 +22,7 @@ import lombok.RequiredArgsConstructor;
 @Transactional
 public class StockService {
 	private final StockRepository stockRepository;
+	private final BreadService breadService;
 
 	public void insertStock(StockDTO stockDto) {
 		stockRepository.save(DtoToEntity(stockDto));
@@ -106,6 +108,7 @@ public class StockService {
 			result = stockRepository.findTop3BreadsByQuantityBetweenDates(bakeryId, LocalDate.now().minusYears(1),
 				LocalDate.now());
 		}
+
 		return result;
 	}
 
@@ -134,5 +137,9 @@ public class StockService {
 			.quantity(stock.getQuantity())
 			.date(stock.getDate())
 			.build();
+	}
+
+	public int countTotalStock(long bakeryId) {
+		return stockRepository.findSumQuantityByBakery_BakeryId(bakeryId);
 	}
 }

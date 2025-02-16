@@ -1,6 +1,7 @@
 package com.ssafy.bbanggu.stock;
 
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -112,7 +113,11 @@ public class StockController {
 	public ResponseEntity<?> getTop3Stock(@PathVariable long bakeryId, @PathVariable String period) {
 		try {
 			List<Object[]> stockList = stockService.getTop3StockByPeriod(bakeryId, period);
-			return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse("재고 조회 성공", stockList));
+			int total = stockService.countTotalStock(bakeryId);
+			Map<String, Object> result = new HashMap<>();
+			result.put("top3", stockList);
+			result.put("total", total);
+			return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse("재고 조회 성공", result));
 		} catch (Exception e) {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("재고 조회 실패");
 		}
