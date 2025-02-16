@@ -3,12 +3,16 @@ package com.ssafy.bbanggu.stock;
 import java.time.LocalDate;
 import java.util.List;
 
+import com.ssafy.bbanggu.ai.dto.InventoryItemDto;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface StockRepository extends JpaRepository<Stock, Long> {
 	List<Stock> findByBakery_BakeryIdAndDateBetween(long bakeryId, LocalDate startDate, LocalDate endDate);
+
+	List<InventoryItemDto> findByBakery_BakeryId(Long bakeryId);
 
 	@Query("SELECT s.bread.breadId, SUM(s.quantity) " +
 		"FROM Stock s " +
