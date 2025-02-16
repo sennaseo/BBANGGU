@@ -37,11 +37,9 @@ import PackageSalesSetting from './pages/owner/package/PackageSalesSetting';
 import PackageSettingPage from './pages/owner/package/PackageSettingPage';
 import BreadRegisterPage from './pages/owner/bread/BreadRegisterPage';
 import { InstallPWA } from './components/InstallPWA';
+import KakaoCallback from './pages/login/KakaoCallback';
 import { PaymentSuccess } from "./pages/user/payment/PaymentSuccess";
 import { PaymentFail } from "./pages/user/payment/PaymentFail";
-
-
-
 
 
 export default function App() {
@@ -58,6 +56,7 @@ export default function App() {
             <Route path="/signup" element={<SignupPage />} />
             <Route path="/signup/customer" element={<CustomerSignupPage />} />
             <Route path="/signup/owner" element={<OwnerSignupPage />} />
+            <Route path="/kakao/callback" element={<KakaoCallback />} />
 
 
             {/* 사용자 관련 페이지 */}

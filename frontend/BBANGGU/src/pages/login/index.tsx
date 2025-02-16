@@ -87,8 +87,8 @@ export default function LoginPage() {
     setIsLoading(true)
     try {
       const response = await getKakaoLoginUrl()
-      if (response.data) {
-        window.location.href = response.data
+      if (response.data.data) {
+        window.location.href = response.data.data
       }
     } catch (error) {
       if (error instanceof Error) {
