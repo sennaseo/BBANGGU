@@ -22,6 +22,7 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
         FROM Reservation r
         JOIN r.user u
         WHERE r.user.userId = :userId
+        AND r.createdAt BETWEEN :startDate AND :endDate
         ORDER BY r.createdAt DESC
     """)
 	List<ReservationResponse> findByUser_UserIdAndCreatedAtBetween(long userId, LocalDateTime startDate, LocalDateTime endDate);
