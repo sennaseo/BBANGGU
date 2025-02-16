@@ -208,21 +208,24 @@ public class UserService { // 사용자 관련 비즈니스 로직 처리
 			);
 		}
 
-		String profileImageUrl = user.getProfileImageUrl(); // 기존 URL 유지
 		if (profileImg != null && !profileImg.isEmpty()) {
 			try {
-				profileImageUrl = imageService.saveImage(profileImg); // 새 이미지 저장
+				System.out.println("!!!!!profileImage: " + profileImg);
+				String profileImageUrl = imageService.saveImage(profileImg); // 새 이미지 저장
+				System.out.println("📌 profileImage 저장된 URL: " + profileImageUrl);
+				if (profileImageUrl != null) {
+					user.setProfileImageUrl(profileImageUrl);
+				}
 			} catch (IOException e) {
 				throw new CustomException(ErrorCode.PROFILE_IMAGE_UPLOAD_FAILED);
 			}
 		}
 
 		// ✅ 특정 필드만 변경 가능하도록 처리
-		user.updateUserInfo(
-			updates.name(),
-			updates.phone(),
-			profileImageUrl
-		);
+		user.setName(Optional.ofNullable(updates.name()).orElse(user.getName()));
+		user.setPhone(Optional.ofNullable(updates.phone()).orElse(user.getPhone()));
+
+		userRepository.save(user);
 	}
 
 	/**

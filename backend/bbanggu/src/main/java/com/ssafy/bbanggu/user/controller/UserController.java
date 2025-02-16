@@ -185,7 +185,7 @@ public class UserController {
     @PatchMapping("/update")
     public ResponseEntity<ApiResponse> updateUser(
 		@AuthenticationPrincipal CustomUserDetails userDetails,
-		@RequestPart("user") UpdateUserRequest updates,
+		@RequestPart(value = "user", required = false) UpdateUserRequest updates,
 		@RequestPart(value = "profileImage", required = false) MultipartFile file
 	) {
 		// ✅ 변경할 필드만 업데이트
