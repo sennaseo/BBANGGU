@@ -99,7 +99,7 @@ public class StockController {
 	// 기간 기준 조회
 	@GetMapping("/bakery/{bakeryId}/{startDate}/{endDate}")
 	public ResponseEntity<?> getStockByPeriod(@PathVariable long bakeryId, @PathVariable LocalDate startDate,
-		@PathVariable LocalDate endDate) { 
+		@PathVariable LocalDate endDate) {
 		try {
 			List<StockDTO> stockList = stockService.getStockByPeriod(startDate, endDate, bakeryId);
 			return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse("재고 조회 성공", stockList));
@@ -113,7 +113,7 @@ public class StockController {
 	public ResponseEntity<?> getTop3Stock(@PathVariable long bakeryId, @PathVariable String period) {
 		try {
 			List<Object[]> stockList = stockService.getTop3StockByPeriod(bakeryId, period);
-			int total = stockService.countTotalStock(bakeryId);
+			int total = stockService.countTotalStock(bakeryId, period);
 			Map<String, Object> result = new HashMap<>();
 			result.put("top3", stockList);
 			result.put("total", total);

@@ -27,6 +27,8 @@ public interface StockRepository extends JpaRepository<Stock, Long> {
 		@Param("endAt") LocalDate endAt
 	);
 
-	@Query("SELECT SUM(s.quantity) FROM Stock s WHERE s.bakery.bakeryId = :bakeryId")
-	int findSumQuantityByBakery_BakeryId(@Param("bakeryId") Long bakeryId);
+	@Query("SELECT SUM(s.quantity) FROM Stock s WHERE s.bakery.bakeryId = :bakeryId AND s.date BETWEEN :startDate AND :endDate")
+	int findSumQuantityByBakery_BakeryIdAndDateBetween(@Param("bakeryId") Long bakeryId,
+		@Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
+
 }
