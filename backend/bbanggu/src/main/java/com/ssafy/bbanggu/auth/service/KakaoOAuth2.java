@@ -11,6 +11,7 @@ import org.springframework.web.client.RestTemplate;
 
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import jakarta.servlet.http.HttpServletRequest;
 
 @Service
 @RequiredArgsConstructor
@@ -18,9 +19,6 @@ public class KakaoOAuth2 {
 
 	@Value("${kakao.client-id}")
 	private String kakaoClientId;
-
-	@Value("${kakao.redirect-uri}")
-	private String kakaoRedirectUri;
 
 	@Value("${kakao.api-url.token}")
 	private String kakaoTokenUrl;
@@ -31,12 +29,17 @@ public class KakaoOAuth2 {
 	private final RestTemplate restTemplate = new RestTemplate();
 	private final ObjectMapper objectMapper = new ObjectMapper();
 
+	// 동적 리다이렉트 URL 생성 메서드 수정
+	private String getRedirectUri(HttpServletRequest request) {
+		return "https://i12d102.p.ssafy.io/api/oauth/kakao/callback";
+	}
+
 	/**
 	 * 카카오 로그인 후 사용자 정보 가져오기
 	 */
-	public KakaoUserInfo getUserInfo(String authCode) {
+	public KakaoUserInfo getUserInfo(String authCode, HttpServletRequest request) {
 		// 1️⃣ 카카오로부터 Access Token 요청
-		String accessToken = getAccessToken(authCode);
+		String accessToken = getAccessToken(authCode, request);
 
 		// 2️⃣ 카카오로부터 사용자 정보 요청
 		return fetchUserInfo(accessToken);
@@ -46,18 +49,18 @@ public class KakaoOAuth2 {
 	 * 🔹 카카오 Access Token 요청
 	 */
 	// 카카오 OAuth 서버에 Access Token 요청
-	private String getAccessToken(String authCode) {
+	private String getAccessToken(String authCode, HttpServletRequest request) {
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
 		MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
 		body.add("grant_type", "authorization_code");
 		body.add("client_id", kakaoClientId);
-		body.add("redirect_uri", kakaoRedirectUri);
+		body.add("redirect_uri", getRedirectUri(request));
 		body.add("code", authCode);
 
-		HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(body, headers);
-		ResponseEntity<String> response = restTemplate.exchange(kakaoTokenUrl, HttpMethod.POST, request, String.class);
+		HttpEntity<MultiValueMap<String, String>> requestEntity = new HttpEntity<>(body, headers);
+		ResponseEntity<String> response = restTemplate.exchange(kakaoTokenUrl, HttpMethod.POST, requestEntity, String.class);
 
 		try {
 			JsonNode jsonNode = objectMapper.readTree(response.getBody());
