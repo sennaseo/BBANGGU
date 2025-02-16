@@ -157,16 +157,14 @@ export default function PackageSettingPage() {
   // 픽업 시간 조회
   useEffect(() => {
     const fetchPickupTime = async () => {
-      try {
-        const response = await getPickupTime(1);
-        const pickupTimeData = response?.data;
+      if (!form.bakeryId) return;
 
-        // 타입 가드를 사용하여 데이터 유효성 검사
-        if (
-          pickupTimeData && 
-          typeof pickupTimeData.startTime === 'string' && 
-          typeof pickupTimeData.endTime === 'string'
-        ) {
+      try {
+        const response = await getPickupTime(form.bakeryId);
+        console.log('픽업 시간 응답:', response); // 디버깅용
+        
+        if (response && response.data) {
+          const pickupTimeData = response.data;
           setForm(prev => ({
             ...prev,
             startTime: pickupTimeData.startTime,
@@ -177,16 +175,19 @@ export default function PackageSettingPage() {
             startTime: pickupTimeData.startTime,
             endTime: pickupTimeData.endTime
           });
-        } else {
-          console.warn('유효하지 않은 픽업 시간 데이터:', response);
         }
       } catch (error) {
         console.error('픽업 시간 조회 실패:', error);
+        setForm(prev => ({
+          ...prev,
+          startTime: '',
+          endTime: ''
+        }));
       }
     };
 
     fetchPickupTime();
-  }, []);
+  }, [form.bakeryId]);
 
   // 현재 요일 가져오는 함수 추가
   const getCurrentDay = () => {
@@ -222,7 +223,15 @@ export default function PackageSettingPage() {
              defaultPickupTime.endTime !== form.endTime)) {
           
           const currentDay = getCurrentDay();
-          await updatePickupTime(1, {
+          console.log('픽업 시간 수정 요청:', {
+            bakeryId: form.bakeryId,
+            [currentDay]: {
+              startTime: form.startTime,
+              endTime: form.endTime
+            }
+          });
+
+          await updatePickupTime(form.bakeryId, {
             [currentDay]: {
               startTime: form.startTime,
               endTime: form.endTime
@@ -244,8 +253,9 @@ export default function PackageSettingPage() {
 
       navigate('/owner/main');
     } catch (error: any) {
-      // 토큰 만료 등의 인증 에러인 경우
-      if (error.response?.status === 401) {
+      console.error('에러 발생:', error);
+      // 401 에러 처리
+      if (error.response?.status === 401 || error.message === '인증이 필요합니다.') {
         dispatch(logout());
         dispatch(clearUserInfo());
         navigate('/login');
