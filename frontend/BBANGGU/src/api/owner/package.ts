@@ -1,4 +1,4 @@
-import axiosInstance from '../axios_2';
+import axiosInstance from '../axios';
 
 // 여기에 공통으로 사용할 BreadPackage 인터페이스를 정의
 export interface BreadPackage {
