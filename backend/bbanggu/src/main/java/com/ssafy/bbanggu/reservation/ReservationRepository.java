@@ -6,8 +6,10 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.ssafy.bbanggu.breadpackage.BreadPackage;
 import com.ssafy.bbanggu.reservation.dto.ReservationInfo;
@@ -47,4 +49,18 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
 		"AND DATE(r.pickupAt) = CURRENT_DATE " +
 		"AND r.pickupAt IS NOT NULL")
 	int getTotalPickedUpQuantityTodayByBakeryId(Long bakeryId);
+
+	// 가게별 노쇼 예약 조회 (status가 CANCEL이 아니고, pickup_at이 NULL인 예약)
+	@Query("SELECT r FROM Reservation r WHERE r.bakery.bakeryId = :bakeryId AND r.status != 'CANCEL' AND r.pickupAt IS NULL")
+	List<Reservation> findMissedReservations(Long bakeryId);
+
+	// 가게별 노쇼 예약을 자동 픽업 처리 (pickup_at을 현재 시간으로 업데이트)
+	@Transactional
+	@Modifying
+	@Query("UPDATE Reservation r SET r.pickupAt = :now, r.status = :status WHERE r.bakery.bakeryId = :bakeryId AND r.status != 'CANCEL' AND r.pickupAt IS NULL")
+	int updateMissedReservations(Long bakeryId, LocalDateTime now, String status);
+
+	// 오늘 빵꾸러미를 등록한 모든 가게의 아이디 조회
+	@Query("SELECT DISTINCT bp.bakery.bakeryId FROM BreadPackage bp WHERE bp.deletedAt IS NULL")
+	List<Long> findAllActiveBakeryIdsWithPackages();
 }
