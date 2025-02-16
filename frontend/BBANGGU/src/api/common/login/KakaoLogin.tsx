@@ -9,7 +9,7 @@ interface KakaoLoginResponse {
 export const getKakaoLoginUrl = async (): Promise<KakaoLoginResponse> => {
   try {
     const response = await instance.get<KakaoLoginResponse>(
-      '/auth/kakao/login',
+      '/oauth/kakao/login',
       {
         withCredentials: true,
       }
