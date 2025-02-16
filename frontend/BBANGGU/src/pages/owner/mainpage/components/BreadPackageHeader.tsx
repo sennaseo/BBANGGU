@@ -53,15 +53,15 @@ export const BreadPackageHeader = ({ hasPackage }: BreadPackageHeaderProps) => {
                   : 'bg-black/40 hover:bg-black/50 active:bg-black/60 active:scale-95'
                 }`}
             >
-              <div className="absolute top-0 left-0 w-[25px] h-[25px] border-t-[3px] border-l-[3px] border-[#FC973B] rounded-tl-[15px]" />
-              <div className="absolute top-0 right-0 w-[25px] h-[25px] border-t-[3px] border-r-[3px] border-[#FC973B] rounded-tr-[15px]" />
-              <div className="absolute bottom-0 left-0 w-[25px] h-[25px] border-b-[3px] border-l-[3px] border-[#FC973B] rounded-bl-[15px]" />
-              <div className="absolute bottom-0 right-0 w-[25px] h-[25px] border-b-[3px] border-r-[3px] border-[#FC973B] rounded-br-[15px]" />
+              <div className={`absolute top-0 left-0 w-[25px] h-[25px] border-t-[3px] border-l-[3px] border-[#FC973B] rounded-tl-[15px] ${hasPackage ? 'opacity-50' : ''}`} />
+              <div className={`absolute top-0 right-0 w-[25px] h-[25px] border-t-[3px] border-r-[3px] border-[#FC973B] rounded-tr-[15px] ${hasPackage ? 'opacity-50' : ''}`} />
+              <div className={`absolute bottom-0 left-0 w-[25px] h-[25px] border-b-[3px] border-l-[3px] border-[#FC973B] rounded-bl-[15px] ${hasPackage ? 'opacity-50' : ''}`} />
+              <div className={`absolute bottom-0 right-0 w-[25px] h-[25px] border-b-[3px] border-r-[3px] border-[#FC973B] rounded-br-[15px] ${hasPackage ? 'opacity-50' : ''}`} />
               
               <img 
                 src={cameraIcon} 
                 alt="카메라" 
-                className="w-[50px] h-[50px] mb-2"
+                className={`w-[50px] h-[50px] mb-2 ${hasPackage ? 'opacity-50' : ''}`}
               />
               <span className="text-white text-[12px] font-bold">
                 {hasPackage ? '등록완료' : '빵꾸러미 등록'}
@@ -71,18 +71,20 @@ export const BreadPackageHeader = ({ hasPackage }: BreadPackageHeaderProps) => {
         </div>
       </div>
 
-      {!hasPackage && (
-        <button
-          onClick={handleManualRegister}
-          className="w-[400px] py-2.5 bg-white text-gray-600 rounded-xl font-medium
-            border border-gray-200 hover:border-[#FC973B] hover:text-[#FC973B] 
-            transition-all duration-200 flex items-center justify-center gap-1.5
-            text-sm shadow-sm"
-        >
-          <span>수기로 빵꾸러미 등록하기</span>
-          <span className="text-[#FC973B]">›</span>
-        </button>
-      )}
+      <button
+        onClick={handleManualRegister}
+        disabled={hasPackage}
+        className={`w-[400px] py-2.5 rounded-xl font-medium
+          transition-all duration-200 flex items-center justify-center gap-1.5
+          text-sm shadow-sm
+          ${hasPackage 
+            ? 'bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200' 
+            : 'bg-white text-gray-600 border border-gray-200 hover:border-[#FC973B] hover:text-[#FC973B]'
+          }`}
+      >
+        <span>수기로 빵꾸러미 등록하기</span>
+        <span className={hasPackage ? 'text-gray-400' : 'text-[#FC973B]'}>›</span>
+      </button>
     </div>
   );
 }; 
