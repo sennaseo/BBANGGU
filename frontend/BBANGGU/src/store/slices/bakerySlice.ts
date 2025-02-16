@@ -24,6 +24,13 @@ export interface BakeryInfo {
   price: number;
   latitude?: number;
   longitude?: number;
+  package: {
+    data: Array<{
+      name: string;
+      price: number;
+      quantity: number;
+    }>;
+  };
 }
 
 interface BakeryState {

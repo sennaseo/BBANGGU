@@ -1,77 +1,45 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ChevronDownIcon } from '@heroicons/react/24/solid';
+import { reviewApi } from '../../../../api/user/review/reviewApi';
+import type { BakeryRating, ReviewType } from '../../../../types/bakery';
 
-interface ReviewSectionProps {
-  stats: {
-    average: number;
-    total: number;
-    distribution: {
-      5: number;
-      4: number;
-      3: number;
-      2: number;
-      1: number;
-    };
-  };
-  reviews: {
-    id: number;
-    userName: string;
-    rating: number;
-    content: string;
-    date: string;
-    imageUrl: string;
-  }[];
-}
-
-// 더미 데이터 수정
-const testData = {
-  stats: {
-    average: 4.7,
-    total: 3,
-    distribution: {
-      5: 2,
-      4: 1,
-      3: 0,
-      2: 0,
-      1: 0
-    }
-  },
-  reviews: [
-    {
-      id: 1,
-      userName: "하얀",
-      rating: 5,
-      content: "매번 맛나게 먹고있습니다 정말좋습니다!! 빵도 신선하고 구성도 알차서 너무 만족스러워요.",
-      date: "47분전"
-    },
-    {
-      id: 2,
-      userName: "김민지",
-      rating: 4,
-      content: "빵이 너무 맛있어요! 다음에도 꼭 이용하고 싶습니다. 특히 크로와상이 제일 맛있었어요.",
-      date: "2시간전"
-    },
-    {
-      id: 3,
-      userName: "서지현",
-      rating: 5,
-      content: "오늘 처음 구매했는데 너무 만족스러워요! 빵이 정말 신선하고 맛있네요. 특히 단팥빵이 제일 맛있었어요. 사진처럼 구성도 알차고 좋습니다 ㅎㅎ",
-      date: "3시간전",
-      imageUrl: "https://images.unsplash.com/photo-1608198093002-ad4e005484ec?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2532&q=80"
-    }
-  ]
-};
-
-export const ReviewSection: React.FC<ReviewSectionProps> = ({ stats }) => {
+export const ReviewSection: React.FC<{ bakeryId: number }> = ({ bakeryId }) => {
+  const [reviews, setReviews] = useState<ReviewType[]>([]);
+  const [bakeryRating, setBakeryRating] = useState<BakeryRating | null>(null);
   const [activeFilter, setActiveFilter] = useState<'all' | 'photo'>('all');
   const [sortBy, setSortBy] = useState<'latest' | 'rating'>('latest');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // 리뷰 데이터 fetch
+  useEffect(() => {
+    const fetchReviewData = async () => {
+      try {
+        setIsLoading(true);
+        const [reviewsData, ratingData] = await Promise.all([
+          reviewApi.getReviews(bakeryId),
+          reviewApi.getAverageRating(bakeryId)
+        ]);
+        
+        setReviews(reviewsData);
+        setBakeryRating(ratingData);
+      } catch (err) {
+        console.error('리뷰 데이터 로딩 실패:', err);
+        setError('리뷰를 불러오는데 실패했습니다.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchReviewData();
+  }, [bakeryId, activeFilter]);
 
   // 필터링 및 정렬된 리뷰 목록 계산
-  const filteredAndSortedReviews = testData.reviews
+  const filteredAndSortedReviews = [...reviews]
     .filter(review => {
       if (activeFilter === 'photo') {
-        return review.imageUrl;
+        return review.reviewImageUrl;
       }
       return true;
     })
@@ -79,11 +47,40 @@ export const ReviewSection: React.FC<ReviewSectionProps> = ({ stats }) => {
       if (sortBy === 'rating') {
         return b.rating - a.rating;
       }
-      // 최신순은 이미 데이터가 정렬되어 있다고 가정
-      return 0;
+      // 최신순 정렬
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
     });
 
-  const photoReviewCount = testData.reviews.filter(review => review.imageUrl).length;
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[200px]">
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#FC973B]" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-8 text-red-500">
+        {error}
+      </div>
+    );
+  }
+
+  // stats prop을 bakeryRating 데이터로 변환
+  const stats = {
+    average: bakeryRating?.average || 0,
+    total: reviews.length,
+    distribution: {
+      5: bakeryRating?.star_rating[4] || 0,
+      4: bakeryRating?.star_rating[3] || 0,
+      3: bakeryRating?.star_rating[2] || 0,
+      2: bakeryRating?.star_rating[1] || 0,
+      1: bakeryRating?.star_rating[0] || 0,
+    }
+  };
+
+  const photoReviewCount = reviews.filter(review => review.reviewImageUrl).length;
 
   return (
     <div className="w-full">
@@ -206,7 +203,7 @@ export const ReviewSection: React.FC<ReviewSectionProps> = ({ stats }) => {
         {/* 리뷰 리스트 - 필터링 및 정렬된 리뷰 사용 */}
         <div className="bg-white rounded-[10px] shadow-[0px_0px_10px_0px_rgba(0,0,0,0.15)]">
           {filteredAndSortedReviews.map((review, index) => (
-            <div key={review.id}>
+            <div key={review.reviewId}>
               <div className="p-4">
                 {/* 리뷰 헤더 */}
                 <div className="flex items-center mb-3">
@@ -214,7 +211,7 @@ export const ReviewSection: React.FC<ReviewSectionProps> = ({ stats }) => {
                     {/* 프로필 이미지가 있다면 추가 */}
                   </div>
                   <div className="ml-3">
-                    <p className="font-bold text-[#333333]">{review.userName}</p>
+                    <p className="font-bold text-[#333333]">{review.content}</p>
                     <div className="flex items-center gap-2">
                       <div className="flex">
                         {[...Array(5)].map((_, i) => (
@@ -228,24 +225,21 @@ export const ReviewSection: React.FC<ReviewSectionProps> = ({ stats }) => {
                           </svg>
                         ))}
                       </div>
-                      <span className="text-sm text-gray-400">{review.date}</span>
+                      <span className="text-sm text-gray-400">{review.createdAt}</span>
                     </div>
                   </div>
                 </div>
 
                 {/* 리뷰 이미지 */}
-                {review.imageUrl && (
+                {review.reviewImageUrl && (
                   <div className="mb-3">
                     <img 
-                      src={review.imageUrl} 
+                      src={review.reviewImageUrl} 
                       alt="리뷰 이미지" 
                       className="w-full h-48 object-cover rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
                     />
                   </div>
                 )}
-
-                {/* 리뷰 내용 */}
-                <p className="text-[#333333] leading-relaxed">{review.content}</p>
               </div>
               
               {/* 마지막 리뷰가 아닐 경우에만 구분선 추가 */}

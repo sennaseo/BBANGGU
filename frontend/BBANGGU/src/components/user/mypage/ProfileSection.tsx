@@ -23,7 +23,7 @@ export function ProfileSection({ user }: ProfileSectionProps) {
         </div>
         <img
           src={
-            user?.profileImageUrl ||
+            userInfo?.profileImageUrl ||
             "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/%ED%94%84%EB%A1%9C%ED%95%84-ScdL8EY3W1qOzEzfLjiBi3XnSU4HAp.png"
           }
           alt="Profile"
