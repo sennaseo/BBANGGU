@@ -21,8 +21,10 @@ export const getUserInfo = async () => {
       }
     );
 
+    console.log('getUserInfo 응답:', response.data); // 응답 데이터 확인
     return response.data;
   } catch (error) {
+    console.error('getUserInfo 에러:', error);
     if (axios.isAxiosError(error)) {
       if (error.response?.status === 403) {
         throw new Error('접근 권한이 없습니다.');

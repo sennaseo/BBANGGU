@@ -1,7 +1,8 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { UserInfo } from '../../types/user';
 
 interface UserState {
-  userInfo: any | null;
+  userInfo: UserInfo | null;
   token: string | null;
   isAuthenticated: boolean;
 }
