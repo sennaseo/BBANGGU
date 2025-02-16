@@ -23,6 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.client.HttpClientErrorException;
 
 @Service
 @RequiredArgsConstructor
@@ -76,12 +77,12 @@ public class KakaoAuthService {
 	 */
 	public KakaoUserInfo getKakaoUserInfo(String kakaoAccessToken) {
 		HttpHeaders headers = new HttpHeaders();
-		headers.set("Authorization", "Bearer " + kakaoAccessToken);
+		headers.setBearerAuth(kakaoAccessToken);  // Bearer 토큰 설정
 
-		HttpEntity<Void> request = new HttpEntity<>(headers);
+		HttpEntity<?> entity = new HttpEntity<>(headers);
 
 		try {
-			ResponseEntity<JsonNode> response = restTemplate.exchange(kakaoUserInfoUrl, HttpMethod.GET, request, JsonNode.class);
+			ResponseEntity<JsonNode> response = restTemplate.exchange(kakaoUserInfoUrl, HttpMethod.GET, entity, JsonNode.class);
 			JsonNode jsonNode = response.getBody();
 
 			String kakaoId = jsonNode.get("id").asText();
@@ -90,7 +91,7 @@ public class KakaoAuthService {
 			String profileImage = jsonNode.path("properties").path("profile_image").asText();
 
 			return new KakaoUserInfo(kakaoId, email, nickname, profileImage);
-		} catch (Exception e) {
+		} catch (HttpClientErrorException e) {
 			throw new CustomException(ErrorCode.KAKAO_USER_INFO_FAILED);
 		}
 	}
@@ -106,7 +107,7 @@ public class KakaoAuthService {
 			System.out.println("✅ 카카오 액세스 토큰: " + kakaoAccessToken);
 
 			// ✅ 2. 카카오 사용자 정보 요청
-			KakaoUserInfo kakaoUserInfo = getKakaoUserInfo(authCode);
+			KakaoUserInfo kakaoUserInfo = getKakaoUserInfo(kakaoAccessToken);
 			System.out.println("✅ 카카오 사용자 정보: " + kakaoUserInfo);
 
 			// ✅ 3. DB에서 사용자 조회 (`kakaoId` 기준으로 검증!)
