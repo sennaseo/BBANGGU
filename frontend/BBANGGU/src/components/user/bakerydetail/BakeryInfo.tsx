@@ -4,27 +4,13 @@ import type { ExtendedBakeryType } from "../../../types/bakery"
 import { MapPinIcon } from "@heroicons/react/24/solid"
 import { HeartIcon as HeartOutline } from "@heroicons/react/24/outline"
 import { HeartIcon as HeartSolid } from "@heroicons/react/24/solid"
-import { toggleFavoriteForUser } from "../../../services/user/usermainService"
-
 
 interface BakeryInfoProps {
   bakery: ExtendedBakeryType
-  onFavoriteUpdate: (newFavorites: boolean) => void
+  onFavoriteUpdate: (bakeryId: number, is_liked: boolean) => void
 }
 
 export default function BakeryInfo({ bakery, onFavoriteUpdate }: BakeryInfoProps) {
-  const handleToggleFavorite = async (e: React.MouseEvent) => {
-    e.stopPropagation()
-    try {
-      const result = await toggleFavoriteForUser(bakery.bakeryId, bakery.is_liked)
-      onFavoriteUpdate(result)
-    } catch (error) {
-      console.error("좋아요 토글 실패:", error)
-    }
-  }
-
-  const isFavorite = bakery.is_liked
-
   return (
     <div className="py-4">
       <div className="flex items-center justify-between">
@@ -57,9 +43,9 @@ export default function BakeryInfo({ bakery, onFavoriteUpdate }: BakeryInfoProps
         </div>
         <button
           className="w-10 h-10 flex items-center justify-center bg-[#F9F9F9] rounded-full hover:bg-[#E1E1E1]"
-          onClick={handleToggleFavorite}
+          onClick={() => onFavoriteUpdate(bakery.bakeryId, bakery.is_liked)}
         >
-          {isFavorite ? (
+          {bakery.is_liked ? (
             <HeartSolid className="w-6 h-6 text-[#fc973b]" />
           ) : (
             <HeartOutline className="w-6 h-6 text-[#757575]" />

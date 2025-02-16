@@ -53,7 +53,7 @@ export default function BestPackages({ favoritebakery, onToggleLike }: BestPacka
                   className="w-full h-full object-cover rounded-[12px]"
                 />
                 <button
-                  className="absolute right-2 bottom-2 p-1.5 rounded-full bg-white/80 backdrop-blur-sm hover:bg-white transition-colors"
+                  className="absolute right-2 bottom-2 p-1.5 rounded-full bg-[#F9F9F9] backdrop-blur-sm hover:bg-[#E1E1E1]"
                   onClick={(e) => {
                     e.stopPropagation();
                     onToggleLike(item.bakeryId);

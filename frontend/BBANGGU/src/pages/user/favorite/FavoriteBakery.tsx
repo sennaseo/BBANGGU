@@ -37,53 +37,55 @@ export const FavoriteBakery = () => {
 
   if (bakeries.length === 0) {
     return (
-      <div className="min-h-screen bg-white flex flex-col">
+      <div className="min-h-screen bg-white flex flex-col justify-center">
         {/* 헤더 */}
-        <div className="px-5 py-4">
+        <div className="fixed top-0 bg-white max-w-[440px] w-full left-1/2 -translate-x-1/2 px-5 py-4 shadow-sm">
           <div className="flex items-center">
             <img src="/src/assets/logo.png" alt="관심가게" className="w-7" />
             <span className="ml-2 text-[#FC973B] font-bold">관심가게</span>
           </div>
         </div>
 
-        {/* 빈 상태 메시지 */}
-        <div className="flex flex-col items-center justify-center px-5 mt-32">
-          <h2 className="text-lg font-bold mb-3">
-            아직 관심가게가 등록되지 않았어요
-          </h2>
-          <p className="text-sm text-gray-500 text-center leading-relaxed">
-            우측 하단의 하트 아이콘을 눌러서
-            <br />
-            즐겨찾는 가게를 등록할 수 있어요
-          </p>
-        </div>
+        <div className="flex flex-col items-center px-5">
+          {/* 빈 상태 메시지 */}
+          <div className="flex flex-col items-center px-5">
+            <h2 className="text-lg font-bold mb-3">
+              아직 관심가게가 등록되지 않았어요
+            </h2>
+            <p className="text-sm text-gray-500 text-center leading-relaxed">
+              우측 하단의 하트 아이콘을 눌러서
+              <br />
+              즐겨찾는 가게를 등록할 수 있어요
+            </p>
+          </div>
 
-        <div className="flex flex-col items-center p-10 flex-1">
-          {/* 빵꾸러미 카드 */}
-          <div className="mb-10 bg-white rounded-xl shadow-md overflow-hidden w-[400px]">
-            <div className="relative h-[160px] bg-[#A9A9A9] rounded-lg">
-              <div className="absolute bottom-3 right-3">
-                <div className="bg-black bg-opacity-40 rounded-full p-2">
-                  <HeartIcon className="w-5 h-5 text-red-500 fill-red-500" />
+          <div className="flex flex-col items-center px-5 py-10">
+            {/* 빵꾸러미 카드 */}
+            <div className="mb-10 bg-white rounded-xl shadow-md overflow-hidden w-[400px]">
+              <div className="relative h-[160px] bg-[#A9A9A9] rounded-lg">
+                <div className="absolute bottom-3 right-3">
+                  <div className="bg-black bg-opacity-40 rounded-full p-2">
+                    <HeartIcon className="w-5 h-5 text-red-500 fill-red-500" />
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-4">
+                <div className="flex items-center justify-between mb-2">
+                </div>
+                <div className="flex items-center justify-between h-[50px]">
                 </div>
               </div>
             </div>
 
-            <div className="p-4">
-              <div className="flex items-center justify-between mb-2">
-              </div>
-              <div className="flex items-center justify-between h-[50px]">
-              </div>
-            </div>
+            {/* 빵꾸러미 찾아보기 버튼 */}
+            <button 
+              onClick={() => navigate('/user')}
+              className="w-[180px] py-3 rounded-full bg-[#FC973B] text-white font-semibold"
+            >
+              빵꾸러미 찾아보기
+            </button>
           </div>
-
-          {/* 빵꾸러미 찾아보기 버튼 */}
-          <button 
-            onClick={() => navigate('/user')}
-            className="w-[200px] py-4 rounded-full bg-[#FC973B] text-white font-bold"
-          >
-            빵꾸러미 찾아보기
-          </button>
         </div>
         <UserBottomNavigation />
       </div>

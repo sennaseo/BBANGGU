@@ -35,5 +35,52 @@ export const reviewApi = {
       throw error;
     }
   },
+
+  getUserReviews: async (userId: string): Promise<ReviewType[]> => {
+    try {
+      const token = localStorage.getItem("accessToken") || import.meta.env.VITE_MOCK_ACCESS_TOKEN || "";
+      const response = await axios.get<ApiResponse<ReviewType[]>>(
+        `${BASE_URL}/review/user/${userId}`,
+        {
+          withCredentials: true,
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
+      );
+      return response.data.data;
+    } catch (error) {
+      console.error('유저 리뷰 조회 실패:', error);
+      throw error;
+    }
+  },
+
+  findReviewByReservationId: async (userId: string, reservationId: string): Promise<ReviewType | null> => {
+    try {
+      const reviews = await reviewApi.getUserReviews(userId);
+      const review = reviews.find(review => review.reservationId.toString() === reservationId) || null;
+      return review;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {  
+        console.error('리뷰 검색 실패:', error);
+      }
+      throw error;
+    }
+  },
+  deleteReview: async (reviewId: number): Promise<void> => {
+    try {
+      const token = localStorage.getItem("accessToken") || import.meta.env.VITE_MOCK_ACCESS_TOKEN || "";
+      await axios.delete(`${BASE_URL}/review/${reviewId}`, { withCredentials: true,
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.error('리뷰 삭제 실패:', error);
+      }
+      throw error;
+    }
+  }
 };
 

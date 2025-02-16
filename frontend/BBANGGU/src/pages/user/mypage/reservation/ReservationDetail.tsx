@@ -1,19 +1,18 @@
 import { ChevronLeft, ChevronDown, ChevronUp } from "lucide-react"
 import { useNavigate, useParams } from "react-router-dom"
 import { useState } from "react"
-import { mockReservations } from "../../../../mocks/user/reservationMockData"
-// import { Map } from "./Map" // 지도 컴포넌트는 별도로 구현 필요
+import { reservationService } from "../../../../services/user/mypage/reservation/reservationService"
+import { ReservationType } from "../../../../types/bakery"
 
 export function ReservationDetail() {
   const navigate = useNavigate()
   const { reservation_id } = useParams<{ reservation_id: string }>()
   const [isLocationExpanded, setIsLocationExpanded] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
+  const [reservation, setReservation] = useState<ReservationType | null>(null);
 
-  // URL 파라미터로 전달된 reservation_id로 예약 찾기
-  const reservation = mockReservations.find(
-    r => r.reservationId === Number(reservation_id)
-  );
+  // // URL 파라미터로 전달된 reservation_id로 예약 찾기
+  // const reservation = reservationService.getReservation(Number(reservation_id));
 
   if (!reservation) {
     return (
@@ -50,6 +49,11 @@ export function ReservationDetail() {
 
   const pickupTime = formatDate(reservation.reservedPickupTime);
 
+  const handleWriteReview = () => {
+    // 리뷰 작성 페이지로 이동 (라우팅 경로는 프로젝트에 맞게 수정)
+    navigate(`/user/mypage/reservation/${reservation_id}/write-review`);
+  };
+
   return (
     <div className="flex flex-col min-h-screen bg-[#F9F9F9] pb-[80px] relative max-w-[480px] mx-auto">
       {/* 헤더 */}
@@ -72,7 +76,7 @@ export function ReservationDetail() {
               </div>
               <div className="text-xl font-bold leading-tight">{reservation.bakeryId}</div>
               <div className="text-sm">
-                {pickupTime.date} {pickupTime.time} ~ {parseInt(pickupTime.time.split(':')[0]) + 1}:00 방문
+                {pickupTime.date} {reservation.createdAt} ~ {parseInt(pickupTime.time.split(':')[0]) + 1}:00 방문
               </div>
             </div>
           </div>
@@ -180,6 +184,16 @@ export function ReservationDetail() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* 픽업 완료 상태일 때 리뷰 쓰기 버튼 표시 */}
+      {reservation && reservation.status.toLowerCase() === "completed" && (
+        <button
+          className="mt-4 w-full bg-[#fc973b] hover:bg-[#e88a2d] text-white font-bold py-2 px-4 rounded"
+          onClick={handleWriteReview}
+        >
+          리뷰 쓰기
+        </button>
       )}
     </div>
   )

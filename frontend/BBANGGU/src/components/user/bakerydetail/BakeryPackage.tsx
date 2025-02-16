@@ -24,8 +24,8 @@ export default function BakeryPackage({ packages }: BakeryPackageProps) {
             <div className="flex flex-col gap-2">
               <span className="text-[15px] text-[#A9A9A9]">남은 수량: <span className="font-bold">{packages[0].quantity}개</span></span>
               <div className="flex items-center gap-1">
-                <span className="text-[18px] font-bold text-[#333333]">{(packages[0].price * 2).toLocaleString()}원</span>
-                <span className="text-[14px] text-[#E1E1E1] line-through">{packages[0].price.toLocaleString()}원</span>
+                <span className="text-[18px] font-bold text-[#333333]">{packages[0].price.toLocaleString()}원</span>
+                <span className="text-[14px] text-[#E1E1E1] line-through">{(packages[0].price * 2).toLocaleString()}원</span>
               </div>
             </div>
           </div>

@@ -14,6 +14,8 @@ export interface ReviewType {
   content: string
   reviewImageUrl?: string
   createdAt: string
+  deletedAt?: string
+  reservationId: number
 }
 // 새롭게 API의 응답 구조를 반영하는 타입을 추가합니다.
 export interface PackageResponse {
@@ -56,6 +58,7 @@ export interface ReservationType {
   reservationId: number
   userId: number
   bakeryId: number
+  bakeryName: string
   breadPackageId: number
   quantity: number
   totalPrice: number
@@ -113,3 +116,14 @@ export interface UserReviewResponse {
   data: ReviewType[];
 }
 
+export interface ReviewFormData {
+  rating: number;
+  content: string;
+  images: File[];
+}
+
+export interface ReviewResponse {
+  success: boolean;
+  message: string;
+  reviewId?: number;
+} 

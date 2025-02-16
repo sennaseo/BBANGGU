@@ -38,8 +38,8 @@ import PackageSettingPage from './pages/owner/package/PackageSettingPage';
 import BreadRegisterPage from './pages/owner/bread/BreadRegisterPage';
 import { InstallPWA } from './components/InstallPWA';
 import UserMyReview from "./pages/user/mypage/myreview/UserMyReview";
-
-
+import { WriteReview } from "./pages/user/review/writereview/WriteReview";
+import { ReviewDetail } from "./pages/user/review/ReviewDetail";
 export default function App() {
   return (
     <RecoilRoot>
@@ -68,6 +68,8 @@ export default function App() {
             <Route path="/user/:userId/mypage/reservations" element={<ReservationHistory />} />
             <Route path="/user/:userId/mypage/reservation/:reservationId" element={<ReservationDetail />} />
             <Route path="/user/:userId/mypage/myreviews" element={<UserMyReview />} />
+            <Route path="/user/:userId/mypage/reservation/:reservationId/write-review" element={<WriteReview />} />
+            <Route path="/user/:userId/mypage/reviews/:reservationId" element={<ReviewDetail />} />
             <Route path="/user/:userId/favorite" element={<FavoriteBakery />} />
             <Route path="/user/payment" element={<UserPayment />} />
             <Route path="/user/map" element={<MapPage />} />

@@ -36,8 +36,16 @@ export default function UserMain() {
         fetchBestFavoriteStores(),
         getUserMainData()
       ])
-      setFavoritebakery(favoriteBakeryResult.favoritebakery)
-      // localStorage에서 저장된 좋아요 상태 확인
+      // localStorage에서 저장된 관심가게의 좋아요 상태를 확인합니다.
+      const likedFavoritebakeryStr = localStorage.getItem('likedFavoritebakery')
+      const likedFavoriteMap = likedFavoritebakeryStr ? JSON.parse(likedFavoritebakeryStr) : {}
+      const updatedFavoriteBakery = favoriteBakeryResult.favoritebakery.map(store =>
+        Object.prototype.hasOwnProperty.call(likedFavoriteMap, store.bakeryId)
+          ? { ...store, is_liked: likedFavoriteMap[store.bakeryId] }
+          : store
+      )
+      setFavoritebakery(updatedFavoriteBakery)
+      // 기존의 allBakeryData 업데이트 (예시)
       const likedStoresStr = localStorage.getItem('likedStores')
       const likedMap = likedStoresStr ? JSON.parse(likedStoresStr) : {}
       // 전체 베이커리 데이터에 대해 localStorage 상태 반영
@@ -81,6 +89,19 @@ const handleToggleFavorite = async (bakeryId: number) => {
       localStorage.setItem('likedStores', JSON.stringify(likeMap));
       return updatedStores;
     });
+    // 관심가게(베스트패키지) 상태 업데이트
+    setFavoritebakery(prev => {
+      const updatedFavoritebakery = prev.map(store =>
+        store.bakeryId === bakeryId ? { ...store, is_liked: !store.is_liked } : store
+      );
+      const likefavoriteMap = updatedFavoritebakery.reduce((acc: Record<number, boolean>, s) => {
+        acc[s.bakeryId] = s.is_liked;
+        return acc;
+      }, {});
+      localStorage.setItem('likedFavoritebakery', JSON.stringify(likefavoriteMap));
+      return updatedFavoritebakery;
+    });
+
   } catch (error) {
     console.error(`가게(${bakeryId}) 좋아요 토글 실패:`, error);
     throw error;

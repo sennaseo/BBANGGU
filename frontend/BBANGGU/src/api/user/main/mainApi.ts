@@ -68,7 +68,7 @@ export const mainApi = {
       const token = localStorage.getItem("accessToken") || import.meta.env.VITE_MOCK_ACCESS_TOKEN || "";
       const response = await axios.post<ApiResponse<boolean>>(
         `${BASE_URL}/favorite/${bakeryId}`,
-        {},
+        null,
         { withCredentials: true, headers: { Authorization: `Bearer ${token}` } }
       );
       console.log("toggleFavorite", response.data.data);
