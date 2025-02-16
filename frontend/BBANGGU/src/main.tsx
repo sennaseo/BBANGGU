@@ -34,17 +34,7 @@ loadKakaoMapScript()
   .then(() => {
     // 서비스 워커 등록 코드 수정
     if ('serviceWorker' in navigator) {
-      let deferredPrompt: any;
-      
-      window.addEventListener('beforeinstallprompt', (e) => {
-        e.preventDefault();
-        deferredPrompt = e;
-        console.log('PWA 설치 준비됨');
-      });
-
-      navigator.serviceWorker.register('/dev-sw.js', {
-        type: process.env.NODE_ENV === 'development' ? 'module' : 'classic'
-      })
+      navigator.serviceWorker.register('/sw.js')
         .then(registration => {
           console.log('서비스 워커가 등록되었습니다:', registration);
         })
