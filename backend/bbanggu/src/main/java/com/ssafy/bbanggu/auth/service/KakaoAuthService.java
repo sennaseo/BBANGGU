@@ -71,11 +71,10 @@ public class KakaoAuthService {
 			throw new CustomException(ErrorCode.KAKAO_AUTH_FAILED);
 		}
 	}
-
 	/**
 	 * ✅ 3. Kakao Access Token → 사용자 정보 조회
 	 */
-	private KakaoUserInfo getKakaoUserInfo(String kakaoAccessToken) {
+	public KakaoUserInfo getKakaoUserInfo(String kakaoAccessToken) {
 		HttpHeaders headers = new HttpHeaders();
 		headers.set("Authorization", "Bearer " + kakaoAccessToken);
 
@@ -107,7 +106,7 @@ public class KakaoAuthService {
 			System.out.println("✅ 카카오 액세스 토큰: " + kakaoAccessToken);
 
 			// ✅ 2. 카카오 사용자 정보 요청
-			KakaoUserInfo kakaoUserInfo = getKakaoUserInfo(kakaoAccessToken);
+			KakaoUserInfo kakaoUserInfo = getKakaoUserInfo(authCode);
 			System.out.println("✅ 카카오 사용자 정보: " + kakaoUserInfo);
 
 			// ✅ 3. DB에서 사용자 조회 (`kakaoId` 기준으로 검증!)

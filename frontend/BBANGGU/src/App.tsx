@@ -39,6 +39,7 @@ import BreadRegisterPage from './pages/owner/bread/BreadRegisterPage';
 import { InstallPWA } from './components/InstallPWA';
 import { PaymentSuccess } from "./pages/user/payment/PaymentSuccess";
 import { PaymentFail } from "./pages/user/payment/PaymentFail";
+import KakaoCallback from './pages/oauth/KakaoCallback';
 
 
 export default function App() {
@@ -73,6 +74,7 @@ export default function App() {
             <Route path="/user/map" element={<MapPage />} />
             <Route path="/payment/success" element={<PaymentSuccess />} />
             <Route path="/payment/fail" element={<PaymentFail />} />
+            <Route path="/oauth/kakao/callback" element={<KakaoCallback />} />
 
 
               {/* 점주 관련 페이지 */}
