@@ -37,6 +37,11 @@ import PackageSalesSetting from './pages/owner/package/PackageSalesSetting';
 import PackageSettingPage from './pages/owner/package/PackageSettingPage';
 import BreadRegisterPage from './pages/owner/bread/BreadRegisterPage';
 import { InstallPWA } from './components/InstallPWA';
+import { PaymentSuccess } from "./pages/user/payment/PaymentSuccess";
+import { PaymentFail } from "./pages/user/payment/PaymentFail";
+
+
+
 
 
 export default function App() {
@@ -67,8 +72,10 @@ export default function App() {
             <Route path="/user/:userId/mypage/reservations" element={<ReservationHistory />} />
             <Route path="/user/:userId/mypage/reservation/:reservation_id" element={<ReservationDetail />} />
             <Route path="/user/:userId/favorite" element={<FavoriteBakery />} />
-            <Route path="/user/payment" element={<UserPayment />} />
+            <Route path="/user/payment/:bakeryId" element={<UserPayment />} />
             <Route path="/user/map" element={<MapPage />} />
+            <Route path="/payment/success" element={<PaymentSuccess />} />
+            <Route path="/payment/fail" element={<PaymentFail />} />
 
 
               {/* 점주 관련 페이지 */}
