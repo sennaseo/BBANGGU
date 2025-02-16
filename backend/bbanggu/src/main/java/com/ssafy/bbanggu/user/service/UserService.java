@@ -210,9 +210,7 @@ public class UserService { // 사용자 관련 비즈니스 로직 처리
 
 		if (profileImg != null && !profileImg.isEmpty()) {
 			try {
-				System.out.println("!!!!!profileImage: " + profileImg);
 				String profileImageUrl = imageService.saveImage(profileImg); // 새 이미지 저장
-				System.out.println("📌 profileImage 저장된 URL: " + profileImageUrl);
 				if (profileImageUrl != null) {
 					user.setProfileImageUrl(profileImageUrl);
 				}
@@ -275,8 +273,6 @@ public class UserService { // 사용자 관련 비즈니스 로직 처리
 			bakery.getAddressDetail(),
 			bakery.getBakeryImageUrl(),
 			bakery.getBakeryBackgroundImgUrl(),
-			null,
-			null,
 			bakery.getStar(),
 			bakery.getReviewCnt()
 		);
