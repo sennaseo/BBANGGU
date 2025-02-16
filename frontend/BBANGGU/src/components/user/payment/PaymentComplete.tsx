@@ -1,10 +1,12 @@
+import PaymentButton from "./common/PaymentButton"
+
 interface PaymentCompleteProps {
   onConfirm: () => void;
 }
 
 export function PaymentComplete({ onConfirm }: PaymentCompleteProps) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen px-5">
+      <div className="flex flex-col items-center justify-center min-h-screen px-5 pb-20">
         <img
           src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/5-MljMznmeK0GCp12HxQqCDOXkyoJ6Cr.png"
           alt="완료"
@@ -15,12 +17,7 @@ export function PaymentComplete({ onConfirm }: PaymentCompleteProps) {
           감사합니다 :) 신은천님 덕분에
           <br />이 음식은 더 이상 버려지지 않게 되었어요!
         </p>
-        <button
-          onClick={onConfirm}
-          className="fixed bottom-6 left-6 right-6 max-w-[430px] mx-auto bg-[#FF9F43] text-white py-4 rounded-xl"
-        >
-          홈으로
-        </button>
+        <PaymentButton onClick={onConfirm} text="홈으로" />
       </div>
     )
   }
