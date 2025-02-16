@@ -5,8 +5,14 @@ import breadBagIcon from '../../../assets/images/bakery/bread_pakage.svg';
 import wonIcon from '../../../assets/images/bakery/won_icon.png';
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import { registerPackage, getPickupTime, updatePickupTime, updatePackage } from '../../../api/owner/package';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState } from '../../../store';
+import { logout } from '../../../store/slices/authSlice';
+import { setUserInfo, clearUserInfo } from '../../../store/slices/userSlice';
+import { getUserInfo } from '../../../api/user/user';
 
 interface PackageForm {
+  bakeryId?: number;
   name: string;
   price: number;
   quantity: number;
@@ -15,10 +21,62 @@ interface PackageForm {
 }
 
 export default function PackageSettingPage() {
+  const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
+  
+  // Redux 상태 가져오기
+  const { accessToken } = useSelector((state: RootState) => state.auth);
+
   const isEditing = location.state?.isEditing;
   const packageData = location.state?.packageData;
+
+  // 권한 체크 및 유저 정보 조회
+  useEffect(() => {
+    const fetchUserInfo = async () => {
+      if (!accessToken) {
+        navigate('/login');
+        return;
+      }
+
+      try {
+        const data = await getUserInfo();
+        dispatch(setUserInfo({
+          name: data.name,
+          profileImageUrl: data.profileImageUrl,
+          email: data.email,
+          phone: data.phone,
+          userId: data.userId,
+          role: data.role as 'OWNER' | 'USER',
+          addressRoad: data.addressRoad,
+          addressDetail: data.addressDetail
+        }));
+
+        // 점주가 아닌 경우 메인으로 리다이렉트
+        if (data.role !== 'OWNER') {
+          dispatch(logout());
+          dispatch(clearUserInfo());
+          navigate('/');
+          return;
+        }
+
+        // bakeryId 설정 (API 호출에 사용)
+        if (data.userId) {
+          setForm(prev => ({
+            ...prev,
+            bakeryId: data.userId
+          }));
+        }
+      } catch (error) {
+        console.error('Error fetching user info:', error);
+        dispatch(logout());
+        dispatch(clearUserInfo());
+        navigate('/login');
+      }
+    };
+
+    fetchUserInfo();
+  }, [dispatch, navigate, accessToken]);
 
   // 기본 시간 상수
   const DEFAULT_TIMES = {
@@ -27,6 +85,7 @@ export default function PackageSettingPage() {
   };
 
   const [form, setForm] = useState<PackageForm>({
+    bakeryId: isEditing ? packageData?.bakeryId : undefined,
     name: isEditing ? packageData?.name : '',
     price: isEditing ? packageData?.price : 0,
     quantity: isEditing ? packageData?.quantity : 1,
@@ -137,6 +196,11 @@ export default function PackageSettingPage() {
   };
 
   const handleSubmit = async () => {
+    if (!form.bakeryId) {
+      alert('점주 정보를 불러올 수 없습니다.');
+      return;
+    }
+
     if (!form.name || form.price < MIN_PRICE || !form.startTime || !form.endTime) {
       alert('모든 필수 항목을 입력해주세요.');
       return;
@@ -146,7 +210,7 @@ export default function PackageSettingPage() {
     try {
       if (isEditing && packageData?.packageId) {
         await updatePackage(packageData.packageId, {
-          bakeryId: packageData.bakeryId,
+          bakeryId: form.bakeryId,
           name: form.name,
           price: form.price,
           quantity: form.quantity
@@ -169,9 +233,8 @@ export default function PackageSettingPage() {
         alert('빵꾸러미가 수정되었습니다.');
         navigate('/owner/main');
       } else {
-        // 등록 API 호출
         await registerPackage({
-          bakeryId: 1,
+          bakeryId: form.bakeryId,
           name: form.name,
           price: form.price,
           quantity: form.quantity
@@ -181,6 +244,13 @@ export default function PackageSettingPage() {
 
       navigate('/owner/main');
     } catch (error: any) {
+      // 토큰 만료 등의 인증 에러인 경우
+      if (error.response?.status === 401) {
+        dispatch(logout());
+        dispatch(clearUserInfo());
+        navigate('/login');
+        return;
+      }
       alert(error.response?.data?.message || `빵꾸러미 ${isEditing ? '수정' : '등록'} 중 오류가 발생했습니다.`);
     } finally {
       setIsLoading(false);

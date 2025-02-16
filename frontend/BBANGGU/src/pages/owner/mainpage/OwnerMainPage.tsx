@@ -7,9 +7,12 @@ import BottomNavigation from '../../../components/owner/navigations/BottomNaviga
 import { BuildingStorefrontIcon } from '@heroicons/react/24/outline';
 import { useNavigate } from 'react-router-dom';
 import { BreadPackage, getBakeryPackages } from '../../../api/owner/package';  // 공통 인터페이스 import
-import { useSelector } from 'react-redux';
-import { selectAuth } from '../../../store/slices/authSlice';
-import instance from '../../../api/axios';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState } from '../../../store';
+import { logout } from '../../../store/slices/authSlice';
+import { setUserInfo, clearUserInfo } from '../../../store/slices/userSlice';
+import { getUserInfo } from '../../../api/user/user';
+import breadPackageIcon from '../../../assets/images/bakery/빵꾸러미.png';
 
 // 인터페이스 정의
 interface ReservationInfo {
@@ -23,43 +26,58 @@ interface ReservationInfo {
 }
 
 const OwnerMainPage: React.FC = () => {
+  const dispatch = useDispatch();
   const [activeTab, setActiveTab] = useState<'package' | 'review'>('package');
   const [packages, setPackages] = useState<BreadPackage[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [bakeryId, setBakeryId] = useState<number | null>(null);
   const [reservations, setReservations] = useState<ReservationInfo[]>([]);
-  const auth = useSelector(selectAuth);
+  
+  // auth 상태와 userInfo 상태 모두 가져오기
+  const { accessToken } = useSelector((state: RootState) => state.auth);
   const navigate = useNavigate();
 
-  // 점주 권한 체크
+  // 점주 권한 체크 및 유저 정보 조회
   useEffect(() => {
-    if (!auth.accessToken) {
-      navigate('/login');
-      return;
-    }
-    
-    // 점주가 아닌 경우 메인으로 리다이렉트
-    if (auth.userType !== 'OWNER') {
-      navigate('/');
-      return;
-    }
+    const fetchUserInfo = async () => {
+      if (!accessToken) {
+        navigate('/login');
+        return;
+      }
 
-    // 점주 정보 조회
-    const fetchOwnerInfo = async () => {
       try {
-        const response = await instance.get('/user');
-        if (response.data?.data?.userId) {
-          setBakeryId(response.data.data.userId);
+        const data = await getUserInfo();
+        dispatch(setUserInfo({
+          name: data.name,
+          profileImageUrl: data.profileImageUrl,
+          email: data.email,
+          phone: data.phone,
+          userId: data.userId,
+          role: data.role as 'OWNER' | 'USER',
+          addressRoad: data.addressRoad,
+          addressDetail: data.addressDetail
+        }));
+
+        // 점주가 아닌 경우 메인으로 리다이렉트
+        if (data.role !== 'OWNER') {
+          dispatch(logout());
+          dispatch(clearUserInfo());
+          navigate('/');
+          return;
         }
-      } catch (err) {
-        console.error('점주 정보 조회 실패:', err);
-        setError('점주 정보를 불러올 수 없습니다.');
+
+        setBakeryId(data.userId);
+      } catch (error) {
+        console.error('Error fetching user info:', error);
+        dispatch(logout());
+        dispatch(clearUserInfo());
+        navigate('/login');
       }
     };
 
-    fetchOwnerInfo();
-  }, [auth.accessToken, auth.userType, navigate]);
+    fetchUserInfo();
+  }, [dispatch, navigate, accessToken]);
 
   // 빵꾸러미 조회
   useEffect(() => {
@@ -72,10 +90,10 @@ const OwnerMainPage: React.FC = () => {
         
         const response = await getBakeryPackages(bakeryId);
         
-        if (response.data) {
+        if (response.data && response.data.packageId !== null) {
           setPackages([response.data]);
         } else {
-          setPackages([]);
+          setPackages([]); // packageId가 null인 경우 빈 배열로 설정
         }
       } catch (err) {
         console.error('데이터 로딩 실패:', err);
@@ -157,11 +175,38 @@ const OwnerMainPage: React.FC = () => {
         </div>
         {activeTab === 'package' ? (
           <>
-            <BreadPackageInfo 
-              currentPackage={packages[0]}
-              reservations={reservations}
-              onPackageDeleted={() => {}}
-            />
+            {packages.length > 0 ? (
+              <BreadPackageInfo 
+                currentPackage={packages[0]}
+                reservations={reservations}
+                onPackageDeleted={() => {
+                  setPackages([]);
+                }}
+              />
+            ) : (
+              // 빵꾸러미가 없을 때 보여줄 빈 상태 화면
+              <div className="bg-white rounded-[20px] border border-gray-100 p-8 mb-6 flex flex-col items-center">
+                <div className="w-16 h-16 mb-4">
+                  <img 
+                    src={breadPackageIcon} 
+                    alt="빵꾸러미" 
+                    className="w-full h-full object-contain"
+                  />
+                </div>
+                <h3 className="text-[20px] font-bold text-[#242424] mb-2">
+                  등록된 빵꾸러미가 없습니다
+                </h3>
+                <p className="text-gray-500 mb-6">
+                  새로운 빵꾸러미를 등록해보세요!
+                </p>
+                <button
+                  onClick={() => navigate('/owner/package/guide')}
+                  className="px-6 py-3 bg-[#FC973B] text-white rounded-full font-medium hover:bg-[#e88a34] transition-colors"
+                >
+                  빵꾸러미 등록하기
+                </button>
+              </div>
+            )}
             <div className="mb-6">
               <button
                 onClick={() => navigate('/owner/bread/register')}
