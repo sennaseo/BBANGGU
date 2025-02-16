@@ -22,9 +22,7 @@ public record BakeryCreateDto(
 	String addressRoad,
 	String addressDetail,
 	String bakeryImageUrl, // ✅ EC2에 저장된 이미지 URL을 위한 필드
-	String bakeryBackgroundImgUrl, // ✅ EC2에 저장된 배경 이미지 URL을 위한 필드
-	MultipartFile bakeryImage, // ✅ 요청 데이터에서 받는 MultipartFile
-	MultipartFile bakeryBackgroundImage // ✅ 요청 데이터에서 받는 MultipartFile
+	String bakeryBackgroundImgUrl // ✅ EC2에 저장된 배경 이미지 URL을 위한 필드
 ) {
 	public static BakeryCreateDto from(Bakery bakery) {
 		return new BakeryCreateDto(
@@ -36,9 +34,7 @@ public record BakeryCreateDto(
 			bakery.getAddressRoad(),
 			bakery.getAddressDetail(),
 			bakery.getBakeryImageUrl(),
-			bakery.getBakeryBackgroundImgUrl(),
-			null,
-			null
+			bakery.getBakeryBackgroundImgUrl()
 		);
 	}
 }

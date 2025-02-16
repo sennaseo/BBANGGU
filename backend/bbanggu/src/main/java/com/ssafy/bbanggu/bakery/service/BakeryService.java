@@ -53,7 +53,6 @@ public class BakeryService {
 	private final SettlementRepository settlementRepository;
 	private final FavoriteRepository favoriteRepository;
 	private final BakeryPickupService bakeryPickupService;
-	private final BreadPackageRepository breadPackageRepository;
 	private final BreadPackageService breadPackageService;
 	private final ImageService imageService;
 
@@ -190,7 +189,7 @@ public class BakeryService {
 
 	// 가게 추가
 	@Transactional
-	public BakeryCreateDto createBakery(BakeryCreateDto bakeryDto) {
+	public BakeryCreateDto createBakery(BakeryCreateDto bakeryDto, MultipartFile bakeryImage, MultipartFile bakeryBackgroundImage) {
 		validateDuplicateBakery(bakeryDto.name(), bakeryDto.businessRegistrationNumber(), null);
 
 		// 사용자 조회 (userId로 User 찾기)
@@ -201,11 +200,11 @@ public class BakeryService {
 		String bakeryBackgroundImgUrl = null;
 
 		try {
-			if (bakeryDto.bakeryImage() != null && !bakeryDto.bakeryImage().isEmpty()) {
-				bakeryImageUrl = imageService.saveImage(bakeryDto.bakeryImage());
+			if (bakeryImage != null && !bakeryImage.isEmpty()) {
+				bakeryImageUrl = imageService.saveImage(bakeryImage);
 			}
-			if (bakeryDto.bakeryBackgroundImage() != null && !bakeryDto.bakeryBackgroundImage().isEmpty()) {
-				bakeryBackgroundImgUrl = imageService.saveImage(bakeryDto.bakeryBackgroundImage());
+			if (bakeryBackgroundImage != null && !bakeryBackgroundImage.isEmpty()) {
+				bakeryBackgroundImgUrl = imageService.saveImage(bakeryBackgroundImage);
 			}
 		} catch (IOException e) {
 			throw new CustomException(ErrorCode.BAKERY_IMAGE_UPLOAD_FAILED);

@@ -83,8 +83,12 @@ public class BakeryController {
 	 * @return 등록된 가게 정보
 	 */
 	@PostMapping
-	public ResponseEntity<ApiResponse> createBakery(@RequestBody @Valid BakeryCreateDto bakery) {
-		BakeryCreateDto createdBakery = bakeryService.createBakery(bakery);
+	public ResponseEntity<ApiResponse> createBakery(
+		@Valid @RequestPart(name = "bakery", required = false) BakeryCreateDto bakery,
+		@RequestPart(name = "bakeryImage", required = false) MultipartFile bakeryImage,
+		@RequestPart(name = "bakeryBackgroundImage", required = false) MultipartFile bakeryBackgroundImage
+	) {
+		BakeryCreateDto createdBakery = bakeryService.createBakery(bakery, bakeryImage, bakeryBackgroundImage);
 		return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse("가게 등록이 완료되었습니다.", createdBakery));
 	}
 
