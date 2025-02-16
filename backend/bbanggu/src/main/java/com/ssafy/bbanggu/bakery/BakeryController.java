@@ -96,7 +96,8 @@ public class BakeryController {
 	 * 가게 정산 정보 등록 API
 	 */
 	@PostMapping("/settlement")
-	public ResponseEntity<ApiResponse> createSettlement(@RequestBody @Valid BakerySettlementDto settlement,
+	public ResponseEntity<ApiResponse> createSettlement(
+		@RequestBody @Valid BakerySettlementDto settlement,
 		@AuthenticationPrincipal CustomUserDetails userDetails
 	) {
 		BakerySettlementDto createSettlement = bakeryService.createSettlement(settlement, userDetails);
