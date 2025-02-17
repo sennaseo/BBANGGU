@@ -7,12 +7,11 @@ import { StoreCard } from "../../../components/user/map/StoreCard"
 import UserBottomNavigation from "../../../components/user/navigations/bottomnavigation/UserBottomNavigation"
 import { UserAddressApi } from "../../../api/user/map/UserAddressApi"
 import { useDispatch, useSelector } from 'react-redux';
-import { AppDispatch, RootState } from '../../../store';
+import { AppDispatch, RootState, store } from '../../../store';
 import { fetchBakeryList, BakeryInfo } from '../../../store/slices/bakerySlice';
 import { setUserInfo } from '../../../store/slices/userSlice';
-import { getUserInfo } from '../../../api/common/info/UserInfo';
 import { loginSuccess } from '../../../store/slices/authSlice';
-
+import { getUserInfo } from '../../../api/user/user';
 interface PostcodeData {
   roadAddress: string;
   bname: string;
@@ -82,7 +81,7 @@ export function MapPage() {
   // 컴포넌트 마운트 시 인증 상태 복원
   useEffect(() => {
     const restoreAuthState = async () => {
-      const accessToken = localStorage.getItem('accessToken');
+      const accessToken = store.getState().auth.accessToken;
       
       console.log('인증 상태 복원 시작:', {
         현재인증상태: isAuthenticated,
@@ -99,25 +98,24 @@ export function MapPage() {
           dispatch(loginSuccess({
             data: {
               access_token: accessToken,
-              refresh_token: accessToken,
+              refresh_token: "",
               user_type: 'USER'
             }
           }));
           
           // user 슬라이스 업데이트
           dispatch(setUserInfo({
-            ...userResponse.data,
+            ...userResponse,
             isAuthenticated: true
           }));
           
           console.log('인증 상태 복원 완료:', {
-            사용자정보: userResponse.data,
+            사용자정보: userResponse,
             새인증상태: true
           });
         } catch (error) {
           console.error('인증 상태 복원 실패:', error);
-          localStorage.removeItem('accessToken');
-          window.location.href = '/login';
+          // window.location.href = '/login';
         }
       } else {
         console.log('토큰 없음, 로그인 필요');

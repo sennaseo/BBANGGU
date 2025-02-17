@@ -7,7 +7,6 @@ import { getKakaoLoginUrl } from "../../api/common/login/KakaoLogin"
 import { getUserInfo } from "../../api/user/user"
 import { setUserInfo } from "../../store/slices/userSlice"
 import { store } from "../../store"
-import { login } from "../../api/common/login/Login"
 
 export default function LoginPage() {
   const [formData, setFormData] = useState({

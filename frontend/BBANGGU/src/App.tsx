@@ -1,6 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import OnboardingPage from "./pages/onboarding";
-import LoginPage from "./pages/login/LoginPage";
 import SignupPage from "./pages/signup";
 import CustomerSignupPage from "./pages/signup/customer";
 import OwnerSignupPage from "./pages/signup/owner";
@@ -43,6 +42,7 @@ import { ReviewDetail } from "./pages/user/review/ReviewDetail";
 import { PaymentSuccess } from "./pages/user/payment/PaymentSuccess";
 import { PaymentFail } from "./pages/user/payment/PaymentFail";
 import KakaoCallback from './pages/oauth/KakaoCallback';
+import LoginPage from "./pages/login";
 
 export default function App() {
   return (

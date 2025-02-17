@@ -32,7 +32,8 @@ export const login = async (loginData: LoginRequest, dispatch: Dispatch): Promis
       return matches ? decodeURIComponent(matches[1]) : null;
     };
 
-    const accessToken = getCookie('accessToken');
+    // const accessToken = getCookie('accessToken');
+    const accessToken = response.data.data.access_token;
 
     console.log(accessToken);
     console.log(response.data.data.user_type);
