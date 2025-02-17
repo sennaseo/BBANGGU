@@ -31,9 +31,9 @@ import com.ssafy.bbanggu.reservation.dto.ReservationForOwner;
 import com.ssafy.bbanggu.reservation.dto.ReservationInfo;
 import com.ssafy.bbanggu.reservation.dto.ReservationResponse;
 import com.ssafy.bbanggu.reservation.dto.ValidReservationRequest;
-import com.ssafy.bbanggu.saving.domain.EchoSaving;
+import com.ssafy.bbanggu.review.domain.Review;
+import com.ssafy.bbanggu.review.repository.ReviewRepository;
 import com.ssafy.bbanggu.saving.dto.SavingDto;
-import com.ssafy.bbanggu.saving.repository.EchoSavingRepository;
 import com.ssafy.bbanggu.saving.service.EchoSavingService;
 import com.ssafy.bbanggu.user.domain.User;
 import com.ssafy.bbanggu.user.repository.UserRepository;
@@ -56,6 +56,7 @@ public class ReservationService {
 	private final BakeryRepository bakeryRepository;
 	private final BakeryPickupService bakeryPickupService;
 	private final EchoSavingService echoSavingService;
+	private final ReviewRepository reviewRepository;
 
 	/**
 	 * 예약 검증 메서드 (PENDING)
@@ -254,12 +255,34 @@ public class ReservationService {
 	/**
 	 * 사용자 예약 조회 메서드
 	 */
-	public List<ReservationResponse> getUserReservationList(CustomUserDetails userDetails, LocalDate startDate, LocalDate endDate) {
+	public Map<String, Object> getUserReservationList(CustomUserDetails userDetails, LocalDate startDate, LocalDate endDate) {
 		LocalDateTime startDateTime = startDate.atStartOfDay();
 		LocalDateTime endDateTime = endDate.atTime(LocalTime.MAX);
 		log.info("startDateTime: " + startDateTime + "\nendDateTime: " + endDateTime);
 
-		return reservationRepository.findByUser_UserIdAndCreatedAtBetween(userDetails.getUserId(), startDateTime, endDateTime);
+		List<Reservation> data = reservationRepository.findByUser_UserIdAndCreatedAtBetween(userDetails.getUserId(), startDateTime, endDateTime);
+		Map<String, Object> response = new HashMap<>();
+		for (Reservation d: data) {
+			response.put("reservationId", d.getReservationId());
+			response.put("bakeryId", d.getBakery().getBakeryId());
+			response.put("bakeryName", d.getBakery().getName());
+			response.put("createdAt", d.getCreatedAt());
+			response.put("pickupAt", d.getPickupAt());
+			response.put("status", d.getStatus());
+
+			Review review = reviewRepository.findByReservation_ReservationId(d.getReservationId());
+			String rState = null;
+			if (review != null && review.getDeletedAt() == null) {
+				rState = "COMPLETED";
+			}
+
+			if (review != null && review.getDeletedAt() != null) {
+				rState = "DELETED";
+			}
+			response.put("reviewStatus", rState);
+		}
+
+		return response;
 	}
 
 	/**

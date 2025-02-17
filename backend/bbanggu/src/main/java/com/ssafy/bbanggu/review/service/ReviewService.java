@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.ssafy.bbanggu.auth.security.CustomUserDetails;
 import com.ssafy.bbanggu.bakery.domain.Bakery;
 import com.ssafy.bbanggu.bakery.repository.BakeryRepository;
 import com.ssafy.bbanggu.common.exception.CustomException;
@@ -166,9 +167,12 @@ public class ReviewService {
 	/**
 	 * 사용자 리뷰 조회
 	 */
-	public List<ReviewResponseDto> getUserReviews(Long userId) {
-		User user = userRepository.findById(userId)
+	public List<ReviewResponseDto> getUserReviews(CustomUserDetails userDetails, Long userId) {
+		User user = userRepository.findById(userDetails.getUserId())
 			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+		if (user.getUserId().equals(userId)) {
+			throw new CustomException(ErrorCode.UNAUTHORIZED_USER);
+		}
 
 		List<Review> reviews = reviewRepository.findByUserAndDeletedAtIsNullOrderByCreatedAtDesc(user);
 
