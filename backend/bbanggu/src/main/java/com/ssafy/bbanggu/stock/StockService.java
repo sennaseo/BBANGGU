@@ -3,11 +3,13 @@ package com.ssafy.bbanggu.stock;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
@@ -136,7 +138,7 @@ public class StockService {
 				LocalDate.now());
 		}
 
-		return result;
+		return Optional.ofNullable(result).orElse(Collections.emptyList());
 	}
 
 	private Stock DtoToEntity(StockDTO stockDto) {
