@@ -33,3 +33,12 @@ export async function getReviewAndRating(bakeryId: number): Promise<{ reviews: R
         throw error;
     }
 }
+
+export async function deleteReview(reviewId: number): Promise<void> {
+    try {
+        await reviewApi.deleteReview(reviewId);
+    } catch (error) {
+        console.error("리뷰 삭제 실패:", error);
+        throw error;
+    }
+}
