@@ -31,16 +31,6 @@ public class KakaoOAuth2 {
 	private final RestTemplate restTemplate = new RestTemplate();
 	private final ObjectMapper objectMapper = new ObjectMapper();
 
-	/**
-	 * 카카오 로그인 후 사용자 정보 가져오기
-	 */
-	public KakaoUserInfo getUserInfo(String authCode) {
-		// 1️⃣ 카카오로부터 Access Token 요청
-		String accessToken = getAccessToken(authCode);
-
-		// 2️⃣ 카카오로부터 사용자 정보 요청
-		return fetchUserInfo(accessToken);
-	}
 
 	/**
 	 * 🔹 카카오 Access Token 요청

@@ -6,7 +6,6 @@ import com.ssafy.bbanggu.common.exception.ErrorCode;
 import com.ssafy.bbanggu.common.response.ApiResponse;
 import com.ssafy.bbanggu.auth.dto.EmailVerifyRequest;
 import com.ssafy.bbanggu.auth.service.EmailService;
-import com.ssafy.bbanggu.common.response.ErrorResponse;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
