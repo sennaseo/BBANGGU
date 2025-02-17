@@ -7,9 +7,14 @@ const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 export const reviewApi = {
     getReviews: async (bakeryId: number): Promise<ReviewType[]> => {
     try {
+      const token = store.getState().user.token;  
       const response = await axios.get<ApiResponse<ReviewType[]>>(
         `${BASE_URL}/review/bakery/${bakeryId}`,
-        { withCredentials: true }
+        { withCredentials: true,
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
       );
       return response.data.data;
     } catch (error) {
@@ -48,25 +53,9 @@ export const reviewApi = {
           }
         }
       );
-      console.log("response", response)
       return response.data.data;
     } catch (error) {
       console.error('유저 리뷰 조회 실패:', error);
-      throw error;
-    }
-  },
-
-  findReviewByReservationId: async (userId: string, reservationId: string): Promise<ReviewType | null> => {
-    try {
-      const reviews = await reviewApi.getUserReviews(userId);
-      console.log("reviews", reviews)
-      const review = reviews.find(review => review.reservationId.toString() === reservationId) || null;
-      console.log("review", review)
-      return review;
-    } catch (error) {
-      if (axios.isAxiosError(error)) {  
-        console.error('리뷰 검색 실패:', error);
-      }
       throw error;
     }
   },

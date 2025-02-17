@@ -1,7 +1,8 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { UserInfo } from '../../types/user';
 
-interface UserState {
+export interface UserState {
+  id: string;
   userInfo: UserInfo | null;
   token: string | null;
   isAuthenticated: boolean;
@@ -9,6 +10,7 @@ interface UserState {
 
 // localStorage에서 초기 상태 가져오기
 const initialState: UserState = {
+  id: '',
   userInfo: JSON.parse(localStorage.getItem('userInfo') || 'null'),
   token: localStorage.getItem('accessToken'),
   isAuthenticated: !!localStorage.getItem('accessToken') // accessToken을 기준으로 변경
