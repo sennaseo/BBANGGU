@@ -12,7 +12,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.ssafy.bbanggu.auth.security.CustomUserDetails;
 import com.ssafy.bbanggu.common.exception.CustomException;
@@ -39,9 +41,10 @@ public class ReviewController {
 	@PostMapping
 	public ResponseEntity<ApiResponse> createReview(
 		@AuthenticationPrincipal CustomUserDetails userDetails,
-		@RequestBody @Valid ReviewDto review
+		@Valid @RequestPart(name = "review", required = false) ReviewDto review,
+		@RequestPart(name = "reviewImage", required = false) MultipartFile reviewImage
 	){
-		ReviewDto createdReview = reviewService.createReview(userDetails.getUserId(), review);
+		ReviewDto createdReview = reviewService.createReview(userDetails.getUserId(), review, reviewImage);
 		return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse("리뷰 등록이 성공적으로 완료되었습니다.", createdReview));
 	}
 
