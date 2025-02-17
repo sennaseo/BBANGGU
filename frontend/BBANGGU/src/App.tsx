@@ -43,6 +43,7 @@ import { PaymentSuccess } from "./pages/user/payment/PaymentSuccess";
 import { PaymentFail } from "./pages/user/payment/PaymentFail";
 import KakaoCallback from './pages/oauth/KakaoCallback';
 import LoginPage from "./pages/login";
+import ChangePasswordPage from "./pages/login/ChangePasswordPage";
 
 export default function App() {
   return (
@@ -55,6 +56,7 @@ export default function App() {
             <Route path="/" element={<Navigate to="/onboarding" replace />} />
             <Route path="/onboarding" element={<OnboardingPage />} />
             <Route path="/login" element={<LoginPage />} />
+            <Route path="/password/change" element={<ChangePasswordPage />} />
             <Route path="/signup" element={<SignupPage />} />
             <Route path="/signup/customer" element={<CustomerSignupPage />} />
             <Route path="/signup/owner" element={<OwnerSignupPage />} />

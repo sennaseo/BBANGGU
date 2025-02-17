@@ -89,7 +89,7 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
-      <div className="flex justify-center mt-12 mb-10">
+      <div className="flex justify-center mt-32 mb-10">
         <img
           src="/icon/bbanggu-icon.png"
           alt="빵꾸 아이콘"
@@ -163,7 +163,7 @@ export default function LoginPage() {
             <div className="text-gray-300">|</div>
             <button
               type="button"
-              onClick={() => navigate("/forgot-password")}
+              onClick={() => navigate("/password/change")}
               disabled={isLoading}
               className="hover:text-[#FF9F43] transition-colors disabled:hover:text-gray-500"
             >

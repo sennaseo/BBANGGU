@@ -1,18 +1,37 @@
+import React, { useState } from 'react';
 import { Camera } from 'lucide-react';
 import { useRef } from 'react';
 
 interface ImageUploadProps {
   images: File[];
-  onImagesChange: (images: File[]) => void;
+  onImagesChange: (files: File[]) => void;
 }
 
-export function ImageUpload({ images, onImagesChange }: ImageUploadProps) {
+export const ImageUpload: React.FC<ImageUploadProps> = ({ images, onImagesChange }) => {
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      const newImages = Array.from(e.target.files);
-      onImagesChange([...images, ...newImages].slice(0, 5));
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        alert('파일 크기는 5MB 이하여야 합니다.');
+        return;
+      }
+  
+      if (!file.type.startsWith('image/')) {
+        alert('이미지 파일만 업로드 가능합니다.');
+        return;
+      }
+  
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        // 미리보기 URL 설정
+        setPreviewUrl(reader.result as string);
+        // 선택된 파일을 부모 컴포넌트에 전달합니다.
+        onImagesChange([file]);
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -58,6 +77,11 @@ export function ImageUpload({ images, onImagesChange }: ImageUploadProps) {
       <p className="text-sm text-gray-500">
         최대 5장까지 업로드 가능합니다
       </p>
+      {previewUrl && (
+        <div className="mt-2">
+          <img src={previewUrl} alt="미리보기" className="max-w-xs max-h-64" />
+        </div>
+      )}
     </div>
   );
-} 
+}; 

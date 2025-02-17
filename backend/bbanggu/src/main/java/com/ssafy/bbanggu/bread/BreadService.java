@@ -89,7 +89,9 @@ public class BreadService {
 	}
 
 	private BreadDTO entityToDTO(Bread bread) {
+		System.out.println(bread.getBreadId());
 		return BreadDTO.builder()
+			.breadId(bread.getBreadId()) 
 			.breadCategoryId(bread.getBreadCategory().getBreadCategoryId())
 			.name(bread.getName())
 			.price(bread.getPrice())

@@ -1,15 +1,16 @@
 import { useState, useEffect } from 'react';
-import { BakeryType } from '../../../types/bakery';
 import { useNavigate } from 'react-router-dom';
 import { HeartIcon, StarIcon } from "lucide-react"
 import { MapPinIcon } from "@heroicons/react/24/solid";
 import UserBottomNavigation from '../../../components/user/navigations/bottomnavigation/UserBottomNavigation';  
 import { getFavoriteBakery } from '../../../services/user/favorite/userFavoriteService';
 import { bakeryDetailApi } from '../../../api/user/detail/bakeryDetailApi';
+import { BakeryInfo } from '../../../store/slices/bakerySlice';
 
 export const FavoriteBakery = () => {
+  const imgBaseUrl = import.meta.env.VITE_IMAGE_BASE_URL;
   const navigate = useNavigate();
-  const [bakeries, setBakeries] = useState<BakeryType[]>([]);
+  const [bakeries, setBakeries] = useState<BakeryInfo[]>([]);
 
   const handleBakeryClick = (bakeryId: number) => {
     navigate(`/user/bakery/${bakeryId}`);
@@ -19,10 +20,9 @@ export const FavoriteBakery = () => {
     const fetchBakeries = async () => {
       try {
         const bakeryData = await getFavoriteBakery();
-        console.log("bakeryData", bakeryData);
         // bakeryData.content는 { bakeryId: number }[] 형태이므로
         // 각 bakeryId에 대해 전체 BakeryType을 가져옵니다.
-        const fullBakeries: BakeryType[] = await Promise.all(
+        const fullBakeries: BakeryInfo[] = await Promise.all(
           bakeryData.content.map((item: { bakeryId: number }) =>
             bakeryDetailApi.getBakeryById(item.bakeryId)
           )
@@ -113,7 +113,7 @@ export const FavoriteBakery = () => {
             >
               <div className="relative">
                 <img 
-                  src={bakery.bakeryImageUrl || "/src/assets/logo.png"}
+                  src={bakery.bakeryBackgroundImgUrl ? `${imgBaseUrl}${bakery.bakeryBackgroundImgUrl}` : `${imgBaseUrl}/uploads/bakery19.jpeg`}
                   alt={bakery.name || ""}
                   className="w-full h-[160px] object-cover" 
                 />

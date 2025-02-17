@@ -7,10 +7,11 @@ import type { BakeryType } from "../../../types/bakery"
 
 interface BestPackagesProps {
   favoritebakery: BakeryType[]
-  onToggleLike: (bakeryId: number) => void
+  toggleFavoriteForUser: (bakeryId: number, isLiked: boolean) => void
 }
 
-export default function BestPackages({ favoritebakery, onToggleLike }: BestPackagesProps) {
+export default function BestPackages({ favoritebakery, toggleFavoriteForUser }: BestPackagesProps) {
+  const imgBaseUrl = import.meta.env.VITE_IMAGE_BASE_URL;
   const scrollRef = useRef<HTMLDivElement>(null)
   const navigate = useNavigate()
 
@@ -48,7 +49,7 @@ export default function BestPackages({ favoritebakery, onToggleLike }: BestPacka
             >
               <div className="relative aspect-square mb-2">
                 <img
-                  src={item.bakeryImageUrl || "/placeholder.svg"}
+                  src={item.bakeryImageUrl ? `${imgBaseUrl}${item.bakeryImageUrl}` : `${imgBaseUrl}/uploads/7ac950cf-8a1e-4087-9215-9a84b67eb93e_breadjjanggu.jpg`}
                   alt={item.name || "빵집 이미지"}
                   className="w-full h-full object-cover rounded-[12px]"
                 />
@@ -56,7 +57,7 @@ export default function BestPackages({ favoritebakery, onToggleLike }: BestPacka
                   className="absolute right-2 bottom-2 p-1.5 rounded-full bg-[#F9F9F9] backdrop-blur-sm hover:bg-[#E1E1E1]"
                   onClick={(e) => {
                     e.stopPropagation();
-                    onToggleLike(item.bakeryId);
+                    toggleFavoriteForUser(item.bakeryId, item.is_liked);
                   }}
                 > 
                   {item.is_liked ? (

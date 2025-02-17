@@ -68,7 +68,7 @@ services:
       - bbanggu-network
     healthcheck:
       test: [ "CMD", "curl", "-f", "https://i12d102.p.ssafy.io/api/bakery/1" ]
-      interval: 10s
+      interval: 600s
       retries: 5
 
   certbot:
