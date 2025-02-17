@@ -90,6 +90,7 @@ public class BreadService {
 
 	private BreadDTO entityToDTO(Bread bread) {
 		return BreadDTO.builder()
+			.bakeryId(bread.getBreadId())
 			.breadCategoryId(bread.getBreadCategory().getBreadCategoryId())
 			.name(bread.getName())
 			.price(bread.getPrice())
