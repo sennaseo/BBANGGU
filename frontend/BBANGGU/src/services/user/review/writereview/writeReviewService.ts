@@ -2,9 +2,10 @@ import { writeReviewApi } from '../../../../api/user/review/writereview/writeRev
 import { ReviewFormData, ReviewResponse } from '../../../../types/bakery';
 
 export const writeReviewService = {
-  submitReview: async (reservationId: string, data: ReviewFormData): Promise<ReviewResponse> => {
+  submitReview: async (data: ReviewFormData): Promise<ReviewResponse> => {
     try {
-      const response = await writeReviewApi.submitReview(reservationId, data);
+      const response = await writeReviewApi.submitReview(data);
+      console.log("response", response)
       return response;
     } catch (error) {
       throw new Error('리뷰 작성에 실패했습니다.');

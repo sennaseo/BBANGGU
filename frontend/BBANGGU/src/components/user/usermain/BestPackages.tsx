@@ -7,10 +7,10 @@ import type { BakeryType } from "../../../types/bakery"
 
 interface BestPackagesProps {
   favoritebakery: BakeryType[]
-  onToggleLike: (bakeryId: number) => void
+  toggleFavoriteForUser: (bakeryId: number, isLiked: boolean) => void
 }
 
-export default function BestPackages({ favoritebakery, onToggleLike }: BestPackagesProps) {
+export default function BestPackages({ favoritebakery, toggleFavoriteForUser }: BestPackagesProps) {
   const scrollRef = useRef<HTMLDivElement>(null)
   const navigate = useNavigate()
 
@@ -56,7 +56,7 @@ export default function BestPackages({ favoritebakery, onToggleLike }: BestPacka
                   className="absolute right-2 bottom-2 p-1.5 rounded-full bg-[#F9F9F9] backdrop-blur-sm hover:bg-[#E1E1E1]"
                   onClick={(e) => {
                     e.stopPropagation();
-                    onToggleLike(item.bakeryId);
+                    toggleFavoriteForUser(item.bakeryId, item.is_liked);
                   }}
                 > 
                   {item.is_liked ? (

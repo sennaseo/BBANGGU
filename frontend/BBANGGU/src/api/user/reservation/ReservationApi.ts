@@ -74,5 +74,5 @@ export const ReservationApi = {
       console.error('에러 응답:', error.response?.data);
       throw error;
     }
-  }
+  },
 }; 

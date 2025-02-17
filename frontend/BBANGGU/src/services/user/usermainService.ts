@@ -1,18 +1,12 @@
 import { mainApi } from '../../api/user/main/mainApi';
 import type { BakeryType, BakerySearchItem } from '../../types/bakery';
-// 모듈-레벨 캐시: 페이지 이동 시 재요청 방지
-let cachedData: { allbakery: BakeryType[] } | null = null;
 
 /**
  * UserMain 페이지의 데이터를 가져오는 함수.
  * 이미 데이터를 불러온 적이 있으면 캐시된 데이터를 반환합니다.
  */
 export async function getUserMainData(): Promise<{ allbakery: BakeryType[] }> {
-  if (cachedData) {
-    return cachedData;
-  }
   const data = await fetchAllBakeriesData();
-  cachedData = data;
   return data;
 }
 
@@ -81,10 +75,14 @@ export async function searchBakery(keyword: string): Promise<BakerySearchItem[]>
  */
 export async function toggleFavoriteForUser(bakeryId: number, isLiked: boolean): Promise<boolean> {
   if (isLiked) {
+    console.log("삭제");
+    console.log(isLiked);
     // 현재 좋아요 상태이면 삭제 API 호출
-    return await mainApi.deleteFavorite(bakeryId);
+    return mainApi.deleteFavorite(bakeryId);
   } else {
+    console.log("추가");
+    console.log(isLiked);
     // 좋아요 상태가 아니면 추가 API 호출
-    return await mainApi.toggleFavorite(bakeryId);
+    return mainApi.toggleFavorite(bakeryId);
   }
 }

@@ -67,7 +67,7 @@ export interface ReservationType {
   pickupAt: string
   createdAt: string
   cancelledAt?: string
-  status: "pending" | "cancelled" | "completed"
+  status: "pending" | "canceled" | "completed" | "confirmed"
 }
 
 export interface EchoSaveType {
@@ -120,11 +120,12 @@ export interface UserReviewResponse {
 export interface ReviewFormData {
   rating: number;
   content: string;
-  images: File[];
+  reservationId: number;
 }
 
 export interface ReviewResponse {
   success: boolean;
   message: string;
   reviewId?: number;
+  reviewImageUrl?: string;
 } 

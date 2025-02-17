@@ -54,12 +54,6 @@ export default function BakeryDetail() {
         ...bakery,
         is_liked: newLikedStatus,
       });
-      // localStorage의 likedStores 업데이트
-      const likedMap = localStorage.getItem("likedStores") 
-        ? JSON.parse(localStorage.getItem("likedStores") || "{}") 
-        : {};
-      likedMap[bakery.bakeryId] = newLikedStatus;
-      localStorage.setItem("likedStores", JSON.stringify(likedMap));
       return newLikedStatus;
     } catch (error) {
       console.error("좋아요 토글 실패:", error);

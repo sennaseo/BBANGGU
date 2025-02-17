@@ -1,23 +1,48 @@
 import { HeartIcon as HeartOutline, StarIcon } from "@heroicons/react/24/outline"
-import { MapPinIcon, ChevronDownIcon, HeartIcon as HeartSolid } from "@heroicons/react/24/solid"
+import { MapPinIcon, HeartIcon as HeartSolid } from "@heroicons/react/24/solid"
 import type { BakeryType } from "../../../types/bakery"
+import { useState } from "react";
+
 interface RecommendedStoresProps {
   allbakery: BakeryType[]
-  onToggleLike: (bakeryId: number) => void
+  toggleFavoriteForUser: (bakeryId: number, isLiked: boolean) => void
   onStoreClick: (id: number) => void
 }
 
-export default function RecommendedStores({ allbakery, onStoreClick, onToggleLike }: RecommendedStoresProps) {
+export default function RecommendedStores({ allbakery, onStoreClick, toggleFavoriteForUser }: RecommendedStoresProps) {
+  const [sortType, setSortType] = useState<string>("distance");
+  const sortedStores = [...allbakery].sort((a, b) => {
+    switch(sortType) {
+      case "distance":
+        return (a.distance || 0) - (b.distance || 0);
+      case "price":
+        return (a.price || 0) - (b.price || 0);
+      case "review":
+        return (b.reviewCnt || 0) - (a.reviewCnt || 0);
+      case "rating":
+        return (b.star || 0) - (a.star || 0);
+      default:
+        return 0;
+    }
+  });
+
   return (
     <section>
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-[20px] font-bold text-[#333333]">유저 추천 상품</h2>
-        <button className="flex items-center gap-2 text-[#fc973b] text-[14px] font-medium">
-          새로 생긴 가게 순 <ChevronDownIcon className="size-3" />
-        </button>
+        <select
+          value={sortType}
+          onChange={(e) => setSortType(e.target.value)}
+          className="bg-white rounded-md p-1 text-[#fc973b] text-[14px] font-medium"
+        >
+          <option value="distance">거리순</option>
+          <option value="price">낮은 가격순</option>
+          <option value="review">리뷰많은순</option>
+          <option value="rating">평점 높은순</option>
+        </select>
       </div>
       <div className="space-y-3 -mx-5">
-        {allbakery.map((store, index) => (
+        {sortedStores.map((store, index) => (
           <div
             key={`store-${store.bakeryId ?? index}`}
             className="flex gap-4 p-4 bg-white rounded-[12px] border border-[#e1e1e1] mx-5 cursor-pointer"
@@ -48,8 +73,9 @@ export default function RecommendedStores({ allbakery, onStoreClick, onToggleLik
                   <button
                     className="w-8 h-8 flex items-center justify-center bg-[#F9F9F9] rounded-full hover:bg-[#E1E1E1]"
                     onClick={(e) => {
-                      e.stopPropagation()
-                      onToggleLike(store.bakeryId)
+                      e.stopPropagation();
+                      console.log("store.bakeryId", store.bakeryId);
+                      toggleFavoriteForUser(store.bakeryId, store.is_liked);
                     }}>
                     {store.is_liked ? (
                       <HeartSolid className="w-6 h-6 text-[#fc973b]" />

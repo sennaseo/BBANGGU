@@ -45,11 +45,13 @@ export function WriteReview() {
 
     try {
       setIsSubmitting(true);
-      await writeReviewService.submitReview(reservationId, {
+      const reviewData = {
         rating,
         content,
-        images,
-      });
+        reservationId: parseInt(reservationId),
+        ...(images.length > 0 ? { file: images[0] } : {})
+      };
+      await writeReviewService.submitReview(reviewData);
       alert('리뷰가 성공적으로 등록되었습니다.');
       navigate('..', { 
         state: { 
