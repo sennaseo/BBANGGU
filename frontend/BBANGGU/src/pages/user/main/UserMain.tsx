@@ -7,7 +7,7 @@ import RecommendedStores from "../../../components/user/usermain/RecommendedStor
 import ErrorBoundary from "../../../components/ErrorBoundary"
 import { useNavigate } from "react-router-dom"
 import UserBottomNavigation from "../../../components/user/navigations/bottomnavigation/UserBottomNavigation"
-import type { BakerySearchItem, ExtendedBakeryType } from "../../../types/bakery"
+import type { BakerySearchItem, BakeryType } from "../../../types/bakery"
 import { toggleFavoriteForUser } from "../../../services/user/usermainService"
 import { bakeryDetailApi } from "../../../api/user/detail/bakeryDetailApi"
 import { useSelector } from 'react-redux'
@@ -15,8 +15,8 @@ import { RootState } from '../../../store'
 import { mainApi } from "../../../api/user/main/mainApi"
 
 export default function UserMain() {
-  const [allBakeriesData, setAllBakeriesData] = useState<ExtendedBakeryType[]>([])
-  const [favoritebakery, setFavoritebakery] = useState<ExtendedBakeryType[]>([])
+  const [allBakeriesData, setAllBakeriesData] = useState<BakeryType[]>([])
+  const [favoritebakery, setFavoritebakery] = useState<BakeryType[]>([])
   const [searchQuery, setSearchQuery] = useState<string>("")
   const [searchResults, setSearchResults] = useState<BakerySearchItem[]>([])
   const [isLoading, setIsLoading] = useState(false)
