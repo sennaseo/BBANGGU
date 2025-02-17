@@ -1,11 +1,18 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import Header from '../../../components/owner/header/Header';
 import breadBagIcon from '../../../assets/images/bakery/bread_pakage.svg';
 import wonIcon from '../../../assets/images/bakery/won_icon.png';
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
+import { registerPackage, getPickupTime, updatePickupTime, updatePackage } from '../../../api/owner/package';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState } from '../../../store';
+import { logout } from '../../../store/slices/authSlice';
+import { setUserInfo, clearUserInfo } from '../../../store/slices/userSlice';
+import { getUserInfo } from '../../../api/user/user';
 
 interface PackageForm {
+  bakeryId?: number;
   name: string;
   price: number;
   quantity: number;
@@ -14,18 +21,86 @@ interface PackageForm {
 }
 
 export default function PackageSettingPage() {
+  const dispatch = useDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
+  
+  // Redux 상태 가져오기
+  const { accessToken } = useSelector((state: RootState) => state.auth);
+
+  const isEditing = location.state?.isEditing;
+  const packageData = location.state?.packageData;
+
+  // 권한 체크 및 유저 정보 조회
+  useEffect(() => {
+    const fetchUserInfo = async () => {
+      if (!accessToken) {
+        navigate('/login');
+        return;
+      }
+
+      try {
+        const data = await getUserInfo();
+        dispatch(setUserInfo({
+          name: data.name,
+          profileImageUrl: data.profileImageUrl,
+          email: data.email,
+          phone: data.phone,
+          userId: data.userId,
+          role: data.role as 'OWNER' | 'USER',
+          addressRoad: data.addressRoad,
+          addressDetail: data.addressDetail
+        }));
+
+        // 점주가 아닌 경우 메인으로 리다이렉트
+        if (data.role !== 'OWNER') {
+          dispatch(logout());
+          dispatch(clearUserInfo());
+          navigate('/');
+          return;
+        }
+
+        // bakeryId 설정 (API 호출에 사용)
+        if (data.userId) {
+          setForm(prev => ({
+            ...prev,
+            bakeryId: data.userId
+          }));
+        }
+      } catch (error) {
+        console.error('Error fetching user info:', error);
+        dispatch(logout());
+        dispatch(clearUserInfo());
+        navigate('/login');
+      }
+    };
+
+    fetchUserInfo();
+  }, [dispatch, navigate, accessToken]);
+
+  // 기본 시간 상수
+  const DEFAULT_TIMES = {
+    startTime: '',
+    endTime: ''
+  };
+
   const [form, setForm] = useState<PackageForm>({
-    name: '',
-    price: 0,
-    quantity: 8,
-    startTime: '19:00',
-    endTime: '20:00'
+    bakeryId: isEditing ? packageData?.bakeryId : undefined,
+    name: isEditing ? packageData?.name : '',
+    price: isEditing ? packageData?.price : 0,
+    quantity: isEditing ? packageData?.quantity : 1,
+    startTime: DEFAULT_TIMES.startTime,
+    endTime: DEFAULT_TIMES.endTime
   });
   const [isPriceEditing, setIsPriceEditing] = useState(false);
   const [tempPrice, setTempPrice] = useState('');
   const MIN_PRICE = 1000;  // 최소 가격 상수 추가
   const MAX_PRICE = 100000;  // 최대 가격 상수
+  const [isLoading, setIsLoading] = useState(false);
+  const [defaultPickupTime, setDefaultPickupTime] = useState<{
+    startTime: string;
+    endTime: string;
+  } | null>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -79,11 +154,129 @@ export default function PackageSettingPage() {
     setTempPrice('');
   };
 
+  // 픽업 시간 조회
+  useEffect(() => {
+    const fetchPickupTime = async () => {
+      if (!form.bakeryId) return;
+
+      try {
+        const response = await getPickupTime(form.bakeryId);
+        console.log('픽업 시간 응답:', response); // 디버깅용
+        
+        if (response && response.data) {
+          const pickupTimeData = response.data;
+          setForm(prev => ({
+            ...prev,
+            startTime: pickupTimeData.startTime,
+            endTime: pickupTimeData.endTime
+          }));
+          
+          setDefaultPickupTime({
+            startTime: pickupTimeData.startTime,
+            endTime: pickupTimeData.endTime
+          });
+        }
+      } catch (error) {
+        console.error('픽업 시간 조회 실패:', error);
+        setForm(prev => ({
+          ...prev,
+          startTime: '',
+          endTime: ''
+        }));
+      }
+    };
+
+    fetchPickupTime();
+  }, [form.bakeryId]);
+
+  // 현재 요일 가져오는 함수 추가
+  const getCurrentDay = () => {
+    const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+    const today = new Date().getDay();
+    return days[today];
+  };
+
+  const handleSubmit = async () => {
+    if (!form.bakeryId) {
+      alert('점주 정보를 불러올 수 없습니다.');
+      return;
+    }
+
+    if (!form.name || form.price < MIN_PRICE || !form.startTime || !form.endTime) {
+      alert('모든 필수 항목을 입력해주세요.');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      if (isEditing && packageData?.packageId) {
+        await updatePackage(packageData.packageId, {
+          bakeryId: form.bakeryId,
+          name: form.name,
+          price: form.price,
+          quantity: form.quantity
+        });
+
+        // 픽업 시간이 변경된 경우에만 API 호출
+        if (defaultPickupTime &&
+            (defaultPickupTime.startTime !== form.startTime ||
+             defaultPickupTime.endTime !== form.endTime)) {
+          
+          const currentDay = getCurrentDay();
+          console.log('픽업 시간 수정 요청:', {
+            bakeryId: form.bakeryId,
+            [currentDay]: {
+              startTime: form.startTime,
+              endTime: form.endTime
+            }
+          });
+
+          await updatePickupTime(form.bakeryId, {
+            [currentDay]: {
+              startTime: form.startTime,
+              endTime: form.endTime
+            }
+          });
+        }
+
+        alert('빵꾸러미가 수정되었습니다.');
+        navigate('/owner/main');
+      } else {
+        await registerPackage({
+          bakeryId: form.bakeryId,
+          name: form.name,
+          price: form.price,
+          quantity: form.quantity
+        });
+        alert('빵꾸러미가 등록되었습니다.');
+      }
+
+      navigate('/owner/main');
+    } catch (error: any) {
+      console.error('에러 발생:', error);
+      // 401 에러 처리
+      if (error.response?.status === 401 || error.message === '인증이 필요합니다.') {
+        dispatch(logout());
+        dispatch(clearUserInfo());
+        navigate('/login');
+        return;
+      }
+      alert(error.response?.data?.message || `빵꾸러미 ${isEditing ? '수정' : '등록'} 중 오류가 발생했습니다.`);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-white flex flex-col">
       <Header 
-        title="빵꾸러미 설정" 
+        title={isEditing ? "빵꾸러미 수정" : "빵꾸러미 설정"}
         onBack={() => navigate(-1)}
+        rightButton={{
+          text: isLoading ? "저장 중..." : "저장",
+          onClick: handleSubmit,
+          disabled: isLoading
+        }}
       />
 
       <div className="flex-1 flex flex-col p-4 overflow-y-auto">
@@ -105,40 +298,42 @@ export default function PackageSettingPage() {
 
         {/* 빵꾸러미 가격 */}
         <div className="mb-8">
-          <h3 className="text-[16px] font-bold text-[#242424] mb-2">빵꾸러미 가격</h3>
-          <p className="text-[14px] text-gray-600 mb-4">
-            버려질 빵한 음식을 낭비없이 소비하기 위해 정가의 50%에 판매하며,<br />
-            설정 금액 이상의 가치를 제공해야합니다.<br />
-            (1,000원 ~ 10만원 사이, 100원 단위 설정)
-          </p>
-          <div 
-            className={`flex items-center bg-white rounded-[8px] border ${
-              isPriceEditing ? 'border-[#FC973B]' : 'border-[#E5E5E5]'
-            } px-4 py-3 cursor-text`}
-            onClick={() => setIsPriceEditing(true)}
-          >
-            <span className="text-[14px] text-[#242424]">가격</span>
-            <span className="flex-1" />
-            <div className="relative flex items-center">
-              {isPriceEditing ? (
-                <input
-                  type="text"
-                  name="price"
-                  value={tempPrice}
-                  onChange={handlePriceChange}
-                  onBlur={handlePriceBlur}
-                  className="w-[120px] text-right text-[16px] focus:outline-none"
-                  placeholder="0"
-                  autoFocus
-                />
-              ) : (
-                <span className="w-[120px] text-right text-[16px] text-[#242424]">
-                  {form.price.toLocaleString()}
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            빵꾸러미 가격
+          </label>
+          {isPriceEditing ? (
+            <input
+              type="text"
+              value={tempPrice}
+              onChange={handlePriceChange}
+              onBlur={handlePriceBlur}
+              className="w-full px-4 py-3 bg-white border border-gray-200 rounded-[4px] focus:outline-none focus:ring-2 focus:ring-[#FC973B]"
+              placeholder="최종 판매 가격을 입력하세요"
+              autoFocus
+            />
+          ) : (
+            <div 
+              onClick={() => setIsPriceEditing(true)}
+              className="w-full px-4 py-3 bg-white border border-gray-200 rounded-[4px] cursor-text"
+            >
+              <div className="flex flex-col gap-1">
+                {/* 할인 전 가격 (입력된 가격의 2배) */}
+                <span className="text-gray-400 line-through text-sm">
+                  {(form.price * 2).toLocaleString()}원
                 </span>
-              )}
-              <span className="ml-2 text-[14px] text-[#242424]">원</span>
+                {/* 실제 판매가격 */}
+                <span className="text-lg font-bold text-[#FC973B]">
+                  {form.price.toLocaleString()}원
+                  <span className="text-sm font-normal text-gray-500 ml-2">
+                    (50% 할인)
+                  </span>
+                </span>
+              </div>
             </div>
-          </div>
+          )}
+          <p className="mt-1 text-sm text-gray-500">
+            * 입력하신 가격이 50% 할인된 최종 판매 가격입니다
+          </p>
         </div>
 
         {/* 빵꾸러미 판매 개수 */}
@@ -354,11 +549,13 @@ export default function PackageSettingPage() {
         {/* 하단 버튼 */}
         <div className="mt-auto pt-4">
           <button
-            onClick={() => navigate('/owner/main')}
-            className="w-full bg-[#FC973B] text-white py-4 rounded-[8px] text-[16px] font-medium
-              hover:bg-[#e88934] transition-colors"
+            onClick={handleSubmit}
+            disabled={isLoading}
+            className={`w-full ${
+              isLoading ? 'bg-gray-400' : 'bg-[#FC973B] hover:bg-[#e88934]'
+            } text-white py-4 rounded-[8px] text-[16px] font-medium transition-colors`}
           >
-            빵꾸러미 판매 시작
+            {isLoading ? '등록 중...' : '빵꾸러미 판매 시작'}
           </button>
         </div>
       </div>

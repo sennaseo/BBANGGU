@@ -40,6 +40,10 @@ import { InstallPWA } from './components/InstallPWA';
 import UserMyReview from "./pages/user/mypage/myreview/UserMyReview";
 import { WriteReview } from "./pages/user/review/writereview/WriteReview";
 import { ReviewDetail } from "./pages/user/review/ReviewDetail";
+import { PaymentSuccess } from "./pages/user/payment/PaymentSuccess";
+import { PaymentFail } from "./pages/user/payment/PaymentFail";
+import KakaoCallback from './pages/oauth/KakaoCallback';
+
 export default function App() {
   return (
     <RecoilRoot>
@@ -71,8 +75,11 @@ export default function App() {
             <Route path="/user/:userId/mypage/reservation/:reservationId/write-review" element={<WriteReview />} />
             <Route path="/user/:userId/mypage/reviews/:reservationId" element={<ReviewDetail />} />
             <Route path="/user/:userId/favorite" element={<FavoriteBakery />} />
-            <Route path="/user/payment" element={<UserPayment />} />
+            <Route path="/user/payment/:bakeryId" element={<UserPayment />} />
             <Route path="/user/map" element={<MapPage />} />
+            <Route path="/payment/success" element={<PaymentSuccess />} />
+            <Route path="/payment/fail" element={<PaymentFail />} />
+            <Route path="/oauth/kakao/callback" element={<KakaoCallback />} />
 
 
               {/* 점주 관련 페이지 */}

@@ -3,8 +3,10 @@ package com.ssafy.bbanggu.reservation.dto;
 import java.time.LocalDateTime;
 
 public record ReservationResponse(
-	String name,
+	Long reservationId,
+	Long bakeryId,
+	String bakeryName,
 	LocalDateTime createdAt,
-	int quantity,
-	String profileImageUrl
+	LocalDateTime pickupAt,
+	String status
 ){}

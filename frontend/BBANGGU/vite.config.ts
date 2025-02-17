@@ -12,6 +12,9 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
+      devOptions: {
+        enabled: true // 개발 환경에서도 PWA 활성화
+      },
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
       scope: '/',
       base: '/',
@@ -52,18 +55,7 @@ export default defineConfig({
         ]
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,jpg}'],
-        runtimeCaching: [
-          {
-            urlPattern: /^https:\/\/i12d102\.p\.ssafy\.io/,
-            handler: 'NetworkFirst',
-            options: {
-              cacheName: 'api-cache',
-              networkTimeoutSeconds: 5,
-            },
-          }
-        ],
-        navigateFallback: 'index.html'
+        globPatterns: ['**/*.{js,css,html,ico,png,svg}']
       }
     })
   ],
@@ -76,26 +68,6 @@ export default defineConfig({
     host: 'localhost',
     port: 5173,
     proxy: {
-      '/api': {
-        target: 'http://i12d102.p.ssafy.io:8081',
-        changeOrigin: true,
-        secure: false,
-        rewrite: (path) => path.replace(/^\/api/, ''),
-        configure: (proxy, _options) => {
-          proxy.on('proxyReq', (proxyReq, _req, _res) => {
-            proxyReq.removeHeader('origin');
-            proxyReq.removeHeader('referer');
-          });
-
-          proxy.on('proxyRes', (_proxyRes, _req, res) => {
-            res.removeHeader('Access-Control-Allow-Origin');
-            res.setHeader('Access-Control-Allow-Origin', 'http://localhost:5173');
-            res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
-            res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-            res.setHeader('Access-Control-Allow-Credentials', 'true');
-          });
-        }
-      },
       '/uploads': {
         target: 'https://i12d102.p.ssafy.io',
         changeOrigin: true,

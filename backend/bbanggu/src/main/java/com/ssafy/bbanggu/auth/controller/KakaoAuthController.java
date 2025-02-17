@@ -1,22 +1,28 @@
 package com.ssafy.bbanggu.auth.controller;
 
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
 import com.ssafy.bbanggu.auth.dto.JwtToken;
+import com.ssafy.bbanggu.auth.dto.KakaoUserInfo;
 import com.ssafy.bbanggu.auth.service.KakaoAuthService;
 import com.ssafy.bbanggu.common.exception.CustomException;
 import com.ssafy.bbanggu.common.response.ApiResponse;
 
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+@Slf4j
 @RestController
 @RequestMapping("/oauth/kakao")
 @RequiredArgsConstructor
@@ -45,24 +51,33 @@ public class KakaoAuthController {
 		try {
 			JwtToken jwtToken = kakaoAuthService.handleKakaoLogin(authCode);
 
-			// ✅ Refresh Token을 HttpOnly 쿠키로 저장
-			ResponseCookie refreshTokenCookie = ResponseCookie.from("refresh_token", jwtToken.getRefreshToken())
-				.httpOnly(true)  // JavaScript에서 접근 불가능
-				.secure(true)  // HTTPS에서만 전송
-				.path("/")  // 모든 경로에서 접근 가능
-				.maxAge(7 * 24 * 60 * 60)  // 7일 유지
-				.sameSite("Lax")  // CSRF 방지
+			// ✅ Access Token과 Refresh Token을 쿠키에 저장
+			ResponseCookie accessTokenCookie = ResponseCookie.from("accessToken", jwtToken.getAccessToken())
+				.httpOnly(false)
+				.secure(true)
+				.path("/")
+				.maxAge(30 * 60)
+				.sameSite("Lax")
 				.build();
 
-			response.addHeader("Set-Cookie", refreshTokenCookie.toString());
+			ResponseCookie refreshTokenCookie = ResponseCookie.from("refreshToken", jwtToken.getRefreshToken())
+				.httpOnly(true)
+				.secure(true)
+				.path("/")
+				.maxAge(7 * 24 * 60 * 60)
+				.sameSite("Lax")
+				.build();
 
-			// ✅ Access Token을 헤더에 추가
-			response.setHeader("Authorization", "Bearer " + jwtToken.getAccessToken());
+			response.addHeader(HttpHeaders.SET_COOKIE, accessTokenCookie.toString());
+			response.addHeader(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString());
 
-			// ✅ 강제 리다이렉트 실행
-			response.setStatus(HttpServletResponse.SC_FOUND);  // 302 상태 코드 설정
-			response.setHeader("Location", "http://localhost:5173/user");
-			response.flushBuffer();  // 즉시 응답 완료 (추가 데이터 전송 방지)
+			// ✅ 리다이렉트 URL에 사용자 정보도 함께 전달
+			String redirectUrl = String.format("https://i12d102.p.ssafy.io/oauth/kakao/callback?auth=success&token=%s",
+				URLEncoder.encode(jwtToken.getAccessToken(), StandardCharsets.UTF_8));
+
+			response.setStatus(HttpServletResponse.SC_FOUND);
+			response.setHeader("Location", redirectUrl);
+			response.flushBuffer();
 
 		} catch (CustomException e) {
 			response.sendError(e.getStatus().value(), e.getMessage());

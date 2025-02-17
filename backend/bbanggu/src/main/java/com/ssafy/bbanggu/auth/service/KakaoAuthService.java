@@ -23,6 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.client.HttpClientErrorException;
 
 @Service
 @RequiredArgsConstructor
@@ -46,13 +47,13 @@ public class KakaoAuthService {
 			"?client_id=" + kakaoConfig.getClientId() +
 			"&redirect_uri=" + kakaoConfig.getRedirectUri() +
 			"&response_type=code" +
-			"&prompt=login"; // 항상 로그인 페이지를 띄우도록 설정
+			"&prompt=select_account"; // 간편 로그인
 	}
 
 	/**
 	 * ✅ 2. Kakao 인증 코드 → Access Token 요청
 	 */
-	private String getKakaoAccessToken(String authCode) {
+	public String getKakaoAccessToken(String authCode) {
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
@@ -71,18 +72,18 @@ public class KakaoAuthService {
 			throw new CustomException(ErrorCode.KAKAO_AUTH_FAILED);
 		}
 	}
-
 	/**
 	 * ✅ 3. Kakao Access Token → 사용자 정보 조회
 	 */
-	private KakaoUserInfo getKakaoUserInfo(String kakaoAccessToken) {
+	public KakaoUserInfo getKakaoUserInfo(String kakaoAccessToken) {
 		HttpHeaders headers = new HttpHeaders();
-		headers.set("Authorization", "Bearer " + kakaoAccessToken);
+		headers.setBearerAuth(kakaoAccessToken);
+		headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
-		HttpEntity<Void> request = new HttpEntity<>(headers);
+		HttpEntity<?> entity = new HttpEntity<>(headers);
 
 		try {
-			ResponseEntity<JsonNode> response = restTemplate.exchange(kakaoUserInfoUrl, HttpMethod.GET, request, JsonNode.class);
+			ResponseEntity<JsonNode> response = restTemplate.exchange(kakaoUserInfoUrl, HttpMethod.GET, entity, JsonNode.class);
 			JsonNode jsonNode = response.getBody();
 
 			String kakaoId = jsonNode.get("id").asText();
@@ -91,7 +92,7 @@ public class KakaoAuthService {
 			String profileImage = jsonNode.path("properties").path("profile_image").asText();
 
 			return new KakaoUserInfo(kakaoId, email, nickname, profileImage);
-		} catch (Exception e) {
+		} catch (HttpClientErrorException e) {
 			throw new CustomException(ErrorCode.KAKAO_USER_INFO_FAILED);
 		}
 	}

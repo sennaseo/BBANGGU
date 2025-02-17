@@ -138,7 +138,7 @@ public class User {
 	public void updateUserInfo(String name, String phone, String profileImageUrl) {
 		if (name != null && !name.isBlank()) this.name = name;
 		if (phone != null && phone.matches("^(010-\\d{4}-\\d{4})$")) this.phone = phone;
-		if (profileImageUrl != null && !profileImageUrl.isBlank()) this.profileImageUrl = profileImageUrl;
+		this.profileImageUrl = profileImageUrl;
 	}
 
 	/**

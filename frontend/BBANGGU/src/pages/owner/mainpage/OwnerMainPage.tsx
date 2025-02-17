@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { useCustomerSort } from '../../../hooks/owner/useCustomerSort';
 import { BreadPackageHeader } from './components/BreadPackageHeader';
 import { BreadPackageInfo } from './components/BreadPackageInfo';
 import { ReviewSection } from './components/ReviewSection';
@@ -7,100 +6,97 @@ import { CustomerList } from './components/CustomerList';
 import BottomNavigation from '../../../components/owner/navigations/BottomNavigations/BottomNavigation';
 import { BuildingStorefrontIcon } from '@heroicons/react/24/outline';
 import { useNavigate } from 'react-router-dom';
+import { BreadPackage, getBakeryPackages } from '../../../api/owner/package';  // 공통 인터페이스 import
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState } from '../../../store';
+import { logout } from '../../../store/slices/authSlice';
+import { setUserInfo, clearUserInfo } from '../../../store/slices/userSlice';
+import { getUserInfo } from '../../../api/user/user';
+import breadPackageIcon from '../../../assets/images/bakery/빵꾸러미.png';
 
 // 인터페이스 정의
-interface Customer {
-  id: number;
+interface ReservationInfo {
+  reservationId: number;
   name: string;
-  email: string;
+  profileImageUrl: string | null;
+  phone: string;
   paymentTime: string;
-  isPickedUp: boolean;
-  breadCount: number;
-}
-
-interface BreadPackage {
-  bakeryId: number;
-  breadCategoryId: number;
-  name: string;
-  price: number;
-  breadImageUrl: string | null;
+  status: 'PENDING' | 'CONFIRMED' | 'CANCELED' | 'EXPIRED' | 'COMPLETED';
+  quantitiy: number;  // API 응답의 철자 그대로 유지
 }
 
 const OwnerMainPage: React.FC = () => {
+  const dispatch = useDispatch();
   const [activeTab, setActiveTab] = useState<'package' | 'review'>('package');
   const [packages, setPackages] = useState<BreadPackage[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [bakeryId, setBakeryId] = useState<number | null>(null);
+  const [reservations, setReservations] = useState<ReservationInfo[]>([]);
+  
+  // auth 상태와 userInfo 상태 모두 가져오기
+  const { accessToken } = useSelector((state: RootState) => state.auth);
   const navigate = useNavigate();
 
-  const initialCustomers: Customer[] = [
-    { id: 1, name: '서유민', email: 'youmin77@naver.com', paymentTime: '19:15', isPickedUp: false, breadCount: 1 },
-    { id: 2, name: '신은찬', email: 'youmin77@naver.com', paymentTime: '19:20', isPickedUp: false, breadCount: 1 },
-    { id: 3, name: '김유진', email: 'youmin77@naver.com', paymentTime: '19:25', isPickedUp: false, breadCount: 1 },
-    { id: 4, name: '정나금', email: 'youmin77@naver.com', paymentTime: '19:30', isPickedUp: false, breadCount: 1 },
-    { id: 5, name: '정나금', email: 'youmin77@naver.com', paymentTime: '19:35', isPickedUp: false, breadCount: 1 },
-    { id: 6, name: '김휘동', email: 'youmin77@naver.com', paymentTime: '19:40', isPickedUp: false, breadCount: 1 },
-  ];
-
-  const reviewData = {
-    stats: {
-      average: 5.0,
-      total: 125,
-      distribution: {
-        5: 1232,
-        4: 13,
-        3: 2,
-        2: 1,
-        1: 3
-      }
-    },
-    reviews: [
-      {
-        id: 1,
-        userName: "하얀",
-        rating: 5,
-        content: "매번 맛나게 먹고있습니다 정말좋습니다!!",
-        date: "47분전",
-        imageUrl: "/path/to/image.jpg"
-      },
-    ]
-  };
-
-  const { 
-    customers, 
-    sortByPaymentTime, 
-    togglePickup, 
-    handleSort 
-  } = useCustomerSort(initialCustomers);
-
-  // TODO: 실제 bakeryId는 로그인 정보에서 가져와야 함
-  const bakeryId = 1; // 현재 토큰의 sub 값이 19입니다
-
+  // 점주 권한 체크 및 유저 정보 조회
   useEffect(() => {
-    const fetchPackages = async () => {
+    const fetchUserInfo = async () => {
+      if (!accessToken) {
+        navigate('/login');
+        return;
+      }
+
+      try {
+        const data = await getUserInfo();
+        dispatch(setUserInfo({
+          name: data.name,
+          profileImageUrl: data.profileImageUrl,
+          email: data.email,
+          phone: data.phone,
+          userId: data.userId,
+          role: data.role as 'OWNER' | 'USER',
+          addressRoad: data.addressRoad,
+          addressDetail: data.addressDetail
+        }));
+
+        // 점주가 아닌 경우 메인으로 리다이렉트
+        if (data.role !== 'OWNER') {
+          dispatch(logout());
+          dispatch(clearUserInfo());
+          navigate('/');
+          return;
+        }
+
+        setBakeryId(data.userId);
+      } catch (error) {
+        console.error('Error fetching user info:', error);
+        dispatch(logout());
+        dispatch(clearUserInfo());
+        navigate('/login');
+      }
+    };
+
+    fetchUserInfo();
+  }, [dispatch, navigate, accessToken]);
+
+  // 빵꾸러미 조회
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!bakeryId) return;
+
       try {
         setIsLoading(true);
-        const response = await fetch(`/api/bread-package/bakery/${bakeryId}`, {
-          method: 'GET',
-          credentials: 'include',
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-          }
-        });
+        setError(null);
         
-        if (!response.ok) {
-          throw new Error(`API 요청 실패: ${response.status}`);
-        }
-
-        const responseData = await response.json();
-        console.log('API 응답:', responseData);
+        const response = await getBakeryPackages(bakeryId);
         
-        if (responseData.data) {
-          setPackages(responseData.data);
+        if (response.data && response.data.packageId !== null) {
+          setPackages([response.data]);
+        } else {
+          setPackages([]); // packageId가 null인 경우 빈 배열로 설정
         }
       } catch (err) {
-        console.error('패키지 조회 실패:', err);
+        console.error('데이터 로딩 실패:', err);
         setError('서버 연결에 실패했습니다. 잠시 후 다시 시도해주세요.');
         setPackages([]);
       } finally {
@@ -108,11 +104,16 @@ const OwnerMainPage: React.FC = () => {
       }
     };
 
-    fetchPackages();
+    fetchData();
   }, [bakeryId]);
 
   const handleTabChange = (tab: 'package' | 'review') => {
     setActiveTab(tab);
+  };
+
+  // CustomerList의 예약 데이터를 상위 컴포넌트로 끌어올림
+  const handleReservationsUpdate = (newReservations: ReservationInfo[]) => {
+    setReservations(newReservations);
   };
 
   if (isLoading) {
@@ -147,7 +148,7 @@ const OwnerMainPage: React.FC = () => {
     <div className="pb-16">
       <div className="p-4">
         {/* 기존 빵꾸러미 정보 */}
-        <BreadPackageHeader />
+        <BreadPackageHeader hasPackage={packages.length > 0} />
         <div className="flex mb-6">
           <div className="flex flex-1 mx-1 border-b">
             <button 
@@ -174,7 +175,38 @@ const OwnerMainPage: React.FC = () => {
         </div>
         {activeTab === 'package' ? (
           <>
-            <BreadPackageInfo packages={packages} />
+            {packages.length > 0 ? (
+              <BreadPackageInfo 
+                currentPackage={packages[0]}
+                reservations={reservations}
+                onPackageDeleted={() => {
+                  setPackages([]);
+                }}
+              />
+            ) : (
+              // 빵꾸러미가 없을 때 보여줄 빈 상태 화면
+              <div className="bg-white rounded-[20px] border border-gray-100 p-8 mb-6 flex flex-col items-center">
+                <div className="w-16 h-16 mb-4">
+                  <img 
+                    src={breadPackageIcon} 
+                    alt="빵꾸러미" 
+                    className="w-full h-full object-contain"
+                  />
+                </div>
+                <h3 className="text-[20px] font-bold text-[#242424] mb-2">
+                  등록된 빵꾸러미가 없습니다
+                </h3>
+                <p className="text-gray-500 mb-6">
+                  새로운 빵꾸러미를 등록해보세요!
+                </p>
+                <button
+                  onClick={() => navigate('/owner/package/guide')}
+                  className="px-6 py-3 bg-[#FC973B] text-white rounded-full font-medium hover:bg-[#e88a34] transition-colors"
+                >
+                  빵꾸러미 등록하기
+                </button>
+              </div>
+            )}
             <div className="mb-6">
               <button
                 onClick={() => navigate('/owner/bread/register')}
@@ -187,16 +219,13 @@ const OwnerMainPage: React.FC = () => {
               </button>
             </div>
             <CustomerList 
-              customers={customers}
-              sortByPaymentTime={sortByPaymentTime}
-              onTogglePickup={togglePickup}
-              onSort={handleSort}
+              bakeryId={bakeryId || 0}
+              onReservationsUpdate={handleReservationsUpdate}
             />
           </>
         ) : (
           <ReviewSection 
-            stats={reviewData.stats}
-            reviews={reviewData.reviews}
+            bakeryId={bakeryId || 0}
           />
         )}
       </div>

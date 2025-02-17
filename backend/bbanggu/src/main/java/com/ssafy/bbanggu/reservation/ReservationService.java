@@ -18,6 +18,7 @@ import com.ssafy.bbanggu.breadpackage.BreadPackageService;
 import org.springframework.cglib.core.Local;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import com.ssafy.bbanggu.auth.security.CustomUserDetails;
@@ -60,9 +61,13 @@ public class ReservationService {
 	 * 예약 검증 메서드 (PENDING)
 	 */
 	public Map<String, Object> validateReservation(CustomUserDetails userDetails, ValidReservationRequest request) {
-		BreadPackage breadPackage = breadPackageRepository.findById(request.breadPackageId())
-			.orElseThrow(() -> new CustomException(ErrorCode.BREAD_PACKAGE_NOT_FOUND));
-		log.info("✅ {}번 빵꾸러미가 존재함", request.breadPackageId());
+		Bakery bakery = bakeryRepository.findById(request.bakeryId())
+			.orElseThrow(() -> new CustomException(ErrorCode.BAKERY_NOT_FOUND));
+		BreadPackage breadPackage = breadPackageRepository.findByBakeryIdAndToday(bakery.getBakeryId());
+		if (breadPackage == null) {
+			throw new CustomException(ErrorCode.BREAD_PACKAGE_NOT_FOUND);
+		}
+		log.info("✅ {}번 빵꾸러미가 존재함", breadPackage.getPackageId());
 
 		User user = userRepository.findById(userDetails.getUserId())
 			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
@@ -246,13 +251,9 @@ public class ReservationService {
 	public List<ReservationResponse> getUserReservationList(CustomUserDetails userDetails, LocalDate startDate, LocalDate endDate) {
 		LocalDateTime startDateTime = startDate.atStartOfDay();
 		LocalDateTime endDateTime = endDate.atTime(LocalTime.MAX);
+		log.info("startDateTime: " + startDateTime + "\nendDateTime: " + endDateTime);
 
-		List<Reservation> reservationList = reservationRepository.findByUser_UserIdAndCreatedAtBetween(userDetails.getUserId(), startDateTime, endDateTime);
-		List<ReservationResponse> reservationDTOList = new ArrayList<>();
-		// for (Reservation reservation : reservationList) {
-		// 	reservationDTOList.add(entityToDto(reservation));
-		// }
-		return reservationDTOList;
+		return reservationRepository.findByUser_UserIdAndCreatedAtBetween(userDetails.getUserId(), startDateTime, endDateTime);
 	}
 
 	/**
@@ -310,5 +311,55 @@ public class ReservationService {
 			throw new CustomException(ErrorCode.RESERVATION_NOT_FOUND);
 		}
 		return reservation.getUser().getUserId() == userId;
+	}
+
+
+	/**
+	 * 특정 가게의 픽업되지 않은 예약을 자동 처리
+	 * @param bakeryId 가게 ID
+	 */
+	@Transactional
+	public void processMissedReservations(Long bakeryId) {
+		LocalDateTime now = LocalDateTime.now();
+		String status = "COMPLETE";
+		int updatedCount = reservationRepository.updateMissedReservations(bakeryId, now, status);
+		if (updatedCount > 0) {
+			System.out.println("🚀 [" + bakeryId + "] 노쇼 예약 자동 처리 완료! (업데이트된 예약 수: " + updatedCount + ")");
+		}
+	}
+
+	/**
+	 * **매일 자정(00:00:00)에 실행**되는 스케줄러
+	 */
+	@Scheduled(cron = "0 0 0 * * *") // 매일 00:00:00에 실행
+	public void scheduleMissedReservationsProcessing() {
+		// 특정 가게 ID를 리스트로 가져와서 처리
+		List<Long> bakeryIds = reservationRepository.findAllActiveBakeryIdsWithPackages();
+
+		for (Long bakeryId : bakeryIds) {
+			processMissedReservations(bakeryId);
+		}
+	}
+
+	public Map<String, Object> getReservationInfo(CustomUserDetails userDetails, Long reservationId) {
+		Reservation reservation = reservationRepository.findById(reservationId)
+			.orElseThrow(() -> new CustomException(ErrorCode.RESERVATION_NOT_FOUND));
+
+		if (!reservation.getUser().getUserId().equals(userDetails.getUserId())) {
+			throw new CustomException(ErrorCode.USER_NOT_RESERVATION_USER);
+		}
+
+		Map<String, Object> response = new HashMap<>();
+		response.put("status", reservation.getStatus());
+		response.put("bakeryName", reservation.getBakery().getName());
+		response.put("pickupAt", reservation.getPickupAt());
+		response.put("packageName", reservation.getBreadPackage().getName());
+		response.put("price", reservation.getTotalPrice());
+		response.put("addressRoad", reservation.getBakery().getAddressRoad());
+		response.put("addressDetail", reservation.getBakery().getAddressDetail());
+		response.put("latitude", reservation.getBakery().getLatitude());
+		response.put("longitude", reservation.getBakery().getLongitude());
+
+		return response;
 	}
 }

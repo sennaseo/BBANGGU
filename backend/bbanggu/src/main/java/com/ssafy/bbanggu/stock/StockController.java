@@ -1,6 +1,7 @@
 package com.ssafy.bbanggu.stock;
 
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -76,7 +77,7 @@ public class StockController {
 	@GetMapping("/bakery/{bakeryId}/week")
 	public ResponseEntity<?> getStockWeekly(@PathVariable long bakeryId) {
 		try {
-			List<StockDTO> stockList = stockService.getStockByPeriod(LocalDate.now().minusWeeks(1), LocalDate.now(), bakeryId);
+			List<StockWeekDTO> stockList = stockService.getLast7DaysStockSummary(bakeryId);
 			return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse("재고 조회 성공", stockList));
 		} catch (Exception e) {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("재고 조회 실패");
@@ -84,10 +85,10 @@ public class StockController {
 	}
 
 	// 월(지난 30일) 조회
-	@GetMapping("/bakery/{bakeryId}/year/{year}")
-	public ResponseEntity<?> getStockMonthly(@PathVariable long bakeryId, @PathVariable int year) {
+	@GetMapping("/bakery/{bakeryId}/year")
+	public ResponseEntity<?> getStockMonthly(@PathVariable long bakeryId) {
 		try {
-			Map<Integer, List<StockMonthDTO>> stockList = stockService.getYearlyStock(year, bakeryId);
+			Map<Integer, List<StockMonthDTO>> stockList = stockService.getYearlyStock(bakeryId);
 			return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse("재고 조회 성공", stockList));
 		} catch (Exception e) {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("재고 조회 실패");
@@ -97,7 +98,7 @@ public class StockController {
 	// 기간 기준 조회
 	@GetMapping("/bakery/{bakeryId}/{startDate}/{endDate}")
 	public ResponseEntity<?> getStockByPeriod(@PathVariable long bakeryId, @PathVariable LocalDate startDate,
-											  @PathVariable LocalDate endDate) {
+		@PathVariable LocalDate endDate) {
 		try {
 			List<StockDTO> stockList = stockService.getStockByPeriod(startDate, endDate, bakeryId);
 			return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse("재고 조회 성공", stockList));
@@ -105,4 +106,20 @@ public class StockController {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("재고 조회 실패");
 		}
 	}
+
+	// TOP3 재고 조회
+	@GetMapping("/bakery/{bakeryId}/top3/{period}")
+	public ResponseEntity<?> getTop3Stock(@PathVariable long bakeryId, @PathVariable String period) {
+		try {
+			List<Object[]> stockList = stockService.getTop3StockByPeriod(bakeryId, period);
+			int total = stockService.countTotalStock(bakeryId, period);
+			Map<String, Object> result = new HashMap<>();
+			result.put("top3", stockList);
+			result.put("total", total);
+			return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse("재고 조회 성공", result));
+		} catch (Exception e) {
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("재고 조회 실패");
+		}
+	}
+
 }

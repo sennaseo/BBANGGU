@@ -1,13 +1,22 @@
 package com.ssafy.bbanggu.stock;
 
 import java.time.LocalDate;
-import java.util.*;
+import java.time.YearMonth;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.ssafy.bbanggu.bakery.domain.Bakery;
 import com.ssafy.bbanggu.bread.Bread;
+import com.ssafy.bbanggu.bread.BreadService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -16,6 +25,7 @@ import lombok.RequiredArgsConstructor;
 @Transactional
 public class StockService {
 	private final StockRepository stockRepository;
+	private final BreadService breadService;
 
 	public void insertStock(StockDTO stockDto) {
 		stockRepository.save(DtoToEntity(stockDto));
@@ -32,6 +42,29 @@ public class StockService {
 		stockRepository.deleteById(stockId);
 	}
 
+	public List<StockWeekDTO> getLast7DaysStockSummary(long bakeryId) {
+		LocalDate endDate = LocalDate.now();
+		LocalDate startDate = endDate.minusDays(6);
+
+		List<StockWeekDTO> summaries = stockRepository
+			.findDailySummaryByBakeryAndDateRange(bakeryId, startDate, endDate);
+
+		Map<LocalDate, Integer> summaryMap = summaries.stream()
+			.collect(Collectors.toMap(
+				StockWeekDTO::getDate,
+				StockWeekDTO::getTotalQuantity
+			));
+
+		List<StockWeekDTO> result = new ArrayList<>();
+		for (int i = 6; i >= 0; i--) {
+			LocalDate date = endDate.minusDays(i);
+			Integer quantity = summaryMap.getOrDefault(date, 0);
+			result.add(new StockWeekDTO(date, quantity));
+		}
+
+		return result;
+	}
+
 	public List<StockDTO> getStockByPeriod(LocalDate startDate, LocalDate endDate, long bakeryId) {
 		List<Stock> stockList = stockRepository.findByBakery_BakeryIdAndDateBetween(bakeryId, startDate, endDate);
 		stockList.sort(Comparator.comparing(Stock::getDate));
@@ -42,48 +75,67 @@ public class StockService {
 		return stockDtoList;
 	}
 
-	public Map<Integer, List<StockMonthDTO>> getYearlyStock(int year, long bakeryId) {
-		LocalDate startOfYear = LocalDate.of(year, 1, 1);
-		LocalDate endOfYear = LocalDate.of(year, 12, 31);
+	public Map<Integer, List<StockMonthDTO>> getYearlyStock(long bakeryId) {
+		LocalDate now = LocalDate.now();
+		LocalDate startDate = now.minusMonths(11);
 
-		// bakeryId와 날짜 범위로 Stock 데이터 조회
-		List<Stock> stockList = stockRepository.findByBakery_BakeryIdAndDateBetween(bakeryId, startOfYear, endOfYear);
+		List<Stock> stockList = stockRepository.findByBakery_BakeryIdAndDateBetween(
+			bakeryId, startDate, now
+		);
 
-		for (int month = 1; month <= 12; month++) {
-			StockMonthDTO stockMonthDTO = new StockMonthDTO();
-			for (Stock s : stockList) {
-				if (s.getDate().getMonthValue() == month) {
+		// YearMonth를 키로 사용하여 날짜순 정렬을 보장
+		Map<YearMonth, Map<Long, Integer>> monthlyData = new TreeMap<>();
 
-				}
-			}
-		}
-
-		// 월별(1~12)로 재고를 빵 종류별로 합산할 맵을 생성 (월 → (빵ID → 총수량))
-		// TreeMap을 사용하면 key가 정렬된 상태로 저장됨
-		Map<Integer, Map<Long, Integer>> monthlyAggregation = new TreeMap<>();
-		for (int month = 1; month <= 12; month++) {
-			monthlyAggregation.put(month, new HashMap<>());
-		}
-
-		// 각 Stock 데이터를 해당 월의 해당 빵ID에 대해 누적합계 계산
+		// Stock 데이터 집계
 		for (Stock stock : stockList) {
-			int month = stock.getDate().getMonthValue();
+			YearMonth yearMonth = YearMonth.from(stock.getDate());
 			long breadId = stock.getBread().getBreadId();
 			int quantity = stock.getQuantity();
 
-			Map<Long, Integer> breadAggregation = monthlyAggregation.get(month);
-			breadAggregation.put(breadId, breadAggregation.getOrDefault(breadId, 0) + quantity);
+			monthlyData.computeIfAbsent(yearMonth, k -> new HashMap<>())
+				.merge(breadId, quantity, Integer::sum);
 		}
 
-		Map<Integer, List<StockMonthDTO>> result = new TreeMap<>();
-		for (int month = 1; month <= 12; month++) {
-			Map<Long, Integer> breadAggregation = monthlyAggregation.get(month);
-			List<StockMonthDTO> aggregationList = new ArrayList<>();
-			for (Map.Entry<Long, Integer> entry : breadAggregation.entrySet()) {
-				aggregationList.add(new StockMonthDTO(entry.getKey(), entry.getValue()));
+		// 결과를 월별로 변환
+		Map<Integer, List<StockMonthDTO>> result = new LinkedHashMap<>();
+
+		// startDate부터 now까지 순회하며 데이터가 있는 월만 결과 맵에 추가
+		YearMonth current = YearMonth.from(startDate);
+		YearMonth end = YearMonth.from(now);
+
+		while (!current.isAfter(end)) {
+			Map<Long, Integer> breadData = monthlyData.get(current);
+
+			// 해당 월에 데이터가 있는 경우에만 결과에 추가
+			if (breadData != null && !breadData.isEmpty()) {
+				List<StockMonthDTO> monthData = new ArrayList<>();
+				for (Map.Entry<Long, Integer> entry : breadData.entrySet()) {
+					monthData.add(new StockMonthDTO(entry.getKey(), entry.getValue()));
+				}
+				result.put(current.getMonthValue(), monthData);
 			}
-			result.put(month, aggregationList);
+
+			current = current.plusMonths(1);
 		}
+
+		return result;
+	}
+
+	public List<Object[]> getTop3StockByPeriod(long bakeryId, String period) {
+		List<Object[]> result = null;
+		if ("day".equals(period)) {
+			result = stockRepository.findTop3BreadsByQuantityBetweenDates(bakeryId, LocalDate.now(), LocalDate.now());
+		} else if ("week".equals(period)) {
+			result = stockRepository.findTop3BreadsByQuantityBetweenDates(bakeryId, LocalDate.now().minusWeeks(1),
+				LocalDate.now());
+		} else if ("month".equals(period)) {
+			result = stockRepository.findTop3BreadsByQuantityBetweenDates(bakeryId, LocalDate.now().minusMonths(1),
+				LocalDate.now());
+		} else if ("year".equals(period)) {
+			result = stockRepository.findTop3BreadsByQuantityBetweenDates(bakeryId, LocalDate.now().minusYears(1),
+				LocalDate.now());
+		}
+
 		return result;
 	}
 
@@ -109,8 +161,30 @@ public class StockService {
 			.stockId(stock.getStockId())
 			.bakeryId(stock.getBakery().getBakeryId())
 			.breadId(stock.getBread().getBreadId())
+			.breadName(stock.getBread().getName())
 			.quantity(stock.getQuantity())
 			.date(stock.getDate())
 			.build();
+	}
+
+	public int countTotalStock(long bakeryId, String period) {
+		int result = -1;
+		if ("day".equals(period)) {
+			result = stockRepository.findSumQuantityByBakery_BakeryIdAndDateBetween(bakeryId, LocalDate.now(),
+				LocalDate.now());
+		} else if ("week".equals(period)) {
+			result = stockRepository.findSumQuantityByBakery_BakeryIdAndDateBetween(bakeryId,
+				LocalDate.now().minusWeeks(1),
+				LocalDate.now());
+		} else if ("month".equals(period)) {
+			result = stockRepository.findSumQuantityByBakery_BakeryIdAndDateBetween(bakeryId,
+				LocalDate.now().minusMonths(1),
+				LocalDate.now());
+		} else if ("year".equals(period)) {
+			result = stockRepository.findSumQuantityByBakery_BakeryIdAndDateBetween(bakeryId,
+				LocalDate.now().minusYears(1),
+				LocalDate.now());
+		}
+		return result;
 	}
 }

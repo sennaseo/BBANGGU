@@ -130,8 +130,20 @@ public class BakeryPickupService {
 	 * 픽업시간 수정
 	 */
 	@Transactional
-	public void updatePickupTime(Bakery bakery, BakeryPickupTimetableDto request) {
+	public void updatePickupTime(CustomUserDetails userDetails, Long bakeryId, BakeryPickupTimetableDto request) {
 		log.info("요청 데이터: {}", request.getSaturday());
+		// ✅ 유효한 빵집인지 검증 (
+		Bakery bakery = bakeryRepository.findByBakeryIdAndDeletedAtIsNull(bakeryId);
+		if (bakery == null) {
+			throw new CustomException(ErrorCode.BAKERY_NOT_FOUND);
+		}
+
+		// ✅ 현재 로그인된 사용자가 이 가게의 사장님인지 검증
+		Long userId = userDetails.getUserId();
+		if (!bakery.getUser().getUserId().equals(userId)) {
+			throw new CustomException(ErrorCode.UNAUTHORIZED_USER);
+		}
+
 		// 기존 데이터 조회
 		BakeryPickupTimetable timetable = bakeryPickupTimetableRepository.findByBakery_BakeryId(bakery.getBakeryId())
 			.orElse(BakeryPickupTimetable.builder().bakery(bakery).build()); // 없으면 새로 생성

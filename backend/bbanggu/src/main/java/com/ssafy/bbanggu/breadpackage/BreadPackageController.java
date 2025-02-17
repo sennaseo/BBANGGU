@@ -145,24 +145,12 @@ public class BreadPackageController {
 	}
 
 
-	// @GetMapping("/sell/package/{packageId}/quantity/{quantity}")
-	// public ResponseEntity<?> sellBreadPackages(@PathVariable long packageId, @PathVariable int quantity) {
-	// 	try {
-	// 		int remains = breadPackageService.updateBreadPackage(packageId, quantity * -1);    // 판매라서 -1 곱해줌
-	// 		return ResponseEntity.status(HttpStatus.OK)
-	// 			.body(new ApiResponse("빵꾸러미 판매처리 성공(남은 재고:" + remains + "개)", null));
-	// 	} catch (Exception e) {
-	// 		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("빵꾸러미 판매처리 실패");
-	// 	}
-	// }
-	// @GetMapping("/add/package/{packageId}/quantity/{quantity}")
-	// public ResponseEntity<?> cancelBreadPackages(@PathVariable long packageId, @PathVariable int quantity) {
-	// 	try {
-	// 		int remains = breadPackageService.updateBreadPackage(packageId, quantity);
-	// 		return ResponseEntity.status(HttpStatus.OK)
-	// 			.body(new ApiResponse("빵꾸러미 추가처리 성공(남은 재고:" + remains + "개)", null));
-	// 	} catch (Exception e) {
-	// 		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("빵꾸러미 추가처리 실패");
-	// 	}
-	// }
+	/**
+	 * 오늘 빵꾸러미를 등록한 가게의 빵꾸러미를 다음날 수동 삭제하는 API
+	 */
+	@PostMapping("/process-missed")
+	public ResponseEntity<String> processMissedReservations() {
+		breadPackageService.scheduleExpiredPackagesProcessing();
+		return ResponseEntity.ok("✅ 오늘의 빵꾸러미가 자동 삭제 처리되었습니다.");
+	}
 }

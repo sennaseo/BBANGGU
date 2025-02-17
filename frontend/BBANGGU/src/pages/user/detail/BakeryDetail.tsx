@@ -92,7 +92,7 @@ export default function BakeryDetail() {
           </div>  
         </div>
       </div>
-      <OrderButton />
+      <OrderButton bakeryId={bakery.bakeryId} />
     </div>
   )
 }

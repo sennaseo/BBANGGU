@@ -5,6 +5,7 @@ spring:
   jackson:
     serialization:
       indent-output: true
+    time-zone: Asia/Seoul
   config:
     import: optional:file:.env[.properties]
   application:
@@ -32,9 +33,9 @@ spring:
         format_sql: true
     show-sql: true
     open-in-view: false
-#  sql:
-#    init:
-#      mode: always
+  #  sql:
+  #    init:
+  #      mode: always
   mail:
     host: smtp.gmail.com
     port: 587
@@ -50,6 +51,14 @@ spring:
   mvc:
     content negotiation:
       favor-parameter: false
+  ai:
+    openai:
+      api-key: ***REMOVED-OPENAI-KEY***
+      chat:
+        options:
+          model: gpt-4o
+          temperature: 0.6
+
 logging:
   level:
     org.springframework.web: DEBUG
@@ -75,3 +84,6 @@ jwt:
 toss:
   payments:
     api-key: ${TOSS_API_KEY}
+
+
+

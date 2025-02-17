@@ -21,17 +21,17 @@ public interface BreadPackageRepository extends JpaRepository<BreadPackage, Long
 	// BreadPackageRepository
 	// ✅ 오늘 날짜의 빵꾸러미만 조회
 	@Query("SELECT b FROM BreadPackage b WHERE b.bakery.bakeryId = :bakeryId AND DATE(b.createdAt) = CURRENT_DATE AND b.deletedAt IS NULL")
-	Optional<BreadPackage> findByBakeryIdAndToday(@Param("bakeryId") Long bakeryId);
+	BreadPackage findByBakeryIdAndToday(@Param("bakeryId") Long bakeryId);
 
 	List<BreadPackage> findByBakery_BakeryIdAndCreatedAtBetweenAndDeletedAtIsNull(Long bakeryId, LocalDateTime startDate, LocalDateTime endDate);
 
-	// ✅ 하루가 지난 빵꾸러미 삭제
-	@Modifying
+	// 하루가 지난 빵꾸러미를 자동 삭제 (deleted_at 업데이트)
 	@Transactional
-	@Query("UPDATE BreadPackage b SET b.deletedAt = CURRENT_TIMESTAMP WHERE b.createdAt <= :threshold AND b.deletedAt IS NULL")
-	int markExpiredPackagesAsDeleted(LocalDateTime threshold);
+	@Modifying
+	@Query("UPDATE BreadPackage bp SET bp.deletedAt = :now WHERE bp.bakery.bakeryId = :bakeryId AND bp.deletedAt IS NULL")
+	int deleteExpiredPackages(Long bakeryId, LocalDateTime now);
 
 	// ✅ 오늘 날짜의 빵꾸러미가 존재하는지 확인
-	@Query("SELECT b FROM BreadPackage b WHERE b.bakery.bakeryId = :bakeryId AND DATE(b.createdAt) = CURRENT_DATE AND b.deletedAt IS NULL")
+	@Query("SELECT b FROM BreadPackage b WHERE b.bakery.bakeryId = :bakeryId AND b.deletedAt IS NULL")
 	Optional<BreadPackage> findTodayPackageByBakeryId(Long bakeryId);
 }

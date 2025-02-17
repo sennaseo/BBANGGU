@@ -21,6 +21,7 @@ import com.ssafy.bbanggu.favorite.FavoriteRepository;
 import com.ssafy.bbanggu.user.Role;
 import com.ssafy.bbanggu.user.domain.User;
 import com.ssafy.bbanggu.user.repository.UserRepository;
+import com.ssafy.bbanggu.util.image.ImageService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,9 +30,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
@@ -49,8 +53,8 @@ public class BakeryService {
 	private final SettlementRepository settlementRepository;
 	private final FavoriteRepository favoriteRepository;
 	private final BakeryPickupService bakeryPickupService;
-	private final BreadPackageRepository breadPackageRepository;
 	private final BreadPackageService breadPackageService;
+	private final ImageService imageService;
 
 	// 삭제되지 않은 모든 가게 조회
 	@Transactional(readOnly = true)
@@ -185,12 +189,26 @@ public class BakeryService {
 
 	// 가게 추가
 	@Transactional
-	public BakeryCreateDto createBakery(BakeryCreateDto bakeryDto) {
+	public BakeryCreateDto createBakery(BakeryCreateDto bakeryDto, MultipartFile bakeryImage, MultipartFile bakeryBackgroundImage) {
 		validateDuplicateBakery(bakeryDto.name(), bakeryDto.businessRegistrationNumber(), null);
 
 		// 사용자 조회 (userId로 User 찾기)
 		User user = userRepository.findById(bakeryDto.userId())
 			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+		String bakeryImageUrl = null;
+		String bakeryBackgroundImgUrl = null;
+
+		try {
+			if (bakeryImage != null && !bakeryImage.isEmpty()) {
+				bakeryImageUrl = imageService.saveImage(bakeryImage);
+			}
+			if (bakeryBackgroundImage != null && !bakeryBackgroundImage.isEmpty()) {
+				bakeryBackgroundImgUrl = imageService.saveImage(bakeryBackgroundImage);
+			}
+		} catch (IOException e) {
+			throw new CustomException(ErrorCode.BAKERY_IMAGE_UPLOAD_FAILED);
+		}
 
 		// 주소 기반 위경도 가져오기
 		double[] latLng = getLatitudeLongitude(bakeryDto.addressRoad(), bakeryDto.addressDetail());
@@ -201,8 +219,8 @@ public class BakeryService {
 		Bakery bakery = Bakery.builder()
 				.name(bakeryDto.name())
 				.description(bakeryDto.description())
-				.bakeryImageUrl(bakeryDto.bakeryImageUrl())
-				.bakeryBackgroundImgUrl(bakeryDto.bakryBackgroundImgUrl())
+				.bakeryImageUrl(bakeryImageUrl)
+				.bakeryBackgroundImgUrl(bakeryBackgroundImgUrl)
 				.addressRoad(bakeryDto.addressRoad())
 				.addressDetail(bakeryDto.addressDetail())
 				.businessRegistrationNumber(bakeryDto.businessRegistrationNumber())
@@ -230,15 +248,13 @@ public class BakeryService {
 	 * 가게 정산 정보 등록
 	 */
 	@Transactional
-	public BakerySettlementDto createSettlement(BakerySettlementDto settlement) {
-		User user = userRepository.findById(settlement.userId())
-			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
-
-		Bakery bakery = bakeryRepository.findByUser_UserId(user.getUserId());
+	public BakerySettlementDto createSettlement(BakerySettlementDto settlement, CustomUserDetails userDetails) {
+		User user = User.builder()
+			.userId(userDetails.getUserId())
+			.build();
 
 		Settlement bakerySet = Settlement.builder()
 			.user(user)
-			.bakery(bakery)
 			.bankName(settlement.bankName())
 			.accountHolderName(settlement.accountHolderName())
 			.accountNumber(settlement.accountNumber())
@@ -247,13 +263,15 @@ public class BakeryService {
 			.build();
 
 		Settlement savedSettlement = settlementRepository.save(bakerySet);
-		bakery.setSettlement(savedSettlement);
 		return BakerySettlementDto.from(savedSettlement);
 	}
 
 	// 가게 수정
 	@Transactional
-	public BakeryDto update(CustomUserDetails userDetails, Long bakery_id, BakeryDto updates) {
+	public BakeryDto update(
+		CustomUserDetails userDetails, Long bakery_id, BakeryDto updates,
+		MultipartFile bakeryImage, MultipartFile bakeryBackgroundImage
+	){
 		Bakery bakery = bakeryRepository.findByBakeryIdAndDeletedAtIsNull(bakery_id);
 		if (bakery == null) {
 			throw new CustomException(ErrorCode.BAKERY_NOT_FOUND);
@@ -265,14 +283,15 @@ public class BakeryService {
 			throw new CustomException(ErrorCode.NO_PERMISSION_TO_EDIT_BAKERY);
 		}
 
-		// ✅ 수정하려는 가게명 중복 검사
-		if (updates.name() != null && bakeryRepository.existsByNameAndBakeryIdNot(updates.name(), bakery.getBakeryId())) {
+		// ✅ 가게명 중복 검사
+		if (updates != null && updates.name() != null
+			&& bakeryRepository.existsByNameAndBakeryIdNot(updates.name(), bakery.getBakeryId())) {
 			throw new CustomException(ErrorCode.BAKERY_NAME_ALREADY_IN_USE);
 		}
 
 		// ✅ 주소 변경 확인 후 위경도 업데이트
-		String newAddrRoad = Optional.ofNullable(updates.addressRoad()).orElse(bakery.getAddressRoad());
-		String newAddrDetail = Optional.ofNullable(updates.addressDetail()).orElse(bakery.getAddressDetail());
+		String newAddrRoad = updates != null ? Optional.ofNullable(updates.addressRoad()).orElse(bakery.getAddressRoad()) : bakery.getAddressRoad();
+		String newAddrDetail = updates != null ? Optional.ofNullable(updates.addressDetail()).orElse(bakery.getAddressDetail()) : bakery.getAddressDetail();
 
 		if (!newAddrRoad.equals(bakery.getAddressRoad()) || !newAddrDetail.equals(bakery.getAddressDetail())) {
 			double[] latLng = getLatitudeLongitude(newAddrRoad, newAddrDetail);
@@ -280,19 +299,44 @@ public class BakeryService {
 			bakery.setLongitude(latLng[1]);
 		}
 
+		// ✅ 가게 이미지 저장 (파일이 있는 경우)
+		if (bakeryImage != null && !bakeryImage.isEmpty()) {
+			try {
+				String bakeryImageUrl = imageService.saveImage(bakeryImage); // 새 이미지 저장
+				if (bakeryImageUrl != null) {
+					bakery.setBakeryImageUrl(bakeryImageUrl);
+				}
+			} catch (IOException e) {
+				throw new CustomException(ErrorCode.BAKERY_IMAGE_UPLOAD_FAILED);
+			}
+		}
+
+		// ✅ 배경 이미지 저장 (파일이 있는 경우)
+		if (bakeryBackgroundImage != null && !bakeryBackgroundImage.isEmpty()) {
+			try {
+				String bakeryBackgroundImageUrl = imageService.saveImage(bakeryBackgroundImage); // 새 이미지 저장
+				if (bakeryBackgroundImageUrl != null) {
+					bakery.setBakeryBackgroundImgUrl(bakeryBackgroundImageUrl);
+				}
+			} catch (IOException e) {
+				throw new CustomException(ErrorCode.BAKERY_BACKGROUND_IMAGE_UPLOAD_FAILED);
+			}
+		}
+
 		// ✅ 수정 가능한 정보만 업데이트
-		bakery.setName(Optional.ofNullable(updates.name()).orElse(bakery.getName()));
-		bakery.setDescription(Optional.ofNullable(updates.description()).orElse(bakery.getDescription()));
+		if (updates != null) {
+			bakery.setName(Optional.ofNullable(updates.name()).orElse(bakery.getName()));
+			bakery.setDescription(Optional.ofNullable(updates.description()).orElse(bakery.getDescription()));
+		}
 		bakery.setAddressRoad(newAddrRoad);
 		bakery.setAddressDetail(newAddrDetail);
-		bakery.setBakeryImageUrl(Optional.ofNullable(updates.bakeryImageUrl()).orElse(bakery.getBakeryImageUrl()));
-		bakery.setBakeryBackgroundImgUrl(Optional.ofNullable(updates.bakeryBackgroundImgUrl()).orElse(bakery.getBakeryBackgroundImgUrl()));
 		bakery.setUpdatedAt(LocalDateTime.now());
 
 		Bakery updatedBakery = bakeryRepository.save(bakery);
+		System.out.println("✅ bakeryImageUrl: " + updatedBakery.getBakeryImageUrl());
+		System.out.println("✅ bakeryBackgroundImgUrl: " + updatedBakery.getBakeryBackgroundImgUrl());
 		return BakeryDto.from(updatedBakery);
 	}
-
 
 	// 가게 삭제 (Soft Delete)
 	@Transactional
@@ -364,14 +408,15 @@ public class BakeryService {
 	 * 가게 아이디로 정산 정보 조회 메서드
 	 */
 	public BakerySettlementDto getBakerySettlement(CustomUserDetails userDetails, Long bakeryId) {
-		Bakery bakery = bakeryRepository.findById(bakeryId)
-			.orElseThrow(() -> new CustomException(ErrorCode.BAKERY_NOT_FOUND));
-		if (!bakery.getUser().getUserId().equals(userDetails.getUserId())) {
-			throw new CustomException(ErrorCode.UNAUTHORIZED_USER);
-		}
-		log.info("✅ 현재 로그인한 사용자와 {}번 가게의 사장님이 일치함", bakeryId);
+		/* 아래 코드는 필요하면 활성화 */
+		// Bakery bakery = bakeryRepository.findById(bakeryId)
+		// 	.orElseThrow(() -> new CustomException(ErrorCode.BAKERY_NOT_FOUND));
+		// if (!bakery.getUser().getUserId().equals(userDetails.getUserId())) {
+		// 	throw new CustomException(ErrorCode.UNAUTHORIZED_USER);
+		// }
+		// log.info("✅ 현재 로그인한 사용자와 {}번 가게의 사장님이 일치함", bakeryId);
 
-		Settlement settlement = settlementRepository.findByBakery_BakeryId(bakeryId)
+		Settlement settlement = settlementRepository.findByUser_UserId(userDetails.getUserId())
 			.orElseThrow(() -> new CustomException(ErrorCode.SETTLEMENT_NOT_FOUND));
 		log.info("🩵 정산 정보 조회 완료 🩵");
 		return BakerySettlementDto.from(settlement);

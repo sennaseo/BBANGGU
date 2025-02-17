@@ -1,12 +1,11 @@
 package com.ssafy.bbanggu.bakery.dto;
 
-import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.ssafy.bbanggu.bakery.domain.Bakery;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import lombok.Setter;
 
 public record BakeryDto(
 	Long bakeryId,
@@ -20,8 +19,8 @@ public record BakeryDto(
 	@NotBlank(message = "도로명 주소는 필수 입력 값입니다.")
 	String addressRoad,
 	String addressDetail,
-	String bakeryImageUrl,
-	String bakeryBackgroundImgUrl,
+	String bakeryImageUrl, // ✅ EC2 저장된 이미지 URL
+	String bakeryBackgroundImgUrl, // ✅ EC2 저장된 배경 이미지 URL
 	Double star,
 	int reviewCnt
 ) {
@@ -41,3 +40,4 @@ public record BakeryDto(
 		);
 	}
 }
+

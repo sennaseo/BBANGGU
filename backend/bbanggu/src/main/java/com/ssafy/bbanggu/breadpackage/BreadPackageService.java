@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -91,8 +92,7 @@ public class BreadPackageService {
 
 
 	public BreadPackage getPackageById(Long bakeryId) {
-		return breadPackageRepository.findByBakeryIdAndToday(bakeryId)
-			.orElse(null);
+		return breadPackageRepository.findByBakeryIdAndToday(bakeryId);
 	}
 
 
@@ -165,14 +165,51 @@ public class BreadPackageService {
 		}
 		log.info("✅ 현재 로그인한 사용자가 해당 빵집의 사장님입니다^^");
 
-		BreadPackage breadPackage = breadPackageRepository.findByBakeryIdAndToday(bakeryId)
-			.orElseThrow(() -> new CustomException(ErrorCode.BREAD_PACKAGE_NOT_FOUND));
-		log.info("✅ {}번 빵집에 오늘의 빵꾸러미가 등록되어 있습니다.", bakeryId);
+		BreadPackage breadPackage = breadPackageRepository.findByBakeryIdAndToday(bakeryId);
+		if (breadPackage == null) {
+			log.info("빵집 ID: {}의 오늘 빵꾸러미가 없습니다", bakeryId);
+			// 빈 빵꾸러미 리턴
+			return new TodayBreadPackageDto(
+				null,    // packageId (Long)
+				bakeryId,// bakeryId (Long)
+				"",      // name (String)
+				0,       // price (Integer)
+				0,       // initialQuantity (Integer)
+				0,       // quantity (Integer)
+				0        // savedMoney (Integer)
+			);
+		}
 
-		// 현재 가게의 픽업 완료된 예약들의 빵꾸러미 개수 총합
 		int nowQuantity = reservationRepository.getTotalPickedUpQuantityTodayByBakeryId(bakeryId);
-		log.info("✅ 현재까지 {}번 빵집의 픽업 완료된 빵꾸러미 개수: {}", bakeryId, nowQuantity);
 		int savedMoney = breadPackage.getPrice() * nowQuantity;
+		log.info("빵집 ID: {}, 픽업 완료 수량: {}, 절약 금액: {}", bakeryId, nowQuantity, savedMoney);
+
 		return TodayBreadPackageDto.from(breadPackage, savedMoney);
+	}
+
+	/**
+	 * 특정 가게의 하루 지난 빵꾸러미를 삭제 처리
+	 * @param bakeryId 가게 ID
+	 */
+	@Transactional
+	public void processExpiredPackages(Long bakeryId) {
+		LocalDateTime now = LocalDateTime.now();
+		int updatedCount = breadPackageRepository.deleteExpiredPackages(bakeryId, now);
+		if (updatedCount > 0) {
+			System.out.println("🗑️ [" + bakeryId + "] 하루 지난 빵꾸러미 삭제 완료! (삭제된 패키지 수: " + updatedCount + ")");
+		}
+	}
+
+	/**
+	 * **매일 자정(00:00:00)에 실행**되는 스케줄러
+	 */
+	@Scheduled(cron = "0 0 0 * * *") // 매일 00:00:00에 실행
+	public void scheduleExpiredPackagesProcessing() {
+		// 특정 가게 ID 리스트 가져오기
+		List<Long> bakeryIds = reservationRepository.findAllActiveBakeryIdsWithPackages();
+
+		for (Long bakeryId : bakeryIds) {
+			processExpiredPackages(bakeryId);
+		}
 	}
 }

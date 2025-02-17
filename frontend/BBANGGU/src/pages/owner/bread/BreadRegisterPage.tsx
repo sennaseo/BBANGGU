@@ -9,6 +9,9 @@ import {
   ShoppingBag, Package, CircleDot, Star
 } from 'lucide-react';
 import { registerBread, getBakeryBreads, BreadInfo, updateBread, deleteBread } from '../../../api/owner/bread';
+import { getUserInfo } from '../../../api/user/user';
+import { UserInfo } from '../../../types/user';
+
 
 interface BreadCategory {
   id: number;
@@ -183,6 +186,11 @@ interface FormError extends Error {
   };
 }
 
+// 이미 등록된 빵의 카테고리 ID 목록을 추출하는 함수
+const getUsedCategoryIds = (breads: BreadInfo[]) => {
+  return new Set(breads.map(bread => bread.breadCategoryId));
+};
+
 export default function BreadRegisterPage() {
   const navigate = useNavigate();
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
@@ -194,9 +202,31 @@ export default function BreadRegisterPage() {
   const [existingBreads, setExistingBreads] = useState<BreadInfo[]>([]);
   const [editingBread, setEditingBread] = useState<BreadInfo | null>(null);
   const [openMenuId, setOpenMenuId] = useState<number | null>(null);
+  const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
 
   // 드롭다운 메뉴 ref 추가
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // 컴포넌트 마운트 시 사용자 정보 가져오기
+  useEffect(() => {
+    const fetchUserInfo = async () => {
+      try {
+        const response = await getUserInfo();
+        console.log('사용자 정보:', response);
+        // role 타입을 명시적으로 변환
+        setUserInfo({
+          ...response,
+          role: response.role as 'OWNER' | 'USER'
+        });
+      } catch (error) {
+        console.error('사용자 정보 조회 실패:', error);
+        alert('사장님 정보를 가져오는데 실패했습니다.');
+        navigate('/');
+      }
+    };
+
+    fetchUserInfo();
+  }, [navigate]);
 
   // 외부 클릭 감지를 위한 useEffect
   useEffect(() => {
@@ -248,13 +278,16 @@ export default function BreadRegisterPage() {
   };
 
   const handleSave = async () => {
-    if (breadList.length === 0) return;
-    
+    if (!userInfo?.bakeryId) {
+      alert('사장님 정보를 찾을 수 없습니다.');
+      return;
+    }
+
     setIsLoading(true);
     try {
       for (const bread of breadList) {
         const breadData = {
-          bakeryId: 1,  // 실제 존재하는 bakeryId로 변경 필요
+          bakeryId: userInfo.bakeryId,
           breadCategoryId: bread.categoryId,
           name: bread.name,
           price: bread.price
@@ -282,22 +315,28 @@ export default function BreadRegisterPage() {
     }
   };
 
-  // 기존 빵 목록 조회
+  // 빵 목록 조회
   useEffect(() => {
-    const fetchExistingBreads = async () => {
+    const fetchBreads = async () => {
       try {
-        console.log('빵 목록 조회 시작');  // 디버깅용 로그
-        const breadsData = await getBakeryBreads(1);
-        console.log('받아온 빵 목록:', breadsData);  // 디버깅용 로그
-        setExistingBreads(breadsData);
+        if (!userInfo?.bakeryId) return;
+        
+        const breads = await getBakeryBreads(userInfo.bakeryId);
+        if (Array.isArray(breads)) {
+          // 임시 ID를 숫자로 변경
+          const breadsWithIds = breads.map((bread, index) => ({
+            ...bread,
+            breadId: bread.breadId ?? -(index + 1)  // null일 경우 음수 ID 사용
+          }));
+          setExistingBreads(breadsWithIds);
+        }
       } catch (error) {
-        console.error('기존 빵 목록 조회 실패:', error);
-        setExistingBreads([]);
+        console.error('빵 목록 조회 실패:', error);
       }
     };
 
-    fetchExistingBreads();
-  }, []);
+    fetchBreads();
+  }, [userInfo?.bakeryId]);
 
   // 수정 버튼 클릭 핸들러
   const handleEdit = (bread: BreadInfo) => {
@@ -335,8 +374,10 @@ export default function BreadRegisterPage() {
     if (editingBread) {
       // 수정 로직
       try {
+        if (!userInfo?.bakeryId) return;  // bakeryId 체크 추가
+
         const breadData = {
-          bakeryId: 1,
+          bakeryId: userInfo.bakeryId,  // 이제 undefined가 아님
           breadCategoryId: selectedCategory,
           name: breadName,
           price: Number(price),
@@ -350,10 +391,11 @@ export default function BreadRegisterPage() {
           imageFile = new File([blob], `bread-${editingBread.breadId}.jpg`, { type: 'image/jpeg' });
         }
 
+        if (!editingBread.breadId) return;  // null 체크
         await updateBread(editingBread.breadId, breadData, imageFile);
         
         // 목록 새로고침
-        const updatedBreads = await getBakeryBreads(1);
+        const updatedBreads = await getBakeryBreads(userInfo?.bakeryId);
         setExistingBreads(updatedBreads);  // 그대로 설정
         
         // 폼 초기화
@@ -370,7 +412,8 @@ export default function BreadRegisterPage() {
   };
 
   // 빵 삭제 핸들러
-  const handleDeleteBread = async (breadId: number) => {
+  const handleDeleteBread = async (breadId: number | null) => {
+    if (!breadId) return;  // null 체크
     if (!window.confirm('정말 이 빵을 삭제하시겠습니까?')) return;
 
     try {
@@ -390,6 +433,19 @@ export default function BreadRegisterPage() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // 카테고리 선택 핸들러 수정
+  const handleCategorySelect = (categoryId: number) => {
+    const usedCategories = getUsedCategoryIds(existingBreads);
+    
+    // 이미 해당 카테고리의 빵이 등록되어 있다면 알림
+    if (usedCategories.has(categoryId)) {
+      alert('이미 해당 카테고리의 빵이 등록되어 있습니다.');
+      return;
+    }
+    
+    setSelectedCategory(categoryId);
   };
 
   return (
@@ -424,7 +480,11 @@ export default function BreadRegisterPage() {
             </p>
             <p className="flex items-start gap-2">
               <span className="text-[#FC973B] font-medium">3.</span>
-              <span>등록된 빵은 AI 카메라로 재고 확인 시 자동으로 인식됩니다</span>
+              <span>등록된 빵은 AI 카메라에서 자동으로 인식됩니다</span>
+            </p>
+            <p className="flex items-start gap-2">
+              <span className="text-[#FC973B] font-medium">4.</span>
+              <span>빵 카테고리 1개당 1개의 상품만 등록할 수 있어요</span>
             </p>
           </div>
         </div>
@@ -436,19 +496,30 @@ export default function BreadRegisterPage() {
             카테고리
           </label>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-[240px] overflow-y-auto rounded-lg border border-gray-200 p-2">
-            {BREAD_CATEGORIES.map((category) => (
-              <button
-                key={category.id}
-                onClick={() => setSelectedCategory(category.id)}
-                className={`p-3 rounded-lg text-sm transition-all active:scale-[0.98]
-                  ${selectedCategory === category.id
-                    ? 'bg-[#FC973B] text-white font-medium'
-                    : 'bg-gray-50 text-gray-700 active:bg-[#FFF5EC] active:text-[#FC973B]'
-                  }`}
-              >
-                {category.name}
-              </button>
-            ))}
+            {BREAD_CATEGORIES.map((category) => {
+              const isUsed = getUsedCategoryIds(existingBreads).has(category.id);
+              
+              return (
+                <button
+                  key={category.id}
+                  onClick={() => handleCategorySelect(category.id)}
+                  disabled={isUsed}
+                  className={`h-[72px] p-4 rounded-lg transition-colors text-center
+                    ${selectedCategory === category.id 
+                      ? 'bg-[#FC973B] text-white font-medium border-2 border-[#FC973B]' 
+                      : isUsed 
+                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200'
+                        : 'bg-white hover:border-[#FC973B] hover:text-[#FC973B] border border-gray-200'
+                    }
+                  `}
+                >
+                  <span className="block text-sm">
+                    {category.name}
+                    {isUsed && <span className="block text-xs mt-1">(등록됨)</span>}
+                  </span>
+                </button>
+              );
+            })}
           </div>
 
           {/* 선택된 카테고리 표시 */}
@@ -597,8 +668,11 @@ export default function BreadRegisterPage() {
               현재 등록된 빵 목록
             </h3>
             <div className="space-y-3">
-              {existingBreads.map((bread) => (
-                <div key={bread.breadId} className="p-4 bg-white border rounded-lg">
+              {existingBreads.map((bread, index) => (
+                <div 
+                  key={bread.breadId ?? `bread-${index}`}
+                  className="p-4 bg-white border rounded-lg"
+                >
                   <div className="flex items-center gap-4">
                     {/* 이미지 */}
                     <div className="w-16 h-16 flex-shrink-0">
@@ -609,7 +683,7 @@ export default function BreadRegisterPage() {
                           className="w-full h-full object-cover rounded"
                           onError={(e) => {
                             const target = e.target as HTMLImageElement;
-                            target.src = '🥖'; // 이미지 로드 실패시 이모지로 대체
+                            target.src = '🥖'; // 다시 이모지로 변경
                           }}
                           data-bread-id={bread.breadId}
                         />

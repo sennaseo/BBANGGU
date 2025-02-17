@@ -50,5 +50,10 @@ const authSlice = createSlice({
   },
 });
 
+// 선택자 추가
+export const selectAuth = (state: { auth: AuthState }) => state.auth;
+export const selectIsAuthenticated = (state: { auth: AuthState }) => state.auth.isAuthenticated;
+export const selectUserType = (state: { auth: AuthState }) => state.auth.userType;
+
 export const { loginSuccess, logout } = authSlice.actions;
 export default authSlice.reducer;

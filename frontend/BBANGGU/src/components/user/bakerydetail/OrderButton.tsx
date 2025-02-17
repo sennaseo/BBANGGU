@@ -1,10 +1,14 @@
 import { useNavigate } from "react-router-dom"
 
-export default function OrderButton() {
+interface OrderButtonProps {
+  bakeryId: number;
+}
+
+export default function OrderButton({ bakeryId }: OrderButtonProps) {
   const navigate = useNavigate()
 
   const handleClick = () => {
-    navigate("/user/payment")
+    navigate(`/user/payment/${bakeryId}`)
   }
 
   return (

@@ -1,5 +1,29 @@
 package com.ssafy.bbanggu.bakery;
 
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
+
 import com.ssafy.bbanggu.auth.security.CustomUserDetails;
 import com.ssafy.bbanggu.bakery.domain.Bakery;
 import com.ssafy.bbanggu.bakery.dto.BakeryCreateDto;
@@ -16,19 +40,6 @@ import com.ssafy.bbanggu.bakery.service.BakeryService;
 import com.ssafy.bbanggu.common.exception.CustomException;
 import com.ssafy.bbanggu.common.exception.ErrorCode;
 import com.ssafy.bbanggu.common.response.ApiResponse;
-
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PageableDefault;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.parameters.P;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-import java.util.Map;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -65,7 +76,6 @@ public class BakeryController {
 		return ResponseEntity.ok().body(new ApiResponse("모든 가게 조회에 성공하였습니다.", bakeries));
 	}
 
-
 	/**
 	 * 가게 등록 API
 	 *
@@ -73,21 +83,26 @@ public class BakeryController {
 	 * @return 등록된 가게 정보
 	 */
 	@PostMapping
-	public ResponseEntity<ApiResponse> createBakery(@RequestBody @Valid BakeryCreateDto bakery) {
-		BakeryCreateDto createdBakery = bakeryService.createBakery(bakery);
+	public ResponseEntity<ApiResponse> createBakery(
+		@Valid @RequestPart(name = "bakery", required = false) BakeryCreateDto bakery,
+		@RequestPart(name = "bakeryImage", required = false) MultipartFile bakeryImage,
+		@RequestPart(name = "bakeryBackgroundImage", required = false) MultipartFile bakeryBackgroundImage
+	) {
+		BakeryCreateDto createdBakery = bakeryService.createBakery(bakery, bakeryImage, bakeryBackgroundImage);
 		return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse("가게 등록이 완료되었습니다.", createdBakery));
 	}
-
 
 	/**
 	 * 가게 정산 정보 등록 API
 	 */
 	@PostMapping("/settlement")
-	public ResponseEntity<ApiResponse> createSettlement(@RequestBody @Valid BakerySettlementDto settlement) {
-		BakerySettlementDto createSettlement = bakeryService.createSettlement(settlement);
-		return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse("가게 정산 정보 등록이 완료되었습니다.", createSettlement));
+	public ResponseEntity<ApiResponse> createSettlement(@RequestBody @Valid BakerySettlementDto settlement,
+		@AuthenticationPrincipal CustomUserDetails userDetails
+	) {
+		BakerySettlementDto createSettlement = bakeryService.createSettlement(settlement, userDetails);
+		return ResponseEntity.status(HttpStatus.CREATED)
+			.body(new ApiResponse("가게 정산 정보 등록이 완료되었습니다.", createSettlement));
 	}
-
 
 	/**
 	 * 가게 상세 조회 API
@@ -106,13 +121,15 @@ public class BakeryController {
 	}
 
 	// 가게 수정
-	@PutMapping("/{bakery_id}")
+	@PatchMapping("/{bakery_id}")
 	public ResponseEntity<ApiResponse> updateBakery(
 		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@PathVariable Long bakery_id,
-		@RequestBody BakeryDto updates
-	) {
-		BakeryDto updatedBakery = bakeryService.update(userDetails, bakery_id, updates);
+		@RequestPart(name = "bakery", required = false) BakeryDto updates,
+		@RequestPart(name = "bakeryImage", required = false) MultipartFile bakeryImage, // ✅ 이미지 파일 받기
+		@RequestPart(name = "bakeryBackgroundImage", required = false) MultipartFile bakeryBackgroundImage // ✅ 배경 이미지 파일 받기
+	) throws IOException {
+		BakeryDto updatedBakery = bakeryService.update(userDetails, bakery_id, updates, bakeryImage, bakeryBackgroundImage);
 		return ResponseEntity.ok().body(new ApiResponse("가게 정보가 성공적으로 수정되었습니다.", updatedBakery));
 	}
 
@@ -160,7 +177,7 @@ public class BakeryController {
 		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@PathVariable("bakery_id") Long bakeryId,
 		@RequestBody BakeryPickupTimetableDto request
-	){
+	) {
 		// ✅ 유효한 빵집인지 검증 (
 		Bakery bakery = bakeryRepository.findByBakeryIdAndDeletedAtIsNull(bakeryId);
 		if (bakery == null) {
@@ -186,7 +203,7 @@ public class BakeryController {
 	@GetMapping("/{bakery_id}/pickup")
 	public ResponseEntity<ApiResponse> getBakeryPickupTimatable(
 		@PathVariable("bakery_id") Long bakeryId
-	){
+	) {
 		// ✅ 유효한 빵집인지 검증 (
 		Bakery bakery = bakeryRepository.findByBakeryIdAndDeletedAtIsNull(bakeryId);
 		if (bakery == null) {
@@ -196,7 +213,6 @@ public class BakeryController {
 		PickupTimeDto pickupTimetable = bakeryPickupService.getPickupTimetable(bakeryId);
 		return ResponseEntity.ok().body(new ApiResponse("픽업시간 조회에 성공하였습니다.", pickupTimetable));
 	}
-
 
 	/**
 	 * 전체 픽업 시간 조회
@@ -209,11 +225,10 @@ public class BakeryController {
 	public ResponseEntity<ApiResponse> getBakeryAllPickupTimatable(
 		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@PathVariable("bakery_id") Long bakeryId
-	){
+	) {
 		Map<String, PickupTimeDto> response = bakeryPickupService.getAllPickupTimetable(userDetails, bakeryId);
 		return ResponseEntity.ok().body(new ApiResponse("픽업시간 조회에 성공하였습니다.", response));
 	}
-
 
 	/**
 	 * 픽업 시간 수정
@@ -225,19 +240,7 @@ public class BakeryController {
 		@RequestBody BakeryPickupTimetableDto request
 	) {
 		log.info("✨ 픽업 시간 수정 ✨");
-		// ✅ 유효한 빵집인지 검증 (
-		Bakery bakery = bakeryRepository.findByBakeryIdAndDeletedAtIsNull(bakeryId);
-		if (bakery == null) {
-			throw new CustomException(ErrorCode.BAKERY_NOT_FOUND);
-		}
-
-		// ✅ 현재 로그인된 사용자가 이 가게의 사장님인지 검증
-		Long userId = userDetails.getUserId();
-		if (!bakery.getUser().getUserId().equals(userId)) {
-			throw new CustomException(ErrorCode.UNAUTHORIZED_USER);
-		}
-
-		bakeryPickupService.updatePickupTime(bakery, request);
+		bakeryPickupService.updatePickupTime(userDetails, bakeryId, request);
 		return ResponseEntity.ok().body(new ApiResponse("픽업 시간이 성공적으로 수정되었습니다.", null));
 	}
 
@@ -259,12 +262,11 @@ public class BakeryController {
 	public ResponseEntity<ApiResponse> getBakerySettlement(
 		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@PathVariable Long bakery_id
-	){
+	) {
 		log.info("✨ 가게 ID로 정산 정보 조회 ✨");
 		BakerySettlementDto response = bakeryService.getBakerySettlement(userDetails, bakery_id);
 		return ResponseEntity.ok(new ApiResponse("가게 정산 정보 조회가 완료되었습니다.", response));
 	}
-
 
 	/**
 	 * 정산 정보 수정 API
@@ -277,7 +279,7 @@ public class BakeryController {
 	public ResponseEntity<ApiResponse> updateBakerySettlement(
 		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@RequestBody SettlementUpdate request
-	){
+	) {
 		log.info("✨ 정산 정보 수정 ✨");
 		bakeryService.updateBakerySettlement(userDetails, request);
 		return ResponseEntity.ok(new ApiResponse("가게 정산 정보 수정이 완료되었습니다.", null));

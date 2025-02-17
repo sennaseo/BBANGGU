@@ -2,6 +2,7 @@ package com.ssafy.bbanggu.bread;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -17,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @Transactional
 public class BreadService {
+
 	private final BreadRepository breadRepository;
 	private final ImageService imageService;
 
@@ -44,8 +46,12 @@ public class BreadService {
 			.createdAt(LocalDateTime.now())
 			.build();
 
+		System.out.println("builder");
+
 		if (file != null && !file.isEmpty()) {
+			System.out.println("if");
 			bread.setBreadImageUrl(imageService.saveImage(file));
+			System.out.println("if ends");
 		} else {
 			bread.setBreadImageUrl(null);
 		}
@@ -53,17 +59,41 @@ public class BreadService {
 		return breadRepository.save(bread);
 	}
 
-	public Bread getBread(long breadId) {
-		return breadRepository.findById(breadId).orElse(null);
+	public BreadDTO getBread(long breadId) {
+		Bread bread = breadRepository.findById(breadId).orElse(null);
+		BreadDTO breadDTO = entityToDTO(bread);
+		if (breadDTO != null) {
+			String imageUrl = bread.getBreadImageUrl();
+			if (imageUrl != null && !imageUrl.isEmpty()) {
+				breadDTO.setBreadImageUrl(imageUrl.replace("\\", "/"));
+			} else {
+				breadDTO.setBreadImageUrl(null);
+			}
+		}
+		return breadDTO;
 	}
 
-	public List<Bread> getBreadByBakeryId(long bakeryId) {
-		return breadRepository.findByBakery_BakeryIdAndDeletedAtIsNull(bakeryId);
+	public List<BreadDTO> getBreadByBakeryId(long bakeryId) {
+		List<Bread> breads = breadRepository.findByBakery_BakeryIdAndDeletedAtIsNull(bakeryId);
+		List<BreadDTO> breadDTOList = new ArrayList<>();
+		for (Bread bread : breads) {
+			breadDTOList.add(entityToDTO(bread));
+		}
+		return breadDTOList;
 	}
 
 	public void deleteBread(long breadId) {
 		Bread bread = breadRepository.findById(breadId)
 			.orElseThrow(() -> new RuntimeException("Bread not found"));
 		bread.setDeletedAt(LocalDateTime.now());
+	}
+
+	private BreadDTO entityToDTO(Bread bread) {
+		return BreadDTO.builder()
+			.breadCategoryId(bread.getBreadCategory().getBreadCategoryId())
+			.name(bread.getName())
+			.price(bread.getPrice())
+			.bakeryId(bread.getBakery().getBakeryId())
+			.build();
 	}
 }

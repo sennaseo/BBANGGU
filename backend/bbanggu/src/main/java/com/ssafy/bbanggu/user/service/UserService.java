@@ -1,5 +1,6 @@
 package com.ssafy.bbanggu.user.service;
 
+import java.io.IOException;
 import java.util.Map;
 import java.util.Optional;
 
@@ -7,6 +8,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.ssafy.bbanggu.auth.dto.JwtToken;
 import com.ssafy.bbanggu.auth.security.CustomUserDetails;
@@ -26,6 +28,7 @@ import com.ssafy.bbanggu.user.dto.PasswordUpdateRequest;
 import com.ssafy.bbanggu.user.dto.UpdateUserRequest;
 import com.ssafy.bbanggu.user.dto.UserResponse;
 import com.ssafy.bbanggu.user.repository.UserRepository;
+import com.ssafy.bbanggu.util.image.ImageService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -41,6 +44,7 @@ public class UserService { // 사용자 관련 비즈니스 로직 처리
 	private final JwtTokenProvider jwtTokenProvider;
 	private final BakeryService bakeryService;
 	private final BakeryRepository bakeryRepository;
+	private final ImageService imageService;
 
 	/**
 	 * 회원가입 로직 처리
@@ -75,7 +79,7 @@ public class UserService { // 사용자 관련 비즈니스 로직 처리
 			.build();
 
 		echoSavingRepository.save(echoSaving);
-		return UserResponse.from(user);
+		return UserResponse.from(user, null);
 	}
 
 	/**
@@ -117,23 +121,29 @@ public class UserService { // 사용자 관련 비즈니스 로직 처리
 			throw new CustomException(ErrorCode.ACCOUNT_DEACTIVATED);
         }
 
-		// 비밀번호 검증
-		// if (!passwordEncoder.matches(password, user.getPassword())) {
-		// 	throw new CustomException(ErrorCode.INVALID_PASSWORD);
+        // // 비밀번호 검증
+        // if (!passwordEncoder.matches(password, user.getPassword())) {
+        //  throw new CustomException(ErrorCode.INVALID_PASSWORD);
         // }
 
-        // ✅ JWT 토큰 생성
+		// 단순 문자열 비교로 변경
+		if (!password.equals(user.getPassword())) {
+			throw new CustomException(ErrorCode.INVALID_PASSWORD);
+		}
+
+
+		// ✅ JWT 토큰 생성
 		String accessToken = jwtTokenProvider.createAccessToken(user.getUserId());
 		String refreshToken = jwtTokenProvider.createRefreshToken(user.getUserId());
 
-        // ✅ Refresh Token을 DB 저장
-        user.setRefreshToken(refreshToken);
-        userRepository.save(user);
+		// ✅ Refresh Token을 DB 저장
+		user.setRefreshToken(refreshToken);
+		userRepository.save(user);
 
-        // ✅ 응답 데이터 생성
+		// ✅ 응답 데이터 생성
 		JwtToken tokens = new JwtToken(accessToken, refreshToken);
-        return tokens;
-    }
+		return tokens;
+	}
 
 	/**
 	 * 로그아웃: RefreshToken 삭제
@@ -161,14 +171,19 @@ public class UserService { // 사용자 관련 비즈니스 로직 처리
 		}
 		log.info("✅ {}번 사용자 검증 완료", userDetails.getUserId());
 
-		return UserResponse.from(user);
+		Long bakeryId = null;
+		if (user.getRole().equals(Role.OWNER)) {
+			bakeryId = bakeryRepository.findByUser_UserId(user.getUserId()).getBakeryId();
+		}
+
+		return UserResponse.from(user, bakeryId);
 	}
 
 	/**
 	 * 사용자 정보 수정
 	 */
 	@Transactional
-	public void update(CustomUserDetails userDetails, UpdateUserRequest updates) {
+	public void update(CustomUserDetails userDetails, UpdateUserRequest updates, MultipartFile profileImg) {
 		User user = userRepository.findById(userDetails.getUserId())
 			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
@@ -193,12 +208,22 @@ public class UserService { // 사용자 관련 비즈니스 로직 처리
 			);
 		}
 
+		if (profileImg != null && !profileImg.isEmpty()) {
+			try {
+				String profileImageUrl = imageService.saveImage(profileImg); // 새 이미지 저장
+				if (profileImageUrl != null) {
+					user.setProfileImageUrl(profileImageUrl);
+				}
+			} catch (IOException e) {
+				throw new CustomException(ErrorCode.PROFILE_IMAGE_UPLOAD_FAILED);
+			}
+		}
+
 		// ✅ 특정 필드만 변경 가능하도록 처리
-		user.updateUserInfo(
-			updates.name(),
-			updates.phone(),
-			updates.profileImageUrl()
-		);
+		user.setName(Optional.ofNullable(updates.name()).orElse(user.getName()));
+		user.setPhone(Optional.ofNullable(updates.phone()).orElse(user.getPhone()));
+
+		userRepository.save(user);
 	}
 
 	/**

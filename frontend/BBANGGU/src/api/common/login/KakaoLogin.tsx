@@ -1,22 +1,17 @@
 import axios from 'axios';
+import instance from '../../axios';
 
 interface KakaoLoginResponse {
   message: string;
   data: string;
 }
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://i12d102.p.ssafy.io:8081';
-
 export const getKakaoLoginUrl = async (): Promise<KakaoLoginResponse> => {
   try {
-    const response = await axios.get<KakaoLoginResponse>(
-      `${BASE_URL}/auth/kakao/login`,
+    const response = await instance.get<KakaoLoginResponse>(
+      '/oauth/kakao/login',
       {
         withCredentials: true,
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        }
       }
     );
     
