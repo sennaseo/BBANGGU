@@ -32,8 +32,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 		String token = getTokenFromHeader(request);
 
 		// 2️⃣ 토큰이 존재하고, 유효한 경우에만 인증 처리
-		if (token != null && jwtTokenProvider.validateAccessToken(token)) {
-			Long userId = jwtTokenProvider.getClaimsFromAccessToken(token).get("userId", Long.class);
+		if (token != null && jwtTokenProvider.validateToken(token)) {
+			Long userId = jwtTokenProvider.getUserIdFromToken(token);
 			UserDetails userDetails = userDetailsService.loadUserById(userId);
 
 			// 3️⃣ SecurityContext에 사용자 정보 저장
