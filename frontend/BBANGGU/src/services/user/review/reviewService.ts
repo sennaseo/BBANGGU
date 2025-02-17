@@ -31,7 +31,7 @@ export async function getReviewAndRating(bakeryId: number): Promise<{ reviews: R
     } catch (error) {
         console.error("리뷰 및 평균 평점 조회 실패:", error);
         throw error;
-    }
+    }  
 }
 
 export async function deleteReview(reviewId: number): Promise<void> {
@@ -39,6 +39,18 @@ export async function deleteReview(reviewId: number): Promise<void> {
         await reviewApi.deleteReview(reviewId);
     } catch (error) {
         console.error("리뷰 삭제 실패:", error);
+        throw error;
+    }
+}
+
+export async function getReviewByReservationId(userId: string, reservationId: string): Promise<ReviewType | undefined> {
+    try {
+        const reviews = await reviewApi.getReviews(Number(userId));
+        const review = reviews.find(review => review.reservationId.toString() === reservationId);
+        console.log("review", review);
+        return review;
+    } catch (error) {
+        console.error("리뷰 조회 실패:", error);
         throw error;
     }
 }

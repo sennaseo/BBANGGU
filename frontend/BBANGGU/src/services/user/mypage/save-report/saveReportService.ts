@@ -1,7 +1,7 @@
 import { saveReportApi } from "../../../../api/user/mypage/save-report/saveReportApi";
-import { EchoSaveType } from "../../../../types/bakery";
+import { EchoSave } from "../../../../store/slices/echosaveSlice";
 
-export async function getSaveReport(): Promise<EchoSaveType> {
+export async function getSaveReport(): Promise<EchoSave> {
     try {
         const response = await saveReportApi.getSaveReport();
         return response;

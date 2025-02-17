@@ -1,17 +1,17 @@
 import { ChevronLeft, ChevronDown, ChevronUp } from "lucide-react"
 import { useNavigate, useParams } from "react-router-dom"
 import { useState, useEffect } from "react"
-import { ReservationType } from "../../../../types/bakery"
+import { Reservation } from "../../../../store/slices/reservationSlice"
 import { getReservationDetail } from "../../../../services/user/mypage/reservation/reservationService"
 import CancelReservationModal from "../../../../components/user/mypage/CancelReservationModal"
 import { deleteReservation } from "../../../../services/user/mypage/reservation/reservationService"
 
 export function ReservationDetail() {
   const navigate = useNavigate()
-  const { reservationId } = useParams<{ reservationId: string }>()
+  const { userId, reservationId } = useParams<{ userId: string, reservationId: string }>()
   const [isLocationExpanded, setIsLocationExpanded] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
-  const [reservation, setReservation] = useState<ReservationType | null>(null);
+  const [reservation, setReservation] = useState<Reservation | null>(null);
 
   useEffect(() => {
     async function fetchReservation() {
@@ -24,6 +24,13 @@ export function ReservationDetail() {
     }
     fetchReservation();
   }, [reservationId]);
+
+  // reviewStatus가 'completed'나 'deleted'이면 reviewdetail 페이지로 자동 이동
+  useEffect(() => {
+    if (reservation && (reservation.reviewStatus.toLowerCase() === 'completed' || reservation.reviewStatus.toLowerCase() === 'deleted')) {
+      navigate(`/user/${userId}/mypage/reviews/${reservation.reservationId}`);
+    }
+  }, [reservation, navigate]);
 
   if (!reservation) {
     return (
@@ -111,7 +118,7 @@ export function ReservationDetail() {
             <div className="flex justify-between items-center">
               <div className="flex gap-2">
                 <span className="font-light">{reservation.packageName}</span>
-                <span className="text-gray-600">x{reservation.quantity}</span>
+                <span className="text-gray-600">x{reservation.quantity ? reservation.quantity : 1}</span>
               </div>
               <div>
                 {reservation.price.toLocaleString()}원
