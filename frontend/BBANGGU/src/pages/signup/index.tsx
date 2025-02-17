@@ -11,6 +11,10 @@ export default function SignupPage() {
   const [selectedType, setSelectedType] = useState<UserType>(null)
   const navigate = useNavigate()
 
+  const handleBack = () => {
+    navigate('/login')
+  }
+
   const handleUserTypeSelect = (type: UserType) => {
     setSelectedType(type)
   }
@@ -31,6 +35,7 @@ export default function SignupPage() {
     <SignupLayout
       title="회원가입"
       description="빵구, 어떻게 즐기실래요?"
+      onBack={handleBack}
       bottomButton={
         <Button onClick={handleSubmit} disabled={!selectedType}>
           다음
