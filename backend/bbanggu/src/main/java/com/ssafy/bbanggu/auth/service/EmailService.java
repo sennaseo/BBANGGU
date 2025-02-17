@@ -29,18 +29,13 @@ public class EmailService {
 	 * @param email 이메일 주소
 	 */
 	public void sendAuthenticationCode(String email) {
-		// 1. 요청 제한 확인 (과도한 요청 방지)
-//		if (storeService.isRateLimited(email)) {
-//			throw new CustomException(ErrorCode.TOO_MANY_REQUESTS);
-//		}
-
-		// 2. 인증번호 생성
+		// 1. 인증번호 생성
 		String authCode = generateAuthCode();
 
-		// 3. 이메일 전송
+		// 2. 이메일 전송
 		sendEmail(email, authCode);
 
-		// 4. 인증번호 저장
+		// 3. 인증번호 저장
 		storeAuthCode(email, authCode);
 	}
 

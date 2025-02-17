@@ -10,6 +10,5 @@ import lombok.Getter;
 public class MyPageResponse {
 	private UserResponse user;
 	private SavingDto saving;
-	// private ReservationResponse reservation;
 }
 
