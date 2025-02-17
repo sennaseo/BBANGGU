@@ -330,19 +330,6 @@ public class ReservationService {
 	}
 
 
-	// 사용자와 예약 ID가 일치하는지 검증
-	public boolean check(long reservationId, String authorization) {
-		String token = authorization.replace("Bearer ", "");
-		long userId = jwtTokenProvider.getUserIdFromToken(token);
-
-		Reservation reservation = reservationRepository.findById(reservationId).orElse(null);
-		if (reservation == null) {
-			throw new CustomException(ErrorCode.RESERVATION_NOT_FOUND);
-		}
-		return reservation.getUser().getUserId() == userId;
-	}
-
-
 	/**
 	 * 특정 가게의 픽업되지 않은 예약을 자동 처리
 	 * @param bakeryId 가게 ID
