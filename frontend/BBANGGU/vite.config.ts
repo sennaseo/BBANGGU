@@ -86,6 +86,12 @@ export default defineConfig({
             res.setHeader('Access-Control-Allow-Credentials', 'true');
           });
         }
+      },
+      '/ai': {
+        target: 'https://i12d102.p.ssafy.io',
+        changeOrigin: true,
+        secure: false,
+        rewrite: (path) => path.replace(/^\/ai/, '/ai')
       }
     },
     hmr: {

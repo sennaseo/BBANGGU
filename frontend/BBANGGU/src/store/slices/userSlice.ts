@@ -19,6 +19,7 @@ const userSlice = createSlice({
   initialState,
   reducers: {
     setUserInfo: (state, action: PayloadAction<any>) => {
+      console.log('Setting user info:', action.payload);
       state.userInfo = action.payload;
       state.isAuthenticated = !!localStorage.getItem('accessToken'); // accessToken 존재 여부로 인증 상태 설정
       localStorage.setItem('userInfo', JSON.stringify(action.payload));
