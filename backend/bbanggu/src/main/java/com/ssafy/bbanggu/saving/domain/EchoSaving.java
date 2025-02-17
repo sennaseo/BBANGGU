@@ -4,15 +4,12 @@ import com.ssafy.bbanggu.user.domain.User;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.sql.Timestamp;
 import java.time.LocalDateTime;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-/**
- * 유저의 탄소 절감량 및 절약 금액을 저장하는 엔티티
- */
+
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
@@ -33,8 +30,8 @@ public class EchoSaving {
 	@Column(name = "saved_money", nullable = false, columnDefinition = "INT DEFAULT 0")
 	private int savedMoney;
 
-	@Column(name = "reduced_co2e", nullable = false, columnDefinition = "INT DEFAULT 0")
-	private int reducedCo2e;
+	@Column(name = "reduced_co2e", nullable = false, columnDefinition = "DOUBLE DEFAULT 0.0")
+	private double reducedCo2e;
 
 	@Column(name = "created_at", updatable = false)
 	@CreationTimestamp
@@ -49,7 +46,7 @@ public class EchoSaving {
 	 * @param reducedCo2e 추가된 Co2 절감량
 	 * @param savedMoney 추가된 절약 금액
 	 */
-	public void updateSaving(int reducedCo2e, int savedMoney) {
+	public void updateSaving(double reducedCo2e, int savedMoney) {
 		this.reducedCo2e += reducedCo2e;
 		this.savedMoney += savedMoney;
 	}

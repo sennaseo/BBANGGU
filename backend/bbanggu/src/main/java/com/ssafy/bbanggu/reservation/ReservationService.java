@@ -10,12 +10,9 @@ import java.util.Map;
 import java.util.Optional;
 
 import com.ssafy.bbanggu.bakery.domain.Bakery;
-import com.ssafy.bbanggu.bakery.dto.PickupTimeDto;
 import com.ssafy.bbanggu.bakery.repository.BakeryRepository;
 import com.ssafy.bbanggu.bakery.service.BakeryPickupService;
-import com.ssafy.bbanggu.breadpackage.BreadPackageService;
 
-import org.springframework.cglib.core.Local;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -30,11 +27,14 @@ import com.ssafy.bbanggu.common.exception.ErrorCode;
 import com.ssafy.bbanggu.payment.PaymentService;
 import com.ssafy.bbanggu.reservation.dto.ReservationCancelRequest;
 import com.ssafy.bbanggu.reservation.dto.ReservationCreateRequest;
-import com.ssafy.bbanggu.reservation.dto.ReservationDTO;
 import com.ssafy.bbanggu.reservation.dto.ReservationForOwner;
 import com.ssafy.bbanggu.reservation.dto.ReservationInfo;
 import com.ssafy.bbanggu.reservation.dto.ReservationResponse;
 import com.ssafy.bbanggu.reservation.dto.ValidReservationRequest;
+import com.ssafy.bbanggu.saving.domain.EchoSaving;
+import com.ssafy.bbanggu.saving.dto.SavingDto;
+import com.ssafy.bbanggu.saving.repository.EchoSavingRepository;
+import com.ssafy.bbanggu.saving.service.EchoSavingService;
 import com.ssafy.bbanggu.user.domain.User;
 import com.ssafy.bbanggu.user.repository.UserRepository;
 
@@ -49,13 +49,13 @@ import lombok.extern.slf4j.Slf4j;
 public class ReservationService {
 
 	private final ReservationRepository reservationRepository;
-	private final BreadPackageService breadPackageService;
 	private final PaymentService paymentService;
 	private final JwtTokenProvider jwtTokenProvider;
 	private final BreadPackageRepository breadPackageRepository;
 	private final UserRepository userRepository;
 	private final BakeryRepository bakeryRepository;
 	private final BakeryPickupService bakeryPickupService;
+	private final EchoSavingService echoSavingService;
 
 	/**
 	 * 예약 검증 메서드 (PENDING)
@@ -151,6 +151,12 @@ public class ReservationService {
 		BreadPackage newBreadPackage = breadPackageRepository.save(breadPackage);
 		log.info("✅ {}번 빵꾸러미 남은 개수: {} -> {}개", newBreadPackage.getPackageId(), quantity_origin, newBreadPackage.getQuantity());
 		log.info("🩵 예약 성공 (CONFIRMED) 🩵");
+
+		// 예약한 사용자의 에코 값 업데이트
+		int savedMoney = reservation.getTotalPrice();
+		double reducedCo2e = 0.0001 * reservation.getTotalPrice();
+		SavingDto updateSaving = new SavingDto(savedMoney, reducedCo2e);
+		echoSavingService.updateUserSaving(userDetails, updateSaving);
 
 		Map<String, Object> responseData = new HashMap<>();
 		responseData.put("reservationId", savedReservation.getReservationId());
