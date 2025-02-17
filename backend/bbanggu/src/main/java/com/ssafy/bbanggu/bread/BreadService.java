@@ -94,6 +94,7 @@ public class BreadService {
 			.name(bread.getName())
 			.price(bread.getPrice())
 			.bakeryId(bread.getBakery().getBakeryId())
+			.breadImageUrl(bread.getBreadImageUrl())
 			.build();
 	}
 }
