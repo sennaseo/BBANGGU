@@ -24,7 +24,7 @@ export function ProfileSection({ user }: ProfileSectionProps) {
         </div>
         <img
           src={
-            userInfo?.profileImageUrl ? `${imgBaseUrl}${userInfo.profileImageUrl}` : `${imgBaseUrl}/uploads/bakery19.png`
+            userInfo?.profileImageUrl ? `${imgBaseUrl}${userInfo.profileImageUrl}` : `${imgBaseUrl}/uploads/bakery19.jpeg`
           }
           alt="Profile"
           className="w-[90px] h-[90px] rounded-full object-cover"
