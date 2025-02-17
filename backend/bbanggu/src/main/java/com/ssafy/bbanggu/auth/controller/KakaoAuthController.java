@@ -3,11 +3,8 @@ package com.ssafy.bbanggu.auth.controller;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.Map;
 
 import com.ssafy.bbanggu.auth.dto.JwtToken;
-import com.ssafy.bbanggu.auth.dto.KakaoUserInfo;
 import com.ssafy.bbanggu.auth.service.KakaoAuthService;
 import com.ssafy.bbanggu.common.exception.CustomException;
 import com.ssafy.bbanggu.common.response.ApiResponse;
@@ -17,7 +14,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

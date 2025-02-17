@@ -72,6 +72,8 @@ public class KakaoAuthService {
 			throw new CustomException(ErrorCode.KAKAO_AUTH_FAILED);
 		}
 	}
+
+
 	/**
 	 * ✅ 3. Kakao Access Token → 사용자 정보 조회
 	 */
