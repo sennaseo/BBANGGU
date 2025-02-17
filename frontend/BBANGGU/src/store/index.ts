@@ -5,13 +5,19 @@ import authReducer from './slices/authSlice';
 import userReducer from './slices/userSlice';
 import bakeryReducer from './slices/bakerySlice';
 import packageReducer from './slices/packageSlice';
+import reservationReducer from './slices/reservationSlice';
+import reviewReducer from './slices/reviewSlice';
+import echosaveReducer from './slices/echosaveSlice';
 
 export const store = configureStore({
   reducer: {
     auth: authReducer,
     user: userReducer,
     bakery: bakeryReducer,
-    package: packageReducer
+    package: packageReducer,
+    reservation: reservationReducer,
+    review: reviewReducer,
+    echosave: echosaveReducer
   },
 });
 

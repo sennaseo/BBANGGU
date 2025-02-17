@@ -3,15 +3,14 @@ import { useNavigate, useParams, useLocation } from "react-router-dom"
 import { useEffect, useState } from "react"
 import { getReservations } from "../../../../services/user/mypage/reservation/reservationService"
 import dayjs from "dayjs"
-import { ReservationType } from "../../../../types/bakery"
-import { reviewApi } from '../../../../api/user/review/reviewApi'
+import { Reservation } from "../../../../store/slices/reservationSlice"
 
 
 export function ReservationHistory() {
   const navigate = useNavigate()
   const { userId } = useParams<{ userId: string }>();
-  const [currentReservations, setCurrentReservations] = useState<ReservationType[]>([]);
-  const [pastReservations, setPastReservations] = useState<ReservationType[]>([]);
+  const [currentReservations, setCurrentReservations] = useState<Reservation[]>([]);
+  const [pastReservations, setPastReservations] = useState<Reservation[]>([]);
   const [isPastReservationsOpen, setIsPastReservationsOpen] = useState<boolean>(true);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
@@ -23,14 +22,15 @@ export function ReservationHistory() {
       const startDate = dayjs().subtract(7, "day").format("YYYY-MM-DD");
       const endDate = dayjs().format("YYYY-MM-DD");
       const reservations = await getReservations(startDate, endDate);
-      
+      console.log("reservations", reservations)
+      const reservationsArray = Array.isArray(reservations) ? reservations : [reservations];
       setCurrentReservations(
-        reservations.filter(reservation => 
+        reservationsArray.filter((reservation) => 
           reservation.status.toLowerCase() === 'pending' || reservation.status.toLowerCase() === 'confirmed'
         )
       );
       setPastReservations(
-        reservations.filter(reservation => {
+        reservationsArray.filter((reservation) => {
           const status = reservation.status.toLowerCase();
           return status === 'canceled' || status === 'completed';
         })
@@ -64,26 +64,11 @@ export function ReservationHistory() {
     return `${date.getFullYear().toString().slice(2)}.${String(date.getMonth() + 1).padStart(2, '0')}.${String(date.getDate()).padStart(2, '0')} ${days[date.getDay()]}요일`
   }
 
-  const ReservationItem = ({ reservation }: { reservation: ReservationType }) => {
-    // 유저 리뷰 조회 API를 통해 해당 예약의 리뷰 존재 여부를 확인하여 local state에 저장
-    const [hasReview, setHasReview] = useState<boolean>(false);
-
-    useEffect(() => {
-      if (reservation.status.toLowerCase() === 'completed' && userId) {
-        reviewApi.findReviewByReservationId(userId, reservation.reservationId.toString())
-          .then((review) => {
-            setHasReview(!!review);
-          })
-          .catch((error) => {
-            console.error('리뷰 조회 실패:', error);
-          });
-      }
-    }, [reservation.reservationId, reservation.status, userId]);
-
+  const ReservationItem = ({ reservation }: { reservation: Reservation }) => {
     const getStatusText = (status: string) => {
       switch(status.toLowerCase()) {
         case 'pending':
-          return '주문문 예약';
+          return '주문 예약';
         case 'completed':
           return '픽업 완료';
         case 'canceled':
@@ -156,19 +141,27 @@ export function ReservationHistory() {
               <ChevronLeft className="w-5 h-5 rotate-180" />
             </div>
             {reservation.status.toLowerCase() === 'completed' && (
-              <button 
-                className={`mt-3 w-full text-white py-2 rounded-xl font-semibold ${hasReview ? 'bg-gray-400 hover:bg-gray-500' : 'bg-[#fc973b] hover:bg-[#e88a2d]'}`}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  if (hasReview) {
-                    navigate(`/user/${userId}/mypage/reviews/${reservation.reservationId}`, { state: { bakeryName: reservation.bakeryName } });
-                  } else {
-                    navigate(`/user/${userId}/mypage/reservation/${reservation.reservationId}/write-review`);
-                  }
-                }}
-              >
-                {hasReview ? '리뷰 보기' : '리뷰 쓰기'}
-              </button>
+              <>
+                {reservation.reviewStatus.toLowerCase() === 'deleted' ? (
+                  <div className="mt-3 w-full text-center p-2 rounded-xl font-semibold bg-gray-200 text-gray-500">
+                    리뷰가 삭제되었습니다
+                  </div>
+                ) : (
+                  <button 
+                    className={`mt-3 w-full text-white py-2 rounded-xl font-semibold ${reservation.reviewStatus.toLowerCase() === 'completed' ? 'bg-gray-400 hover:bg-gray-500' : 'bg-[#fc973b] hover:bg-[#e88a2d]'}`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (reservation.reviewStatus.toLowerCase() === 'completed') {
+                        navigate(`/user/${userId}/mypage/reviews/${reservation.reservationId}`, { state: { bakeryName: reservation.bakeryName } });
+                      } else {
+                        navigate(`/user/${userId}/mypage/reservation/${reservation.reservationId}/write-review`);
+                      }
+                    }}
+                  >
+                    {reservation.reviewStatus.toLowerCase() === 'completed' ? '리뷰 보기' : '리뷰 쓰기'}
+                  </button>
+                )}
+              </>
             )}
           </div>
         </div>

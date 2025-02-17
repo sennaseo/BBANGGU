@@ -103,6 +103,7 @@ class BreadDTO(BaseModel):
     name: str
     price: int
     count: int
+    breadId: int
 
 
 @app.post("/generate-package")
