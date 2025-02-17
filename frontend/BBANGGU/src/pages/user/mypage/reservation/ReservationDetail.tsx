@@ -1,19 +1,28 @@
 import { ChevronLeft, ChevronDown, ChevronUp } from "lucide-react"
 import { useNavigate, useParams } from "react-router-dom"
-import { useState } from "react"
-import { mockReservations } from "../../../../mocks/user/reservationMockData"
-// import { Map } from "./Map" // 지도 컴포넌트는 별도로 구현 필요
+import { useState, useEffect } from "react"
+import { ReservationType } from "../../../../types/bakery"
+import { getReservationDetail } from "../../../../services/user/mypage/reservation/reservationService"
+import { CANCELLED } from "dns"
 
 export function ReservationDetail() {
   const navigate = useNavigate()
-  const { reservation_id } = useParams<{ reservation_id: string }>()
+  const { reservationId } = useParams<{ reservationId: string }>()
   const [isLocationExpanded, setIsLocationExpanded] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
+  const [reservation, setReservation] = useState<ReservationType | null>(null);
 
-  // URL 파라미터로 전달된 reservation_id로 예약 찾기
-  const reservation = mockReservations.find(
-    r => r.reservationId === Number(reservation_id)
-  );
+  useEffect(() => {
+    async function fetchReservation() {
+      try {
+        const res = await getReservationDetail(Number(reservationId));
+        setReservation(res);
+      } catch (error) {
+        console.error('예약 세부 정보 로드 실패:', error);
+      }
+    }
+    fetchReservation();
+  }, [reservationId]);
 
   if (!reservation) {
     return (
@@ -25,9 +34,10 @@ export function ReservationDetail() {
 
   // 예약 상태 한글 변환
   const statusMap = {
-    pending: "주문 예약",
-    cancelled: "취소됨",
-    completed: "완료",
+    PENDING: "주문 예약",
+    CANCELLED: "주문 취소",
+    COMPLETED: "픽업 완료",
+    CONFIRMED: "픽업 예약",
   };
 
   // 날짜 포맷팅
@@ -47,8 +57,12 @@ export function ReservationDetail() {
       time: `${hours}:${minutes}`
     };
   };
+  const pickupTime = formatDate(reservation.pickupAt);
 
-  const pickupTime = formatDate(reservation.reservedPickupTime);
+  const handleWriteReview = () => {
+    // 리뷰 작성 페이지로 이동 (라우팅 경로는 프로젝트에 맞게 수정)
+    navigate(`/user/mypage/reservation/${reservationId}/write-review`);
+  };
 
   return (
     <div className="flex flex-col min-h-screen bg-[#F9F9F9] pb-[80px] relative max-w-[480px] mx-auto">
@@ -68,11 +82,11 @@ export function ReservationDetail() {
           <div className="bg-[#fc973b] text-white rounded-xl shadow-md">
             <div className="flex flex-col gap-2 p-5">
               <div className="inline-block px-3 py-1 bg-white/20 rounded-full text-sm w-fit">
-                {statusMap[reservation.status]}
+                {statusMap[reservation.status.toUpperCase() as keyof typeof statusMap]}
               </div>
-              <div className="text-xl font-bold leading-tight">{reservation.bakeryId}</div>
+              <div className="text-xl font-bold leading-tight">{reservation.bakeryName}</div>
               <div className="text-sm">
-                {pickupTime.date} {pickupTime.time} ~ {parseInt(pickupTime.time.split(':')[0]) + 1}:00 방문
+                {pickupTime.date} {reservation.createdAt} ~ {parseInt(pickupTime.time.split(':')[0]) + 1}:00 방문
               </div>
             </div>
           </div>
@@ -81,17 +95,17 @@ export function ReservationDetail() {
           <div className="bg-[#F9F9F9] p-5 rounded-xl border-t border-dashed border-gray-200 shadow-md">
             <div className="flex justify-between items-center">
               <div className="flex gap-2">
+                <span className="font-light">{reservation.packageName}</span>
                 <span className="text-gray-600">{reservation.quantity}x</span>
-                <span className="font-medium">{reservation.bakeryId}</span>
               </div>
               <div>
-                {reservation.totalPrice.toLocaleString()}원
+                {reservation.price.toLocaleString()}원
               </div>
             </div>
 
             <div className="flex justify-between font-bold mt-3 pt-3 border-t border-gray-200">
               <span>합계</span>
-              <span>{reservation.totalPrice.toLocaleString()}원</span>
+              <span>{reservation.price.toLocaleString()}원</span>
             </div>
           </div>
         </div>
@@ -180,6 +194,16 @@ export function ReservationDetail() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* 픽업 완료 상태일 때 리뷰 쓰기 버튼 표시 */}
+      {reservation && reservation.status.toLowerCase() === "completed" && (
+        <button
+          className="mt-4 w-full bg-[#fc973b] hover:bg-[#e88a2d] text-white font-bold py-2 px-4 rounded"
+          onClick={handleWriteReview}
+        >
+          리뷰 쓰기
+        </button>
       )}
     </div>
   )

@@ -17,7 +17,6 @@ export const profileEditApi = {
     updateUserProfile: async (formData: UpdateUserProfileData): Promise<ApiResponse<UserType[]>> => {
         try {
             const token = localStorage.getItem("accessToken") || import.meta.env.VITE_MOCK_ACCESS_TOKEN || "";
-            console.log("Authorization Token:", token);
             const response = await axios.patch<ApiResponse<UserType[]>>(
                 `${BASE_URL}/user/update`,
                 formData,

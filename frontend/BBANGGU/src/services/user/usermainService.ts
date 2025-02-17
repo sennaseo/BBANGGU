@@ -92,11 +92,12 @@ export async function searchBakery(keyword: string): Promise<BakerySearchItem[]>
 /**
  * 통합 좋아요 토글 함수: 현재 좋아요 상태(isLiked)에 따라 좋아요 추가 또는 삭제 API 호출
  * @param bakeryId 베이커리 ID
- * @param is_liked 현재 좋아요 상태 (true면 삭제, false면 추가)
+ * @param isLiked 현재 좋아요 상태 (true면 삭제, false면 추가)
+ * @param accessToken 사용자의 accessToken
  * @returns API 호출 결과 (boolean 값)
  */
-export async function toggleFavoriteForUser(bakeryId: number, is_liked: boolean): Promise<boolean> {
-  if (is_liked) {
+export async function toggleFavoriteForUser(bakeryId: number, isLiked: boolean): Promise<boolean> {
+  if (isLiked) {
     // 현재 좋아요 상태이면 삭제 API 호출
     return await mainApi.deleteFavorite(bakeryId);
   } else {
