@@ -19,8 +19,8 @@ const userSlice = createSlice({
   initialState,
   reducers: {
     setUserInfo: (state, action: PayloadAction<any>) => {
+      console.log('Setting user info:', action.payload);
       state.userInfo = action.payload;
-      // localStorage에도 저장
       localStorage.setItem('userInfo', JSON.stringify(action.payload));
     },
     setToken: (state, action: PayloadAction<string>) => {
