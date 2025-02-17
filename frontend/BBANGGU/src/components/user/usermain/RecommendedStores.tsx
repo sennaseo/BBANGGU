@@ -1,8 +1,8 @@
 import { HeartIcon as HeartOutline, StarIcon } from "@heroicons/react/24/outline"
 import { MapPinIcon, ChevronDownIcon, HeartIcon as HeartSolid } from "@heroicons/react/24/solid"
-import type { ExtendedBakeryType } from "../../../types/bakery"
+import type { BakeryType } from "../../../types/bakery"
 interface RecommendedStoresProps {
-  allbakery: ExtendedBakeryType[]
+  allbakery: BakeryType[]
   onToggleLike: (bakeryId: number) => void
   onStoreClick: (id: number) => void
 }
@@ -61,10 +61,10 @@ export default function RecommendedStores({ allbakery, onStoreClick, onToggleLik
               </div>
               <div>
                 <span className="text-[18px] font-bold text-[#333333]">
-                  {(store.package?.data[0]?.price || 0).toLocaleString()}원
+                  {(store.price || 0).toLocaleString()}원
                 </span>
                 <span className="text-[14px] text-[#D2D2D2] line-through ml-2">
-                  {((store.package?.data[0]?.price || 0)*2).toLocaleString()}원
+                  {((store.price || 0)*2).toLocaleString()}원
                 </span>
               </div>
             </div>

@@ -3,7 +3,6 @@ import { useNavigate, useParams } from "react-router-dom"
 import { useState, useEffect } from "react"
 import { ReservationType } from "../../../../types/bakery"
 import { getReservationDetail } from "../../../../services/user/mypage/reservation/reservationService"
-import { CANCELLED } from "dns"
 
 export function ReservationDetail() {
   const navigate = useNavigate()
