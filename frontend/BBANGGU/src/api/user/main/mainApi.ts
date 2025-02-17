@@ -13,11 +13,18 @@ export const mainApi = {
   getAllBakeries: async () => {
     try {
       const token = store.getState().user.token;
-      console.log("token", token);
-      const response = await axios.get<ApiResponse<BakeryInfo[]>>(
-        `${BASE_URL}/bakery`,
-        { withCredentials: true, headers: { Authorization: `Bearer ${token}` } }
-      );
+      let response;
+      if (token) {
+        response = await axios.get<ApiResponse<BakeryInfo[]>>(
+          `${BASE_URL}/bakery`,
+          { withCredentials: true, headers: { Authorization: `Bearer ${token}` } }
+        );
+      } else {
+        response = await axios.get<ApiResponse<BakeryInfo[]>>(
+          `${BASE_URL}/bakery`,
+          { withCredentials: true }
+        );
+      }
       return response.data;
     } catch (error) {
       console.error('베이커리 목록 조회 실패:', error);
@@ -27,10 +34,19 @@ export const mainApi = {
   // bakeryId 기반으로 bread-package 데이터를 가져오는 API
   getPackagesByBakeryId: async (bakeryId: number): Promise<PackageType[]> => {
     try {
-      const response = await axios.get<PackageResponse>(
-        `${BASE_URL}/bread-package/bakery/${bakeryId}`,
-        { withCredentials: true }
-      );
+      const token = store.getState().user.token;
+      let response;
+      if (token) {
+        response = await axios.get<PackageResponse>(
+          `${BASE_URL}/bread-package/bakery/${bakeryId}`,
+          { withCredentials: true, headers: { Authorization: `Bearer ${token}` } }
+        );
+      } else {
+        response = await axios.get<PackageResponse>(
+          `${BASE_URL}/bread-package/bakery/${bakeryId}`,
+          { withCredentials: true }
+        );
+      }
       const packages = response.data.data;
       if (!packages || packages.length === 0) {
         // console.warn(`패키지 데이터 없음 - 가게(${bakeryId})의 패키지 정보가 없습니다.`);
@@ -55,9 +71,9 @@ export const mainApi = {
   toggleFavorite: async (bakeryId: number): Promise<boolean> => {
     try {
       const token = store.getState().user.token;
-      console.log("token", token);
       const response = await axios.post(
         `${BASE_URL}/favorite/${bakeryId}`,
+        {},
         { withCredentials: true, headers: { Authorization: `Bearer ${token}` } }
       );
       console.log("toggleFavorite", response.data.data);
@@ -74,7 +90,6 @@ export const mainApi = {
   deleteFavorite: async (bakeryId: number): Promise<boolean> => {
     try {
       const token = store.getState().user.token;
-      console.log("token", token);
       const response = await axios.delete(
         `${BASE_URL}/favorite/${bakeryId}`,
         {
@@ -99,36 +114,38 @@ export const mainApi = {
   // 좋아요가 가장 많은 가게 조회 API (/favorite/best)
   getFavoriteBest: async () => {
     try {
-      const response = await axios.get<ApiResponse<BakeryInfo[]>>(
-        `${BASE_URL}/favorite/best`,
-        { withCredentials: true }
-      );
+      const token = store.getState().user.token;
+      let response;
+      if (token) {
+        response = await axios.get<ApiResponse<BakeryInfo[]>>(
+          `${BASE_URL}/favorite/best`,
+          { withCredentials: true, headers: { Authorization: `Bearer ${token}` } }
+        );
+      } else {
+        response = await axios.get<ApiResponse<BakeryInfo[]>>(
+          `${BASE_URL}/favorite/best`,
+          { withCredentials: true }
+        );
+      }
       return response.data;
     } catch (error) {
-      console.error(`좋아요가 가장 많은 가게 조회 실패:`, error);
+      console.error(`
+        좋아요가 가장 많은 가게 조회 실패:`, error);
       throw error;
     }
   },
-
-
-  // 가게 검색 요청 함수 추가
   searchBakery: async (keyword: string) => {
     try {
-      const response = await axios.get<ApiResponse<{ content: BakerySearchItem[] }>>(
-        `${BASE_URL}/bakery/search`,
-        {
-          params: { keyword },
-          withCredentials: true
-        }
+      const token = store.getState().user.token;
+      const response = await axios.get<ApiResponse<BakeryInfo[]>>(
+        `${BASE_URL}/bakery/search?keyword=${keyword}`,
+        { withCredentials: true, headers: { Authorization: `Bearer ${token}` } }
       );
       return response.data;
     } catch (error) {
-      console.error(`가게 검색 실패:`, error);
+      console.error(`베이커리 검색 실패:`, error);
       throw error;
     }
-  }
-};
-
-export async function searchBakery(keyword: string) {
-  return await mainApi.searchBakery(keyword);
+  } 
 }
+

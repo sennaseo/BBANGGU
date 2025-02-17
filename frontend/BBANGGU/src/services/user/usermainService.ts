@@ -37,7 +37,6 @@ export async function fetchBestFavoriteStores(): Promise<{ favoritebakery: Baker
   }
 } 
 
-import { searchBakery as searchBakeryApi } from '../../api/user/main/mainApi';
 
 /**
  * 가게 검색 API 호출 및 응답 데이터 가공 함수.
@@ -45,9 +44,9 @@ import { searchBakery as searchBakeryApi } from '../../api/user/main/mainApi';
  * @returns BakerySearchItem 배열
  */
 export async function searchBakery(keyword: string): Promise<BakerySearchItem[]> {
-  const response = await searchBakeryApi(keyword);
+  const response = await mainApi.searchBakery(keyword);
   // 응답 구조: { message: string, data: { content: BakerySearchItem[], ... } }
-  return response.data.content as BakerySearchItem[];
+  return response.data as BakerySearchItem[];
 }
 
 /**
@@ -59,13 +58,9 @@ export async function searchBakery(keyword: string): Promise<BakerySearchItem[]>
  */
 export async function toggleFavoriteForUser(bakeryId: number, isLiked: boolean): Promise<boolean> {
   if (isLiked) {
-    console.log("삭제");
-    console.log(isLiked);
     // 현재 좋아요 상태이면 삭제 API 호출
     return mainApi.deleteFavorite(bakeryId);
   } else {
-    console.log("추가");
-    console.log(isLiked);
     // 좋아요 상태가 아니면 추가 API 호출
     return mainApi.toggleFavorite(bakeryId);
   }

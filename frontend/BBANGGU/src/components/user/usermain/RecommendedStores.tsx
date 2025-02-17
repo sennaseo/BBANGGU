@@ -11,16 +11,17 @@ interface RecommendedStoresProps {
 
 export default function RecommendedStores({ allbakery, onStoreClick, toggleFavoriteForUser }: RecommendedStoresProps) {
   const [sortType, setSortType] = useState<string>("distance");
-  const sortedStores = [...allbakery].sort((a, b) => {
-    switch(sortType) {
+  const validStores = allbakery.filter((store): store is BakeryType => store != null && store.bakeryId !== undefined);
+  const sortedStores = validStores.sort((a, b) => {
+    switch (sortType) {
       case "distance":
-        return (a.distance || 0) - (b.distance || 0);
+        return ((a?.distance ?? 0) - (b?.distance ?? 0));
       case "price":
-        return (a.price || 0) - (b.price || 0);
+        return ((a?.price ?? 0) - (b?.price ?? 0));
       case "review":
-        return (b.reviewCnt || 0) - (a.reviewCnt || 0);
+        return ((b?.reviewCnt ?? 0) - (a?.reviewCnt ?? 0));
       case "rating":
-        return (b.star || 0) - (a.star || 0);
+        return ((b?.star ?? 0) - (a?.star ?? 0));
       default:
         return 0;
     }
@@ -74,7 +75,6 @@ export default function RecommendedStores({ allbakery, onStoreClick, toggleFavor
                     className="w-8 h-8 flex items-center justify-center bg-[#F9F9F9] rounded-full hover:bg-[#E1E1E1]"
                     onClick={(e) => {
                       e.stopPropagation();
-                      console.log("store.bakeryId", store.bakeryId);
                       toggleFavoriteForUser(store.bakeryId, store.is_liked);
                     }}>
                     {store.is_liked ? (

@@ -23,8 +23,6 @@ export default function UserMain() {
 
   // 리덕스에서 사용자 정보 가져오기
   const userInfo = useSelector((state: RootState) => state.user.userInfo)
-  const token = useSelector((state: RootState) => state.user.token)
-  console.log("userInfo", token);
   const navigate = useNavigate()
 
   // API 데이터를 불러와서 캐시된 데이터가 있다면 재요청 없이 사용합니다.
@@ -36,9 +34,7 @@ export default function UserMain() {
         const allBakeryResult = await fetchAllBakeriesData()
         const favoritebakeryResult = await fetchBestFavoriteStores()
         setAllBakeriesData(allBakeryResult.allbakery)
-        console.log("allBakeryResult", allBakeryResult);
         setFavoritebakery(favoritebakeryResult.favoritebakery)
-        console.log("favoritebakeryResult", favoritebakeryResult);
         setSearchResults([])
       } catch (err) {
         setError(err as Error)
@@ -55,13 +51,20 @@ export default function UserMain() {
 
   const handleToggleFavorite = async (bakeryId: number, isLiked: boolean) => {
     try {
-      console.log("bakeryId", bakeryId);
-      console.log("isLiked", isLiked);
-      const updatedBakery = await toggleFavoriteForUser(bakeryId, isLiked);
-      console.log("updatedBakery", updatedBakery);
+      await toggleFavoriteForUser(bakeryId, isLiked);
+      // 좋아요 토글 시, 기존 상태의 is_liked 값을 반전하여 업데이트합니다.
       setAllBakeriesData(prevBakeries =>
         prevBakeries.map(bakery =>
-          bakery.bakeryId === bakeryId ? updatedBakery as unknown as BakeryInfo : bakery as BakeryInfo
+          bakery && bakery.bakeryId === bakeryId
+            ? { ...bakery, is_liked: !bakery.is_liked }
+            : bakery
+        )
+      );
+      setFavoritebakery(prevBakeries =>
+        prevBakeries.map(bakery =>
+          bakery && bakery.bakeryId === bakeryId
+            ? { ...bakery, is_liked: !bakery.is_liked }
+            : bakery
         )
       );
     } catch (error) {
