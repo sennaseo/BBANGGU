@@ -11,6 +11,7 @@ interface BestPackagesProps {
 }
 
 export default function BestPackages({ favoritebakery, toggleFavoriteForUser }: BestPackagesProps) {
+  const imgBaseUrl = import.meta.env.VITE_IMAGE_BASE_URL;
   const scrollRef = useRef<HTMLDivElement>(null)
   const navigate = useNavigate()
 
@@ -48,7 +49,7 @@ export default function BestPackages({ favoritebakery, toggleFavoriteForUser }: 
             >
               <div className="relative aspect-square mb-2">
                 <img
-                  src={item.bakeryImageUrl || "/placeholder.svg"}
+                  src={item.bakeryImageUrl ? `${imgBaseUrl}${item.bakeryImageUrl}` : `${imgBaseUrl}/uploads/7ac950cf-8a1e-4087-9215-9a84b67eb93e_breadjjanggu.jpg`}
                   alt={item.name || "빵집 이미지"}
                   className="w-full h-full object-cover rounded-[12px]"
                 />

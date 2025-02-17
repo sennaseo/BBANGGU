@@ -19,6 +19,8 @@ export default function BakeryDetail() {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
+  const imgBaseUrl = import.meta.env.VITE_IMAGE_BASE_URL;
+
   const loadData = useCallback(async () => {
     setIsLoading(true)
     try {
@@ -63,7 +65,7 @@ export default function BakeryDetail() {
       <div className="flex flex-col mx-auto max-w-5xl">
         <div className="h-[280px] w-full overflow-hidden">
           <img
-            src={bakery.bakeryBackgroundImgUrl || "/placeholder.svg"}
+            src={bakery.bakeryBackgroundImgUrl ? `${imgBaseUrl}${bakery.bakeryBackgroundImgUrl}` : `${imgBaseUrl}/uploads/bakery15.jpeg`}
             alt={`${bakery.name} banner`}
             className="h-full w-full object-cover"
           />

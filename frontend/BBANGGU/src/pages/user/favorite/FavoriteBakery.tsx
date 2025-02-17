@@ -8,6 +8,7 @@ import { bakeryDetailApi } from '../../../api/user/detail/bakeryDetailApi';
 import { BakeryInfo } from '../../../store/slices/bakerySlice';
 
 export const FavoriteBakery = () => {
+  const imgBaseUrl = import.meta.env.VITE_IMAGE_BASE_URL;
   const navigate = useNavigate();
   const [bakeries, setBakeries] = useState<BakeryInfo[]>([]);
 
@@ -112,7 +113,7 @@ export const FavoriteBakery = () => {
             >
               <div className="relative">
                 <img 
-                  src={bakery.bakeryImageUrl || "/src/assets/logo.png"}
+                  src={bakery.bakeryBackgroundImgUrl ? `${imgBaseUrl}${bakery.bakeryBackgroundImgUrl}` : `${imgBaseUrl}/uploads/bakery19.jpeg`}
                   alt={bakery.name || ""}
                   className="w-full h-[160px] object-cover" 
                 />

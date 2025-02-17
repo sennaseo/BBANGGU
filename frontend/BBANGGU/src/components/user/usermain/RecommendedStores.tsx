@@ -10,6 +10,8 @@ interface RecommendedStoresProps {
 }
 
 export default function RecommendedStores({ allbakery, onStoreClick, toggleFavoriteForUser }: RecommendedStoresProps) {
+  const imgBaseUrl = import.meta.env.VITE_IMAGE_BASE_URL;
+  console.log(imgBaseUrl);
   const [sortType, setSortType] = useState<string>("distance");
   const validStores = allbakery.filter((store): store is BakeryType => store != null && store.bakeryId !== undefined);
   const sortedStores = validStores.sort((a, b) => {
@@ -49,7 +51,7 @@ export default function RecommendedStores({ allbakery, onStoreClick, toggleFavor
             className="flex gap-4 p-4 bg-white rounded-[12px] border border-[#e1e1e1] mx-5 cursor-pointer"
             onClick={() => onStoreClick(store.bakeryId)}>
             <img
-              src={store.bakeryImageUrl || "/placeholder.svg"}
+              src={store.bakeryImageUrl ? `${imgBaseUrl}${store.bakeryImageUrl}` : `${imgBaseUrl}/uploads/7ac950cf-8a1e-4087-9215-9a84b67eb93e_breadjjanggu.jpg`}
               alt={store.name}
               className="w-[100px] h-[100px] object-cover rounded-[12px]"
             />

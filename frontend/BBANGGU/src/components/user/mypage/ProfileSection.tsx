@@ -8,6 +8,7 @@ interface ProfileSectionProps {
 }
 
 export function ProfileSection({ user }: ProfileSectionProps) {
+  const imgBaseUrl = import.meta.env.VITE_IMAGE_BASE_URL;
   // const navigate = useNavigate();
   // 리덕스에서 사용자 정보 가져오기
   const userInfo = useSelector((state: RootState) => state.user.userInfo)
@@ -23,8 +24,7 @@ export function ProfileSection({ user }: ProfileSectionProps) {
         </div>
         <img
           src={
-            userInfo?.profileImageUrl ||
-            "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/%ED%94%84%EB%A1%9C%ED%95%84-ScdL8EY3W1qOzEzfLjiBi3XnSU4HAp.png"
+            userInfo?.profileImageUrl ? `${imgBaseUrl}${userInfo.profileImageUrl}` : `${imgBaseUrl}/uploads/bakery19.png`
           }
           alt="Profile"
           className="w-[90px] h-[90px] rounded-full object-cover"
