@@ -36,8 +36,10 @@ export default function UserMyPage() {
     if (!userInfo) {
       navigate("/login");
     } else {
+      console.log("userInfo", userInfo);
       getUserProfile()
         .then((data) => {
+          console.log("data", data);
           setReservationData({
             currentReservation: data[0].reservation[0] || null,
             latestEchoSave: data[0].echosave[data[0].echosave.length - 1] || null,

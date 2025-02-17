@@ -83,13 +83,13 @@ export function ReservationHistory() {
     const getStatusText = (status: string) => {
       switch(status.toLowerCase()) {
         case 'pending':
-          return '픽업 예약';
+          return '주문문 예약';
         case 'completed':
           return '픽업 완료';
         case 'canceled':
           return '주문 취소';
-        default:
-          return '주문 예약';
+        case 'confirmed':
+          return '주문 확정';
       }
     }
 

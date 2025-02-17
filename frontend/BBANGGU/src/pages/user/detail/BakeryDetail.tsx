@@ -22,17 +22,10 @@ export default function BakeryDetail() {
   const loadData = useCallback(async () => {
     setIsLoading(true)
     try {
-      const [bakerydetail, likedMap] = await Promise.all([
-        fetchBakeryDetail(Number(bakeryId)),
-        localStorage.getItem("likedStores") ? JSON.parse(localStorage.getItem("likedStores") || "{}") : {}
-      ])
-      const updatedBakery = {
-          ...bakerydetail,
-          is_liked: likedMap[bakerydetail.bakeryId]
-        }
-        setBakery(updatedBakery)
-      } catch (err) {
-        setError("베이커리 정보를 불러오는 데 실패했습니다.")
+      const bakeryData = await fetchBakeryDetail(Number(bakeryId));
+      setBakery(bakeryData);
+    } catch (err) {
+      setError("베이커리 정보를 불러오는 데 실패했습니다.")
         console.error(err)
       } finally {
         setIsLoading(false)
@@ -54,12 +47,6 @@ export default function BakeryDetail() {
         ...bakery,
         is_liked: newLikedStatus,
       });
-      // localStorage의 likedStores 업데이트
-      const likedMap = localStorage.getItem("likedStores") 
-        ? JSON.parse(localStorage.getItem("likedStores") || "{}") 
-        : {};
-      likedMap[bakery.bakeryId] = newLikedStatus;
-      localStorage.setItem("likedStores", JSON.stringify(likedMap));
       return newLikedStatus;
     } catch (error) {
       console.error("좋아요 토글 실패:", error);

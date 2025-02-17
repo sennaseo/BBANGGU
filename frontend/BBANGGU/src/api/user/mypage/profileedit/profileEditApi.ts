@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { ApiResponse } from '../../../../types/response';
 import type { UserType } from '../../../../types/bakery';
+import { store } from '../../../../store';
 
 // const BASE_URL = 'http://127.0.0.1:8080';
 // const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://13.124.56.79:8081';
@@ -16,7 +17,7 @@ interface UpdateUserProfileData {
 export const profileEditApi = {
     updateUserProfile: async (formData: UpdateUserProfileData): Promise<ApiResponse<UserType[]>> => {
         try {
-            const token = localStorage.getItem("accessToken") || import.meta.env.VITE_MOCK_ACCESS_TOKEN || "";
+            const token = store.getState().user.token;
             const response = await axios.patch<ApiResponse<UserType[]>>(
                 `${BASE_URL}/user/update`,
                 formData,

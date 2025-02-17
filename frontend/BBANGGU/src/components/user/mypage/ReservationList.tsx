@@ -40,7 +40,17 @@ export function ReservationList({ reservations = [], params }: ReservationListPr
 
   // 예약 데이터와 제빵소 리스트를 기반으로 예약별 제빵소 이름을 설정합니다.
   useEffect(() => {
-    if (bakeryList.length === 0 || data.length === 0) return; // bakeryList가 비어있거나 예약 데이터가 없으면 실행하지 않음
+    if (
+      bakeryList.length === 0 ||
+      data.length === 0 ||
+      data.every(
+        (reservation) =>
+          reservation.status.toLowerCase() === "completed" || reservation.status.toLowerCase() === "canceled"
+      )
+    ) {
+      console.log("reservation", data)
+      return; // bakeryList가 비어있거나 예약 데이터가 없거나 모든 예약이 완료/취소 상태이면 실행하지 않음
+    }
     const names: Record<string, string> = {};
     for (const reservation of data) {
       const bakery = bakeryList.find(b => b.bakeryId === reservation.bakeryId);
@@ -50,20 +60,23 @@ export function ReservationList({ reservations = [], params }: ReservationListPr
   }, [data, bakeryList]); // bakeryList가 변경될 때만 실행
 
   const getStatusLabel = (status: ReservationType["status"]) => {
-    switch (status) {
-      case "cancelled":
-        return "고객 취소"
+    switch (status.toLowerCase()) {
+      case "canceled":
+        return "주문 취소"
       case "completed":
         return "픽업 완료"
-      default:
-        return "주문 완료"
+      case "confirmed":
+        return "픽업 예약"
+      case "pending":
+        return "주문 예약"
     }
   }
 
   const formatPickupDateTime = (reservation: ReservationType) => {
     dayjs.locale('ko')
     const createdDate = dayjs(reservation.createdAt)
-    return `${createdDate.format('YYYY년 M월 D일 dddd')} ${reservation.pickupAt} 픽업`
+    const pickupTime = dayjs(reservation.createdAt).add(1, 'hour').format('HH:mm');
+    return `${createdDate.format('YYYY년 M월 D일 dddd')} ${pickupTime} 픽업 예약`
   }
 
   const renderReservation = (reservation: ReservationType) => (
@@ -99,26 +112,31 @@ export function ReservationList({ reservations = [], params }: ReservationListPr
       <p className="text-white text-sm mt-1">첫 주문을 시작해보세요!</p>
     </div>
   )
+  console.log("data", data)
 
+  const currentReservations = data.filter(
+    reservation =>
+      reservation.status.toLowerCase() !== "completed" &&
+      reservation.status.toLowerCase() !== "canceled"
+  );
+  
   return (
     <div className="flex flex-col">
-      {data.length > 0 ? (
+      {currentReservations.length > 0 ? (
         <>
           {/* 픽업시간이 가장 임박한 주문 표시 */}
           {renderReservation(
-            data.sort((a, b) => 
+            currentReservations.sort((a, b) =>
               new Date(a.reservedPickupTime).getTime() - new Date(b.reservedPickupTime).getTime()
             )[0]
           )}
-          {data.length > 0 && (
+          {currentReservations.length > 0 && (
             <button
               onClick={() => navigate(`/user/${params.userId}/mypage/reservations`)}
               className="w-full text-[#B4B4B4] font-regular text-sm bg-white rounded-xl shadow-md py-[8px] border-t border-dashed border-gray-200"
             >
               진행중인 주문 내역 보기
-              
             </button>
-
           )}
         </>
       ) : (
