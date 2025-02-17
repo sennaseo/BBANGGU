@@ -46,8 +46,12 @@ public class BreadService {
 			.createdAt(LocalDateTime.now())
 			.build();
 
+		System.out.println("builder");
+
 		if (file != null && !file.isEmpty()) {
+			System.out.println("if");
 			bread.setBreadImageUrl(imageService.saveImage(file));
+			System.out.println("if ends");
 		} else {
 			bread.setBreadImageUrl(null);
 		}
