@@ -114,10 +114,8 @@ public class StockService {
 				}
 				result.put(current.getMonthValue(), monthData);
 			}
-
 			current = current.plusMonths(1);
 		}
-
 		return result;
 	}
 

@@ -1,4 +1,5 @@
 # pip install python-multipart
+# pip install ultralytics
 import os
 import uuid
 from collections import defaultdict
@@ -62,8 +63,32 @@ async def detect_breads(images: List[UploadFile] = File(...), bakeryId: int = Fo
     result = pacakge_maker.distribute_breads(classified_breads, category_infos, class_names)
     filtered_result = pacakge_maker.select_best_combinations(result)
 
+    # breadCategoryId와 name을 매핑하는 딕셔너리 생성
+    bread_category_to_name = {}
+    for bread in bakery_breads:
+        bread_category_to_name[bread['breadCategoryId']] = bread['name']
+
+    # filtered_result의 breads 키의 값들을 이름으로 변경
+    updated_filtered_result = []
+    for combination in filtered_result:
+        updated_combination = []
+        for package in combination:
+            if 'breads' in package:
+                named_breads = {}
+                for category_id, count in package['breads'].items():
+                    bread_name = bread_category_to_name[int(category_id)]
+                    named_breads[bread_name] = count
+                package['breads'] = named_breads
+            updated_combination.append(package)
+        updated_filtered_result.append(updated_combination)
+
     detected_breads = {}
     for bread in classified_breads:
         detected_breads.setdefault(class_names.index(bread)+1, classified_breads.get(bread))
 
-    return filtered_result, detected_breads
+    named_detected_breads = {}
+    for category_id, count in detected_breads.items():
+        bread_name = bread_category_to_name[int(category_id)]
+        named_detected_breads[bread_name] = count
+
+    return updated_filtered_result, named_detected_breads

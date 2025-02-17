@@ -25,13 +25,14 @@ public interface StockRepository extends JpaRepository<Stock, Long> {
 		@Param("endDate") LocalDate endDate
 	);
 
-	@Query("SELECT s.bread.name, SUM(s.quantity) " +
-		"FROM Stock s " +
+	@Query(value = "SELECT b.name, SUM(s.quantity) " +
+		"FROM stock s " +
+		"JOIN bread b ON s.bread_id = b.bread_id " +
 		"WHERE s.date BETWEEN :startAt AND :endAt " +
-		"AND s.bakery.bakeryId = :bakeryId " +
-		"GROUP BY s.bread.breadId " +
+		"AND s.bakery_id = :bakeryId " +
+		"GROUP BY b.bread_id " +
 		"ORDER BY SUM(s.quantity) DESC " +
-		"LIMIT 3")
+		"LIMIT 3", nativeQuery = true)
 	List<Object[]> findTop3BreadsByQuantityBetweenDates(
 		@Param("bakeryId") Long bakeryId,
 		@Param("startAt") LocalDate startAt,
