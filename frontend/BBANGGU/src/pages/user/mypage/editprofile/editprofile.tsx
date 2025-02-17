@@ -29,6 +29,7 @@ export function UserEditProfile() {
           currentPassword: "",
           newPassword: "",
         })
+        console.log("userData", userData)
       } catch (error) {
         console.error('사용자 정보 조회 중 오류 발생:', error)
       }

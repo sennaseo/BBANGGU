@@ -1,8 +1,8 @@
 import { HeartIcon as HeartOutline, StarIcon } from "@heroicons/react/24/outline"
 import { MapPinIcon, ChevronDownIcon, HeartIcon as HeartSolid } from "@heroicons/react/24/solid"
-import type { ExtendedBakeryType } from "../../../types/bakery"
+import type { BakeryType } from "../../../types/bakery"
 interface RecommendedStoresProps {
-  allbakery: ExtendedBakeryType[]
+  allbakery: BakeryType[]
   onToggleLike: (bakeryId: number) => void
   onStoreClick: (id: number) => void
 }
@@ -46,27 +46,25 @@ export default function RecommendedStores({ allbakery, onStoreClick, onToggleLik
                 </div>
                 <div className="flex gap-2">
                   <button
-                    className="w-8 h-8 flex items-center justify-center"
+                    className="w-8 h-8 flex items-center justify-center bg-[#F9F9F9] rounded-full hover:bg-[#E1E1E1]"
                     onClick={(e) => {
                       e.stopPropagation()
                       onToggleLike(store.bakeryId)
                     }}>
-
                     {store.is_liked ? (
                       <HeartSolid className="w-6 h-6 text-[#fc973b]" />
                     ) : (
                       <HeartOutline className="w-6 h-6 text-[#757575]" />
                     )}
-
                   </button>
                 </div>
               </div>
               <div>
                 <span className="text-[18px] font-bold text-[#333333]">
-                  {(store.package?.data[0]?.price || 0).toLocaleString()}원
+                  {(store.price || 0).toLocaleString()}원
                 </span>
                 <span className="text-[14px] text-[#D2D2D2] line-through ml-2">
-                  {((store.package?.data[0]?.price || 0)*2).toLocaleString()}원
+                  {((store.price || 0)*2).toLocaleString()}원
                 </span>
               </div>
             </div>

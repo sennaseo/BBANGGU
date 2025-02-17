@@ -67,11 +67,13 @@ export function ReservationList({ reservations = [], params }: ReservationListPr
   }
 
   const renderReservation = (reservation: ReservationType) => (
-    <div className="flex items-center bg-[#fc973b] rounded-xl justify-around shadow-md border-t border-dashed border-gray-200">
+    <button 
+      className="flex items-center bg-[#fc973b] rounded-xl justify-between shadow-md border-t border-dashed border-gray-200 pl-[20px] pr-[10px]"
+      onClick={() => navigate(`/user/${params.userId}/mypage/reservation/${reservation.reservationId}`)}
+    >
       <div 
         key={reservation.reservationId} 
         className="p-4 text-white"
-        onClick={() => navigate(`/user/mypage/reservations/${reservation.reservationId}`)}
       >
         <div className="flex justify-between items-center mb-1">
           <div className="flex items-center gap-[14px]">
@@ -88,7 +90,7 @@ export function ReservationList({ reservations = [], params }: ReservationListPr
         </div>
       </div>
       <ChevronRight className="w-5 h-5 text-white mx-2" />
-    </div>
+    </button>
   )
 
   const renderEmptyState = () => (
@@ -108,9 +110,9 @@ export function ReservationList({ reservations = [], params }: ReservationListPr
               new Date(a.reservedPickupTime).getTime() - new Date(b.reservedPickupTime).getTime()
             )[0]
           )}
-          {data.length > 1 && (
+          {data.length > 0 && (
             <button
-              onClick={() => navigate('/user/mypage/reservations')}
+              onClick={() => navigate(`/user/${params.userId}/mypage/reservations`)}
               className="w-full text-[#B4B4B4] font-regular text-sm bg-white rounded-xl shadow-md py-[8px] border-t border-dashed border-gray-200"
             >
               진행중인 주문 내역 보기

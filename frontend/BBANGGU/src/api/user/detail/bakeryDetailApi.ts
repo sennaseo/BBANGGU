@@ -11,7 +11,6 @@ export const bakeryDetailApi = {
           `${BASE_URL}/bakery/${bakeryId}`,
           { withCredentials: true}
         );
-        console.log(response.data.data)
         return response.data.data;
       } catch (error) {
         console.error('베이커리 상세 조회 실패:', error);

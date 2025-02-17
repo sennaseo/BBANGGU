@@ -3,10 +3,10 @@ import { HeartIcon as HeartSolid } from "@heroicons/react/24/solid"
 import { useRef } from "react"
 import DraggableScroller from "./DraggableScroller"
 import { useNavigate } from "react-router-dom"
-import type { ExtendedBakeryType } from "../../../types/bakery"
+import type { BakeryType } from "../../../types/bakery"
 
 interface BestPackagesProps {
-  favoritebakery: ExtendedBakeryType[]
+  favoritebakery: BakeryType[]
   onToggleLike: (bakeryId: number) => void
 }
 
@@ -53,7 +53,7 @@ export default function BestPackages({ favoritebakery, onToggleLike }: BestPacka
                   className="w-full h-full object-cover rounded-[12px]"
                 />
                 <button
-                  className="absolute right-2 bottom-2 p-1.5 rounded-full bg-white/80 backdrop-blur-sm hover:bg-white transition-colors"
+                  className="absolute right-2 bottom-2 p-1.5 rounded-full bg-[#F9F9F9] backdrop-blur-sm hover:bg-[#E1E1E1]"
                   onClick={(e) => {
                     e.stopPropagation();
                     onToggleLike(item.bakeryId);
@@ -66,7 +66,7 @@ export default function BestPackages({ favoritebakery, onToggleLike }: BestPacka
                   )}
                 </button>
               </div>
-              <h3 className="font-medium text-[16px] text-[#454545] font-semibold mb-1 line-clamp-1">{item.package.data[0].name}</h3>
+              <h3 className="font-medium text-[16px] text-[#454545] font-semibold mb-1 line-clamp-1">{item.name}</h3>
               <p className="text-[12px] text-[#B4B4B4] line-clamp-1">{item.name || "알 수 없음"}</p>
             </div>
           )
