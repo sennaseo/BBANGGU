@@ -1,7 +1,7 @@
 import { useState } from "react"
 import PaymentButton from "./common/PaymentButton"
 import { BakeryInfo } from '../../../store/slices/bakerySlice';
-import { ReservationApi } from '../../../api/user/reservation/ReservationApi';
+import { ReservationApi } from '../../../api/user/reservation/PaymentApi';
 
 interface ExtendedBakeryInfo extends BakeryInfo {
   package: {

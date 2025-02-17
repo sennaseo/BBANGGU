@@ -17,60 +17,62 @@ export const UserAddressApi = {
     try {
       const accessToken = localStorage.getItem('accessToken');
       console.log('===== 주소 업데이트 요청 시작 =====');
-      console.log('토큰:', accessToken?.substring(0, 10) + '...');  // 보안을 위해 일부만 출력
-      console.log('요청 URL:', `${BASE_URL}/user/update`);
-      console.log('요청 데이터:', addressData);
-      console.log('요청 헤더:', {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${accessToken?.substring(0, 10)}...`
-      });
-
+      
       if (!accessToken) {
         throw new Error('로그인이 필요합니다.');
       }
 
+      // FormData 구성
+      const formData = new FormData();
+      
+      // 주소 데이터를 문자열로 변환
+      const addressJson = {
+        addressRoad: addressData.addressRoad,
+        addressDetail: addressData.addressDetail
+      };
+
+      // Text 형식으로 추가
+      formData.append('user', new Blob([JSON.stringify(addressJson)], {
+        type: 'application/json'
+      }));
+
+      console.log('전송 데이터 확인:', {
+        formData_entries: Array.from(formData.entries()),
+        address_data: addressJson
+      });
+
       try {
         const response = await axios.patch<ApiResponse>(
           `${BASE_URL}/user/update`,
-          addressData,
+          formData,
           {
             headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${accessToken}`
+              'Authorization': `Bearer ${accessToken}`,
+              'Content-Type': 'multipart/form-data'
             }
           }
         );
 
-        console.log('===== 응답 정보 =====');
-        console.log('응답 상태:', response.status);
-        console.log('응답 헤더:', response.headers);
-        console.log('응답 데이터:', response.data);
-        
+        console.log('API 응답 성공:', response.data);
         return response.data;
+
       } catch (axiosError: any) {
-        console.log('===== axios 에러 정보 =====');
-        console.log('에러 응답:', axiosError.response);
-        console.log('에러 요청:', axiosError.request);
-        console.log('에러 설정:', axiosError.config);
+        console.error('API 요청 실패:', {
+          상태: axiosError.response?.status,
+          데이터: axiosError.response?.data,
+          전송된_데이터: Array.from(formData.entries()),
+          요청_헤더: axiosError.config?.headers
+        });
         throw axiosError;
       }
+
     } catch (error: any) {
-      console.log('===== 최종 에러 정보 =====');
-      if (error.response) {
-        const { status, data } = error.response;
-        console.log('에러 상태:', status);
-        console.log('에러 데이터:', data);
-        
-        if (status === 401) {
-          throw new Error(data.message || '로그인이 필요합니다.');
-        } else if (status === 400) {
-          throw new Error(data.message || '잘못된 요청입니다.');
-        } else if (status === 409) {
-          throw new Error(data.message);
-        }
-      }
-      console.log('기타 에러:', error);
-      throw new Error('주소 업데이트에 실패했습니다.');
+      console.error('최종 에러:', {
+        종류: error.constructor.name,
+        메시지: error.message,
+        응답: error.response?.data
+      });
+      throw new Error(error.response?.data?.message || '주소 업데이트에 실패했습니다.');
     }
   }
 };

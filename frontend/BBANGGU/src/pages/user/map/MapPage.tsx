@@ -10,6 +10,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '../../../store';
 import { fetchBakeryList, BakeryInfo } from '../../../store/slices/bakerySlice';
 import { setUserInfo } from '../../../store/slices/userSlice';
+import { getUserInfo } from '../../../api/common/info/UserInfo';
+import { loginSuccess } from '../../../store/slices/authSlice';
 
 interface PostcodeData {
   roadAddress: string;
@@ -77,6 +79,54 @@ export function MapPage() {
     }
   }, [userInfo]);
 
+  // 컴포넌트 마운트 시 인증 상태 복원
+  useEffect(() => {
+    const restoreAuthState = async () => {
+      const accessToken = localStorage.getItem('accessToken');
+      
+      console.log('인증 상태 복원 시작:', {
+        현재인증상태: isAuthenticated,
+        토큰존재여부: !!accessToken,
+        현재유저정보: userInfo
+      });
+      
+      if (accessToken) {
+        try {
+          console.log('토큰 존재, 사용자 정보 조회 시도');
+          const userResponse = await getUserInfo();
+          
+          // auth 슬라이스 업데이트
+          dispatch(loginSuccess({
+            data: {
+              access_token: accessToken,
+              refresh_token: accessToken,
+              user_type: 'USER'
+            }
+          }));
+          
+          // user 슬라이스 업데이트
+          dispatch(setUserInfo({
+            ...userResponse.data,
+            isAuthenticated: true
+          }));
+          
+          console.log('인증 상태 복원 완료:', {
+            사용자정보: userResponse.data,
+            새인증상태: true
+          });
+        } catch (error) {
+          console.error('인증 상태 복원 실패:', error);
+          localStorage.removeItem('accessToken');
+          window.location.href = '/login';
+        }
+      } else {
+        console.log('토큰 없음, 로그인 필요');
+      }
+    };
+
+    restoreAuthState();
+  }, []);  // 의존성 배열에서 isAuthenticated 제거
+
   // 검색어가 변경될 때마다 필터링
   useEffect(() => {
     if (!searchQuery.trim()) {
@@ -119,56 +169,51 @@ export function MapPage() {
 
   // 주소 등록 처리
   const handleAddressSubmit = async () => {
-    console.log('로그인 상태 체크:', {
-      isAuthenticated,
-      userInfo,
-      accessToken: localStorage.getItem('accessToken')
-    });
-
-    if (!isAuthenticated || !localStorage.getItem('accessToken')) {
-      // 로그인 페이지로 리다이렉트
-      window.location.href = '/login';
-      return;
-    }
-
-    if (!address || !addressDetail) {
-      setError('주소를 모두 입력해주세요.');
-      return;
-    }
-
-    setIsLoading(true);
-    setError(null);
-
     try {
-      const response = await UserAddressApi.updateAddress({
+      if (!address || !addressDetail) {
+        setError('주소를 모두 입력해주세요.');
+        return;
+      }
+
+      setIsLoading(true);
+      setError(null);
+
+      console.log('주소 업데이트 시도:', {
+        도로명주소: address,
+        상세주소: addressDetail
+      });
+
+      const updateResponse = await UserAddressApi.updateAddress({
         addressRoad: address,
         addressDetail: addressDetail
       });
-      
-      console.log('주소 업데이트 성공:', response);
-      
-      // 사용자 정보 업데이트
-      if (userInfo) {
-        dispatch(setUserInfo({
-          ...userInfo,
-          addressRoad: address,
-          addressDetail: addressDetail
-        }));
+
+      // 주소 업데이트 성공 시
+      if (updateResponse.message.includes('성공')) {
+        // 사용자 정보 업데이트
+        if (userInfo) {
+          dispatch(setUserInfo({
+            ...userInfo,
+            addressRoad: address,
+            addressDetail: addressDetail
+          }));
+        }
+
+        setUserAddress(address);
+        setIsAddressModalOpen(false);
+
+        // 가게 목록 다시 불러오기
+        dispatch(fetchBakeryList());
       }
 
-      // 주소 업데이트 후 가게 목록 다시 불러오기
-      console.log('가게 목록 새로고침 시작');
-      await dispatch(fetchBakeryList()).unwrap();
-      console.log('가게 목록 새로고침 완료');
-
-      setIsAddressModalOpen(false);
-    } catch (err: any) {
-      console.error('주소 업데이트 실패:', err);
-      if (err.message.includes('로그인이 필요합니다')) {
-        window.location.href = '/login';
-      } else {
-        setError(err.message);
-      }
+    } catch (error: any) {
+      console.error('주소 업데이트 오류 상세:', {
+        에러메시지: error.message,
+        에러응답: error.response?.data,
+        에러상태: error.response?.status,
+        전체에러객체: error
+      });
+      setError(error.message || '주소 업데이트에 실패했습니다.');
     } finally {
       setIsLoading(false);
     }
@@ -302,4 +347,5 @@ export function MapPage() {
     </div>
   )
 }
+
 
