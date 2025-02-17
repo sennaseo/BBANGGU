@@ -137,6 +137,9 @@ public class ReviewService {
 			(4 * bakery.getRating4Cnt()) +
 			(5 * bakery.getRating5Cnt());
 
+		if (totalReviews == 0) {
+			return 0;
+		}
 		return (double) totalRatingSum / totalReviews;
 	}
 
