@@ -44,18 +44,6 @@ interface BreadDeleteResponse {
   data: null;
 }
 
-interface ApiError extends Error {
-  response?: {
-    status: number;
-    data: {
-      message?: string;
-    };
-    config?: {
-      headers: Record<string, string>;
-    };
-  };
-}
-
 export const registerBread = async (
   breadData: BreadRegisterRequest,
   breadImage?: File
