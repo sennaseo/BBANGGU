@@ -24,6 +24,8 @@ export const login = async (loginData: LoginRequest, dispatch: Dispatch): Promis
       }
     );
 
+    console.log(response.data.data);
+
     // // 쿠키에서 토큰 가져오기
     // const getCookie = (name: string): string | null => {
     //   const matches = document.cookie.match(new RegExp(

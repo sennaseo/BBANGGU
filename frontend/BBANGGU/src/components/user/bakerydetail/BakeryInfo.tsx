@@ -11,14 +11,15 @@ interface BakeryInfoProps {
 }
 
 export default function BakeryInfo({ bakery, onFavoriteUpdate }: BakeryInfoProps) {
+  const imgBaseUrl = import.meta.env.VITE_IMAGE_BASE_URL;
   return (
     <div className="py-4">
       <div className="flex items-center justify-between">
         <div className="flex gap-[20px] items-start">
           <img
-            src={bakery.bakeryImageUrl || "/placeholder.svg"}
+            src={bakery.bakeryImageUrl ? `${imgBaseUrl}${bakery.bakeryImageUrl}` : `${imgBaseUrl}/uploads/bakery19.jpeg`}
             alt={`${bakery.name} logo`}
-            className="h-[82px] w-[82px] rounded-lg object-cover"
+            className="h-[82px] w-[82px] rounded-lg object-cover rounded-xl"
           />
           <div>
             <h1 className="text-[20px] font-bold">{bakery.name}</h1>
