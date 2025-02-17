@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import Header from '../../../components/owner/header/Header';
 import ProgressBar from './components/Progress.Bar';
 import { PACKAGE_STEPS, TOTAL_PACKAGE_STEPS } from './constants/PakageSteps';
@@ -9,58 +9,46 @@ import wonIcon from '../../../assets/images/bakery/won_icon.png';
 import robotIcon from '../../../assets/images/bakery/robot.svg';
 import breadBagIcon from '../../../assets/images/bakery/bread_pakage.svg';
 
+interface PackageDetail {
+  id: number;
+  price: number;
+  count: number;
+  packages: {
+    id: number;
+    contents: string;
+  }[];
+}
+
 const PackageRegister: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const packageData = location.state?.packageSuggestions;
   const [selectedPackage, setSelectedPackage] = useState<number | null>(null);
   const [packageCount, setPackageCount] = useState<number>(0);
+  const [packageDetails, setPackageDetails] = useState<PackageDetail[]>([]);
 
-  const packageDetails = [
-    {
-      id: 1,
-      price: 6000,
-      count: 1,
-      packages: [
-        {
-          id: 1,
-          contents: '크로아상 x 1, 우유식빵 x 1, 크림단팥빵 x 2'
-        }
-      ]
-    },
-    {
-      id: 2,
-      price: 3000,
-      count: 2,
-      packages: [
-        {
-          id: 1,
-          contents: '소금빵 x 1, 커피번 x 1, 크림단팥빵 x 2'
-        },
-        {
-          id: 2,
-          contents: '크로아상 x 2, 우유식빵 x 1, 소금빵 x 1'
-        }
-      ]
-    },
-    {
-      id: 3,
-      price: 2000,
-      count: 3,
-      packages: [
-        {
-          id: 1,
-          contents: '크로아상 x 2, 소금빵 x 1, 크림단팥빵 x 1'
-        },
-        {
-          id: 2,
-          contents: '우유식빵 x 2, 커피번 x 1, 소금빵 x 1'
-        },
-        {
-          id: 3,
-          contents: '크림단팥빵 x 2, 크로아상 x 1, 커피번 x 1'
-        }
-      ]
+  useEffect(() => {
+    if (!packageData) {
+      // 데이터 없이 직접 접근한 경우 이전 페이지로
+      navigate(-1);
+      return;
     }
-  ];
+
+    // 받은 데이터로 패키지 상세 정보 설정
+    const suggestions = packageData.map((pkg: any, index: number) => ({
+      id: index + 1,
+      price: pkg[0].total_price,  // 첫 번째 조합의 가격 사용
+      count: pkg.length,  // 조합 개수
+      packages: pkg.map((combination: any, pkgIndex: number) => ({
+        id: pkgIndex + 1,
+        contents: combination.breads.map((bread: any) => 
+          `${bread.name} x ${bread.quantity}`
+        ).join(', ')
+      }))
+    }));
+
+    setPackageDetails(suggestions);
+  }, [packageData, navigate]);
 
   const handlePackageSelect = (id: number) => {
     // 이미 선택된 패키지를 다시 클릭하면 선택 해제
@@ -106,21 +94,48 @@ const PackageRegister: React.FC = () => {
     return totalPrice.toLocaleString();
   };
 
-  // 증가 버튼 조건 수정
+  // 감소 버튼 disabled 조건을 위한 함수 추가
+  const isDecreaseDisabled = () => {
+    if (!selectedPackage) return true;
+    return packageCount <= 1;  // 1보다 작아지지 않도록
+  };
+
+  // 총 빵 개수와 총 금액 계산
+  const calculateTotalStats = () => {
+    if (!packageData) return { totalCount: 0, totalPrice: 0 };
+
+    // 첫 번째 조합의 모든 빵을 합산 (모든 조합은 동일한 빵을 사용)
+    const firstCombination = packageData[0]?.[0];
+    if (!firstCombination) return { totalCount: 0, totalPrice: 0 };
+
+    const totalCount = firstCombination.breads.reduce((sum: number, bread: { quantity: number }) => 
+      sum + bread.quantity, 0
+    );
+
+    // 모든 조합의 total_price 중 가장 큰 값 사용
+    const totalPrice = Math.max(
+      ...packageData.map((combinations: { total_price: number }[]) => 
+        combinations[0]?.total_price || 0
+      )
+    );
+
+    return { totalCount, totalPrice };
+  };
+
+  const { totalCount, totalPrice } = calculateTotalStats();
+
+  // 최대 가능한 빵꾸러미 개수 계산
+  const maxPackageCount = totalCount;  // 총 빵 개수를 최대값으로 설정
+
+  // 기존의 isIncreaseDisabled 함수 제거하고 새로운 함수로 통합
   const isIncreaseDisabled = () => {
     if (!selectedPackage) return true;
-    if (packageCount >= 10) return true;
+    if (packageCount >= maxPackageCount) return true;  // 최대 개수 제한
     
     const selectedPkg = packageDetails[selectedPackage - 1];
     const totalPrice = selectedPkg.price * selectedPkg.count;
     const nextCount = packageCount + 1;
     return !Number.isInteger(totalPrice / nextCount);
-  };
-
-  // 감소 버튼 disabled 조건을 위한 함수 추가
-  const isDecreaseDisabled = () => {
-    if (!selectedPackage) return true;
-    return packageCount <= 1;  // 1보다 작아지지 않도록
   };
 
   return (
@@ -163,7 +178,7 @@ const PackageRegister: React.FC = () => {
                 <img src={breadIcon} alt="bread" className="w-6 h-6" />
                 <span className="text-[14px] text-gray-600">총 빵 개수</span>
               </div>
-              <span className="text-[24px] font-medium">8</span>
+              <span className="text-[24px] font-medium">{totalCount}</span>
             </div>
 
             {/* 중앙 구분선 */}
@@ -175,7 +190,7 @@ const PackageRegister: React.FC = () => {
                 <img src={wonIcon} alt="won" className="w-6 h-6" />
                 <span className="text-[14px] text-gray-600">총 금액</span>
               </div>
-              <span className="text-[24px] font-medium">32,000원</span>
+              <span className="text-[24px] font-medium">{totalPrice.toLocaleString()}원</span>
             </div>
           </div>
         </div>
@@ -253,12 +268,18 @@ const PackageRegister: React.FC = () => {
 
         <div className="flex-1">
           <div className="bg-white rounded-[8px] shadow-[0_-2px_4px_-1px_rgba(0,0,0,0.06),0_4px_6px_-1px_rgba(0,0,0,0.1)] p-6 mb-8">
-            <p className="text-center text-[16px] font-medium mb-8">
-              50%의 가격으로 빵꾸러미를 만들어보세요!<br/>
-              <span className="text-[14px] text-gray-500">
+            <div className="text-center mb-6">
+              <p className="text-[16px] font-medium mb-2">
+                50%의 가격으로 빵꾸러미를 만들어보세요!
+              </p>
+              <p className="text-[14px] text-gray-500 mb-4">
                 원하는 개수와 구성으로 자유롭게 준비하실 수 있어요
-              </span>
-            </p>
+              </p>
+              <div className="bg-[#FFF5EC] rounded-lg p-3 text-[14px] text-[#FC973B]">
+                <span className="font-medium">💡 Tip.</span> AI 추천 개수가 적절하지 않나요?<br/>
+                최대 {maxPackageCount}개까지 원하시는 만큼 조절해보세요!
+              </div>
+            </div>
             
             {/* 빵꾸러미 개수 */}
             <div className="flex justify-between items-center mb-4">
@@ -292,21 +313,17 @@ const PackageRegister: React.FC = () => {
               </div>
             </div>
 
-            {/* 구분선 */}
-            <div className="h-[1px] bg-[#E5E5E5] my-4" />
-
-            {/* 가격 */}
-            <div className="flex justify-between items-center mb-4">
-              <span className="text-[16px] text-[#242424]">가격</span>
-              <span className="text-[16px] text-[#242424]">
-                각 {calculatePrice()}원
-              </span>
-            </div>
-
-            {/* 총계 */}
-            <div className="flex justify-between items-center">
-              <span className="text-[16px] text-[#242424]">총계</span>
-              <span className="text-[18px] font-bold text-[#242424]">{calculateTotalPrice()}원</span>
+            {/* 가격 정보 표시 */}
+            <div className="space-y-4">
+              <div className="flex justify-between items-center">
+                <span className="text-[16px] text-[#242424]">개당 가격</span>
+                <span className="text-[16px] text-[#242424]">{calculatePrice()}원</span>
+              </div>
+              <div className="h-[1px] bg-[#E5E5E5]" />
+              <div className="flex justify-between items-center">
+                <span className="text-[16px] text-[#242424]">총계</span>
+                <span className="text-[18px] font-bold text-[#242424]">{calculateTotalPrice()}원</span>
+              </div>
             </div>
           </div>
         </div>

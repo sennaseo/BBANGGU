@@ -2,4 +2,19 @@
 @tailwind components;
 @tailwind utilities;
 
+@keyframes highlight {
+  0% {
+    transform: translateX(-100%);
+    background-color: #FFF5EC;
+  }
+  50% {
+    transform: translateX(0);
+    background-color: #FFF5EC;
+  }
+  100% {
+    transform: translateX(0);
+    background-color: white;
+  }
+}
+
 
