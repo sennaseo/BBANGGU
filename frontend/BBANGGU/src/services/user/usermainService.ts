@@ -1,14 +1,13 @@
 import { mainApi } from '../../api/user/main/mainApi';
-import type { BakeryType, BakerySearchItem, PackageResponse, ExtendedBakeryType } from '../../types/bakery';
-import { getAverageRating } from '../user/review/reviewService';
+import type { BakeryType, BakerySearchItem } from '../../types/bakery';
 // 모듈-레벨 캐시: 페이지 이동 시 재요청 방지
-let cachedData: { allbakery: ExtendedBakeryType[] } | null = null;
+let cachedData: { allbakery: BakeryType[] } | null = null;
 
 /**
  * UserMain 페이지의 데이터를 가져오는 함수.
  * 이미 데이터를 불러온 적이 있으면 캐시된 데이터를 반환합니다.
  */
-export async function getUserMainData(): Promise<{ allbakery: ExtendedBakeryType[] }> {
+export async function getUserMainData(): Promise<{ allbakery: BakeryType[] }> {
   if (cachedData) {
     return cachedData;
   }
@@ -25,23 +24,15 @@ export async function getBestFavoriteStoresData(): Promise<{ favoritebakery: Bak
   return await fetchBestFavoriteStores();
 }
 
-export async function fetchAllBakeriesData(): Promise<{ allbakery: ExtendedBakeryType[] }> {
+export async function fetchAllBakeriesData(): Promise<{ allbakery: BakeryType[] }> {
   try {
     // 전체 베이커리 데이터 가져오기
     const response = await mainApi.getAllBakeries();
     const stores: BakeryType[] = response.data;
     // 각 베이커리별 패키지 데이터를 포함하여 ExtendedBakeryType 배열로 변환합니다.
-    const allbakery: ExtendedBakeryType[] = await Promise.all(
-      stores.map(async (store: BakeryType): Promise<ExtendedBakeryType> => {
-        let packages: PackageResponse;
-        try {
-          const packageResponse = await mainApi.getPackagesByBakeryId(store.bakeryId);
-          packages = { data: packageResponse };
-        } catch {
-          packages = { data: [] };
-        }
-        const averageRating = await getAverageRating(store.bakeryId);
-        return { ...store, package: packages, review: [], averageRating: averageRating };
+    const allbakery: BakeryType[] = await Promise.all(
+      stores.map(async (store: BakeryType): Promise<BakeryType> => {
+        return store;
       })
     );
     return { allbakery };
@@ -51,22 +42,14 @@ export async function fetchAllBakeriesData(): Promise<{ allbakery: ExtendedBaker
   }
 } 
 
-export async function fetchBestFavoriteStores(): Promise<{ favoritebakery: ExtendedBakeryType[] }> {
+export async function fetchBestFavoriteStores(): Promise<{ favoritebakery: BakeryType[] }> {
   try {
     const response = await mainApi.getFavoriteBest();
     const stores: BakeryType[] = response.data;
 
-    const favoritebakery: ExtendedBakeryType[] = await Promise.all(
-      stores.map(async (store: BakeryType): Promise<ExtendedBakeryType> => {
-        let packages: PackageResponse;
-        try {
-          const packageResponse = await mainApi.getPackagesByBakeryId(store.bakeryId);
-          packages = { data: packageResponse };
-        } catch {
-          packages = { data: [] };
-        }
-        const averageRating = await getAverageRating(store.bakeryId);
-        return { ...store, package: packages, review: [], averageRating: averageRating };
+    const favoritebakery: BakeryType[] = await Promise.all(
+      stores.map(async (store: BakeryType): Promise<BakeryType> => {
+        return store;
       })
     );
     return { favoritebakery };
