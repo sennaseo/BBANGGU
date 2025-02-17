@@ -24,13 +24,13 @@ export const login = async (loginData: LoginRequest, dispatch: Dispatch): Promis
       }
     );
 
-    // 쿠키에서 토큰 가져오기
-    const getCookie = (name: string): string | null => {
-      const matches = document.cookie.match(new RegExp(
-        `(?:^|; )${name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1')}=([^;]*)`
-      ));
-      return matches ? decodeURIComponent(matches[1]) : null;
-    };
+    // // 쿠키에서 토큰 가져오기
+    // const getCookie = (name: string): string | null => {
+    //   const matches = document.cookie.match(new RegExp(
+    //     `(?:^|; )${name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1')}=([^;]*)`
+    //   ));
+    //   return matches ? decodeURIComponent(matches[1]) : null;
+    // };
 
     // const accessToken = getCookie('accessToken');
     const accessToken = response.data.data.access_token;
