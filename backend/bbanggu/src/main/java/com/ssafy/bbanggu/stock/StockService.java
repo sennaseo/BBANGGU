@@ -26,8 +26,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @Transactional
 public class StockService {
+
 	private final StockRepository stockRepository;
-	private final BreadService breadService;
 
 	public void insertStock(StockDTO stockDto) {
 		stockRepository.save(DtoToEntity(stockDto));
