@@ -5,7 +5,7 @@ import { RootState } from '../../../store';
 import { getUserInfo } from '../../../api/user/user';
 import { setUserInfo, clearUserInfo } from '../../../store/slices/userSlice';
 import { logout } from '../../../store/slices/authSlice';
-import { setLoading } from '../../../store/slices/packageSlice';
+import { setLoading, setItems } from '../../../store/slices/packageSlice';
 import { SubmitButton } from '../../../common/form/SubmitButton';
 import cameraExample from '@/assets/images/bakery/camera_ex.png';
 import ProgressBar from './components/Progress.Bar';
@@ -77,27 +77,49 @@ const PackageGuide: React.FC = () => {
         formData.append('images', compressedFile);
         formData.append('bakeryId', bakeryId.toString());
 
-        // 인증 토큰과 함께 요청
+        // 요청 데이터 확인
+        console.log('Request Data:', {
+          url: '/ai/detect',
+          bakeryId,
+          fileInfo: {
+            name: compressedFile.name,
+            type: compressedFile.type,
+            size: compressedFile.size
+          },
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': 'multipart/form-data'
+          }
+        });
+
         const response = await axios.post(
-          'https://i12d102.p.ssafy.io/ai/detectcrop',
+          '/ai/detect',
           formData,
           {
             headers: {
               'Content-Type': 'multipart/form-data',
-              'Authorization': `Bearer ${accessToken}` // 인증 토큰 추가
-            },
-            withCredentials: false // withCredentials를 false로 변경
+              'Authorization': `Bearer ${accessToken}`
+            }
           }
         );
 
-        // 응답 구조에 맞게 데이터 처리
-        const result = response.data;
-        if (Array.isArray(result) && result.length >= 2) {
-          navigate('/owner/package/preview', { 
-            state: { analyzedItems: result } 
-          });
+        // 응답 데이터 확인
+        console.log('Response Data:', response.data);
+
+        const analyzedItems = response.data;
+        if (Array.isArray(analyzedItems) && analyzedItems.length > 0) {
+          // 분석된 빵 목록을 상태로 저장하고 다음 페이지로 이동
+          dispatch(setItems(analyzedItems.map(item => ({
+            name: item.name,
+            count: item.count,
+            price: item.price,
+            breadId: item.breadId,
+            status: 'confirmed' as const
+          }))));
+
+          navigate('/owner/package/preview');
         } else {
-          throw new Error('Invalid response format');
+          throw new Error('빵을 인식하지 못했습니다.');
         }
 
       } catch (error) {
