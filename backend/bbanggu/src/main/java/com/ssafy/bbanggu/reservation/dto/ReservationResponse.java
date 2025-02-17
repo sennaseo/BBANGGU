@@ -8,5 +8,6 @@ public record ReservationResponse(
 	String bakeryName,
 	LocalDateTime createdAt,
 	LocalDateTime pickupAt,
-	String status
+	String status,
+	String reviewStatus
 ){}

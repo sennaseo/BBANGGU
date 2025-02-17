@@ -109,16 +109,20 @@ public class StockController {
 
 	// TOP3 재고 조회
 	@GetMapping("/bakery/{bakeryId}/top3/{period}")
-	public ResponseEntity<?> getTop3Stock(@PathVariable long bakeryId, @PathVariable String period) {
+	public ResponseEntity<ApiResponse> getTop3Stock(@PathVariable long bakeryId, @PathVariable String period) {
 		try {
 			List<Object[]> stockList = stockService.getTop3StockByPeriod(bakeryId, period);
+			if (stockList.isEmpty()) {
+				return ResponseEntity.ok().body(new ApiResponse("재고 데이터 없음", stockList));
+			}
+
 			int total = stockService.countTotalStock(bakeryId, period);
 			Map<String, Object> result = new HashMap<>();
 			result.put("top3", stockList);
 			result.put("total", total);
 			return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse("재고 조회 성공", result));
 		} catch (Exception e) {
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("재고 조회 실패");
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiResponse("재고 조회 실패", null));
 		}
 	}
 

@@ -4,7 +4,7 @@ import lombok.Builder;
 
 public record SavingDto(
 	int savedMoney,
-	int reducedCo2e
+	double reducedCo2e
 ) {
 	@Builder
 	public SavingDto {

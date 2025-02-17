@@ -87,41 +87,4 @@ public class InMemoryStoreService {
 		rateLimitStore.put(email, expirationTime);
 		logger.info("Rate limit set for email: {}", email);
 	}
-
-//	/**
-//	 * 요청 제한 확인
-//	 * @param email 사용자 이메일
-//	 */
-//	public boolean isRateLimited(String email) {
-//		Long expirationTime = rateLimitStore.get(email);
-//		if (expirationTime == null || System.currentTimeMillis() > expirationTime) {
-//			rateLimitStore.remove(email);
-//			return false;
-//		}
-//		return true;
-//	}
-
-	// public boolean verifyAuthCode(String email, String authCode) {
-	// 	Pair<String, Long> codeData = authCodeStore.get(email);
-	//
-	// 	if (codeData == null) {
-	// 		logger.warn("Auth code not found for email: {}", email);
-	// 		return false; // 🔹 코드가 아예 없으면 바로 false 반환
-	// 	}
-	//
-	// 	// 🔥 먼저 입력된 코드가 맞는지 체크!
-	// 	if (!codeData.getLeft().equals(authCode)) {
-	// 		logger.warn("Invalid auth code for email: {}", email);
-	// 		return false; // 🔹 틀린 코드일 경우 false 반환
-	// 	}
-	//
-	// 	// ✅ 코드가 맞다면, 만료 여부를 확인
-	// 	if (System.currentTimeMillis() > codeData.getRight()) {
-	// 		authCodeStore.remove(email); // 🔥 만료된 코드 삭제
-	// 		logger.warn("Auth code expired for email: {}", email);
-	// 		throw new CodeExpiredException("Authentication code has expired.");
-	// 	}
-	//
-	// 	return true; // ✅ 인증 성공
-	// }
 }

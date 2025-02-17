@@ -12,7 +12,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.ssafy.bbanggu.auth.security.CustomUserDetails;
 import com.ssafy.bbanggu.common.exception.CustomException;
@@ -39,9 +41,10 @@ public class ReviewController {
 	@PostMapping
 	public ResponseEntity<ApiResponse> createReview(
 		@AuthenticationPrincipal CustomUserDetails userDetails,
-		@RequestBody @Valid ReviewDto review
+		@Valid @RequestPart(name = "review", required = false) ReviewDto review,
+		@RequestPart(name = "reviewImage", required = false) MultipartFile reviewImage
 	){
-		ReviewDto createdReview = reviewService.createReview(userDetails.getUserId(), review);
+		ReviewDto createdReview = reviewService.createReview(userDetails.getUserId(), review, reviewImage);
 		return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse("리뷰 등록이 성공적으로 완료되었습니다.", createdReview));
 	}
 
@@ -57,6 +60,7 @@ public class ReviewController {
 		return ResponseEntity.ok().body(new ApiResponse("리뷰 삭제가 성공적으로 완료되었습니다.", null));
 	}
 
+
 	/**
 	 * 사용자 별 리뷰 조회 api
 	 */
@@ -65,11 +69,7 @@ public class ReviewController {
 		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@PathVariable Long user_id
 	){
-		if (!userDetails.getUserId().equals(user_id)) {
-			throw new CustomException(ErrorCode.ONLY_VIEW_OWN_REVIEW);
-		}
-
-		List<ReviewResponseDto> reviews = reviewService.getUserReviews(userDetails.getUserId());
+		List<ReviewResponseDto> reviews = reviewService.getUserReviews(userDetails, user_id);
 		return ResponseEntity.ok().body(new ApiResponse("사용자가 작성한 리뷰를 모두 조회하였습니다.", reviews));
 	}
 

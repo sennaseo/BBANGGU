@@ -1,4 +1,5 @@
 # pip install python-multipart
+# pip install ultralytics
 import os
 import uuid
 from collections import defaultdict
@@ -8,8 +9,23 @@ import httpx
 from fastapi import FastAPI, UploadFile, File, Form
 
 from ai import yolo, efficientnet, pacakge_maker
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
+
+origins = [
+    "http://your-frontend-url.com",  # 프론트엔드 URL
+    "http://localhost:3000",  # 로컬 개발 환경
+    "*",  # 모든 도메인 허용 (개발 단계에서만 권장)
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],  # 모든 HTTP 메서드 허용
+    allow_headers=["*"],  # 모든 HTTP 헤더 허용
+)
 
 
 @app.post("/detect")
@@ -50,7 +66,7 @@ async def detect_breads(images: List[UploadFile] = File(...), bakeryId: int = Fo
         print(bakery_breads)
         for bread in bakery_breads:
             category_id = bread['breadCategoryId']
-            category_name = class_names[int(category_id) - 1] # id가 1부터 시작해서 1 뺌
+            category_name = class_names[int(category_id) - 1]  # id가 1부터 시작해서 1 뺌
             class_filter.append(category_name)
             category_infos[category_name] = bread['price']
 
@@ -62,8 +78,38 @@ async def detect_breads(images: List[UploadFile] = File(...), bakeryId: int = Fo
     result = pacakge_maker.distribute_breads(classified_breads, category_infos, class_names)
     filtered_result = pacakge_maker.select_best_combinations(result)
 
+    # breadCategoryId와 name을 매핑하는 딕셔너리 생성
+    bread_info = {}
+    for bread in bakery_breads:
+        bread_info[bread['breadCategoryId']] = {
+            'name': bread['name'],
+            'price': bread['price']
+        }
+
+    # filtered_result의 breads 키의 값들을 이름으로 변경
+    updated_filtered_result = []
+    for combination in filtered_result:
+        updated_combination = []
+        for package in combination:
+            if 'breads' in package:
+                named_breads = {}
+                for category_id, count in package['breads'].items():
+                    bread_name = bread_info[int(category_id)]['name']
+                    named_breads[bread_name] = count
+                package['breads'] = named_breads
+            updated_combination.append(package)
+        updated_filtered_result.append(updated_combination)
+
     detected_breads = {}
     for bread in classified_breads:
-        detected_breads.setdefault(class_names.index(bread)+1, classified_breads.get(bread))
+        detected_breads.setdefault(class_names.index(bread) + 1, classified_breads.get(bread))
 
-    return filtered_result, detected_breads
+    named_detected_breads = []
+    for category_id, count in detected_breads.items():
+        named_detected_breads.append({
+            'name': bread_info[int(category_id)]['name'],
+            'price': bread_info[int(category_id)]['price'],
+            'count': count
+        })
+
+    return updated_filtered_result, named_detected_breads

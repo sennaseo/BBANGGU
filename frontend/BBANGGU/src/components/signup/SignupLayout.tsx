@@ -1,5 +1,4 @@
 import { ArrowLeft } from "lucide-react"
-import { useNavigate } from "react-router-dom"
 import type React from "react"
 
 interface SignupLayoutProps {
@@ -7,16 +6,16 @@ interface SignupLayoutProps {
   title: string
   description: string
   bottomButton: React.ReactNode
+  onBack: () => void
 }
 
-export function SignupLayout({ children, bottomButton }: SignupLayoutProps) {
-  const navigate = useNavigate()
+export function SignupLayout({ children, bottomButton, onBack }: SignupLayoutProps) {
 
   return (
     <div className="w-full max-w-[430px] mx-auto min-h-screen bg-white flex flex-col">
       {/* Header */}
       <header className="relative h-[52px] flex items-center border-b border-gray-100">
-        <button onClick={() => navigate(-1)} className="p-3 text-gray-800">
+        <button onClick={onBack} className="p-3 text-gray-800">
           <ArrowLeft className="w-6 h-6" />
         </button>
       </header>

@@ -4,7 +4,7 @@ import type { UserType } from "../../../types/bakery"
 // import { useNavigate } from "react-router-dom" 
 
 interface ProfileSectionProps {
-  user: UserType | null
+  user?: UserType | null;  // user를 선택적 prop으로 변경
 }
 
 export function ProfileSection({ user }: ProfileSectionProps) {

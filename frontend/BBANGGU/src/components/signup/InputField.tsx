@@ -11,7 +11,7 @@ export function InputField({ label, actionButton, className = "", ...props }: In
       <label className="block text-[15px] font-medium">{label}</label>
       <div className="relative">
         <input
-          className={`w-full h-[52px] px-4 rounded-xl border border-[#FF9F43] outline-none text-[15px] placeholder:text-gray-400 ${
+          className={`w-full h-[52px] px-4 rounded-xl border border-gray-200 focus:border-[#FF9F43] outline-none text-[15px] placeholder:text-gray-400 ${
             actionButton ? "pr-[100px]" : ""
           } ${className}`}
           {...props}
@@ -21,4 +21,3 @@ export function InputField({ label, actionButton, className = "", ...props }: In
     </div>
   )
 }
-

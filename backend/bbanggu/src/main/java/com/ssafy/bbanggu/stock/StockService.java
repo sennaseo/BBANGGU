@@ -3,11 +3,13 @@ package com.ssafy.bbanggu.stock;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
@@ -24,8 +26,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @Transactional
 public class StockService {
+
 	private final StockRepository stockRepository;
-	private final BreadService breadService;
 
 	public void insertStock(StockDTO stockDto) {
 		stockRepository.save(DtoToEntity(stockDto));
@@ -114,10 +116,8 @@ public class StockService {
 				}
 				result.put(current.getMonthValue(), monthData);
 			}
-
 			current = current.plusMonths(1);
 		}
-
 		return result;
 	}
 
@@ -136,7 +136,7 @@ public class StockService {
 				LocalDate.now());
 		}
 
-		return result;
+		return Optional.ofNullable(result).orElse(Collections.emptyList());
 	}
 
 	private Stock DtoToEntity(StockDTO stockDto) {

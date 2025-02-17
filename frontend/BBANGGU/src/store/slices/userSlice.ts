@@ -10,8 +10,8 @@ interface UserState {
 // localStorage에서 초기 상태 가져오기
 const initialState: UserState = {
   userInfo: JSON.parse(localStorage.getItem('userInfo') || 'null'),
-  token: localStorage.getItem('token'),
-  isAuthenticated: !!localStorage.getItem('token')
+  token: localStorage.getItem('accessToken'),
+  isAuthenticated: !!localStorage.getItem('accessToken') // accessToken을 기준으로 변경
 };
 
 const userSlice = createSlice({
@@ -31,7 +31,6 @@ const userSlice = createSlice({
     }
   }
 });
-
 
 export const { setUserInfo, clearUserInfo } = userSlice.actions;
 export default userSlice.reducer;

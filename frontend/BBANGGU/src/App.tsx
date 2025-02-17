@@ -1,6 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import OnboardingPage from "./pages/onboarding";
-import LoginPage from "./pages/login";
 import SignupPage from "./pages/signup";
 import CustomerSignupPage from "./pages/signup/customer";
 import OwnerSignupPage from "./pages/signup/owner";
@@ -13,7 +12,7 @@ import EditStore from "./pages/owner/store/EditStore";
 import PickupTime from "./pages/owner/pickup/PickupTime";
 import CustomerSupport from "./pages/owner/support/CustomerSupport";
 import MobileLayout from "./layouts/MobileLayout";
-import ReportPage from "./pages/owner/report"
+import ReportPage from "./pages/owner/report/ReportPage"
 import UserReview from "./pages/user/review/UserReview";
 import "./styles/fonts.css";
 import { ProfileProvider } from "./common/context/ProfileContext";
@@ -43,6 +42,7 @@ import { ReviewDetail } from "./pages/user/review/ReviewDetail";
 import { PaymentSuccess } from "./pages/user/payment/PaymentSuccess";
 import { PaymentFail } from "./pages/user/payment/PaymentFail";
 import KakaoCallback from './pages/oauth/KakaoCallback';
+import LoginPage from "./pages/login";
 
 export default function App() {
   return (

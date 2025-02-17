@@ -19,4 +19,5 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
 	@Query("SELECT r FROM Review r WHERE r.bakery = :bakery AND r.deletedAt IS NULL AND r.reviewImageUrl IS NOT NULL ORDER BY r.createdAt DESC")
 	List<Review> findPhotoReviewsByBakery(@Param("bakery") Bakery bakery);
 
+	Review findByReservation_ReservationId(Long reservationId);
 }

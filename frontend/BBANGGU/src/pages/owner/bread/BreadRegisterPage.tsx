@@ -286,30 +286,28 @@ export default function BreadRegisterPage() {
     setIsLoading(true);
     try {
       for (const bread of breadList) {
-        const breadData = {
-          bakeryId: userInfo.bakeryId,
-          breadCategoryId: bread.categoryId,
-          name: bread.name,
-          price: bread.price
-        };
-
         let imageFile: File | undefined;
         if (bread.image && bread.image.startsWith('blob:')) {
           const response = await fetch(bread.image);
           const blob = await response.blob();
-          imageFile = new File([blob], `bread-${bread.id}.jpg`, { type: 'image/jpeg' });
+          imageFile = new File([blob], `bread-${Date.now()}.${blob.type.split('/')[1]}`, { type: blob.type });
         }
 
-        const result = await registerBread(breadData, imageFile);
-        console.log('빵 등록 성공:', result);
+        const breadData = {
+          bakeryId: userInfo.bakeryId,
+          breadCategoryId: bread.categoryId,
+          name: bread.name,
+          price: Number(bread.price)
+        };
+
+        await registerBread(breadData, imageFile);
       }
 
       alert('빵 등록이 완료되었습니다.');
       navigate(-1);
-    } catch (error: unknown) {
-      const err = error as FormError;
-      console.error(err.response);
-      alert(err.response?.data.message || '빵 등록 중 오류가 발생했습니다. 다시 시도해주세요.');
+    } catch (error: any) {
+      console.error('빵 등록 실패:', error);
+      alert(error.response?.data?.message || '빵 등록 중 오류가 발생했습니다.');
     } finally {
       setIsLoading(false);
     }
@@ -388,7 +386,7 @@ export default function BreadRegisterPage() {
         if (previewUrl && previewUrl.startsWith('blob:')) {
           const response = await fetch(previewUrl);
           const blob = await response.blob();
-          imageFile = new File([blob], `bread-${editingBread.breadId}.jpg`, { type: 'image/jpeg' });
+          imageFile = new File([blob], `bread-${editingBread.breadId}.${blob.type.split('/')[1]}`, { type: blob.type });
         }
 
         if (!editingBread.breadId) return;  // null 체크
