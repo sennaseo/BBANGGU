@@ -11,6 +11,9 @@ import com.ssafy.bbanggu.bread.BreadService;
 import com.ssafy.bbanggu.stock.StockDTO;
 import com.ssafy.bbanggu.stock.StockService;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -68,11 +71,34 @@ public class InventoryService {
 			+ "4. 각 줄은 예시 형식을 정확히 따를 것\n"
 			+ "5. 데이터 부족 등의 오류 메시지를 출력하지 말 것";
 
-		return chatClient.prompt()
+		String response =  chatClient.prompt()
 			.system(prompt)
 			.user("가게 빵 정보: " + breadInfo + "\n재고 정보: " + stockInfo)
 			.call()
 			.content();
+
+		return convertDateFormat(response);
+	}
+
+	/**
+	 * GPT 응답에서 YYMMDD 형식을 'YY년 MM월 DD일' 형식으로 변환하는 메서드
+	 */
+	private String convertDateFormat(String response) {
+		Pattern pattern = Pattern.compile("\\b(\\d{2})(\\d{2})(\\d{2})\\b"); // YYMMDD 패턴 찾기
+		Matcher matcher = pattern.matcher(response);
+		StringBuffer sb = new StringBuffer();
+
+		while (matcher.find()) {
+			String year = "20" + matcher.group(1); // '25' → '2025'
+			String month = matcher.group(2); // '02'
+			String day = matcher.group(3); // '04'
+			String formattedDate = String.format("%s년 %s월 %s일", year, month, day); // 변환된 형식
+
+			matcher.appendReplacement(sb, formattedDate);
+		}
+		matcher.appendTail(sb);
+
+		return sb.toString();
 	}
 
 	private String convertBreadsToString(List<BreadDTO> breads) {
