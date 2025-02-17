@@ -285,27 +285,20 @@ export default function BreadRegisterPage() {
 
     setIsLoading(true);
     try {
-      // 각 빵 데이터 전송 전에 로그 출력
-      console.log('userInfo:', userInfo);
-      console.log('breadList:', breadList);
-
       for (const bread of breadList) {
-        // 빵 데이터 구성
-        const breadData = {
-          bakeryId: userInfo.bakeryId,  // bakeryId를 userInfo에서 가져옴
-          breadCategoryId: bread.categoryId,
-          name: bread.name,
-          price: Number(bread.price)  // 숫자로 확실하게 변환
-        };
-
-        console.log('전송할 빵 데이터:', breadData);  // 전송 직전 데이터 확인
-
         let imageFile: File | undefined;
         if (bread.image && bread.image.startsWith('blob:')) {
           const response = await fetch(bread.image);
           const blob = await response.blob();
-          imageFile = new File([blob], `bread-${Date.now()}.jpg`, { type: 'image/jpeg' });
+          imageFile = new File([blob], `bread-${Date.now()}.${blob.type.split('/')[1]}`, { type: blob.type });
         }
+
+        const breadData = {
+          bakeryId: userInfo.bakeryId,
+          breadCategoryId: bread.categoryId,
+          name: bread.name,
+          price: Number(bread.price)
+        };
 
         await registerBread(breadData, imageFile);
       }
@@ -393,7 +386,7 @@ export default function BreadRegisterPage() {
         if (previewUrl && previewUrl.startsWith('blob:')) {
           const response = await fetch(previewUrl);
           const blob = await response.blob();
-          imageFile = new File([blob], `bread-${editingBread.breadId}.jpg`, { type: 'image/jpeg' });
+          imageFile = new File([blob], `bread-${editingBread.breadId}.${blob.type.split('/')[1]}`, { type: blob.type });
         }
 
         if (!editingBread.breadId) return;  // null 체크
