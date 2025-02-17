@@ -51,6 +51,7 @@ public class InventoryService {
 			+ "✅ {breadId}가 {date}부터 [증가/감소]하는 추세입니다.\n"
 			+ "재고 부족:\n"
 			+ "\n"
+
 			+ "breadId의 quantity 총합이 0이거나 현저히 낮으면 출력하라.\n"
 			+ "✅ {breadId}는 재고가 거의 남지 않는 것으로 보입니다.\n"
 			+ "재고 과잉:\n"
