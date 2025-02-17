@@ -2,12 +2,12 @@ import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { useDispatch } from 'react-redux'
 import { User, Lock } from "lucide-react"
-import { login } from "../../api/common/login/login"
+import { login } from "../../api/common/login/Login"
 import { getKakaoLoginUrl } from "../../api/common/login/KakaoLogin"
-import { getUserInfo } from "../../api/user/user"
+import { getUserInfo } from "../../api/common/info/UserInfo"
+import { loginSuccess } from "../../store/slices/authSlice"
 import { setUserInfo } from "../../store/slices/userSlice"
 import { store } from "../../store"
-import { login } from "../../api/common/login/Login"
 
 export default function LoginPage() {
   const [formData, setFormData] = useState({
@@ -35,25 +35,41 @@ export default function LoginPage() {
 
     setIsLoading(true)
     try {
-      // 1. 로그인 API 호출
-      await login(formData, dispatch)
-
-      // 4. 사용자 정보 가져오기
+      // 로그인 API 호출
+      const loginResponse = await login(formData)
+      console.log('로그인 응답:', loginResponse)
+      
+      // 토큰 저장
+      if (loginResponse.data.access_token) {
+        localStorage.setItem('accessToken', loginResponse.data.access_token)
+      }
+      
+      // 리덕스에 로그인 정보 저장
+      dispatch(loginSuccess(loginResponse))
+      
+      // 사용자 정보 가져오기
       const userResponse = await getUserInfo()
-      console.log('4. 사용자 정보 응답:', userResponse)
+      console.log('사용자 정보 응답:', userResponse)
       
-      // 5. Redux store에 저장되는 데이터 확인
-      console.log('5. Redux store에 저장될 데이터:', userResponse)
-      dispatch(setUserInfo(userResponse))
+      // 리덕스에 사용자 정보 저장할 때 isAuthenticated도 함께 설정
+      dispatch(setUserInfo({
+        ...userResponse.data,
+        isAuthenticated: true  // 여기에 isAuthenticated를 true로 설정
+      }))
       
-      // 6. 최종 Redux 상태 확인
+      // 리덕스 스토어 전체 상태 확인
       const state = store.getState()
-      console.log('6. 최종 Redux 상태:', state)
+      console.log('현재 리덕스 상태:', {
+        auth: state.auth,
+        user: state.user
+      })
 
+      setIsLoading(false)
+      
       // 사용자 역할에 따른 리다이렉션
-      if (state.user.userInfo?.role === 'OWNER') {
+      if (loginResponse.data.user_type === 'OWNER') {
         navigate('/owner/main')
-      } else if (state.user.userInfo?.role === 'USER') {
+      } else if (loginResponse.data.user_type === 'USER') {
         navigate('/user')
       } else {
         navigate('/')
@@ -90,7 +106,7 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
-      <div className="flex justify-center mt-12 mb-10">
+      <div className="flex justify-center mt-32 mb-10">
         <img
           src="/icon/bbanggu-icon.png"
           alt="빵꾸 아이콘"
@@ -98,7 +114,7 @@ export default function LoginPage() {
         />
       </div>
 
-      <main className="flex-1 flex flex-col justify-start px-8">
+      <main className="flex flex-col items-center justify-start px-8">
         <div className="w-full max-w-[500px] space-y-6">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="relative">

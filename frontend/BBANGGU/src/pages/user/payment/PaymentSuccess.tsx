@@ -2,7 +2,7 @@ import { useNavigate, useSearchParams } from "react-router-dom"
 import { useSelector } from 'react-redux'
 import { RootState } from '../../../store'
 import PaymentButton from "../../../components/user/payment/common/PaymentButton"
-import { ReservationApi } from '../../../api/user/reservation/ReservationApi'
+import { ReservationApi } from '../../../api/user/reservation/PaymentApi'
 import { useState } from "react"
 
 export function PaymentSuccess() {
