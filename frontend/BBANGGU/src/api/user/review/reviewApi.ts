@@ -81,6 +81,6 @@ export const reviewApi = {
       }
       throw error;
     }
-  }
+  },
 };
 

@@ -61,7 +61,8 @@ export interface ReservationType {
   bakeryName: string
   breadPackageId: number
   quantity: number
-  totalPrice: number
+  price: number
+  packageName: string
   reservedPickupTime: string
   pickupAt: string
   createdAt: string

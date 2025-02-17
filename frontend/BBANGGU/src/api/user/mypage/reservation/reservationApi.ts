@@ -18,5 +18,20 @@ export const reservationApi = {
             console.error('예약 조회 실패:', error);
             throw error;
         }
+    },
+    getReservationDetailApi: async (reservationId: number) => {
+        try {
+            const token = localStorage.getItem("accessToken") || import.meta.env.VITE_MOCK_ACCESS_TOKEN || "";
+            const response = await axios.get<ApiResponse<ReservationType>>(
+                `${BASE_URL}/reservation/${reservationId}/detail`,
+                { withCredentials: true,
+                    headers: 
+                    { Authorization: `Bearer ${token}` } });
+            return response.data.data;
+        } catch (error) {
+            console.error('예약 상세 조회 실패:', error);
+            throw error;
+        }
     }
+    
 }

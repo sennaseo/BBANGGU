@@ -22,7 +22,6 @@ export async function getUserProfile(): Promise<ExtendedUserType[]> {
         }
         extendedUsers.push({ ...user, reservation: reservations, echosave: echosaves });
       }
-      console.log("extendedUsers", extendedUsers)
       return extendedUsers;
     } catch {
       throw new Error("통합 유저 데이터 조회 실패");

@@ -5,7 +5,14 @@ interface BakeryPackageProps {
 }
 
 export default function BakeryPackage({ packages }: BakeryPackageProps) {
-  if (packages.length === 0) return null;
+  if (packages[0].quantity === 0) {
+    return (
+      <div className="pb-[40px] px-[20px]">
+        <h2 className="text-[16px] font-bold mb-[15px] text-[#333333]">판매 중인 빵꾸러미</h2>
+        <p className="text-[14px] text-[#757575]">현재 판매중인 빵꾸러미가 없습니다.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="pb-[20px] px-[20px]">

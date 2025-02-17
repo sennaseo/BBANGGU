@@ -1,7 +1,7 @@
 import { ChevronLeft, ChevronDown } from "lucide-react"
 import { useNavigate, useParams, useLocation } from "react-router-dom"
 import { useEffect, useState } from "react"
-import { reservationService } from "../../../../services/user/mypage/reservation/reservationService"
+import { getReservations } from "../../../../services/user/mypage/reservation/reservationService"
 import dayjs from "dayjs"
 import { ReservationType } from "../../../../types/bakery"
 import { reviewApi } from '../../../../api/user/review/reviewApi'
@@ -22,11 +22,11 @@ export function ReservationHistory() {
       setIsLoading(true);
       const startDate = dayjs().subtract(7, "day").format("YYYY-MM-DD");
       const endDate = dayjs().format("YYYY-MM-DD");
-      const reservations = await reservationService.getReservations(startDate, endDate);
+      const reservations = await getReservations(startDate, endDate);
       
       setCurrentReservations(
         reservations.filter(reservation => 
-          reservation.status.toLowerCase() === 'pending'
+          reservation.status.toLowerCase() === 'pending' || reservation.status.toLowerCase() === 'confirmed'
         )
       );
       setPastReservations(
