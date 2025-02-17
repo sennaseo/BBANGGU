@@ -2,7 +2,6 @@ package com.ssafy.bbanggu.user.controller;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
 import com.ssafy.bbanggu.auth.dto.EmailRequest;
 import com.ssafy.bbanggu.auth.dto.JwtToken;
@@ -22,7 +21,6 @@ import com.ssafy.bbanggu.user.dto.UserResponse;
 import com.ssafy.bbanggu.user.repository.UserRepository;
 import com.ssafy.bbanggu.user.service.UserService;
 
-import org.springframework.boot.autoconfigure.jms.artemis.ArtemisNoOpBindingRegistry;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
@@ -42,12 +40,20 @@ import lombok.extern.slf4j.Slf4j;
 @RequestMapping("/user")
 @RequiredArgsConstructor
 public class UserController {
+
     private final UserService userService;
     private final EmailService emailAuthService;
 	private final UserRepository userRepository;
 
-    // ✅ 회원가입
-    @PostMapping("/register")
+
+	/**
+	 * 회원가입 API
+	 *
+	 * @param request 회원가입 요청 정보 (name, email, password, phone, userType)
+	 * @param result 유효성 검사 결과
+	 * @return 생성된 사용자 정보 반환
+	 */
+	@PostMapping("/register")
     public ResponseEntity<?> createUser(@Valid @RequestBody CreateUserRequest request, BindingResult result) {
         // 회원가입 요청 데이터 검증
         if (result.hasErrors()) {
