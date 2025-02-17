@@ -240,19 +240,7 @@ public class BakeryController {
 		@RequestBody BakeryPickupTimetableDto request
 	) {
 		log.info("✨ 픽업 시간 수정 ✨");
-		// ✅ 유효한 빵집인지 검증 (
-		Bakery bakery = bakeryRepository.findByBakeryIdAndDeletedAtIsNull(bakeryId);
-		if (bakery == null) {
-			throw new CustomException(ErrorCode.BAKERY_NOT_FOUND);
-		}
-
-		// ✅ 현재 로그인된 사용자가 이 가게의 사장님인지 검증
-		Long userId = userDetails.getUserId();
-		if (!bakery.getUser().getUserId().equals(userId)) {
-			throw new CustomException(ErrorCode.UNAUTHORIZED_USER);
-		}
-
-		bakeryPickupService.updatePickupTime(bakery, request);
+		bakeryPickupService.updatePickupTime(userDetails, bakeryId, request);
 		return ResponseEntity.ok().body(new ApiResponse("픽업 시간이 성공적으로 수정되었습니다.", null));
 	}
 
