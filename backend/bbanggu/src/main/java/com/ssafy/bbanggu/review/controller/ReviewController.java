@@ -60,6 +60,7 @@ public class ReviewController {
 		return ResponseEntity.ok().body(new ApiResponse("리뷰 삭제가 성공적으로 완료되었습니다.", null));
 	}
 
+
 	/**
 	 * 사용자 별 리뷰 조회 api
 	 */
@@ -68,10 +69,6 @@ public class ReviewController {
 		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@PathVariable Long user_id
 	){
-		if (!userDetails.getUserId().equals(user_id)) {
-			throw new CustomException(ErrorCode.ONLY_VIEW_OWN_REVIEW);
-		}
-
 		List<ReviewResponseDto> reviews = reviewService.getUserReviews(userDetails.getUserId());
 		return ResponseEntity.ok().body(new ApiResponse("사용자가 작성한 리뷰를 모두 조회하였습니다.", reviews));
 	}

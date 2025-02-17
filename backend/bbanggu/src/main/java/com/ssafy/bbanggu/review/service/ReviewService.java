@@ -145,7 +145,7 @@ public class ReviewService {
 	 * 리뷰 삭제
 	 */
 	@Transactional
-	public void delete(Long userId, Long reviewId) {
+	public void delete(Long userId, long reviewId) {
 		Review review = reviewRepository.findById(reviewId)
 			.orElseThrow(() -> new CustomException(ErrorCode.RESERVATION_NOT_FOUND));
 
@@ -158,6 +158,7 @@ public class ReviewService {
 
 		updateBakeryReviewState(review.getBakery(), review.getRating(), false);
 	}
+
 
 	/**
 	 * 사용자 리뷰 조회
