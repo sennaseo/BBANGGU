@@ -10,7 +10,12 @@ instance.interceptors.request.use((config) => {
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
-  config.headers['Content-Type'] = 'application/json';
+  
+  // FormData인 경우 Content-Type 헤더를 설정하지 않음
+  if (!(config.data instanceof FormData)) {
+    config.headers['Content-Type'] = 'application/json';
+  }
+  
   return config;
 });
 
@@ -21,5 +26,10 @@ instance.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
+// 디버깅을 위한 로그
+console.log('=== Axios Instance 설정 ===');
+console.log('baseURL:', instance.defaults.baseURL);
+console.log('headers:', instance.defaults.headers);
 
 export default instance;

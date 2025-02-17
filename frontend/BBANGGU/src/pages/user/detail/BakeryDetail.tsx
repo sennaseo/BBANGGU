@@ -8,53 +8,50 @@ import BakeryLocation from "../../../components/user/bakerydetail/BakeryLocation
 import BakeryReviews from "../../../components/user/bakerydetail/BakeryReviews"
 import OrderButton from "../../../components/user/bakerydetail/OrderButton"
 import { fetchBakeryDetail } from "../../../services/user/detail/bakeryDetailService"
-import { useState, useEffect } from "react"
-import type { ExtendedBakeryType, UserType } from "../../../types/bakery"
-import { getUserProfile } from "../../../services/user/mypage/usermypageServices"
+import { useState, useEffect, useCallback } from "react"
+import type { ExtendedBakeryType } from "../../../types/bakery"
 import { toggleFavoriteForUser } from "../../../services/user/usermainService"
 
 export default function BakeryDetail() {
   const { bakeryId } = useParams<{ bakeryId: string }>()
   const userInfo = useSelector((state: RootState) => state.user.userInfo)
-  console.log("bakeryId:", bakeryId, "userInfo:", userInfo)
   const [bakery, setBakery] = useState<ExtendedBakeryType | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [user, setUser] = useState<UserType | null>(null)
-  
-  const toggleLike = async () => {
-    if (!bakery) return;
-    try {
-      await toggleFavoriteForUser(bakery.bakeryId, bakery.is_liked);
-      setBakery({
-        ...bakery,
-        is_liked: !bakery.is_liked
-      });
-    } catch (error) {
-      console.error("좋아요 토글 실패:", error);
-    }
-  };
 
-  useEffect(() => {
-    const loadBakeryDetail = async () => {
-      try {
-        const bakerydetail = await fetchBakeryDetail(Number(bakeryId))
-        console.log("bakerydetail", bakerydetail);
-        setBakery(bakerydetail)
-        const users = await getUserProfile()
-        setUser(users[0])
-      } catch (err) {
-        setError("베이커리 정보를 불러오는 데 실패했습니다.")
+  const loadData = useCallback(async () => {
+    setIsLoading(true)
+    try {
+      const bakeryData = await fetchBakeryDetail(Number(bakeryId));
+      setBakery(bakeryData);
+    } catch (err) {
+      setError("베이커리 정보를 불러오는 데 실패했습니다.")
         console.error(err)
       } finally {
         setIsLoading(false)
       }
+  }, [])
+
+  useEffect(() => {
+    loadData()
+  }, [loadData])
+
+  const toggleLike = async () => {
+    if (!bakery) return;
+    try {
+      // 현재 좋아요 상태(bakery.is_liked)를 그대로 전달하여, 삭제 또는 추가 API 호출이 올바르게 이루어지도록 합니다.
+      await toggleFavoriteForUser(bakery.bakeryId, bakery.is_liked);
+      // API 호출 성공 후 UI에 표시할 새로운 즐겨찾기 상태는 현재 상태의 반전입니다.
+      const newLikedStatus = !bakery.is_liked;
+      setBakery({
+        ...bakery,
+        is_liked: newLikedStatus,
+      });
+      return newLikedStatus;
+    } catch (error) {
+      console.error("좋아요 토글 실패:", error);
     }
-
-    loadBakeryDetail()
-  }, [bakeryId])
-
-
+  };
 
   if (isLoading) return <div>Loading...</div>
   if (error) return <div>{error}</div>
@@ -66,19 +63,19 @@ export default function BakeryDetail() {
       <div className="flex flex-col mx-auto max-w-5xl">
         <div className="h-[280px] w-full overflow-hidden">
           <img
-            src={bakery.bakeryImageUrl || "/placeholder.svg"}
+            src={bakery.bakeryBackgroundImgUrl || "/placeholder.svg"}
             alt={`${bakery.name} banner`}
             className="h-full w-full object-cover"
           />
         </div>
         <div>
           <div className="px-[20px]">
-            {user && <BakeryInfo bakery={bakery} onFavoriteUpdate={toggleLike} />}
+            {userInfo && <BakeryInfo bakery={bakery} onFavoriteUpdate={toggleLike} />}
           </div>
           <BakeryPackage packages={bakery.package.data} />
           <BakeryLocation location={bakery}/>
           <div className="px-[20px]">
-            {user && <BakeryReviews bakeryId={bakery.bakeryId} reviews={bakery.review} user={user} />}
+            {userInfo && <BakeryReviews bakeryId={bakery.bakeryId} reviews={bakery.review} user={userInfo} />}
           </div>  
         </div>
       </div>

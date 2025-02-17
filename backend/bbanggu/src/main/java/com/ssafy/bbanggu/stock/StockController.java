@@ -1,6 +1,7 @@
 package com.ssafy.bbanggu.stock;
 
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -76,8 +77,7 @@ public class StockController {
 	@GetMapping("/bakery/{bakeryId}/week")
 	public ResponseEntity<?> getStockWeekly(@PathVariable long bakeryId) {
 		try {
-			List<StockDTO> stockList = stockService.getStockByPeriod(LocalDate.now().minusWeeks(1), LocalDate.now(),
-				bakeryId);
+			List<StockWeekDTO> stockList = stockService.getLast7DaysStockSummary(bakeryId);
 			return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse("재고 조회 성공", stockList));
 		} catch (Exception e) {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("재고 조회 실패");
@@ -85,10 +85,10 @@ public class StockController {
 	}
 
 	// 월(지난 30일) 조회
-	@GetMapping("/bakery/{bakeryId}/year/{year}")
-	public ResponseEntity<?> getStockMonthly(@PathVariable long bakeryId, @PathVariable int year) {
+	@GetMapping("/bakery/{bakeryId}/year")
+	public ResponseEntity<?> getStockMonthly(@PathVariable long bakeryId) {
 		try {
-			Map<Integer, List<StockMonthDTO>> stockList = stockService.getYearlyStock(year, bakeryId);
+			Map<Integer, List<StockMonthDTO>> stockList = stockService.getYearlyStock(bakeryId);
 			return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse("재고 조회 성공", stockList));
 		} catch (Exception e) {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("재고 조회 실패");
@@ -109,12 +109,20 @@ public class StockController {
 
 	// TOP3 재고 조회
 	@GetMapping("/bakery/{bakeryId}/top3/{period}")
-	public ResponseEntity<?> getTop3Stock(@PathVariable long bakeryId, @PathVariable String period) {
+	public ResponseEntity<ApiResponse> getTop3Stock(@PathVariable long bakeryId, @PathVariable String period) {
 		try {
 			List<Object[]> stockList = stockService.getTop3StockByPeriod(bakeryId, period);
-			return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse("재고 조회 성공", stockList));
+			if (stockList.isEmpty()) {
+				return ResponseEntity.ok().body(new ApiResponse("재고 데이터 없음", stockList));
+			}
+
+			int total = stockService.countTotalStock(bakeryId, period);
+			Map<String, Object> result = new HashMap<>();
+			result.put("top3", stockList);
+			result.put("total", total);
+			return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse("재고 조회 성공", result));
 		} catch (Exception e) {
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("재고 조회 실패");
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiResponse("재고 조회 실패", null));
 		}
 	}
 

@@ -1,19 +1,29 @@
 import { ChevronLeft, ChevronDown, ChevronUp } from "lucide-react"
 import { useNavigate, useParams } from "react-router-dom"
-import { useState } from "react"
-import { mockReservations } from "../../../../mocks/user/reservationMockData"
-// import { Map } from "./Map" // 지도 컴포넌트는 별도로 구현 필요
+import { useState, useEffect } from "react"
+import { ReservationType } from "../../../../types/bakery"
+import { getReservationDetail } from "../../../../services/user/mypage/reservation/reservationService"
+import CancelReservationModal from "../../../../components/user/mypage/CancelReservationModal"
+import { deleteReservation } from "../../../../services/user/mypage/reservation/reservationService"
 
 export function ReservationDetail() {
   const navigate = useNavigate()
-  const { reservation_id } = useParams<{ reservation_id: string }>()
+  const { reservationId } = useParams<{ reservationId: string }>()
   const [isLocationExpanded, setIsLocationExpanded] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
+  const [reservation, setReservation] = useState<ReservationType | null>(null);
 
-  // URL 파라미터로 전달된 reservation_id로 예약 찾기
-  const reservation = mockReservations.find(
-    r => r.reservationId === Number(reservation_id)
-  );
+  useEffect(() => {
+    async function fetchReservation() {
+      try {
+        const res = await getReservationDetail(Number(reservationId));
+        setReservation(res);
+      } catch (error) {
+        console.error('예약 세부 정보 로드 실패:', error);
+      }
+    }
+    fetchReservation();
+  }, [reservationId]);
 
   if (!reservation) {
     return (
@@ -26,8 +36,9 @@ export function ReservationDetail() {
   // 예약 상태 한글 변환
   const statusMap = {
     pending: "주문 예약",
-    cancelled: "취소됨",
-    completed: "완료",
+    canceled: "주문 취소",
+    completed: "픽업 완료",
+    confirmed: "픽업 예약",
   };
 
   // 날짜 포맷팅
@@ -47,8 +58,26 @@ export function ReservationDetail() {
       time: `${hours}:${minutes}`
     };
   };
+  const pickupTime = formatDate(reservation.pickupAt);
 
-  const pickupTime = formatDate(reservation.reservedPickupTime);
+  const handleWriteReview = () => {
+    // 리뷰 작성 페이지로 이동 (라우팅 경로는 프로젝트에 맞게 수정)
+    navigate(`/user/mypage/reservation/${reservationId}/write-review`);
+  };
+
+  const handleCancelReservation = async (cancelReason: string) => {
+    try {
+      const result = await deleteReservation(Number(reservationId), cancelReason);
+      if(result) {
+        // 취소 성공 시 navigate(-1) 등으로 이동하거나 상태 업데이트
+        navigate(-1);
+      }
+    } catch(error) {
+      console.error("취소 요청 실패:", error);
+    } finally {
+      setShowCancelModal(false);
+    }
+  };
 
   return (
     <div className="flex flex-col min-h-screen bg-[#F9F9F9] pb-[80px] relative max-w-[480px] mx-auto">
@@ -68,11 +97,11 @@ export function ReservationDetail() {
           <div className="bg-[#fc973b] text-white rounded-xl shadow-md">
             <div className="flex flex-col gap-2 p-5">
               <div className="inline-block px-3 py-1 bg-white/20 rounded-full text-sm w-fit">
-                {statusMap[reservation.status]}
+                {statusMap[reservation.status.toLowerCase() as keyof typeof statusMap]}
               </div>
-              <div className="text-xl font-bold leading-tight">{reservation.bakeryId}</div>
+              <div className="text-xl font-bold leading-tight">{reservation.bakeryName}</div>
               <div className="text-sm">
-                {pickupTime.date} {pickupTime.time} ~ {parseInt(pickupTime.time.split(':')[0]) + 1}:00 방문
+                {pickupTime.date} {reservation.createdAt} ~ {parseInt(pickupTime.time.split(':')[0]) + 1}:00 방문
               </div>
             </div>
           </div>
@@ -81,17 +110,17 @@ export function ReservationDetail() {
           <div className="bg-[#F9F9F9] p-5 rounded-xl border-t border-dashed border-gray-200 shadow-md">
             <div className="flex justify-between items-center">
               <div className="flex gap-2">
-                <span className="text-gray-600">{reservation.quantity}x</span>
-                <span className="font-medium">{reservation.bakeryId}</span>
+                <span className="font-light">{reservation.packageName}</span>
+                <span className="text-gray-600">x{reservation.quantity}</span>
               </div>
               <div>
-                {reservation.totalPrice.toLocaleString()}원
+                {reservation.price.toLocaleString()}원
               </div>
             </div>
 
             <div className="flex justify-between font-bold mt-3 pt-3 border-t border-gray-200">
               <span>합계</span>
-              <span>{reservation.totalPrice.toLocaleString()}원</span>
+              <span>{reservation.price.toLocaleString()}원</span>
             </div>
           </div>
         </div>
@@ -141,7 +170,7 @@ export function ReservationDetail() {
       </div>
 
       {/* 하단 버튼 */}
-      {reservation.status === "pending" && (
+      { (reservation.status.toLowerCase() === "pending" || reservation.status.toLowerCase() === "confirmed") && (
         <div className="fixed bottom-0 left-0 right-0 p-5 bg-[#F9F9F9] max-w-[440px] mx-auto">
           <button 
             className="w-full bg-[#fc973b] text-white py-4 rounded-xl font-medium"
@@ -154,32 +183,20 @@ export function ReservationDetail() {
 
       {/* 취소 확인 모달 */}
       {showCancelModal && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl mx-5 w-full max-w-[320px] px-4 py-4">
-            <div className="px-5 pt-3 pb-5 text-center">
-              <h3 className="text-lg font-bold text-[#333333] mb-2">주문을 취소하시겠습니까?</h3>
-              <p className="text-sm text-[#666666]">취소된 주문은 되돌릴 수 없습니다.</p>
-            </div>
-            <div className="flex">
-              <button
-                className="flex-1 p-3 font-medium bg-[#fc973b] text-white rounded-full"
-                onClick={() => setShowCancelModal(false)}
-              >
-                돌아가기
-              </button>
-              <button
-                className="flex-1 p-3 text-[#666666] font-medium"
-                onClick={() => {
-                  // TODO: 취소 로직 구현
-                  setShowCancelModal(false);
-                  navigate(-1);
-                }}
-              >
-                취소하기
-              </button>
-            </div>
-          </div>
-        </div>
+        <CancelReservationModal 
+          onClose={() => setShowCancelModal(false)}
+          onSubmit={handleCancelReservation}
+        />
+      )}
+
+      {/* 픽업 완료 상태일 때 리뷰 쓰기 버튼 표시 */}
+      {reservation && reservation.status.toLowerCase() === "completed" && (
+        <button
+          className="fixed max-w-[400px] mx-auto bottom-5 left-0 right-0 bg-[#fc973b] hover:bg-[#e88a2d] text-white font-bold py-3 px-4 rounded-xl"
+          onClick={handleWriteReview}
+        >
+          리뷰 쓰기
+        </button>
       )}
     </div>
   )

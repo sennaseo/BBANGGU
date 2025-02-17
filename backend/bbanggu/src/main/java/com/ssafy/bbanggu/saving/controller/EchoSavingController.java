@@ -1,7 +1,5 @@
 package com.ssafy.bbanggu.saving.controller;
 
-import java.util.Map;
-
 import com.ssafy.bbanggu.auth.security.CustomUserDetails;
 import com.ssafy.bbanggu.common.response.ApiResponse;
 import com.ssafy.bbanggu.saving.dto.SavingDto;
@@ -20,8 +18,6 @@ import org.springframework.web.bind.annotation.*;
 public class EchoSavingController {
 
 	private final EchoSavingService echoSavingService;
-	private final UserRepository userRepository;
-	private final UserService userService;
 
 	/**
 	 * 절약 정보 조회 API
@@ -62,6 +58,5 @@ public class EchoSavingController {
 		SavingDto response = echoSavingService.getTotalSaving();
 		return ResponseEntity.ok(new ApiResponse("전체 절약 정보 조회 성공", response));
 	}
-
 
 }

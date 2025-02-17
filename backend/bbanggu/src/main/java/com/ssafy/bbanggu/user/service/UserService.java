@@ -1,13 +1,15 @@
 package com.ssafy.bbanggu.user.service;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.ssafy.bbanggu.auth.dto.JwtToken;
 import com.ssafy.bbanggu.auth.security.CustomUserDetails;
@@ -45,11 +47,9 @@ public class UserService { // 사용자 관련 비즈니스 로직 처리
 	private final BakeryRepository bakeryRepository;
 	private final ImageService imageService;
 
+
 	/**
-	 * 회원가입 로직 처리
-	 *
-	 * @param request 회원가입 요청 데이터
-	 * @return UserResponse 생성된 사용자 정보
+	 * 회원가입
 	 */
 	public UserResponse create(CreateUserRequest request) {
 		// ✅ 이메일 중복 여부 검사
@@ -78,8 +78,9 @@ public class UserService { // 사용자 관련 비즈니스 로직 처리
 			.build();
 
 		echoSavingRepository.save(echoSaving);
-		return UserResponse.from(user);
+		return UserResponse.from(user, null);
 	}
+
 
 	/**
 	 * 사용자 삭제 메서드
@@ -103,6 +104,7 @@ public class UserService { // 사용자 관련 비즈니스 로직 처리
 		userRepository.save(user);
 	}
 
+
 	/**
 	 * 로그인 처리 메서드
 	 *
@@ -110,7 +112,7 @@ public class UserService { // 사용자 관련 비즈니스 로직 처리
 	 * @param password 사용자 비밀번호
 	 * @return UserResponse 로그인 성공 시 사용자 정보
 	 */
-	public JwtToken login(String email, String password) {
+	public Map<String, Object> login(String email, String password) {
 		// 이메일로 사용자 조회
 		User user = userRepository.findByEmail(email)
 			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
@@ -130,19 +132,42 @@ public class UserService { // 사용자 관련 비즈니스 로직 처리
 			throw new CustomException(ErrorCode.INVALID_PASSWORD);
 		}
 
-
 		// ✅ JWT 토큰 생성
-		String accessToken = jwtTokenProvider.createAccessToken(user.getUserId());
+		Map<String, Object> additionalClaims = Map.of(
+			"role", user.getRole().name()
+		);
+		String accessToken = jwtTokenProvider.createAccessToken(user.getUserId(), additionalClaims);
 		String refreshToken = jwtTokenProvider.createRefreshToken(user.getUserId());
 
 		// ✅ Refresh Token을 DB 저장
 		user.setRefreshToken(refreshToken);
 		userRepository.save(user);
 
+		// ✅ AccessToken을 HTTP-Only 쿠키에 저장
+		ResponseCookie accessTokenCookie = ResponseCookie.from("accessToken", accessToken)
+			.httpOnly(false) // XSS 공격 방지
+			.secure(true) // HTTPS 환경에서만 사용 (로컬 개발 시 false 가능)
+			.path("/") // 모든 API 요청에서 쿠키 전송 가능
+			.maxAge(30 * 60) // 30분 유지
+			.build();
+
+		// ✅ RefreshToken을 HTTP-Only 쿠키에 저장
+		ResponseCookie refreshTokenCookie = ResponseCookie.from("refreshToken", refreshToken)
+			.httpOnly(true)
+			.secure(true)
+			.path("/")
+			.maxAge(7 * 24 * 60 * 60)
+			.build();
+
 		// ✅ 응답 데이터 생성
-		JwtToken tokens = new JwtToken(accessToken, refreshToken);
+		Map<String, Object> tokens = new HashMap<>();
+		tokens.put("accessTokenCookie", accessTokenCookie);
+		tokens.put("refreshTokenCookie", refreshTokenCookie);
+		tokens.put("accessToken", accessToken);
+		tokens.put("userType", user.getRole().name());
 		return tokens;
 	}
+
 
 	/**
 	 * 로그아웃: RefreshToken 삭제
@@ -157,6 +182,7 @@ public class UserService { // 사용자 관련 비즈니스 로직 처리
 		userRepository.save(user);
 	}
 
+
 	/**
 	 * 사용자 정보 조회
 	 */
@@ -170,14 +196,20 @@ public class UserService { // 사용자 관련 비즈니스 로직 처리
 		}
 		log.info("✅ {}번 사용자 검증 완료", userDetails.getUserId());
 
-		return UserResponse.from(user);
+		Long bakeryId = null;
+		if (user.getRole().equals(Role.OWNER)) {
+			bakeryId = bakeryRepository.findByUser_UserId(user.getUserId()).getBakeryId();
+		}
+
+		return UserResponse.from(user, bakeryId);
 	}
+
 
 	/**
 	 * 사용자 정보 수정
 	 */
 	@Transactional
-	public void update(CustomUserDetails userDetails, UpdateUserRequest updates) {
+	public void update(CustomUserDetails userDetails, UpdateUserRequest updates, MultipartFile profileImg) {
 		User user = userRepository.findById(userDetails.getUserId())
 			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
@@ -202,25 +234,28 @@ public class UserService { // 사용자 관련 비즈니스 로직 처리
 			);
 		}
 
-		String profileImageUrl = user.getProfileImageUrl(); // 기존 URL 유지
-		if (updates.profileImageUrl() != null && !updates.profileImageUrl().isEmpty()) {
+		if (profileImg != null && !profileImg.isEmpty()) {
 			try {
-				profileImageUrl = imageService.saveImage(updates.profileImageUrl()); // 새 이미지 저장
+				String profileImageUrl = imageService.saveImage(profileImg); // 새 이미지 저장
+				if (profileImageUrl != null) {
+					user.setProfileImageUrl(profileImageUrl);
+				}
 			} catch (IOException e) {
 				throw new CustomException(ErrorCode.PROFILE_IMAGE_UPLOAD_FAILED);
 			}
 		}
 
 		// ✅ 특정 필드만 변경 가능하도록 처리
-		user.updateUserInfo(
-			updates.name(),
-			updates.phone(),
-			profileImageUrl
-		);
+		user.setName(Optional.ofNullable(updates.name()).orElse(user.getName()));
+		user.setPhone(Optional.ofNullable(updates.phone()).orElse(user.getPhone()));
+
+		userRepository.save(user);
 	}
+
 
 	/**
 	 * 비밀번호 업데이트 메서드
+	 *
 	 * @param email 사용자 이메일
 	 * @param newPassword 새로운 비밀번호
 	 */
@@ -237,6 +272,7 @@ public class UserService { // 사용자 관련 비즈니스 로직 처리
 		user.setPassword(passwordEncoder.encode(newPassword));
 		userRepository.save(user);
 	}
+
 
 	/**
 	 * 이메일이 DB에 존재하는지 확인
@@ -270,6 +306,7 @@ public class UserService { // 사용자 관련 비즈니스 로직 처리
 			bakery.getReviewCnt()
 		);
 	}
+
 
 	/**
 	 * 비밀번호 변경 (마이페이지)

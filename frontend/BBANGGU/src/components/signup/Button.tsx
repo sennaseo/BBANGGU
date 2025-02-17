@@ -29,8 +29,8 @@ export function Button({
               }`
             : `${
                 disabled
-                  ? "bg-[#D9D9D9] text-white cursor-not-allowed"
-                  : "bg-white text-[#FF9F43] border border-[#FF9F43]"
+                  ? "bg-[#D9D9D9] text-white cursor-not-allowed rounded-xl"
+                  : "bg-white text-[#FF9F43] border border-[#FF9F43] rounded-xl"
               }`
         }
         ${className}

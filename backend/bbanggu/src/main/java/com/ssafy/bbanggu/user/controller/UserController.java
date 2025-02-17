@@ -2,7 +2,6 @@ package com.ssafy.bbanggu.user.controller;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
 import com.ssafy.bbanggu.auth.dto.EmailRequest;
 import com.ssafy.bbanggu.auth.dto.JwtToken;
@@ -22,7 +21,6 @@ import com.ssafy.bbanggu.user.dto.UserResponse;
 import com.ssafy.bbanggu.user.repository.UserRepository;
 import com.ssafy.bbanggu.user.service.UserService;
 
-import org.springframework.boot.autoconfigure.jms.artemis.ArtemisNoOpBindingRegistry;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
@@ -31,6 +29,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -41,12 +40,20 @@ import lombok.extern.slf4j.Slf4j;
 @RequestMapping("/user")
 @RequiredArgsConstructor
 public class UserController {
+
     private final UserService userService;
     private final EmailService emailAuthService;
 	private final UserRepository userRepository;
 
-    // ✅ 회원가입
-    @PostMapping("/register")
+
+	/**
+	 * 회원가입 API
+	 *
+	 * @param request 회원가입 요청 정보 (name, email, password, phone, userType)
+	 * @param result 유효성 검사 결과
+	 * @return 생성된 사용자 정보 반환
+	 */
+	@PostMapping("/register")
     public ResponseEntity<?> createUser(@Valid @RequestBody CreateUserRequest request, BindingResult result) {
         // 회원가입 요청 데이터 검증
         if (result.hasErrors()) {
@@ -97,37 +104,13 @@ public class UserController {
 		}
 
 		// ✅ UserService에서 로그인 & 토큰 생성
-		JwtToken tokens = userService.login(request.getEmail(), request.getPassword());
-		String accessToken = tokens.getAccessToken();
-		String refreshToken = tokens.getRefreshToken();
-
-		// ✅ AccessToken을 HTTP-Only 쿠키에 저장
-		ResponseCookie accessTokenCookie = ResponseCookie.from("accessToken", accessToken)
-			.httpOnly(false) // XSS 공격 방지
-			.secure(true) // HTTPS 환경에서만 사용 (로컬 개발 시 false 가능)
-			.path("/") // 모든 API 요청에서 쿠키 전송 가능
-			.maxAge(30 * 60) // 30분 유지
-			.build();
-
-		// ✅ RefreshToken을 HTTP-Only 쿠키에 저장
-		ResponseCookie refreshTokenCookie = ResponseCookie.from("refreshToken", refreshToken)
-			.httpOnly(true)
-			.secure(true)
-			.path("/")
-			.maxAge(7 * 24 * 60 * 60)
-			.build();
-
-		User user = userRepository.findByEmail(request.getEmail())
-			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
-
+		Map<String, Object> tokens = userService.login(request.getEmail(), request.getPassword());
 		Map<String, Object> response = new HashMap<>();
-		response.put("access_token", accessToken);
-		response.put("refresh_token", refreshToken);
-		response.put("user_type", user.getRole());
-
+		response.put("accessToken", tokens.get("accessToken").toString());
+		response.put("userType", tokens.get("userType").toString());
 		return ResponseEntity.ok()
-			.header(HttpHeaders.SET_COOKIE, accessTokenCookie.toString())
-			.header(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString())
+			.header(HttpHeaders.SET_COOKIE, tokens.get("accessTokenCookie").toString())
+			.header(HttpHeaders.SET_COOKIE, tokens.get("refreshTokenCookie").toString())
 			.body(new ApiResponse("로그인이 성공적으로 완료되었습니다.", response));
     }
 
@@ -184,10 +167,11 @@ public class UserController {
     @PatchMapping("/update")
     public ResponseEntity<ApiResponse> updateUser(
 		@AuthenticationPrincipal CustomUserDetails userDetails,
-		@RequestBody UpdateUserRequest updates) {
+		@RequestPart(value = "user", required = false) UpdateUserRequest updates,
+		@RequestPart(value = "profileImage", required = false) MultipartFile file
+	) {
 		// ✅ 변경할 필드만 업데이트
-		userService.update(userDetails, updates);
-
+		userService.update(userDetails, updates, file);
 		return ResponseEntity.ok(new ApiResponse("회원 정보가 성공적으로 수정되었습니다.", null));
     }
 

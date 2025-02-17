@@ -1,10 +1,13 @@
-import React, { useState } from 'react';
-import { EllipsisVerticalIcon, PencilSquareIcon, TrashIcon } from '@heroicons/react/24/outline';
-import { useNavigate } from 'react-router-dom';
+// import { useNavigate } from 'react-router-dom';
 import breadPackageIcon from '../../../../assets/images/bakery/bread_pakage.svg';
-import { deletePackage } from '../../../../api/owner/package';
 import { ReservationStatus } from '../../../../api/owner/reservation';
 import { BreadPackage } from '../../../../api/owner/package';
+
+// 빵꾸러미 수정 / 삭제 기능 주석 처리 - 이번 pjt 에서는 제외
+// import React, { useState } from 'react';
+// import { EllipsisVerticalIcon, PencilSquareIcon, TrashIcon } from '@heroicons/react/24/outline';
+// import { deletePackage } from '../../../../api/owner/package';
+
 
 interface BreadPackageInfoProps {
   currentPackage: BreadPackage;
@@ -16,21 +19,20 @@ interface BreadPackageInfoProps {
 }
 
 export const BreadPackageInfo: React.FC<BreadPackageInfoProps> = ({ 
-  currentPackage,
-  onPackageDeleted
+  currentPackage
 }) => {
   console.log('currentPackage', currentPackage);
-  const [showMenu, setShowMenu] = useState(false);
-  const navigate = useNavigate();
+  // const [showMenu, setShowMenu] = useState(false);  // 주석처리
  
   // 안전한 숫자 변환 함수
   const safeToLocaleString = (num: number) => num?.toLocaleString() || '0';
 
+  /* 수정/삭제 관련 함수들 주석처리
   const handleEdit = () => {
     navigate('/owner/package/setting', {
       state: {
         isEditing: true,
-        packageData: currentPackage  // 현재 패키지 정보를 전달
+        packageData: currentPackage
       }
     });
     setShowMenu(false);
@@ -50,11 +52,13 @@ export const BreadPackageInfo: React.FC<BreadPackageInfoProps> = ({
       }
     }
   };
+  */
 
   return (
     <>
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-[20px] font-bold">빵꾸러미 정보</h2>
+        {/* 더보기 버튼 주석처리
         <div className="relative">
           <button
             onClick={() => setShowMenu(!showMenu)}
@@ -82,6 +86,7 @@ export const BreadPackageInfo: React.FC<BreadPackageInfoProps> = ({
             </div>
           )}
         </div>
+        */}
       </div>
 
       <div className="bg-white rounded-[20px] border border-gray-100 p-6 shadow-[0_1px_3px_rgba(0,0,0,0.05)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.05)] transition-shadow">

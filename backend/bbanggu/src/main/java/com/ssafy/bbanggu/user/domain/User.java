@@ -87,12 +87,6 @@ public class User {
 
 	/**
 	 * User 생성자 - 필수 필드 초기화
-	 *
-	 * @param name 사용자 이름
-	 * @param email 사용자 이메일
-	 * @param password 사용자 비밀번호
-	 * @param phone 사용자 전화번호
-	 * @param role 사용자 유형
 	 */
 	public User(String name, String email, String kakaoId, String password, String phone, Role role) {
 		this.name = name;
@@ -103,19 +97,14 @@ public class User {
 		this.role = role;
 	}
 
+
 	/**
 	 * 일반 회원가입을 위한 생성자
-	 *
-	 * @param name 사용자 이름
-	 * @param email 사용자 이메일
-	 * @param password 암호화된 비밀번호
-	 * @param phone 사용자 전화번호
-	 * @param role 사용자 유형
-	 * @return User 객체
 	 */
 	public static User createNormalUser(String name, String email, String password, String phone, Role role) {
 		return new User(name, email, null, password, phone, role);
 	}
+
 
 	/**
 	 * 카카오 로그인을 위한 생성자
@@ -128,18 +117,6 @@ public class User {
 		return new User(nickname, "kakao_" + kakaoId + "@bbanggu.com", kakaoId, UUID.randomUUID().toString(), null, Role.USER);
 	}
 
-	/**
-	 * 기본 정보 수정 메서드
-	 *
-	 * @param name 이름
-	 * @param phone 전화번호
-	 * @param profileImageUrl 프로필 이미지
-	 */
-	public void updateUserInfo(String name, String phone, String profileImageUrl) {
-		if (name != null && !name.isBlank()) this.name = name;
-		if (phone != null && phone.matches("^(010-\\d{4}-\\d{4})$")) this.phone = phone;
-		if (profileImageUrl != null && !profileImageUrl.isBlank()) this.profileImageUrl = profileImageUrl;
-	}
 
 	/**
 	 * 위치 정보 수정 메서드
@@ -156,10 +133,6 @@ public class User {
 		if (longitude != null) this.longitude = longitude;
 	}
 
-	// 역할 변경 메서드
-	public void changeRole(Role newRole) {
-		this.role = newRole;
-	}
 
 	/**
 	 * 논리적 삭제 메서드
@@ -168,6 +141,7 @@ public class User {
 		this.deletedAt = LocalDateTime.now(); // 삭제 시간 설정
 		this.refreshToken = null; // refresh token 삭제
 	}
+
 
 	/**
 	 * 논리적 삭제 여부 확인

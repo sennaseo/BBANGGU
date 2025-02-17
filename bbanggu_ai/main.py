@@ -1,4 +1,5 @@
 # pip install python-multipart
+# pip install ultralytics
 import os
 import uuid
 from collections import defaultdict
@@ -6,13 +7,28 @@ from typing import List
 
 import httpx
 from fastapi import FastAPI, UploadFile, File, Form
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 
-from ai import yolo, efficientnet, pacakge_maker
+from ai import yolo, efficientnet
+from ai.pacakge_maker import distribute_breads
 
 app = FastAPI()
 
+origins = [
+    "*",  # 모든 도메인 허용 (개발 단계에서만 권장)
+]
 
-@app.post("/detect")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],  # 모든 HTTP 메서드 허용
+    allow_headers=["*"],  # 모든 HTTP 헤더 허용
+)
+
+
+@app.post("/detect_old")
 async def detect_breads(images: List[UploadFile]):
     result_list = defaultdict(int)
     for image in images:
@@ -23,8 +39,14 @@ async def detect_breads(images: List[UploadFile]):
     return result_list
 
 
-@app.post("/detectcrop")
-async def detect_breads(images: List[UploadFile] = File(...), bakeryId: int = Form(...)):
+class_names = [
+    'bagel', 'baguette', 'bun', 'cake', 'croissant', 'croquette',
+    'financier', 'pizza', 'pretzel', 'red_bean', 'scone', 'soboro', 'tart', 'white_bread'
+]
+
+
+@app.post("/detect")
+async def comb(images: List[UploadFile] = File(...), bakeryId: int = Form(...)):
     # 크롭된 이미지 저장할 폴더 생성(요청마다 다른 폴더 생성함)
     unique_id = str(uuid.uuid4())
     cropped_image_dir = os.path.join("cropped_objects", unique_id)
@@ -34,11 +56,6 @@ async def detect_breads(images: List[UploadFile] = File(...), bakeryId: int = Fo
         image_bytes = await image.read()
         yolo.detect_and_crop(image_bytes, cropped_image_dir)
 
-    # 빵 분류 및 조합
-    class_names = [
-        'bagel', 'baguette', 'bun', 'cake', 'croissant', 'croquette',
-        'financier', 'pizza', 'pretzel', 'red_bean', 'scone', 'soboro', 'tart', 'white_bread'
-    ]
     # 가게에 등록된 빵 정보 불러오기
     class_filter = []
     category_infos = {}
@@ -50,20 +67,45 @@ async def detect_breads(images: List[UploadFile] = File(...), bakeryId: int = Fo
         print(bakery_breads)
         for bread in bakery_breads:
             category_id = bread['breadCategoryId']
-            category_name = class_names[int(category_id) - 1] # id가 1부터 시작해서 1 뺌
+            category_name = class_names[int(category_id) - 1]  # id가 1부터 시작해서 1 뺌
             class_filter.append(category_name)
             category_infos[category_name] = bread['price']
 
-    print(category_infos)
-
     # efficientNet으로 분류
     classified_breads = efficientnet.classify(cropped_image_dir, class_filter)
-    # 빵 조합 생성
-    result = pacakge_maker.distribute_breads(classified_breads, category_infos, class_names)
-    filtered_result = pacakge_maker.select_best_combinations(result)
+
+    # breadCategoryId와 name을 매핑하는 딕셔너리 생성
+    bread_info = {}
+    for bread in bakery_breads:
+        bread_info[bread['breadCategoryId']] = {
+            'name': bread['name'],
+            'price': bread['price'],
+            'breadId': bread['breadId']
+        }
 
     detected_breads = {}
     for bread in classified_breads:
-        detected_breads.setdefault(class_names.index(bread)+1, classified_breads.get(bread))
+        detected_breads.setdefault(class_names.index(bread) + 1, classified_breads.get(bread))
 
-    return filtered_result, detected_breads
+    named_detected_breads = []
+    for category_id, count in detected_breads.items():
+        named_detected_breads.append({
+            'name': bread_info[int(category_id)]['name'],
+            'price': bread_info[int(category_id)]['price'],
+            'count': count,
+            'breadId': bread_info[int(category_id)]['breadId']
+        })
+
+    return named_detected_breads
+
+
+class BreadDTO(BaseModel):
+    name: str
+    price: int
+    count: int
+
+
+@app.post("/generate-package")
+async def comb(breads: List[BreadDTO]):
+    # 빵 조합 생성
+    return distribute_breads(breads)

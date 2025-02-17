@@ -2,10 +2,9 @@ import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { useDispatch } from 'react-redux'
 import { User, Lock } from "lucide-react"
-import { login } from "../../api/common/login/Login"
+import { login } from "../../api/common/login/login"
 import { getKakaoLoginUrl } from "../../api/common/login/KakaoLogin"
-import { getUserInfo } from "../../api/common/info/UserInfo"
-import { loginSuccess } from "../../store/slices/authSlice"
+import { getUserInfo } from "../../api/user/user"
 import { setUserInfo } from "../../store/slices/userSlice"
 import { store } from "../../store"
 
@@ -35,38 +34,25 @@ export default function LoginPage() {
 
     setIsLoading(true)
     try {
-      // 로그인 API 호출
-      const loginResponse = await login(formData)
-      console.log('로그인 응답:', loginResponse)
-      
-      // 토큰 저장
-      if (loginResponse.data.access_token) {
-        localStorage.setItem('accessToken', loginResponse.data.access_token)
-      }
-      
-      // 리덕스에 로그인 정보 저장
-      dispatch(loginSuccess(loginResponse))
-      
-      // 사용자 정보 가져오기
-      const userResponse = await getUserInfo()
-      console.log('사용자 정보 응답:', userResponse)
-      
-      // 리덕스에 사용자 정보 저장 (이제 localStorage에도 자동으로 저장됨)
-      dispatch(setUserInfo(userResponse.data))
-      
-      // 리덕스 스토어 전체 상태 확인
-      const state = store.getState()
-      console.log('현재 리덕스 상태:', {
-        auth: state.auth,
-        user: state.user
-      })
+      // 1. 로그인 API 호출
+      await login(formData, dispatch)
 
-      setIsLoading(true)
+      // 4. 사용자 정보 가져오기
+      const userResponse = await getUserInfo()
+      console.log('4. 사용자 정보 응답:', userResponse)
       
+      // 5. Redux store에 저장되는 데이터 확인
+      console.log('5. Redux store에 저장될 데이터:', userResponse)
+      dispatch(setUserInfo(userResponse))
+      
+      // 6. 최종 Redux 상태 확인
+      const state = store.getState()
+      console.log('6. 최종 Redux 상태:', state)
+
       // 사용자 역할에 따른 리다이렉션
-      if (loginResponse.data.user_type === 'OWNER') {
+      if (state.user.userInfo?.role === 'OWNER') {
         navigate('/owner/main')
-      } else if (loginResponse.data.user_type === 'USER') {
+      } else if (state.user.userInfo?.role === 'USER') {
         navigate('/user')
       } else {
         navigate('/')

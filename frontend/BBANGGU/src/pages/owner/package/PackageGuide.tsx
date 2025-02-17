@@ -1,81 +1,124 @@
-import React, { useRef } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState } from '../../../store';
+import { getUserInfo } from '../../../api/user/user';
+import { setUserInfo, clearUserInfo } from '../../../store/slices/userSlice';
+import { logout } from '../../../store/slices/authSlice';
+import { setLoading } from '../../../store/slices/packageSlice';
 import { SubmitButton } from '../../../common/form/SubmitButton';
 import cameraExample from '@/assets/images/bakery/camera_ex.png';
 import ProgressBar from './components/Progress.Bar';
 import { PACKAGE_STEPS, TOTAL_PACKAGE_STEPS } from './constants/PakageSteps';
 import Header from '../../../components/owner/header/Header';
+import axios from 'axios';
 
 const PackageGuide: React.FC = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [bakeryId, setBakeryId] = useState<number | null>(null);
+  
+  // Redux에서 auth 상태 가져오기
+  const { accessToken } = useSelector((state: RootState) => state.auth);
 
-  const handleCapture = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
+  // 권한 체크 및 유저 정보 조회
+  useEffect(() => {
+    const fetchUserInfo = async () => {
+      if (!accessToken) {
+        navigate('/login');
+        return;
+      }
+
       try {
-        // 파일 정보 로깅
-        console.log('원본 파일 정보:', {
-          name: file.name,
-          type: file.type,
-          size: file.size
-        });
+        const data = await getUserInfo();
+        dispatch(setUserInfo({
+          name: data.name,
+          profileImageUrl: data.profileImageUrl,
+          email: data.email,
+          phone: data.phone,
+          userId: data.userId,
+          role: data.role as 'OWNER' | 'USER',
+          addressRoad: data.addressRoad,
+          addressDetail: data.addressDetail,
+          bakeryId: data.bakeryId
+        }));
 
-        const compressedFile = await compressImage(file);
-        console.log('압축 파일 정보:', {
-          name: compressedFile.name,
-          type: compressedFile.type,
-          size: compressedFile.size
-        });
-
-        const formData = new FormData();
-        formData.append('images', compressedFile);
-
-        // 요청 시작 로깅
-        console.log('API 요청 시작');
-        
-        const response = await fetch('https://i12d102.p.ssafy.io/ai/detect', {
-          method: 'POST',
-          body: formData
-        });
-
-        // 응답 상세 로깅
-        console.log('응답 상태:', response.status);
-        console.log('응답 헤더:', Object.fromEntries(response.headers.entries()));
-        
-        const responseText = await response.text();
-        console.log('응답 내용:', responseText);
-
-        if (!response.ok) {
-          throw new Error(`서버 에러: ${response.status}\n응답: ${responseText}`);
+        // 점주가 아닌 경우 메인으로 리다이렉트
+        if (data.role !== 'OWNER') {
+          dispatch(logout());
+          dispatch(clearUserInfo());
+          navigate('/');
+          return;
         }
 
-        const result = JSON.parse(responseText);
-        console.log('분석 결과:', result);
-
-        // 이미지 미리보기용 base64 변환
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          navigate('/owner/package/preview', { 
-            state: { 
-              image: reader.result,
-              analyzedItems: result.items
-            } 
-          });
-        };
-        reader.readAsDataURL(compressedFile);
-
-      } catch (err) {
-        // 에러 객체 타입 처리
-        const error = err as Error;
-        
-        // 상세 에러 로깅
-        console.error('에러 타입:', error.constructor.name);
-        console.error('에러 메시지:', error.message);
-        console.error('전체 에러:', error);
-        
-        alert(`이미지 분석 중 오류가 발생했습니다.\n${error.message}`);
+        setBakeryId(data.bakeryId);
+      } catch (error) {
+        console.error('Error fetching user info:', error);
+        dispatch(logout());
+        dispatch(clearUserInfo());
+        navigate('/login');
       }
+    };
+
+    fetchUserInfo();
+  }, [dispatch, navigate, accessToken]);
+
+
+  // 이미지 캡쳐 및 분석 처리
+  const handleCapture = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file && bakeryId) {
+      try {
+        dispatch(setLoading(true));
+        const compressedFile = await compressImage(file);
+        
+        const formData = new FormData();
+        formData.append('images', compressedFile);
+        formData.append('bakeryId', bakeryId.toString());
+
+        // 인증 토큰과 함께 요청
+        const response = await axios.post(
+          'https://i12d102.p.ssafy.io/ai/detectcrop',
+          formData,
+          {
+            headers: {
+              'Content-Type': 'multipart/form-data',
+              'Authorization': `Bearer ${accessToken}` // 인증 토큰 추가
+            },
+            withCredentials: false // withCredentials를 false로 변경
+          }
+        );
+
+        // 응답 구조에 맞게 데이터 처리
+        const result = response.data;
+        if (Array.isArray(result) && result.length >= 2) {
+          navigate('/owner/package/preview', { 
+            state: { analyzedItems: result } 
+          });
+        } else {
+          throw new Error('Invalid response format');
+        }
+
+      } catch (error) {
+        console.error('에러:', error);
+        if (axios.isAxiosError(error)) {
+          if (error.response?.status === 500) {
+            alert('서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+          } else if (error.response?.status === 413) {
+            alert('이미지 크기가 너무 큽니다. 다시 시도해주세요.');
+          } else if (error.response?.status === 401) {
+            alert('인증이 필요합니다. 다시 로그인해주세요.');
+            navigate('/login');
+          } else {
+            alert('이미지 분석 중 오류가 발생했습니다.');
+          }
+        }
+      } finally {
+        dispatch(setLoading(false));
+      }
+    } else if (!bakeryId) {
+      alert('베이커리 정보를 찾을 수 없습니다.');
     }
   };
 

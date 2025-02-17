@@ -18,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @Transactional
 public class BreadService {
+
 	private final BreadRepository breadRepository;
 	private final ImageService imageService;
 
@@ -45,8 +46,12 @@ public class BreadService {
 			.createdAt(LocalDateTime.now())
 			.build();
 
+		System.out.println("builder");
+
 		if (file != null && !file.isEmpty()) {
+			System.out.println("if");
 			bread.setBreadImageUrl(imageService.saveImage(file));
+			System.out.println("if ends");
 		} else {
 			bread.setBreadImageUrl(null);
 		}
@@ -84,11 +89,14 @@ public class BreadService {
 	}
 
 	private BreadDTO entityToDTO(Bread bread) {
+		System.out.println(bread.getBreadId());
 		return BreadDTO.builder()
+			.breadId(bread.getBreadId())
 			.breadCategoryId(bread.getBreadCategory().getBreadCategoryId())
 			.name(bread.getName())
 			.price(bread.getPrice())
 			.bakeryId(bread.getBakery().getBakeryId())
+			.breadImageUrl(bread.getBreadImageUrl())
 			.build();
 	}
 }

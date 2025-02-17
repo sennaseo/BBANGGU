@@ -33,6 +33,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -52,7 +53,6 @@ public class BakeryService {
 	private final SettlementRepository settlementRepository;
 	private final FavoriteRepository favoriteRepository;
 	private final BakeryPickupService bakeryPickupService;
-	private final BreadPackageRepository breadPackageRepository;
 	private final BreadPackageService breadPackageService;
 	private final ImageService imageService;
 
@@ -189,7 +189,7 @@ public class BakeryService {
 
 	// 가게 추가
 	@Transactional
-	public BakeryCreateDto createBakery(BakeryCreateDto bakeryDto) {
+	public BakeryCreateDto createBakery(BakeryCreateDto bakeryDto, MultipartFile bakeryImage, MultipartFile bakeryBackgroundImage) {
 		validateDuplicateBakery(bakeryDto.name(), bakeryDto.businessRegistrationNumber(), null);
 
 		// 사용자 조회 (userId로 User 찾기)
@@ -200,11 +200,11 @@ public class BakeryService {
 		String bakeryBackgroundImgUrl = null;
 
 		try {
-			if (bakeryDto.bakeryImage() != null && !bakeryDto.bakeryImage().isEmpty()) {
-				bakeryImageUrl = imageService.saveImage(bakeryDto.bakeryImage());
+			if (bakeryImage != null && !bakeryImage.isEmpty()) {
+				bakeryImageUrl = imageService.saveImage(bakeryImage);
 			}
-			if (bakeryDto.bakeryBackgroundImage() != null && !bakeryDto.bakeryBackgroundImage().isEmpty()) {
-				bakeryBackgroundImgUrl = imageService.saveImage(bakeryDto.bakeryBackgroundImage());
+			if (bakeryBackgroundImage != null && !bakeryBackgroundImage.isEmpty()) {
+				bakeryBackgroundImgUrl = imageService.saveImage(bakeryBackgroundImage);
 			}
 		} catch (IOException e) {
 			throw new CustomException(ErrorCode.BAKERY_IMAGE_UPLOAD_FAILED);
@@ -268,7 +268,10 @@ public class BakeryService {
 
 	// 가게 수정
 	@Transactional
-	public BakeryDto update(CustomUserDetails userDetails, Long bakery_id, BakeryDto updates) {
+	public BakeryDto update(
+		CustomUserDetails userDetails, Long bakery_id, BakeryDto updates,
+		MultipartFile bakeryImage, MultipartFile bakeryBackgroundImage
+	){
 		Bakery bakery = bakeryRepository.findByBakeryIdAndDeletedAtIsNull(bakery_id);
 		if (bakery == null) {
 			throw new CustomException(ErrorCode.BAKERY_NOT_FOUND);
@@ -280,14 +283,15 @@ public class BakeryService {
 			throw new CustomException(ErrorCode.NO_PERMISSION_TO_EDIT_BAKERY);
 		}
 
-		// ✅ 수정하려는 가게명 중복 검사
-		if (updates.name() != null && bakeryRepository.existsByNameAndBakeryIdNot(updates.name(), bakery.getBakeryId())) {
+		// ✅ 가게명 중복 검사
+		if (updates != null && updates.name() != null
+			&& bakeryRepository.existsByNameAndBakeryIdNot(updates.name(), bakery.getBakeryId())) {
 			throw new CustomException(ErrorCode.BAKERY_NAME_ALREADY_IN_USE);
 		}
 
 		// ✅ 주소 변경 확인 후 위경도 업데이트
-		String newAddrRoad = Optional.ofNullable(updates.addressRoad()).orElse(bakery.getAddressRoad());
-		String newAddrDetail = Optional.ofNullable(updates.addressDetail()).orElse(bakery.getAddressDetail());
+		String newAddrRoad = updates != null ? Optional.ofNullable(updates.addressRoad()).orElse(bakery.getAddressRoad()) : bakery.getAddressRoad();
+		String newAddrDetail = updates != null ? Optional.ofNullable(updates.addressDetail()).orElse(bakery.getAddressDetail()) : bakery.getAddressDetail();
 
 		if (!newAddrRoad.equals(bakery.getAddressRoad()) || !newAddrDetail.equals(bakery.getAddressDetail())) {
 			double[] latLng = getLatitudeLongitude(newAddrRoad, newAddrDetail);
@@ -295,19 +299,44 @@ public class BakeryService {
 			bakery.setLongitude(latLng[1]);
 		}
 
+		// ✅ 가게 이미지 저장 (파일이 있는 경우)
+		if (bakeryImage != null && !bakeryImage.isEmpty()) {
+			try {
+				String bakeryImageUrl = imageService.saveImage(bakeryImage); // 새 이미지 저장
+				if (bakeryImageUrl != null) {
+					bakery.setBakeryImageUrl(bakeryImageUrl);
+				}
+			} catch (IOException e) {
+				throw new CustomException(ErrorCode.BAKERY_IMAGE_UPLOAD_FAILED);
+			}
+		}
+
+		// ✅ 배경 이미지 저장 (파일이 있는 경우)
+		if (bakeryBackgroundImage != null && !bakeryBackgroundImage.isEmpty()) {
+			try {
+				String bakeryBackgroundImageUrl = imageService.saveImage(bakeryBackgroundImage); // 새 이미지 저장
+				if (bakeryBackgroundImageUrl != null) {
+					bakery.setBakeryBackgroundImgUrl(bakeryBackgroundImageUrl);
+				}
+			} catch (IOException e) {
+				throw new CustomException(ErrorCode.BAKERY_BACKGROUND_IMAGE_UPLOAD_FAILED);
+			}
+		}
+
 		// ✅ 수정 가능한 정보만 업데이트
-		bakery.setName(Optional.ofNullable(updates.name()).orElse(bakery.getName()));
-		bakery.setDescription(Optional.ofNullable(updates.description()).orElse(bakery.getDescription()));
+		if (updates != null) {
+			bakery.setName(Optional.ofNullable(updates.name()).orElse(bakery.getName()));
+			bakery.setDescription(Optional.ofNullable(updates.description()).orElse(bakery.getDescription()));
+		}
 		bakery.setAddressRoad(newAddrRoad);
 		bakery.setAddressDetail(newAddrDetail);
-		bakery.setBakeryImageUrl(Optional.ofNullable(updates.bakeryImageUrl()).orElse(bakery.getBakeryImageUrl()));
-		bakery.setBakeryBackgroundImgUrl(Optional.ofNullable(updates.bakeryBackgroundImgUrl()).orElse(bakery.getBakeryBackgroundImgUrl()));
 		bakery.setUpdatedAt(LocalDateTime.now());
 
 		Bakery updatedBakery = bakeryRepository.save(bakery);
+		System.out.println("✅ bakeryImageUrl: " + updatedBakery.getBakeryImageUrl());
+		System.out.println("✅ bakeryBackgroundImgUrl: " + updatedBakery.getBakeryBackgroundImgUrl());
 		return BakeryDto.from(updatedBakery);
 	}
-
 
 	// 가게 삭제 (Soft Delete)
 	@Transactional

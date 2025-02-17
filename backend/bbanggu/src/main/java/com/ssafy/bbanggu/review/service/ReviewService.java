@@ -1,12 +1,15 @@
 package com.ssafy.bbanggu.review.service;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import com.ssafy.bbanggu.auth.security.CustomUserDetails;
 import com.ssafy.bbanggu.bakery.domain.Bakery;
 import com.ssafy.bbanggu.bakery.repository.BakeryRepository;
 import com.ssafy.bbanggu.common.exception.CustomException;
@@ -20,6 +23,7 @@ import com.ssafy.bbanggu.review.dto.ReviewResponseDto;
 import com.ssafy.bbanggu.review.repository.ReviewRepository;
 import com.ssafy.bbanggu.user.domain.User;
 import com.ssafy.bbanggu.user.repository.UserRepository;
+import com.ssafy.bbanggu.util.image.ImageService;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -32,12 +36,13 @@ public class ReviewService {
 	private final ReviewRepository reviewRepository;
 	private final BakeryRepository bakeryRepository;
 	private final UserRepository userRepository;
+	private final ImageService imageService;
 
 	/**
 	 * 리뷰 등록
 	 */
 	@Transactional
-	public ReviewDto createReview(Long userId, ReviewDto request) {
+	public ReviewDto createReview(Long userId, ReviewDto request, MultipartFile reviewImage) {
 		Long reservationId = request.reservationId();
 
 		// ✅ 해당 ID의 예약이 존재하는지 정보 조회
@@ -62,33 +67,56 @@ public class ReviewService {
 		Bakery bakery = bakeryRepository.findById(reservation.getBakery().getBakeryId())
 			.orElseThrow(() -> new CustomException(ErrorCode.BAKERY_NOT_FOUND));
 
+		String reviewImageUrl = null;
+		try {
+			if (reviewImage != null && !reviewImage.isEmpty()) {
+				reviewImageUrl = imageService.saveImage(reviewImage);
+			}
+		} catch (IOException e) {
+			throw new CustomException(ErrorCode.REVIEW_IMAGE_UPLOAD_FAILED);
+		}
+
 		Review review = Review.builder()
 			.user(reservation.getUser())
 			.bakery(bakery)
 			.reservation(reservation)
 			.rating(request.rating())
 			.content(request.content())
-			.reviewImageUrl(request.reviewImgUrl())
+			.reviewImageUrl(reviewImageUrl)
 			.build();
 
 		Review savedReview = reviewRepository.save(review);
-		updateBakeryReviewState(bakery, request.rating());
+		updateBakeryReviewState(bakery, request.rating(), true);
 		return ReviewDto.from(savedReview);
 	}
+
 
 	/**
 	 * 가게 리뷰 정보 업데이트 (평점, 리뷰 수)
 	 */
-	private void updateBakeryReviewState(Bakery bakery, Integer rating) {
-		bakery.setReviewCnt(bakery.getReviewCnt() + 1);
+	private void updateBakeryReviewState(Bakery bakery, Integer rating, boolean is_created) {
+		if (is_created) {
+			bakery.setReviewCnt(bakery.getReviewCnt() + 1);
 
-		switch (rating) {
-			case 1 -> bakery.setRating1Cnt(bakery.getRating1Cnt() + 1);
-			case 2 -> bakery.setRating2Cnt(bakery.getRating2Cnt() + 1);
-			case 3 -> bakery.setRating3Cnt(bakery.getRating3Cnt() + 1);
-			case 4 -> bakery.setRating4Cnt(bakery.getRating4Cnt() + 1);
-			case 5 -> bakery.setRating5Cnt(bakery.getRating5Cnt() + 1);
-			default -> throw new CustomException(ErrorCode.INVALID_RATING);
+			switch (rating) {
+				case 1 -> bakery.setRating1Cnt(bakery.getRating1Cnt() + 1);
+				case 2 -> bakery.setRating2Cnt(bakery.getRating2Cnt() + 1);
+				case 3 -> bakery.setRating3Cnt(bakery.getRating3Cnt() + 1);
+				case 4 -> bakery.setRating4Cnt(bakery.getRating4Cnt() + 1);
+				case 5 -> bakery.setRating5Cnt(bakery.getRating5Cnt() + 1);
+				default -> throw new CustomException(ErrorCode.INVALID_RATING);
+			}
+		} else {
+			bakery.setReviewCnt(bakery.getReviewCnt() - 1);
+
+			switch (rating) {
+				case 1 -> bakery.setRating1Cnt(bakery.getRating1Cnt() - 1);
+				case 2 -> bakery.setRating2Cnt(bakery.getRating2Cnt() - 1);
+				case 3 -> bakery.setRating3Cnt(bakery.getRating3Cnt() - 1);
+				case 4 -> bakery.setRating4Cnt(bakery.getRating4Cnt() - 1);
+				case 5 -> bakery.setRating5Cnt(bakery.getRating5Cnt() - 1);
+				default -> throw new CustomException(ErrorCode.INVALID_RATING);
+			}
 		}
 
 		double newRating = calculateNewRatingAverage(bakery);
@@ -96,6 +124,7 @@ public class ReviewService {
 
 		bakeryRepository.save(bakery);
 	}
+
 
 	/**
 	 * 새로운 평균 평점 계산
@@ -109,14 +138,18 @@ public class ReviewService {
 			(4 * bakery.getRating4Cnt()) +
 			(5 * bakery.getRating5Cnt());
 
+		if (totalReviews == 0) {
+			return 0;
+		}
 		return (double) totalRatingSum / totalReviews;
 	}
+
 
 	/**
 	 * 리뷰 삭제
 	 */
 	@Transactional
-	public void delete(Long userId, Long reviewId) {
+	public void delete(Long userId, long reviewId) {
 		Review review = reviewRepository.findById(reviewId)
 			.orElseThrow(() -> new CustomException(ErrorCode.RESERVATION_NOT_FOUND));
 
@@ -126,14 +159,20 @@ public class ReviewService {
 
 		review.setDeletedAt(LocalDateTime.now());
 		reviewRepository.save(review);
+
+		updateBakeryReviewState(review.getBakery(), review.getRating(), false);
 	}
+
 
 	/**
 	 * 사용자 리뷰 조회
 	 */
-	public List<ReviewResponseDto> getUserReviews(Long userId) {
-		User user = userRepository.findById(userId)
+	public List<ReviewResponseDto> getUserReviews(CustomUserDetails userDetails, Long userId) {
+		User user = userRepository.findById(userDetails.getUserId())
 			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+		if (user.getUserId().equals(userId)) {
+			throw new CustomException(ErrorCode.UNAUTHORIZED_USER);
+		}
 
 		List<Review> reviews = reviewRepository.findByUserAndDeletedAtIsNullOrderByCreatedAtDesc(user);
 
@@ -147,6 +186,7 @@ public class ReviewService {
 				review.getCreatedAt()
 			)).collect(Collectors.toList());
 	}
+
 
 	/**
 	 * 가게 리뷰 조회
@@ -174,6 +214,7 @@ public class ReviewService {
 				review.getCreatedAt()
 			)).collect(Collectors.toList());
 	}
+
 
 	/**
 	 * 가게 평점 조회

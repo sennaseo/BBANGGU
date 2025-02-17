@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from "react"
-import { fetchBestFavoriteStores, getUserMainData, searchBakery } from "../../../services/user/usermainService"
+import { useState, useEffect } from "react"
+import { fetchBestFavoriteStores, searchBakery } from "../../../services/user/usermainService"
 import SearchBar from "../../../components/user/usermain/SearchBar"
 import Header from "../../../components/user/usermain/Header"
 import BestPackages from "../../../components/user/usermain/BestPackages"
@@ -7,15 +7,15 @@ import RecommendedStores from "../../../components/user/usermain/RecommendedStor
 import ErrorBoundary from "../../../components/ErrorBoundary"
 import { useNavigate } from "react-router-dom"
 import UserBottomNavigation from "../../../components/user/navigations/bottomnavigation/UserBottomNavigation"
-import type { BakerySearchItem, ExtendedBakeryType } from "../../../types/bakery"
-import { toggleFavoriteForUser } from "../../../services/user/usermainService"
-import { bakeryDetailApi } from "../../../api/user/detail/bakeryDetailApi"
+import type { BakerySearchItem } from "../../../types/bakery"
+import { BakeryInfo } from "../../../store/slices/bakerySlice"
 import { useSelector } from 'react-redux'
 import { RootState } from '../../../store'
+import { toggleFavoriteForUser, fetchAllBakeriesData } from "../../../services/user/usermainService"
 
 export default function UserMain() {
-  const [allBakeriesData, setAllBakeriesData] = useState<ExtendedBakeryType[]>([])
-  const [favoritebakery, setFavoritebakery] = useState<ExtendedBakeryType[]>([])
+  const [allBakeriesData, setAllBakeriesData] = useState<BakeryInfo[]>([])
+  const [favoritebakery, setFavoritebakery] = useState<BakeryInfo[]>([])
   const [searchQuery, setSearchQuery] = useState<string>("")
   const [searchResults, setSearchResults] = useState<BakerySearchItem[]>([])
   const [isLoading, setIsLoading] = useState(false)
@@ -26,48 +26,51 @@ export default function UserMain() {
   const navigate = useNavigate()
 
   // API 데이터를 불러와서 캐시된 데이터가 있다면 재요청 없이 사용합니다.
-  const loadData = useCallback(async () => {
-    setIsLoading(true)
-    try {
-      // fetchBestFavoriteStores는 좋아요가 많은 빵집 데이터 기반의 베스트 패키지를 생성하고,
-      // getUserMainData는 전체 베이커리 데이터를 기반으로 추천 빵집(updatedStores)을 생성합니다.
-      const [favoriteBakeryResult, allBakeryResult] = await Promise.all([
-        fetchBestFavoriteStores(),
-        getUserMainData()
-      ])
-      setFavoritebakery(favoriteBakeryResult.favoritebakery)
-      setAllBakeriesData(allBakeryResult.allbakery)
-      setSearchResults([])
-    } catch (err) {
-      setError(err as Error)
-    } finally {
-      setIsLoading(false)
-    }
-  }, [])
 
   useEffect(() => {
+    const loadData = async () => {
+      setIsLoading(true)
+      try {
+        const allBakeryResult = await fetchAllBakeriesData()
+        const favoritebakeryResult = await fetchBestFavoriteStores()
+        setAllBakeriesData(allBakeryResult.allbakery)
+        setFavoritebakery(favoritebakeryResult.favoritebakery)
+        setSearchResults([])
+      } catch (err) {
+        setError(err as Error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
     loadData()
-  }, [loadData])
-
-// 좋아요 토글 함수 (관심가게 삭제 기능 포함)
-const handleToggleFavorite = async (bakeryId: number) => {
-  if (Number.isNaN(bakeryId)) {
-    console.error("잘못된 bakeryId:", bakeryId);
-    return;
-  }
-  try {
-    const targetStore = await bakeryDetailApi.getBakeryById(bakeryId)
-    await toggleFavoriteForUser(bakeryId, targetStore.is_liked);
-  } catch (error) {
-    console.error(`가게(${bakeryId}) 좋아요 토글 실패:`, error);
-    throw error;
-  }
-}
-
+  }, [])
 
   const handleStoreClick = (bakeryId: number) => {
     navigate(`/user/bakery/${bakeryId}`)
   }
+
+  const handleToggleFavorite = async (bakeryId: number, isLiked: boolean) => {
+    try {
+      await toggleFavoriteForUser(bakeryId, isLiked);
+      // 좋아요 토글 시, 기존 상태의 is_liked 값을 반전하여 업데이트합니다.
+      setAllBakeriesData(prevBakeries =>
+        prevBakeries.map(bakery =>
+          bakery && bakery.bakeryId === bakeryId
+            ? { ...bakery, is_liked: !bakery.is_liked }
+            : bakery
+        )
+      );
+      setFavoritebakery(prevBakeries =>
+        prevBakeries.map(bakery =>
+          bakery && bakery.bakeryId === bakeryId
+            ? { ...bakery, is_liked: !bakery.is_liked }
+            : bakery
+        )
+      );
+    } catch (error) {
+      console.error("좋아요 토글 실패:", error);
+    }
+  };
 
   // 검색 실행 함수: 입력받은 검색어로 API 요청 후 결과를 상태에 업데이트합니다.
   const handleSearch = async (keyword: string) => {
@@ -143,8 +146,8 @@ const handleToggleFavorite = async (bakeryId: number) => {
             </div>
           </section>
 
-          <BestPackages favoritebakery={favoritebakery} onToggleLike={handleToggleFavorite} />
-          <RecommendedStores allbakery={allBakeriesData} onStoreClick={handleStoreClick} onToggleLike={handleToggleFavorite} />
+          <BestPackages favoritebakery={favoritebakery} toggleFavoriteForUser={handleToggleFavorite} />
+          <RecommendedStores allbakery={allBakeriesData} onStoreClick={handleStoreClick} toggleFavoriteForUser={handleToggleFavorite} />
         </main>
         <UserBottomNavigation />
         {searchResults.length > 0 && (

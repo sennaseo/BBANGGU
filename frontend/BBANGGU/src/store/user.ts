@@ -1,5 +1,6 @@
 export interface UserInfo {
     userId: number;
+    bakeryId: number | null;
     name: string;
     email: string;
     phone: string;

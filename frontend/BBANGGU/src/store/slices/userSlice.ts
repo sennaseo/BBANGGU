@@ -1,7 +1,8 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { UserInfo } from '../../types/user';
 
 interface UserState {
-  userInfo: any | null;
+  userInfo: UserInfo | null;
   token: string | null;
   isAuthenticated: boolean;
 }
@@ -9,8 +10,8 @@ interface UserState {
 // localStorage에서 초기 상태 가져오기
 const initialState: UserState = {
   userInfo: JSON.parse(localStorage.getItem('userInfo') || 'null'),
-  token: localStorage.getItem('token'),
-  isAuthenticated: !!localStorage.getItem('token')
+  token: localStorage.getItem('accessToken'),
+  isAuthenticated: !!localStorage.getItem('accessToken') // accessToken을 기준으로 변경
 };
 
 const userSlice = createSlice({
@@ -18,26 +19,19 @@ const userSlice = createSlice({
   initialState,
   reducers: {
     setUserInfo: (state, action: PayloadAction<any>) => {
+      console.log('Setting user info:', action.payload);
       state.userInfo = action.payload;
-      // localStorage에도 저장
+      state.isAuthenticated = !!localStorage.getItem('accessToken'); // accessToken 존재 여부로 인증 상태 설정
       localStorage.setItem('userInfo', JSON.stringify(action.payload));
-    },
-    setToken: (state, action: PayloadAction<string>) => {
-      state.token = action.payload;
-      state.isAuthenticated = true;
-      // localStorage에도 저장
-      localStorage.setItem('token', action.payload);
     },
     clearUserInfo: (state) => {
       state.userInfo = null;
-      state.token = null;
       state.isAuthenticated = false;
-      // localStorage에서도 제거
       localStorage.removeItem('userInfo');
-      localStorage.removeItem('token');
+      // accessToken은 authSlice에서 관리하므로 여기서는 제거하지 않음
     }
   }
 });
 
-export const { setUserInfo, setToken, clearUserInfo } = userSlice.actions;
+export const { setUserInfo, clearUserInfo } = userSlice.actions;
 export default userSlice.reducer;

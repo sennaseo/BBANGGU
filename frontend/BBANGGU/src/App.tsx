@@ -1,6 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import OnboardingPage from "./pages/onboarding";
-import LoginPage from "./pages/login";
 import SignupPage from "./pages/signup";
 import CustomerSignupPage from "./pages/signup/customer";
 import OwnerSignupPage from "./pages/signup/owner";
@@ -13,7 +12,7 @@ import EditStore from "./pages/owner/store/EditStore";
 import PickupTime from "./pages/owner/pickup/PickupTime";
 import CustomerSupport from "./pages/owner/support/CustomerSupport";
 import MobileLayout from "./layouts/MobileLayout";
-import ReportPage from "./pages/owner/report"
+import ReportPage from "./pages/owner/report/ReportPage"
 import UserReview from "./pages/user/review/UserReview";
 import "./styles/fonts.css";
 import { ProfileProvider } from "./common/context/ProfileContext";
@@ -37,12 +36,13 @@ import PackageSalesSetting from './pages/owner/package/PackageSalesSetting';
 import PackageSettingPage from './pages/owner/package/PackageSettingPage';
 import BreadRegisterPage from './pages/owner/bread/BreadRegisterPage';
 import { InstallPWA } from './components/InstallPWA';
+import UserMyReview from "./pages/user/mypage/myreview/UserMyReview";
+import { WriteReview } from "./pages/user/review/writereview/WriteReview";
+import { ReviewDetail } from "./pages/user/review/ReviewDetail";
 import { PaymentSuccess } from "./pages/user/payment/PaymentSuccess";
 import { PaymentFail } from "./pages/user/payment/PaymentFail";
-
-
-
-
+import KakaoCallback from './pages/oauth/KakaoCallback';
+import LoginPage from "./pages/login";
 
 export default function App() {
   return (
@@ -70,12 +70,16 @@ export default function App() {
             <Route path="/user/:userId/mypage/save-report" element={<UserSaveReport />} />
             <Route path="/user/:userId/mypage/notifications" element={<Notification />} />
             <Route path="/user/:userId/mypage/reservations" element={<ReservationHistory />} />
-            <Route path="/user/:userId/mypage/reservation/:reservation_id" element={<ReservationDetail />} />
+            <Route path="/user/:userId/mypage/reservation/:reservationId" element={<ReservationDetail />} />
+            <Route path="/user/:userId/mypage/myreviews" element={<UserMyReview />} />
+            <Route path="/user/:userId/mypage/reservation/:reservationId/write-review" element={<WriteReview />} />
+            <Route path="/user/:userId/mypage/reviews/:reservationId" element={<ReviewDetail />} />
             <Route path="/user/:userId/favorite" element={<FavoriteBakery />} />
             <Route path="/user/payment/:bakeryId" element={<UserPayment />} />
             <Route path="/user/map" element={<MapPage />} />
             <Route path="/payment/success" element={<PaymentSuccess />} />
             <Route path="/payment/fail" element={<PaymentFail />} />
+            <Route path="/oauth/kakao/callback" element={<KakaoCallback />} />
 
 
               {/* 점주 관련 페이지 */}
@@ -93,7 +97,7 @@ export default function App() {
               <Route path="/owner/package/register" element={<PackageRegister />} />
               <Route path="/owner/package/sales-setting" element={<PackageSalesSetting />} />
               <Route path="/owner/package/setting" element={<PackageSettingPage />} />
-              <Route path="/owner/bread/register"           element={<BreadRegisterPage />} />
+              <Route path="/owner/bread/register" element={<BreadRegisterPage />} />
             </Routes>
             <InstallPWA />
           </MobileLayout>
