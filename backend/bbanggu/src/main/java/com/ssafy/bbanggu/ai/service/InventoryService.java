@@ -6,8 +6,13 @@ import java.util.List;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.stereotype.Service;
 
+import com.ssafy.bbanggu.auth.security.CustomUserDetails;
+import com.ssafy.bbanggu.bakery.domain.Bakery;
+import com.ssafy.bbanggu.bakery.repository.BakeryRepository;
 import com.ssafy.bbanggu.bread.BreadDTO;
 import com.ssafy.bbanggu.bread.BreadService;
+import com.ssafy.bbanggu.common.exception.CustomException;
+import com.ssafy.bbanggu.common.exception.ErrorCode;
 import com.ssafy.bbanggu.stock.StockDTO;
 import com.ssafy.bbanggu.stock.StockService;
 
@@ -23,8 +28,14 @@ public class InventoryService {
 	private final ChatClient chatClient;
 	private final BreadService breadService;
 	private final StockService stockService;
+	private final BakeryRepository bakeryRepository;
 
-	public String getResponse(long bakeryId) {
+	public String getResponse(CustomUserDetails userDetails, long bakeryId) {
+		Bakery bakery = bakeryRepository.findByUser_UserId(bakeryId);
+		if (bakery.getUser().getUserId().equals(userDetails.getUserId())) {
+			throw new CustomException(ErrorCode.USER_IS_NOT_OWNER);
+		}
+
 		// 지난 3개월 재고 조회
 		List<StockDTO> stocks = stockService.getStockByPeriod(LocalDate.now().minusMonths(3), LocalDate.now(),
 			bakeryId);
