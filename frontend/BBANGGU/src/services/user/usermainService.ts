@@ -1,31 +1,15 @@
 import { mainApi } from '../../api/user/main/mainApi';
-import type { BakeryType, BakerySearchItem } from '../../types/bakery';
+import type { BakerySearchItem } from '../../types/bakery';
+import type { BakeryInfo } from '../../store/slices/bakerySlice';
 
-/**
- * UserMain 페이지의 데이터를 가져오는 함수.
- * 이미 데이터를 불러온 적이 있으면 캐시된 데이터를 반환합니다.
- */
-export async function getUserMainData(): Promise<{ allbakery: BakeryType[] }> {
-  const data = await fetchAllBakeriesData();
-  return data;
-}
-
-/**
- * 좋아요가 가장 많은 가게의 데이터를 가져오는 함수.
- */
-export async function getBestFavoriteStoresData(): Promise<{ favoritebakery: BakeryType[] }> {
-  // 선택 사항: 캐시를 재사용할지 결정
-  return await fetchBestFavoriteStores();
-}
-
-export async function fetchAllBakeriesData(): Promise<{ allbakery: BakeryType[] }> {
+export async function fetchAllBakeriesData(): Promise<{ allbakery: BakeryInfo[] }> {
   try {
     // 전체 베이커리 데이터 가져오기
     const response = await mainApi.getAllBakeries();
-    const stores: BakeryType[] = response.data;
+    const stores: BakeryInfo[] = response.data;
     // 각 베이커리별 패키지 데이터를 포함하여 ExtendedBakeryType 배열로 변환합니다.
-    const allbakery: BakeryType[] = await Promise.all(
-      stores.map(async (store: BakeryType): Promise<BakeryType> => {
+    const allbakery: BakeryInfo[] = await Promise.all(
+      stores.map(async (store: BakeryInfo): Promise<BakeryInfo> => {
         return store;
       })
     );
@@ -36,13 +20,13 @@ export async function fetchAllBakeriesData(): Promise<{ allbakery: BakeryType[] 
   }
 } 
 
-export async function fetchBestFavoriteStores(): Promise<{ favoritebakery: BakeryType[] }> {
+export async function fetchBestFavoriteStores(): Promise<{ favoritebakery: BakeryInfo[] }> {
   try {
     const response = await mainApi.getFavoriteBest();
-    const stores: BakeryType[] = response.data;
+    const stores: BakeryInfo[] = response.data;
 
-    const favoritebakery: BakeryType[] = await Promise.all(
-      stores.map(async (store: BakeryType): Promise<BakeryType> => {
+    const favoritebakery: BakeryInfo[] = await Promise.all(
+      stores.map(async (store: BakeryInfo): Promise<BakeryInfo> => {
         return store;
       })
     );

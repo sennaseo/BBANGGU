@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react"
-import { fetchBestFavoriteStores, getUserMainData, searchBakery } from "../../../services/user/usermainService"
+import { fetchBestFavoriteStores, searchBakery } from "../../../services/user/usermainService"
 import SearchBar from "../../../components/user/usermain/SearchBar"
 import Header from "../../../components/user/usermain/Header"
 import BestPackages from "../../../components/user/usermain/BestPackages"
@@ -23,6 +23,8 @@ export default function UserMain() {
 
   // 리덕스에서 사용자 정보 가져오기
   const userInfo = useSelector((state: RootState) => state.user.userInfo)
+  const token = useSelector((state: RootState) => state.user.token)
+  console.log("userInfo", token);
   const navigate = useNavigate()
 
   // API 데이터를 불러와서 캐시된 데이터가 있다면 재요청 없이 사용합니다.
@@ -34,7 +36,9 @@ export default function UserMain() {
         const allBakeryResult = await fetchAllBakeriesData()
         const favoritebakeryResult = await fetchBestFavoriteStores()
         setAllBakeriesData(allBakeryResult.allbakery)
+        console.log("allBakeryResult", allBakeryResult);
         setFavoritebakery(favoritebakeryResult.favoritebakery)
+        console.log("favoritebakeryResult", favoritebakeryResult);
         setSearchResults([])
       } catch (err) {
         setError(err as Error)

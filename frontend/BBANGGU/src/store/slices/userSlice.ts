@@ -20,25 +20,18 @@ const userSlice = createSlice({
   reducers: {
     setUserInfo: (state, action: PayloadAction<any>) => {
       state.userInfo = action.payload;
-      // localStorage에도 저장
+      state.isAuthenticated = !!localStorage.getItem('accessToken'); // accessToken 존재 여부로 인증 상태 설정
       localStorage.setItem('userInfo', JSON.stringify(action.payload));
-    },
-    setToken: (state, action: PayloadAction<string>) => {
-      state.token = action.payload;
-      state.isAuthenticated = true;
-      // localStorage에도 저장
-      localStorage.setItem('token', action.payload);
     },
     clearUserInfo: (state) => {
       state.userInfo = null;
-      state.token = null;
       state.isAuthenticated = false;
-      // localStorage에서도 제거
       localStorage.removeItem('userInfo');
-      localStorage.removeItem('token');
+      // accessToken은 authSlice에서 관리하므로 여기서는 제거하지 않음
     }
   }
 });
 
-export const { setUserInfo, setToken, clearUserInfo } = userSlice.actions;
+
+export const { setUserInfo, clearUserInfo } = userSlice.actions;
 export default userSlice.reducer;

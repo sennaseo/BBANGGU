@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { ApiResponse } from '../../../types/response';
-import type { BakeryType, PackageType, PackageResponse, BakerySearchItem } from '../../../types/bakery';
+import type { PackageType, PackageResponse, BakerySearchItem } from '../../../types/bakery';
+import type { BakeryInfo } from '../../../store/slices/bakerySlice';
 import { store } from '../../../store';
 
 // const BASE_URL = 'http://127.0.0.1:8080';
@@ -11,9 +12,11 @@ const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 export const mainApi = {
   getAllBakeries: async () => {
     try {
-      const response = await axios.get<ApiResponse<BakeryType[]>>(
+      const token = store.getState().user.token;
+      console.log("token", token);
+      const response = await axios.get<ApiResponse<BakeryInfo[]>>(
         `${BASE_URL}/bakery`,
-        { withCredentials: true }
+        { withCredentials: true, headers: { Authorization: `Bearer ${token}` } }
       );
       return response.data;
     } catch (error) {
@@ -96,7 +99,7 @@ export const mainApi = {
   // 좋아요가 가장 많은 가게 조회 API (/favorite/best)
   getFavoriteBest: async () => {
     try {
-      const response = await axios.get<ApiResponse<BakeryType[]>>(
+      const response = await axios.get<ApiResponse<BakeryInfo[]>>(
         `${BASE_URL}/favorite/best`,
         { withCredentials: true }
       );
