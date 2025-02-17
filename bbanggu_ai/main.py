@@ -51,7 +51,7 @@ async def detect_breads(images: List[UploadFile] = File(...), bakeryId: int = Fo
         print(bakery_breads)
         for bread in bakery_breads:
             category_id = bread['breadCategoryId']
-            category_name = class_names[int(category_id) - 1] # id가 1부터 시작해서 1 뺌
+            category_name = class_names[int(category_id) - 1]  # id가 1부터 시작해서 1 뺌
             class_filter.append(category_name)
             category_infos[category_name] = bread['price']
 
@@ -64,9 +64,12 @@ async def detect_breads(images: List[UploadFile] = File(...), bakeryId: int = Fo
     filtered_result = pacakge_maker.select_best_combinations(result)
 
     # breadCategoryId와 name을 매핑하는 딕셔너리 생성
-    bread_category_to_name = {}
+    bread_info = {}
     for bread in bakery_breads:
-        bread_category_to_name[bread['breadCategoryId']] = bread['name']
+        bread_info[bread['breadCategoryId']] = {
+            'name': bread['name'],
+            'price': bread['price']
+        }
 
     # filtered_result의 breads 키의 값들을 이름으로 변경
     updated_filtered_result = []
@@ -76,7 +79,7 @@ async def detect_breads(images: List[UploadFile] = File(...), bakeryId: int = Fo
             if 'breads' in package:
                 named_breads = {}
                 for category_id, count in package['breads'].items():
-                    bread_name = bread_category_to_name[int(category_id)]
+                    bread_name = bread_info[int(category_id)]['name']
                     named_breads[bread_name] = count
                 package['breads'] = named_breads
             updated_combination.append(package)
@@ -84,11 +87,14 @@ async def detect_breads(images: List[UploadFile] = File(...), bakeryId: int = Fo
 
     detected_breads = {}
     for bread in classified_breads:
-        detected_breads.setdefault(class_names.index(bread)+1, classified_breads.get(bread))
+        detected_breads.setdefault(class_names.index(bread) + 1, classified_breads.get(bread))
 
-    named_detected_breads = {}
+    named_detected_breads = []
     for category_id, count in detected_breads.items():
-        bread_name = bread_category_to_name[int(category_id)]
-        named_detected_breads[bread_name] = count
+        named_detected_breads.append({
+            'name': bread_info[int(category_id)]['name'],
+            'price': bread_info[int(category_id)]['price'],
+            'count': count
+        })
 
     return updated_filtered_result, named_detected_breads
