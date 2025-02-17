@@ -1,8 +1,9 @@
 from itertools import combinations
 
-def distribute_breads(classified_breads, category_infos, class_names):
-    # 빵 이름을 id로 변환하는 매핑 생성
-    bread_to_id = {name: str(idx + 1) for idx, name in enumerate(class_names)}
+def distribute_breads(breads, price_limit=10000):
+    # 빵 정보 변환
+    classified_breads = {bread.name: bread.count for bread in breads}
+    category_infos = {bread.name: bread.price for bread in breads}
 
     # 총 빵 개수 계산
     total_breads = sum(classified_breads.values())
@@ -41,7 +42,6 @@ def distribute_breads(classified_breads, category_infos, class_names):
             min_diversity = min(diversity_scores)
 
             # 종합 점수 계산
-            # 가격 차이가 작을수록, 다양성이 높을수록 좋은 점수
             price_score = 1 / (price_range + 1)  # 가격 차이가 작을수록 높은 점수
             diversity_score = avg_diversity + min_diversity  # 다양성이 높을수록 높은 점수
 
@@ -58,8 +58,7 @@ def distribute_breads(classified_breads, category_infos, class_names):
             for group in best_distribution:
                 group_count = {}
                 for bread in group:
-                    bread_id = bread_to_id[bread]  # 빵 이름을 id로 변환
-                    group_count[bread_id] = group_count.get(bread_id, 0) + 1
+                    group_count[bread] = group_count.get(bread, 0) + 1
                 group_price = sum(category_infos[bread] for bread in group)
                 formatted_groups.append({
                     'breads': group_count,
@@ -67,7 +66,7 @@ def distribute_breads(classified_breads, category_infos, class_names):
                 })
             all_distributions[num_groups] = formatted_groups
 
-    return all_distributions
+    return select_best_combinations(all_distributions, price_limit)
 
 def generate_partitions(items, num_groups):
     """주어진 아이템을 지정된 그룹 수로 나누는 모든 가능한 조합을 생성"""
@@ -90,7 +89,6 @@ def generate_partitions(items, num_groups):
             for sub_partition in generate_partitions(remaining_items, num_groups - 1):
                 yield [list(first_group)] + sub_partition
 
-
 def select_best_combinations(all_distributions, price_limit=10000):
     valid_combinations = []
 
@@ -104,13 +102,13 @@ def select_best_combinations(all_distributions, price_limit=10000):
         group_prices = [group['total_price'] for group in distribution]
         price_range = max(group_prices) - min(group_prices)
 
-        # 각 그룹의 다양성 점수 계산 (unique한 빵 종류 수)
+        # 각 그룹의 다양성 점수 계산
         diversity_scores = [len(group['breads']) for group in distribution]
         avg_diversity = sum(diversity_scores) / len(diversity_scores)
         min_diversity = min(diversity_scores)
 
         # 종합 점수 계산
-        price_score = 1 / (price_range + 1)  # 가격 차이가 작을수록 높은 점수
+        price_score = 1 / (price_range + 1)
         diversity_score = avg_diversity + min_diversity
         total_score = price_score + diversity_score * 2
 
@@ -130,6 +128,3 @@ def select_best_combinations(all_distributions, price_limit=10000):
         return []
 
     return [combination[1] for combination in top_combinations]
-
-
-

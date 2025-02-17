@@ -8,8 +8,10 @@ from typing import List
 import httpx
 from fastapi import FastAPI, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 
-from ai import yolo, efficientnet, pacakge_maker
+from ai import yolo, efficientnet
+from ai.pacakge_maker import distribute_breads
 
 app = FastAPI()
 
@@ -96,21 +98,14 @@ async def comb(images: List[UploadFile] = File(...), bakeryId: int = Form(...)):
 
     return named_detected_breads
 
-# @app.post("/generate-package")
-# async def comb():
-#     # 빵 조합 생성
-#     result = pacakge_maker.distribute_breads(classified_breads, category_infos, class_names)
-#     filtered_result = pacakge_maker.select_best_combinations(result)
-#     # filtered_result의 breads 키의 값들을 이름으로 변경
-#     updated_filtered_result = []
-#     for combination in filtered_result:
-#         updated_combination = []
-#         for package in combination:
-#             if 'breads' in package:
-#                 named_breads = {}
-#                 for category_id, count in package['breads'].items():
-#                     bread_name = bread_info[int(category_id)]['name']
-#                     named_breads[bread_name] = count
-#                 package['breads'] = named_breads
-#             updated_combination.append(package)
-#         updated_filtered_result.append(updated_combination)
+
+class BreadDTO(BaseModel):
+    name: str
+    price: int
+    count: int
+
+
+@app.post("/generate-package")
+async def comb(breads: List[BreadDTO]):
+    # 빵 조합 생성
+    return distribute_breads(breads)
