@@ -1,8 +1,11 @@
 package com.ssafy.bbanggu.user.service;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -109,7 +112,7 @@ public class UserService { // 사용자 관련 비즈니스 로직 처리
 	 * @param password 사용자 비밀번호
 	 * @return UserResponse 로그인 성공 시 사용자 정보
 	 */
-	public JwtToken login(String email, String password) {
+	public Map<String, Object> login(String email, String password) {
 		// 이메일로 사용자 조회
 		User user = userRepository.findByEmail(email)
 			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
@@ -129,17 +132,39 @@ public class UserService { // 사용자 관련 비즈니스 로직 처리
 			throw new CustomException(ErrorCode.INVALID_PASSWORD);
 		}
 
-
 		// ✅ JWT 토큰 생성
-		String accessToken = jwtTokenProvider.createAccessToken(user.getUserId());
+		Map<String, Object> additionalClaims = Map.of(
+			"role", user.getRole().name()
+		);
+		String accessToken = jwtTokenProvider.createAccessToken(user.getUserId(), additionalClaims);
 		String refreshToken = jwtTokenProvider.createRefreshToken(user.getUserId());
 
 		// ✅ Refresh Token을 DB 저장
 		user.setRefreshToken(refreshToken);
 		userRepository.save(user);
 
+		// ✅ AccessToken을 HTTP-Only 쿠키에 저장
+		ResponseCookie accessTokenCookie = ResponseCookie.from("accessToken", accessToken)
+			.httpOnly(false) // XSS 공격 방지
+			.secure(true) // HTTPS 환경에서만 사용 (로컬 개발 시 false 가능)
+			.path("/") // 모든 API 요청에서 쿠키 전송 가능
+			.maxAge(30 * 60) // 30분 유지
+			.build();
+
+		// ✅ RefreshToken을 HTTP-Only 쿠키에 저장
+		ResponseCookie refreshTokenCookie = ResponseCookie.from("refreshToken", refreshToken)
+			.httpOnly(true)
+			.secure(true)
+			.path("/")
+			.maxAge(7 * 24 * 60 * 60)
+			.build();
+
 		// ✅ 응답 데이터 생성
-		JwtToken tokens = new JwtToken(accessToken, refreshToken);
+		Map<String, Object> tokens = new HashMap<>();
+		tokens.put("accessTokenCookie", accessTokenCookie);
+		tokens.put("refreshTokenCookie", refreshTokenCookie);
+		tokens.put("accessToken", accessToken);
+		tokens.put("userType", user.getRole().name());
 		return tokens;
 	}
 
