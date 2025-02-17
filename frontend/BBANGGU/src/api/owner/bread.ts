@@ -83,12 +83,12 @@ export const registerBread = async (
 
 export const getBakeryBreads = async (bakeryId: number): Promise<BreadInfo[]> => {
   try {
+    // BreadInfo[] 타입으로 직접 받음
     const response = await instance.get<BreadInfo[]>(`/bread/bakery/${bakeryId}`);
-    console.log('빵 목록 조회 응답:', response.data);
-    return response.data;
+    return response.data;  // 바로 response.data 반환 (배열)
   } catch (error) {
     console.error('빵 목록 조회 실패:', error);
-    throw error;
+    return [];
   }
 };
 

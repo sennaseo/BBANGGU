@@ -1,53 +1,72 @@
 import React, { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState } from '../../../store';
+import { 
+  setItems, 
+  updateItem, 
+  deleteItem,
+  BreadItem,
+  setCombinations,
+  setLoading
+} from '../../../store/slices/packageSlice';
 import Header from '../../../components/owner/header/Header';
 import ProgressBar from './components/Progress.Bar';
 import { PACKAGE_STEPS, TOTAL_PACKAGE_STEPS } from './constants/PakageSteps';
-import { useRecoilState } from 'recoil';
-import { packageItemsState, BreadItem } from '../../../store/package';
 import { CameraIcon } from '@heroicons/react/24/outline';
 import { HiPencil } from 'react-icons/hi';
+import axios from 'axios';
+import { compressImage } from '../../../utils/imageCompression';
 
 const PackagePreview: React.FC = () => {
   const navigate = useNavigate();
-  const [items, setItems] = useRecoilState(packageItemsState);
+  const location = useLocation();
+  const dispatch = useDispatch();
+  const items = useSelector((state: RootState) => state.package.items);
+  const { bakeryId } = useSelector((state: RootState) => state.user.userInfo ?? { bakeryId: null });
+  const { accessToken } = useSelector((state: RootState) => state.auth);
 
-  // 초기 데이터가 없을 경우에만 설정
   useEffect(() => {
-    if (items.length === 0) {
-      setItems([
-        { id: 1, name: '식빵', count: 1, price: 3500, status: 'confirmed' },
-        { id: 2, name: '크로와상', count: 1, price: 3500, status: 'confirmed' },
-        { id: 3, name: '케이크', count: 1, price: 3500, status: 'confirmed' },
-      ]);
+    const analyzedItems = location.state?.analyzedItems;
+    if (analyzedItems && items.length === 0) {
+      // 분석된 빵 목록을 상태로 변환
+      const breadList = analyzedItems[1].map((item: { name: string; price: number; count: number }) => ({
+        name: item.name,
+        count: item.count,
+        price: item.price,
+        status: 'confirmed' as const
+      }));
+      dispatch(setItems(breadList));
+      
+      // 추천 조합도 저장
+      if (analyzedItems[0]) {
+        dispatch(setCombinations(analyzedItems[0]));
+      }
     }
-  }, [items.length, setItems]);
+  }, [location.state, items.length, dispatch]);
 
-  const handleEdit = (id: number) => {
-    setItems(prevItems =>
-      prevItems.map(item =>
-        item.id === id ? { ...item, status: 'editing' } : item
-      )
-    );
+  const handleEdit = (name: string) => {
+    const item = items.find(item => item.name === name);
+    if (item) {
+      dispatch(updateItem({ ...item, status: 'editing' }));
+    }
   };
 
-  const handleConfirm = (id: number) => {
-    setItems(prevItems =>
-      prevItems.map(item =>
-        item.id === id ? { ...item, status: 'confirmed' } : item
-      )
-    );
+  const handleConfirm = (name: string) => {
+    const item = items.find(item => item.name === name);
+    if (item) {
+      dispatch(updateItem({ ...item, status: 'confirmed' }));
+    }
   };
 
-  const handleChange = (id: number, field: keyof BreadItem, value: string | number) => {
-    setItems(prevItems =>
-      prevItems.map(item =>
-        item.id === id ? { ...item, [field]: value } : item
-      )
-    );
+  const handleChange = (name: string, field: keyof BreadItem, value: string | number) => {
+    const item = items.find(item => item.name === name);
+    if (item) {
+      dispatch(updateItem({ ...item, [field]: value }));
+    }
   };
 
-  const handleAddMore = () => {
+  const handleAddMore = async () => {
     const fileInput = document.createElement('input');
     fileInput.type = 'file';
     fileInput.accept = 'image/*';
@@ -55,39 +74,81 @@ const PackagePreview: React.FC = () => {
     
     fileInput.onchange = async (event) => {
       const file = (event.target as HTMLInputElement).files?.[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onloadend = async () => {
-          try {
-            // TODO: API 엔드포인트 설정 필요
-            const response = await fetch('/bread-package/analyze', {
-              method: 'POST',
+      if (file && bakeryId) {
+        try {
+          dispatch(setLoading(true));
+          const compressedFile = await compressImage(file);
+          
+          const formData = new FormData();
+          formData.append('images', compressedFile);
+          formData.append('bakeryId', bakeryId.toString());
+
+          const response = await axios.post(
+            'https://i12d102.p.ssafy.io/ai/detectcrop',
+            formData,
+            {
               headers: {
-                'Content-Type': 'application/json',
+                'Content-Type': 'multipart/form-data',
+                'Authorization': `Bearer ${accessToken}`
               },
-              body: JSON.stringify({ 
-                image: reader.result 
-              })
+              withCredentials: false
+            }
+          );
+
+          const result = response.data;
+          if (Array.isArray(result) && result.length >= 2) {
+            // 새로운 빵 목록을 기존 목록과 병합
+            const newBreadList = result[1].map((item: { name: string; price: number; count: number }) => ({
+              name: item.name,
+              count: item.count,
+              price: item.price,
+              status: 'confirmed' as const
+            }));
+
+            // 기존 items와 새로운 items 병합 (같은 이름의 빵은 수량 합치기)
+            const mergedItems = [...items];
+            
+            newBreadList.forEach((newItem: BreadItem) => {
+              const existingItemIndex = mergedItems.findIndex(item => item.name === newItem.name);
+              
+              if (existingItemIndex !== -1) {
+                // 이미 존재하는 빵이면 수량만 더하기
+                mergedItems[existingItemIndex] = {
+                  ...mergedItems[existingItemIndex],
+                  count: mergedItems[existingItemIndex].count + newItem.count
+                };
+              } else {
+                // 새로운 빵이면 추가
+                mergedItems.push(newItem);
+              }
             });
 
-            const result = await response.json();
-            // 분석된 아이템들을 현재 items에 추가
-            setItems(prevItems => [
-              ...prevItems,
-              ...result.items.map((item: any, index: number) => ({
-                id: prevItems.length + index + 1,
-                name: item.name,
-                count: item.count,
-                price: item.price,
-                status: 'confirmed'
-              }))
-            ]);
-          } catch (error) {
-            console.error('이미지 분석 실패:', error);
-            alert('이미지 분석 중 오류가 발생했습니다.');
+            dispatch(setItems(mergedItems));
+            
+            // 새로운 조합 추가
+            if (result[0]) {
+              dispatch(setCombinations(result[0]));
+            }
           }
-        };
-        reader.readAsDataURL(file);
+        } catch (error) {
+          console.error('에러:', error);
+          if (axios.isAxiosError(error)) {
+            if (error.response?.status === 500) {
+              alert('서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+            } else if (error.response?.status === 413) {
+              alert('이미지 크기가 너무 큽니다. 다시 시도해주세요.');
+            } else if (error.response?.status === 401) {
+              alert('인증이 필요합니다. 다시 로그인해주세요.');
+              navigate('/login');
+            } else {
+              alert('이미지 분석 중 오류가 발생했습니다.');
+            }
+          }
+        } finally {
+          dispatch(setLoading(false));
+        }
+      } else if (!bakeryId) {
+        alert('베이커리 정보를 찾을 수 없습니다.');
       }
     };
 
@@ -95,14 +156,56 @@ const PackagePreview: React.FC = () => {
   };
 
   const handleManualAdd = () => {
-    setItems(prevItems => [
-      ...prevItems,
-      { id: prevItems.length + 1, name: '', count: 1, price: 0, status: 'editing' }
-    ]);
+    const newItem: BreadItem = {
+      name: '',
+      count: 1,
+      price: 0,
+      status: 'editing'
+    };
+    dispatch(setItems([...items, newItem]));
   };
 
-  const handleDelete = (id: number) => {
-    setItems(prevItems => prevItems.filter(item => item.id !== id));
+  const handleDelete = (name: string) => {
+    dispatch(deleteItem(name));
+  };
+
+  // 재고 등록 API 호출 함수 수정
+  const registerStock = async () => {
+    try {
+      // 모든 아이템의 재고 등록을 병렬로 처리
+      const stockPromises = items.map(item => 
+        axios.post(
+          `${import.meta.env.VITE_API_BASE_URL}/stock`,
+          {
+            bakeryId,
+            breadId: item.name, // TODO: 실제 breadId로 수정 필요
+            quantity: item.count
+          },
+          {
+            headers: {
+              'Authorization': `Bearer ${accessToken}`,
+              'Content-Type': 'application/json'
+            }
+          }
+        )
+      );
+
+      await Promise.all(stockPromises);
+      
+      // 재고 등록 성공 후 로딩 페이지로 이동
+      navigate('/owner/package/loading');
+
+    } catch (error) {
+      console.error('재고 등록 실패:', error);
+      if (axios.isAxiosError(error)) {
+        if (error.response?.status === 401) {
+          alert('인증이 만료되었습니다. 다시 로그인해주세요.');
+          navigate('/login');
+        } else {
+          alert('재고 등록 중 오류가 발생했습니다.');
+        }
+      }
+    }
   };
 
   return (
@@ -142,8 +245,8 @@ const PackagePreview: React.FC = () => {
           </div>
 
           <div className="flex-1">
-            {items.map(item => (
-              <div key={item.id}>
+            {items.map((item, index) => (
+              <div key={`${item.name}-${index}`}>
                 <div className="grid grid-cols-12 items-center h-[52px]">
                   <div className="col-span-3 text-center text-[14px] text-gray-900 px-2">
                     {item.status === 'editing' ? (
@@ -151,7 +254,7 @@ const PackagePreview: React.FC = () => {
                         type="text"
                         value={item.name}
                         className="w-20 text-center border rounded-[6px] h-10 focus:outline-none focus:border-[#FC973B] focus:ring-1 focus:ring-[#FC973B]"
-                        onChange={(e) => handleChange(item.id, 'name', e.target.value)}
+                        onChange={(e) => handleChange(item.name, 'name', e.target.value)}
                       />
                     ) : (
                       <span className="truncate">{item.name}</span>
@@ -164,7 +267,7 @@ const PackagePreview: React.FC = () => {
                           type="number"
                           value={item.count}
                           className="w-16 text-center border rounded-[6px] h-10 focus:outline-none focus:border-[#FC973B] focus:ring-1 focus:ring-[#FC973B]"
-                          onChange={(e) => handleChange(item.id, 'count', parseInt(e.target.value) || 0)}
+                          onChange={(e) => handleChange(item.name, 'count', parseInt(e.target.value) || 0)}
                         />
                       </div>
                     ) : (
@@ -178,7 +281,7 @@ const PackagePreview: React.FC = () => {
                           type="number" 
                           value={item.price} 
                           className="w-24 text-center border rounded-[6px] h-10 focus:outline-none focus:border-[#FC973B] focus:ring-1 focus:ring-[#FC973B]"
-                          onChange={(e) => handleChange(item.id, 'price', parseInt(e.target.value) || 0)}
+                          onChange={(e) => handleChange(item.name, 'price', parseInt(e.target.value) || 0)}
                         />
                       </div>
                     ) : (
@@ -196,14 +299,14 @@ const PackagePreview: React.FC = () => {
                             : 'bg-[#FC973B] text-white'
                         }
                       `}
-                      onClick={() => item.status === 'confirmed' ? handleEdit(item.id) : handleConfirm(item.id)}
+                      onClick={() => item.status === 'confirmed' ? handleEdit(item.name) : handleConfirm(item.name)}
                     >
                       {item.status === 'confirmed' ? '수정' : '완료'}
                     </button>
                     {item.status === 'editing' && (
                       <button
                         className="w-[72px] h-10 rounded-[6px] text-[14px] border border-red-500 text-red-500"
-                        onClick={() => handleDelete(item.id)}
+                        onClick={() => handleDelete(item.name)}
                       >
                         삭제
                       </button>
@@ -218,14 +321,14 @@ const PackagePreview: React.FC = () => {
           <div className="grid grid-cols-2 gap-4 mt-6">
             <button
               onClick={handleAddMore}
-              className="bg-[#FC973B] text-white py-3.5 rounded-[8px] flex items-center justify-center gap-2 text-[16px] font-medium"
+              className="bg-[#FC973B] text-white py-3.5 rounded-[8px] flex items-center justify-center gap-2 text-[16px] font-bold"
             >
               <CameraIcon className="w-5 h-5" />
               추가 촬영
             </button>
             <button
               onClick={handleManualAdd}
-              className="bg-white border border-[#FC973B] text-[#FC973B] py-3.5 rounded-[8px] flex items-center justify-center gap-2 text-[16px] font-medium"
+              className="bg-white border border-[#FC973B] text-[#FC973B] py-3.5 rounded-[8px] flex items-center justify-center gap-2 text-[16px] font-bold"
             >
               <HiPencil className="w-5 h-5" />
               직접 추가
@@ -237,17 +340,18 @@ const PackagePreview: React.FC = () => {
 
         <div className="p-4 mb-8 sticky bottom-0 bg-white">
           <div className="text-center mb-4">
-            <p className="text-[14px] text-[#FC973B] mb-1">
+            <p className="text-[18px] text-[#FC973B] mb-1 font-bold">
               마지막으로 한 번만 더 확인해주세요!
             </p>
-            <p className="text-[14px] text-gray-600">
-              이후에는 수정이 어려울 수 있어요.
+            <p className="text-[16px] text-gray-600">
+              이후에는 수정이 불가능해요.
             </p>
           </div>
 
           <button
             className="w-full bg-[#FC973B] text-white py-4 rounded-[8px] text-[16px] font-medium"
-            onClick={() => navigate('/owner/package/loading')}
+            onClick={registerStock}
+            disabled={items.length === 0} // 아이템이 없으면 버튼 비활성화
           >
             빵꾸러미 만들러 가기
           </button>
