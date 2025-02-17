@@ -69,7 +69,7 @@ public class ReviewController {
 		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@PathVariable Long user_id
 	){
-		List<ReviewResponseDto> reviews = reviewService.getUserReviews(userDetails.getUserId());
+		List<ReviewResponseDto> reviews = reviewService.getUserReviews(userDetails, user_id);
 		return ResponseEntity.ok().body(new ApiResponse("사용자가 작성한 리뷰를 모두 조회하였습니다.", reviews));
 	}
 
