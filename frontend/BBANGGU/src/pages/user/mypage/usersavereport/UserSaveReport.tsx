@@ -11,7 +11,8 @@ export function UserSaveReport() {
   const [impact, setImpact] = useState<{ 
       reducedCo2e: number, 
       waterSaving: number, 
-      reducedTravelDistance: number, 
+      reducedTravelDistance: number,
+      foodWasteReduction: number,
       savedMoney: number 
     } | null>(null);
 
@@ -70,7 +71,7 @@ export function UserSaveReport() {
             <h3 className="text-[16px] text-[#666666]">음식물 낭비 감소</h3>
           </div>
 
-          <p className="text-center font-bold text-xl text-[#333333]">{impact?.waterSaving}L</p>
+          <p className="text-center font-bold text-xl text-[#333333]">{impact?.foodWasteReduction}L</p>
         </div>
 
         <div className="bg-[#F9F9F9] rounded-xl shadow-md py-5 flex flex-col items-center justify-center">

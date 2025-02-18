@@ -6,13 +6,14 @@ import { useNavigate } from "react-router-dom"
 import { useState, useEffect } from "react"
 import UserBottomNavigation from "../../../components/user/navigations/bottomnavigation/UserBottomNavigation"
 import { getUserProfile } from "../../../services/user/mypage/usermypageServices"
-import type { ReservationType, EchoSaveType } from "../../../types/bakery"
 import { logout } from '../../../api/common/logout/logoutApi';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout as authLogout, removeLocalStorage } from '../../../store/slices/authSlice';
 import { clearUserInfo } from '../../../store/slices/userSlice';
 import { LogoutModal } from "../../../components/user/mypage/LogoutModal"
 import { RootState } from '../../../store';
+import { Reservation } from "../../../store/slices/reservationSlice"
+import { EchoSave } from "../../../store/slices/echosaveSlice"
 
 export default function UserMyPage() {
   const navigate = useNavigate()
@@ -22,8 +23,8 @@ export default function UserMyPage() {
   const userInfo = useSelector((state: RootState) => state.user.userInfo);
   
   const [reservationData, setReservationData] = useState<{
-    currentReservation: ReservationType | null,
-    latestEchoSave: EchoSaveType | null,
+    currentReservation: Reservation | null,
+    latestEchoSave: EchoSave | null,
   }>({
     currentReservation: null,
     latestEchoSave: null,
@@ -39,10 +40,9 @@ export default function UserMyPage() {
       console.log("userInfo", userInfo);
       getUserProfile()
         .then((data) => {
-          console.log("data", data);
           setReservationData({
-            currentReservation: data[0].reservation[0] || null,
-            latestEchoSave: data[0].echosave[data[0].echosave.length - 1] || null,
+            currentReservation: data[0].reservation[0] as unknown as Reservation | null,
+            latestEchoSave: data[0].echosave as unknown as EchoSave | null,
           });
         })
         .catch(setError)

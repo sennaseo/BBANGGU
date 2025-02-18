@@ -43,10 +43,11 @@ export async function deleteReview(reviewId: number): Promise<void> {
     }
 }
 
-export async function getReviewByReservationId(userId: string, reservationId: string): Promise<ReviewType | undefined> {
+export async function getReviewByReservationId(userInfo: string, reservationId: string): Promise<ReviewType | undefined> {
     try {
-        const reviews = await reviewApi.getReviews(Number(userId));
-        const review = reviews.find(review => review.reservationId.toString() === reservationId);
+        const reviews = await reviewApi.getUserReviews(userInfo);
+        console.log("reviews", reviews);
+        const review = reviews.data.find(review => review.reservationId.toString() === reservationId);
         console.log("review", review);
         return review;
     } catch (error) {

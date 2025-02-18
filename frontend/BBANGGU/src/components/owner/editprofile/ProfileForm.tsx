@@ -1,11 +1,10 @@
 import { useState, useRef, useEffect } from 'react';
 import { IoEyeOutline, IoEyeOffOutline, IoTrashOutline } from 'react-icons/io5';
-// import { usePhoneNumber } from '../../../hooks/usePhoneNumber';
 import { SubmitButton } from '../../../common/form/SubmitButton';
 import { useProfile } from '../../../common/context/ProfileContext';
 import { useNavigate } from 'react-router-dom';
 import { ProfileSectionProps } from '../../../types/owner';
-import { updateUserInfo, updatePassword } from '../../../api/user/user';
+import { profileEditApi } from '../../../api/user/user';
 
 interface ProfileFormProps {
   userInfo: ProfileSectionProps['userInfo'];
@@ -147,46 +146,31 @@ export function ProfileForm({ userInfo }: ProfileFormProps) {
     }
 
     try {
-      // 기본 사용자 정보 업데이트
       const updateData = {
-        name: formData.name,
-        phone: formData.phone,
+          name: formData.name,
+          phone: formData.phone,
       };
 
-      await updateUserInfo(updateData);
+      let profileImageFile: File | undefined = undefined;
 
-      // 비밀번호 변경이 요청된 경우
-      if (formData.newPassword && formData.currentPassword) {
-        try {
-          await updatePassword({
-            originPassword: formData.currentPassword,
-            newPassword: formData.newPassword
-          });
-        } catch (error) {
-          if (error instanceof Error) {
-            alert(error.message);
-            return;
-          }
-          throw error;
-        }
+      if (formData.profileImage && typeof formData.profileImage === "string") {
+          const res = await fetch(formData.profileImage);
+          const blob = await res.blob();
+          profileImageFile = new File([blob], "profile.jpg", { type: blob.type });
       }
 
-      // Context 업데이트
+      await profileEditApi.updateUserProfile(updateData, profileImageFile);
+
       updateProfile({
-        name: formData.name,
-        profileImage: formData.profileImage
+          name: formData.name,
+          profileImage: formData.profileImage,
       });
 
-      // 성공 시 마이페이지로 이동
       navigate('/owner/mypage');
-    } catch (error) {
+  } catch (error) {
       console.error('회원정보 수정 실패:', error);
-      if (error instanceof Error) {
-        alert(error.message);
-      } else {
-        alert('회원정보 수정에 실패했습니다.');
-      }
-    }
+      alert('회원정보 수정에 실패했습니다.');
+  }
   };
 
   const inputClassName = "w-full px-4 py-3 rounded-[8px] border border-[#EFEFEF] placeholder-[#8E8E8E] focus:outline-none focus:border-[#FF9B50]";

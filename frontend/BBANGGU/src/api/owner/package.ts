@@ -1,4 +1,6 @@
 import instance from '../axios';
+import { ApiResponse } from '../../types/api';
+import axios from 'axios';
 
 // 여기에 공통으로 사용할 BreadPackage 인터페이스를 정의
 export interface BreadPackage {
@@ -16,14 +18,7 @@ export interface BreadPackage {
 
 export interface PackageResponse {
   message: string;
-  data: BreadPackage;
-}
-
-interface PackageRegisterRequest {
-  bakeryId: number;
-  name: string;
-  price: number;
-  quantity: number;
+  data: BreadPackage[];  // 배열로 변경
 }
 
 interface PickupTimeResponse {
@@ -48,38 +43,56 @@ interface PackageUpdateRequest {
   quantity: number;
 }
 
+interface RegisterPackageRequest {
+  bakeryId: number;
+  name: string;
+  price: number;
+  quantity: number;
+}
+
+// 오늘의 빵꾸러미 조회 API
 export const getBakeryPackages = async (bakeryId: number) => {
   try {
-    console.log('getBakeryPackages 호출된 bakeryId:', bakeryId); // 디버깅 로그 추가
+    console.log('빵꾸러미 API 호출:', {
+      url: `/bread-package/bakery/${bakeryId}`,  // URL 경로 수정
+      bakeryId
+    });
     
-    const response = await instance.get<PackageResponse>(`/bread-package/${bakeryId}/today`);
+    const response = await instance.get<PackageResponse>(`/bread-package/bakery/${bakeryId}`);
     
-    console.log('빵꾸러미 API 요청 URL:', `/bread-package/${bakeryId}/today`); // URL 로깅
-    console.log('빵꾸러미 API 응답 디버깅:', {
-      bakeryId,
-      response: response.data,
-      quantity: response.data.data.quantity,
-      initialQuantity: response.data.data.initialQuantity,
+    // 응답 데이터 로깅
+    console.log('빵꾸러미 API 응답:', {
+      status: response.status,
+      data: response.data,
       raw: response
     });
     
     return response.data;
   } catch (error) {
     console.error('빵꾸러미 조회 실패:', error);
-    console.error('실패한 요청의 bakeryId:', bakeryId); // 에러 시 bakeryId 로깅
+    if (axios.isAxiosError(error)) {
+      console.error('API 에러 상세:', {
+        status: error.response?.status,
+        data: error.response?.data,
+        message: error.message
+      });
+    }
     throw error;
   }
 };
 
-// 빵꾸러미 등록 API
-export const registerPackage = async (packageData: PackageRegisterRequest) => {
+// 빵꾸러미 등록 API 수정
+export const registerPackage = async (data: RegisterPackageRequest): Promise<void> => {
   try {
-    console.log('빵꾸러미 등록 요청 데이터:', packageData); // 요청 데이터 로깅 추가
-    const response = await instance.post('/bread-package', packageData);
-    console.log('빵꾸러미 등록 응답:', response); // 응답 로깅 추가
-    return response.data;
-  } catch (error: any) {
-    console.error('빵꾸러미 등록 실패:', error.response || error);
+    console.log('빵꾸러미 등록 API 호출:', {
+      url: '/bread-package',
+      data
+    });
+    
+    const response = await instance.post<ApiResponse<void>>('/bread-package', data);
+    return response.data.data;
+  } catch (error) {
+    console.error('Error registering package:', error);
     throw error;
   }
 };

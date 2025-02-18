@@ -18,6 +18,8 @@ import { HiPencil } from 'react-icons/hi';
 import axios from 'axios';
 import { compressImage } from '../../../utils/imageCompression';
 import { BREAD_CATEGORIES } from '../bread/BreadRegisterPage';  // 카테고리 정보 import
+import { getUserInfo } from '../../../api/user/user';
+import { getBakeryByOwner } from '../../../api/owner/bakery';
 
 // 타입 정의 추가
 interface BreadCombination {
@@ -33,10 +35,42 @@ const PackagePreview: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const dispatch = useDispatch();
+  const [bakeryId, setBakeryId] = useState<number | null>(null);
   const items = useSelector((state: RootState) => state.package.items);
-  const { bakeryId } = useSelector((state: RootState) => state.user.userInfo ?? { bakeryId: null });
   const { accessToken } = useSelector((state: RootState) => state.auth);
   const [newItemIds, setNewItemIds] = useState<string[]>([]);
+
+  useEffect(() => {
+    const fetchBakeryInfo = async () => {
+      try {
+        const userData = await getUserInfo();
+        
+        if (userData.role !== 'OWNER') {
+          navigate('/');
+          return;
+        }
+
+        try {
+          const bakeryData = await getBakeryByOwner();
+          setBakeryId(bakeryData.bakeryId);
+        } catch (error) {
+          console.error('Error fetching bakery:', error);
+          if (axios.isAxiosError(error) && error.response?.status === 404) {
+            alert('베이커리 정보를 찾을 수 없습니다. 베이커리를 먼저 등록해주세요.');
+            navigate('/owner/bakery/register');
+            return;
+          }
+          throw error;
+        }
+      } catch (error) {
+        console.error('사용자 정보 조회 실패:', error);
+        alert('사장님 정보를 가져오는데 실패했습니다.');
+        navigate('/');
+      }
+    };
+
+    fetchBakeryInfo();
+  }, [navigate]);
 
   useEffect(() => {
     const analyzedItems = location.state?.analyzedItems;

@@ -6,19 +6,17 @@ export interface ReviewType {
     userId: number;
     bakeryId: number;
     rating: number;
-    comment: string;
+    content: string;
+    reviewImageUrl: string;
+    createdAt: string;
 }
 
 export interface ReviewState {
-    reviews: ReviewType[];
-    loading: boolean;
-    error: string | null;
+    data: ReviewType[];
 }
 
 const initialState: ReviewState = {
-    reviews: [],
-    loading: false,
-    error: null
+    data: []
 }
 
 const reviewSlice = createSlice({
@@ -26,14 +24,8 @@ const reviewSlice = createSlice({
     initialState,
     reducers: {
         setReviews: (state, action) => {
-            state.reviews = action.payload;
+            state.data = action.payload;
         },
-        setLoading: (state, action) => {
-            state.loading = action.payload;
-        },
-        setError: (state, action) => {
-            state.error = action.payload;
-        }
     }
 })
 

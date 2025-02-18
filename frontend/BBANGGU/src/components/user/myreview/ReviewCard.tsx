@@ -1,5 +1,5 @@
 import { Star } from 'lucide-react';
-import type { ReviewType } from '../../../types/bakery';
+import type { ReviewType } from '../../../store/slices/reviewSlice';
 
 interface ReviewCardProps {
   review: ReviewType;
@@ -19,9 +19,6 @@ export const ReviewCard = ({ review }: ReviewCardProps) => {
             />
           ))}
         </div>
-        <span className="text-sm text-gray-500">
-          {new Date(review.createdAt).toLocaleDateString()}
-        </span>
       </div>
       
       {review.reviewImageUrl && (
@@ -33,8 +30,10 @@ export const ReviewCard = ({ review }: ReviewCardProps) => {
           />
         </div>
       )}
-      
-      <p className="text-gray-700 text-sm">{review.content}</p>
+      <p className="text-gray-700 text-">{review.content}</p>
+        <span className="flex justify-end text-sm text-gray-400">
+          {new Date(review.createdAt).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })}
+        </span>
     </div>
   );
 }; 

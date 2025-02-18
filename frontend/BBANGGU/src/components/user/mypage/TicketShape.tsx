@@ -1,9 +1,10 @@
 import { ProfileSection } from "./ProfileSection"
 import { ReservationList } from "./ReservationList"
-import type { ReservationType, UserType } from "../../../types/bakery"
+import type { UserType } from "../../../types/bakery"
+import { Reservation } from "../../../store/slices/reservationSlice"
 
 interface TicketShapeProps {
-  reservations: ReservationType | null
+  reservations: Reservation | null
   userData: UserType | null
   params: {
     userId: number
