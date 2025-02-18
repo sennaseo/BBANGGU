@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+// import defaultProfile from '@/assets/default-profile.jpg';
 import { store } from '../../../store';
 
 
@@ -23,7 +24,7 @@ export function ProfileSection() {
             userInfo?.profileImageUrl ? `${imgBaseUrl}${userInfo.profileImageUrl}` : `${imgBaseUrl}/uploads/bakery19.jpeg`
           }
           alt="Profile"
-          className="w-[90px] h-[90px] rounded-full object-cover"
+          className="w-[80px] h-[80px] rounded-full object-cover bg-gray-100"
         />
         <div>
           <h2 className="text-lg font-semibold">
