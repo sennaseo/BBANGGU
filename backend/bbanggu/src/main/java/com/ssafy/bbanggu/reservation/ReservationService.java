@@ -60,6 +60,7 @@ public class ReservationService {
 	public Map<String, Object> validateReservation(CustomUserDetails userDetails, ValidReservationRequest request) {
 		Bakery bakery = bakeryRepository.findById(request.bakeryId())
 			.orElseThrow(() -> new CustomException(ErrorCode.BAKERY_NOT_FOUND));
+
 		BreadPackage breadPackage = breadPackageRepository.findByBakeryIdAndToday(bakery.getBakeryId());
 		if (breadPackage == null) {
 			throw new CustomException(ErrorCode.BREAD_PACKAGE_NOT_FOUND);
