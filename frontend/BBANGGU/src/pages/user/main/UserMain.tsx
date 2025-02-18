@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect } from "react"
 import { fetchBestFavoriteStores, searchBakery } from "../../../services/user/usermainService"
 import SearchBar from "../../../components/user/usermain/SearchBar"
 import Header from "../../../components/user/usermain/Header"

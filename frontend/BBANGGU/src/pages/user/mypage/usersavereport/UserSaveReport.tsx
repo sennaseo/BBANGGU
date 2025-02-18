@@ -2,12 +2,12 @@ import { ChevronLeft } from "lucide-react"
 import { useNavigate } from "react-router-dom"
 import { useState, useEffect } from "react"
 import { calculateImpact, getSaveReport } from "../../../../services/user/mypage/save-report/saveReportService"
-import type { EchoSaveType } from "../../../../types/bakery"
+import { EchoSave } from "../../../../store/slices/echosaveSlice"
 
 
 export function UserSaveReport() {
   const navigate = useNavigate()
-  const [saveReport, setSaveReport] = useState<EchoSaveType | null>(null);
+  const [saveReport, setSaveReport] = useState<EchoSave | null>(null);
   const [impact, setImpact] = useState<{ 
       reducedCo2e: number, 
       waterSaving: number, 

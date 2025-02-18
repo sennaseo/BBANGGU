@@ -31,7 +31,7 @@ interface BreadItem {
   image?: string;
 }
 
-const BREAD_CATEGORIES: BreadCategory[] = [
+export const BREAD_CATEGORIES: BreadCategory[] = [
   { 
     id: 1, 
     name: '바게트',

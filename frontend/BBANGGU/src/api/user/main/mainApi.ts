@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { ApiResponse } from '../../../types/response';
-import type { PackageType, PackageResponse, BakerySearchItem } from '../../../types/bakery';
+import type { PackageType, PackageResponse } from '../../../types/bakery';
 import type { BakeryInfo } from '../../../store/slices/bakerySlice';
 import { store } from '../../../store';
 

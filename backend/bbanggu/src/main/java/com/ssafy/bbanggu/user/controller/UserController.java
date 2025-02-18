@@ -112,8 +112,8 @@ public class UserController {
 		response.put("userType", tokens.get("userType").toString());
 
 		return ResponseEntity.ok()
-			.header(HttpHeaders.SET_COOKIE, tokens.get("accessTokenCookie").toString())
-			.header(HttpHeaders.SET_COOKIE, tokens.get("refreshTokenCookie").toString())
+			.header(HttpHeaders.SET_COOKIE, accessTokenCookie.toString())
+			.header(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString())
 			.body(new ApiResponse("로그인이 성공적으로 완료되었습니다.", response));
     }
 

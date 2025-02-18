@@ -1,6 +1,6 @@
 import { Map, MapMarker } from "react-kakao-maps-sdk"
 import { BakeryInfo } from "../../../store/slices/bakerySlice";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 
 interface MapViewProps {
   bakeries: BakeryInfo[];
@@ -17,6 +17,7 @@ export function MapView({ bakeries = [], onMarkerClick, userAddress }: MapViewPr
   const gumiCity: Coordinates = { lat: 36.1193778, lng: 128.3445913 };
   const [center, setCenter] = useState<Coordinates>(gumiCity);
   const [userLocation, setUserLocation] = useState<Coordinates | null>(null);
+  const mapRef = useRef<kakao.maps.Map | null>(null);
 
   useEffect(() => {
     if (userAddress) {
@@ -42,7 +43,13 @@ export function MapView({ bakeries = [], onMarkerClick, userAddress }: MapViewPr
     }
   }, [userAddress]);
 
-  console.log('MapView에 전달된 bakeries:', bakeries);
+  const handleMarkerClick = (bakery: BakeryInfo) => {
+    if (mapRef.current && bakery.latitude && bakery.longitude) {
+      const position = new kakao.maps.LatLng(bakery.latitude, bakery.longitude);
+      mapRef.current.setCenter(position);
+      onMarkerClick(bakery);
+    }
+  };
 
   return (
     <div className="w-full h-full z-10">
@@ -50,6 +57,7 @@ export function MapView({ bakeries = [], onMarkerClick, userAddress }: MapViewPr
         center={center}
         style={{ width: "100%", height: "100%" }} 
         level={3}
+        ref={mapRef}
       >
         {/* 사용자 위치 마커 */}
         {userLocation && (
@@ -72,32 +80,29 @@ export function MapView({ bakeries = [], onMarkerClick, userAddress }: MapViewPr
         )}
 
         {/* 베이커리 마커들 */}
-        {bakeries && bakeries.length > 0 && bakeries.map((bakery) => {
-          console.log('마커 생성:', bakery);
-          return (
-            <MapMarker
-              key={bakery.bakeryId}
-              position={{ 
-                lat: bakery.latitude || 0, 
-                lng: bakery.longitude || 0 
-              }}
-              onClick={() => onMarkerClick(bakery)}
-              image={{
-                src: "/marker.png",
-                size: {
-                  width: 40,
-                  height: 40
-                },
-                options: {
-                  offset: {
-                    x: 20,
-                    y: 20
-                  }
+        {bakeries && bakeries.length > 0 && bakeries.map((bakery) => (
+          <MapMarker
+            key={bakery.bakeryId}
+            position={{ 
+              lat: bakery.latitude || 0, 
+              lng: bakery.longitude || 0 
+            }}
+            onClick={() => handleMarkerClick(bakery)}
+            image={{
+              src: "/marker.png",
+              size: {
+                width: 40,
+                height: 40
+              },
+              options: {
+                offset: {
+                  x: 20,
+                  y: 20
                 }
-              }}
-            />
-          );
-        })}
+              }
+            }}
+          />
+        ))}
       </Map>
     </div>
   )

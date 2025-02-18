@@ -1,10 +1,15 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { persistReducer } from 'redux-persist';
+import storage from 'redux-persist/lib/storage';
 
 export interface BreadItem {
   name: string;
   price: number;
   count: number;
   status: 'confirmed' | 'editing';
+  breadId?: number;
+  categoryId?: number;
+  categoryName?: string;
 }
 
 export interface BreadCombination {
@@ -27,6 +32,12 @@ const initialState: PackageState = {
   combinations: [],
   loading: false,
   error: null
+};
+
+const persistConfig = {
+  key: 'package',
+  storage,
+  whitelist: ['items'] // items만 저장
 };
 
 const packageSlice = createSlice({
@@ -70,4 +81,4 @@ export const {
   setError
 } = packageSlice.actions;
 
-export default packageSlice.reducer; 
+export default persistReducer(persistConfig, packageSlice.reducer); 
