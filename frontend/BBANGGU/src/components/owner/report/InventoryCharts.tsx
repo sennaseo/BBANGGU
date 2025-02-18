@@ -54,7 +54,7 @@ interface WeeklyData {
 }
 
 export function InventoryCharts() {
-  const [activeTab, setActiveTab] = useState<"daily" | "weekly" | "monthly">("daily")
+  const [activeTab, setActiveTab] = useState<"daily" | "weekly" | "monthly">("weekly")
   const [monthlyData, setMonthlyData] = useState<MonthlyData[]>([]);
   const [weeklyData, setWeeklyData] = useState<WeeklyData[]>([]);
   const [loading, setLoading] = useState(false);
