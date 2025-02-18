@@ -1,6 +1,6 @@
 import axios from 'axios';
 import instance from '../../axios';
-import { loginSuccess } from '../../../store/slices/authSlice';
+import { loginSuccess, setLocalStorage } from '../../../store/slices/authSlice';
 import { Dispatch } from '@reduxjs/toolkit';
 
 
@@ -42,7 +42,6 @@ export const login = async (loginData: LoginRequest, dispatch: Dispatch): Promis
 
     if (accessToken) {
       instance.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
-
       // Redux 스토어에 저장
       dispatch(loginSuccess({
         data: {
@@ -50,6 +49,13 @@ export const login = async (loginData: LoginRequest, dispatch: Dispatch): Promis
           user_type: response.data.data.userType
         }
       }));
+      dispatch(setLocalStorage(
+        {
+          accessToken: accessToken,
+          userType: response.data.data.userType,
+          isAuthenticated: true
+        }
+      ));
     }
   } catch (error) {
     if (axios.isAxiosError(error)) {

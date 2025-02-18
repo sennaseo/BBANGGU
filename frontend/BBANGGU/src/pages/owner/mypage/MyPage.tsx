@@ -8,7 +8,7 @@ import { MenuList } from '../../../components/owner/mypage/MenuList';
 import { CustomerSupport } from '../../../components/owner/mypage/CustomerSupport';
 import { AccountManagement } from '../../../components/owner/mypage/AccountMagagement';
 import { RootState, store } from '../../../store';
-import { logout } from '../../../store/slices/authSlice';
+import { getLocalStorage, logout, removeLocalStorage } from '../../../store/slices/authSlice';
 import { clearUserInfo, setBakeryId } from '../../../store/slices/userSlice';
 import { getUserInfo } from '../../../api/user/user';
 import { getBakeryByUserId } from '../../../api/bakery/bakery';
@@ -22,7 +22,7 @@ function MyPage() {
   useEffect(() => {
     const fetchUserInfo = async () => {
       if (!accessToken) {
-        navigate('/login');
+        dispatch(getLocalStorage());
         return;
       }
 
@@ -30,10 +30,9 @@ function MyPage() {
         await getUserInfo();
         const bakery = await getBakeryByUserId();
         store.dispatch(setBakeryId(bakery.bakeryId));
-        console.log("store.getState().user.userInfo", store.getState().user.userInfo);
+        // console.log("store.getState().user.userInfo", store.getState().user.userInfo);
       } catch (error) {
         console.error('Error fetching user info:', error);
-        navigate('/login');
       }
     };
 
@@ -43,6 +42,7 @@ function MyPage() {
   const handleLogout = () => {
     dispatch(logout());
     dispatch(clearUserInfo());
+    dispatch(removeLocalStorage());
     navigate('/login');
   };
 

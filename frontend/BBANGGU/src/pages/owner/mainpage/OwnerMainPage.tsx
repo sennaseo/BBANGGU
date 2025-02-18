@@ -42,7 +42,7 @@ const OwnerMainPage: React.FC = () => {
   useEffect(() => {
     const fetchUserInfo = async () => {
       if (!accessToken) {
-        navigate('/login');
+        // navigate('/login');
         return;
       }
 

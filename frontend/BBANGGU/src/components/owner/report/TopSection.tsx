@@ -19,8 +19,8 @@ export function TopSection({ storeName }: TopSectionProps) {
   const [topProducts, setTopProducts] = useState<TopProduct[]>([]);
   const [totalInventory, setTotalInventory] = useState(0);
   const [loading, setLoading] = useState(false);
-  const [status, setStatus] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+
 
   const { userInfo } = useSelector((state: RootState) => state.user);
 
