@@ -154,7 +154,7 @@ public class FavoriteService {
 				if (userDetails != null) {
 					is_liked = favoriteRepository.existsByUser_UserIdAndBakery_BakeryId(userDetails.getUserId(), b.getBakeryId());
 				}
-				response.add(BestBakeryDto.from(b.getBakeryId(), packageName, b.getName(), is_liked));
+				response.add(BestBakeryDto.from(b.getBakeryId(), packageName, b.getName(), b.getBakeryImageUrl(), is_liked));
 			}
 		} else {
 			List<Bakery> list = bakeryRepository.findBestBakeriesByLocation(userLat, userLng);
@@ -168,7 +168,7 @@ public class FavoriteService {
 
 				log.info("🩵 user_id: {}, bakery_id: {}", userDetails.getUserId(), b.getBakeryId());
 				boolean is_liked = favoriteRepository.existsByUser_UserIdAndBakery_BakeryId(userDetails.getUserId(), b.getBakeryId());
-				response.add(BestBakeryDto.from(b.getBakeryId(), packageName, b.getName(), is_liked));
+				response.add(BestBakeryDto.from(b.getBakeryId(), packageName, b.getName(), b.getBakeryImageUrl(), is_liked));
 			}
 		}
 
