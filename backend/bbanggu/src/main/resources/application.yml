@@ -76,7 +76,9 @@ kakao:
     user-info: https://kapi.kakao.com/v2/user/me
 
 jwt:
-  secret: ${JWT_SECRET}
+  secret:
+    access: ${JWT_SECRET_ACCESS}
+    refresh: ${JWT_SECRET_REFRESH}
   expiration:
     access-token: 604800000 # 900000  # 15분 (밀리초)
     refresh-token: 604800000 # 7일 (밀리초)

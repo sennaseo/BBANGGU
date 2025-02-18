@@ -105,16 +105,30 @@ public class UserController {
 		}
 
 		// ✅ UserService에서 로그인 & 토큰 생성
-		Map<String, Object> tokens = userService.login(request.getEmail(), request.getPassword());
+		Map<String, Object> loginInfo = userService.login(request.getEmail(), request.getPassword());
 
-		Map<String, Object> response = new HashMap<>();
-		response.put("accessToken", tokens.get("accessToken").toString());
-		response.put("userType", tokens.get("userType").toString());
+		// ✅ AccessToken을 HTTP-Only 쿠키에 저장
+		ResponseCookie accessTokenCookie = ResponseCookie.from("accessToken", loginInfo.get("accessToken").toString())
+			.httpOnly(false) // XSS 공격 방지
+			.secure(true) // HTTPS 환경에서만 사용 (로컬 개발 시 false 가능)
+			.path("/") // 모든 API 요청에서 쿠키 전송 가능
+			.maxAge(30 * 60) // 30분 유지
+			.build();
+
+		// ✅ RefreshToken을 HTTP-Only 쿠키에 저장
+		ResponseCookie refreshTokenCookie = ResponseCookie.from("refreshToken", loginInfo.get("refreshToken").toString())
+			.httpOnly(true)
+			.secure(true)
+			.path("/")
+			.maxAge(7 * 24 * 60 * 60)
+			.build();
+
+		loginInfo.remove("refreshToken");
 
 		return ResponseEntity.ok()
 			.header(HttpHeaders.SET_COOKIE, accessTokenCookie.toString())
 			.header(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString())
-			.body(new ApiResponse("로그인이 성공적으로 완료되었습니다.", response));
+			.body(new ApiResponse("로그인이 성공적으로 완료되었습니다.", loginInfo));
     }
 
     /**

@@ -1,8 +1,11 @@
 package com.ssafy.bbanggu.user.service;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -109,7 +112,7 @@ public class UserService { // 사용자 관련 비즈니스 로직 처리
 	 * @param password 사용자 비밀번호
 	 * @return UserResponse 로그인 성공 시 사용자 정보
 	 */
-	public JwtToken login(String email, String password) {
+	public Map<String, Object> login(String email, String password) {
 		// 이메일로 사용자 조회
 		User user = userRepository.findByEmail(email)
 			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
@@ -132,10 +135,11 @@ public class UserService { // 사용자 관련 비즈니스 로직 처리
 		}
 		log.info("✅ 로그인 시 입력한 비밀번호와 사용자의 비밀번호가 일치함");
 
-
-
 		// ✅ JWT 토큰 생성
-		String accessToken = jwtTokenProvider.createAccessToken(user.getUserId());
+		Map<String, Object> additionalClaims = Map.of(
+			"role", user.getRole().name()
+		);
+		String accessToken = jwtTokenProvider.createAccessToken(user.getUserId(), additionalClaims);
 		String refreshToken = jwtTokenProvider.createRefreshToken(user.getUserId());
 		log.info("🩵 토큰 발급 완료");
 
@@ -144,8 +148,11 @@ public class UserService { // 사용자 관련 비즈니스 로직 처리
 		userRepository.save(user);
 
 		// ✅ 응답 데이터 생성
-		JwtToken tokens = new JwtToken(accessToken, refreshToken);
-		return tokens;
+		Map<String, Object> response = new HashMap<>();
+		response.put("accessToken", accessToken);
+		response.put("refreshToken", accessToken);
+		response.put("userType", user.getRole().name());
+		return response;
 	}
 
 
