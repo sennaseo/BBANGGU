@@ -2,12 +2,14 @@ package com.ssafy.bbanggu.bakery.service;
 
 import com.ssafy.bbanggu.auth.security.CustomUserDetails;
 import com.ssafy.bbanggu.bakery.domain.Bakery;
+import com.ssafy.bbanggu.bakery.domain.BakeryPickupTimetable;
 import com.ssafy.bbanggu.bakery.domain.Settlement;
 import com.ssafy.bbanggu.bakery.dto.BakeryCreateDto;
 import com.ssafy.bbanggu.bakery.dto.BakeryLocationDto;
 import com.ssafy.bbanggu.bakery.dto.BakerySettlementDto;
 import com.ssafy.bbanggu.bakery.dto.PickupTimeDto;
 import com.ssafy.bbanggu.bakery.dto.SettlementUpdate;
+import com.ssafy.bbanggu.bakery.repository.BakeryPickupTimetableRepository;
 import com.ssafy.bbanggu.bakery.repository.BakeryRepository;
 import com.ssafy.bbanggu.bakery.dto.BakeryDetailDto;
 import com.ssafy.bbanggu.bakery.dto.BakeryDto;
@@ -53,7 +55,6 @@ public class BakeryService {
 	private final SettlementRepository settlementRepository;
 	private final FavoriteRepository favoriteRepository;
 	private final BakeryPickupService bakeryPickupService;
-	private final BreadPackageService breadPackageService;
 	private final ImageService imageService;
 	private final BreadPackageRepository breadPackageRepository;
 
