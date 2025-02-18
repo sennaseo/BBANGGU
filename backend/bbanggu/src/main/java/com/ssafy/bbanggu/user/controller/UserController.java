@@ -106,12 +106,12 @@ public class UserController {
 
 		// ✅ UserService에서 로그인 & 토큰 생성
 		Map<String, Object> loginInfo = userService.login(request.getEmail(), request.getPassword());
-		String accessToken = loginInfo.get("accessToken").toString();
+		Object accessToken = loginInfo.get("accessToken");
 		log.info("🩵 컨트롤러 accessToken: " + accessToken);
-		String refreshToken = loginInfo.get("refreshToken").toString();
+		Object refreshToken = loginInfo.get("refreshToken");
 		log.info("🩵 컨트롤러 refreshToken: " + refreshToken);
 		// ✅ AccessToken을 HTTP-Only 쿠키에 저장
-		ResponseCookie accessTokenCookie = ResponseCookie.from("accessToken", accessToken)
+		ResponseCookie accessTokenCookie = ResponseCookie.from("accessToken", (String)accessToken)
 			.httpOnly(false) // XSS 공격 방지
 			.secure(true) // HTTPS 환경에서만 사용 (로컬 개발 시 false 가능)
 			.path("/") // 모든 API 요청에서 쿠키 전송 가능
@@ -119,7 +119,7 @@ public class UserController {
 			.build();
 
 		// ✅ RefreshToken을 HTTP-Only 쿠키에 저장
-		ResponseCookie refreshTokenCookie = ResponseCookie.from("refreshToken", refreshToken)
+		ResponseCookie refreshTokenCookie = ResponseCookie.from("refreshToken", (String)refreshToken)
 			.httpOnly(true)
 			.secure(true)
 			.path("/")
