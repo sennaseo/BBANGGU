@@ -1,165 +1,92 @@
-from itertools import combinations
-from collections import Counter, defaultdict
+def distribute_breads(bread_dtos):
+    # Convert DTO array to required format
+    classified_breads = {}
+    bread_info = {}
 
+    for dto in bread_dtos:
+        dto_dict = dto.dict()
+        bread_id = str(dto_dict["breadId"])
+        if bread_id not in classified_breads:
+            classified_breads[bread_id] = 0
+            bread_info[bread_id] = {
+                "name": dto_dict["name"],
+                "price": dto_dict["price"]
+            }
+        classified_breads[bread_id] += dto_dict["count"]
 
-def distribute_breads(breads, price_limit=10000):
-    # 빵 정보 변환 및 기본 검증
-    classified_breads = {bread.name: bread.count for bread in breads}
-    category_infos = {bread.name: bread.price for bread in breads}
-
-    # 최소 가격의 빵으로만 구성해도 price_limit을 초과하는 그룹 크기 계산
-    min_bread_price = min(category_infos.values())
-    max_items_per_group = price_limit // min_bread_price
-
-    # 총 빵 개수 계산
+    # Calculate total breads
     total_breads = sum(classified_breads.values())
-    max_groups = total_breads // 2  # 최대 묶음 개수
+    max_groups = total_breads // 2  # Maximum number of packages possible
 
-    # 빵 종류별로 그룹화하여 리스트 생성 (중복 계산 감소)
+    # Create sorted bread list by price (descending) for greedy approach
     bread_list = []
-    for bread, count in classified_breads.items():
-        bread_list.extend([bread] * count)
-
-    # 빵 종류별 가격을 미리 계산
-    bread_type_counts = Counter(bread_list)
+    for bread_id, count in classified_breads.items():
+        bread_list.extend([bread_id] * count)
 
     all_distributions = {}
-    partition_cache = {}
+    distribution_scores = {}
 
-    def calculate_group_metrics(group):
-        """그룹의 가격과 다양성 점수를 계산"""
-        group_counter = Counter(group)
-        price = sum(category_infos[bread] * count for bread, count in group_counter.items())
-        diversity = len(group_counter)
-        return price, diversity
+    # Process for each possible number of groups
+    for num_groups in range(1, max_groups + 1):
+        groups = [[] for _ in range(num_groups)]
+        group_prices = [0] * num_groups
 
-    def get_partition_key(items):
-        """파티션의 캐시 키 생성"""
-        return tuple(sorted(Counter(items).items()))
+        # Sort bread_list by price (descending)
+        sorted_breads = sorted(bread_list,
+                               key=lambda x: bread_info[x]["price"],
+                               reverse=True)
 
-    def generate_partitions_optimized(items, num_groups):
-        """최적화된 파티션 생성 함수"""
-        if num_groups == 1:
-            yield [items]
-            return
+        # Greedy distribution - put each bread into the group with lowest current price
+        for bread in sorted_breads:
+            min_price_group = min(range(num_groups), key=lambda i: group_prices[i])
+            groups[min_price_group].append(bread)
+            group_prices[min_price_group] += bread_info[bread]["price"]
 
-        items_key = get_partition_key(items)
-        if (items_key, num_groups) in partition_cache:
-            yield from partition_cache[(items_key, num_groups)]
-            return
-
-        results = []
-        min_items = 2
-        max_items = min(len(items) - (num_groups - 1) * 2, max_items_per_group)
-
-        if max_items < min_items:
-            return
-
-        for i in range(min_items, max_items + 1):
-            for first_group in combinations(set(items), min(i, len(set(items)))):
-                first_group_counter = Counter(first_group)
-                # 각 빵 종류의 개수가 가능한지 확인
-                if not all(bread_type_counts[bread] >= count for bread, count in first_group_counter.items()):
-                    continue
-
-                # 첫 번째 그룹의 가격 확인
-                first_group_price = sum(category_infos[bread] * count for bread, count in first_group_counter.items())
-                if first_group_price > price_limit:
-                    continue
-
-                remaining_items = list(items)
-                for bread in first_group:
-                    remaining_items.remove(bread)
-
-                for sub_partition in generate_partitions_optimized(remaining_items, num_groups - 1):
-                    result = [list(first_group)] + sub_partition
-                    results.append(result)
-                    yield result
-
-        partition_cache[(items_key, num_groups)] = results
-
-    # 1개부터 max_groups까지의 묶음 수에 대해 처리
-    for num_groups in range(2, max_groups + 1):
-        best_distribution = None
-        best_score = float('-inf')
-
-        for partition in generate_partitions_optimized(bread_list, num_groups):
-            # 각 묶음의 가격과 다양성 계산
-            group_metrics = [calculate_group_metrics(group) for group in partition]
-            group_prices = [price for price, _ in group_metrics]
-            diversity_scores = [diversity for _, diversity in group_metrics]
-
-            # 가격 제한 검사
-            if any(price > price_limit for price in group_prices):
-                continue
-
-            # 평가 지표 계산
-            price_range = max(group_prices) - min(group_prices)
-            avg_diversity = sum(diversity_scores) / len(diversity_scores)
-            min_diversity = min(diversity_scores)
-
-            # 종합 점수 계산
-            price_score = 1 / (price_range + 1)
-            diversity_score = avg_diversity + min_diversity
-            total_score = price_score + diversity_score * 2
-
-            if total_score > best_score:
-                best_score = total_score
-                best_distribution = partition
-
-        if best_distribution:
-            formatted_groups = []
-            for group in best_distribution:
-                group_counter = Counter(group)
-                group_price = sum(category_infos[bread] * count for bread, count in group_counter.items())
-                # 빵 목록을 리스트 형태로 변환
-                breads_list = [
-                    {
-                        'name': bread_name,
-                        'quantity': count,
-                        'breadId': getattr(bread, 'breadId')
-                    }
-                    for bread_name, count in group_counter.items()
-                    for bread in breads if bread.name == bread_name
-                ]
-                formatted_groups.append({
-                    'breads': breads_list,
-                    'total_price': group_price
-                })
-            all_distributions[num_groups] = formatted_groups
-
-    return select_best_combinations(all_distributions, price_limit)
-
-
-def select_best_combinations(all_distributions, price_limit=10000):
-    valid_combinations = []
-
-    # 각 묶음 개수별로 최고 점수의 조합 찾기
-    for num_groups, distribution in all_distributions.items():
-        # price_limit 조건 검사
-        if any(group['total_price'] > price_limit for group in distribution):
-            continue
-
-        group_prices = [group['total_price'] for group in distribution]
+        # Calculate scores
+        diversity_scores = [len(set(group)) for group in groups]
         price_range = max(group_prices) - min(group_prices)
-
-        diversity_scores = [len(group['breads']) for group in distribution]
         avg_diversity = sum(diversity_scores) / len(diversity_scores)
         min_diversity = min(diversity_scores)
 
+        # Calculate total score
         price_score = 1 / (price_range + 1)
         diversity_score = avg_diversity + min_diversity
         total_score = price_score + diversity_score * 2
 
-        valid_combinations.append((num_groups, distribution, total_score))
+        # Format the result
+        formatted_groups = []
+        for group in groups:
+            group_count = {}
+            for bread_id in group:
+                if bread_id not in group_count:
+                    group_count[bread_id] = {
+                        "name": bread_info[bread_id]["name"],
+                        "quantity": 0,
+                        "breadId": int(bread_id)
+                    }
+                group_count[bread_id]["quantity"] += 1
 
-    # 각 묶음 개수별로 가장 높은 점수를 가진 조합만 선택
-    best_by_group_count = {}
-    for num_groups, distribution, score in valid_combinations:
-        if num_groups not in best_by_group_count or score > best_by_group_count[num_groups][1]:
-            best_by_group_count[num_groups] = (distribution, score)
+            group_price = sum(bread_info[bread_id]["price"] * count["quantity"]
+                              for bread_id, count in group_count.items())
 
-    # 최종 점수로 정렬하여 상위 3개 선택
-    final_combinations = sorted(best_by_group_count.values(), key=lambda x: x[1], reverse=True)
+            formatted_groups.append({
+                "breads": list(group_count.values()),
+                "totalprice": group_price
+            })
 
-    return [combination[0] for combination in final_combinations[:3]]
+        # Calculate average package price for this distribution
+        avg_package_price = sum(group["totalprice"] for group in formatted_groups) / len(formatted_groups)
+
+        # Only include distributions where average package price is 15000 or less
+        if avg_package_price <= 15000:
+            all_distributions[num_groups] = formatted_groups
+            distribution_scores[num_groups] = total_score
+
+    # Get top 3 distributions by score (if any valid distributions exist)
+    if distribution_scores:
+        top_distributions = sorted(distribution_scores.items(),
+                                   key=lambda x: x[1],
+                                   reverse=True)[:3]
+        return [all_distributions[num_groups] for num_groups, _ in top_distributions]
+    else:
+        return []  # Return empty list if no valid distributions found
