@@ -39,11 +39,13 @@ interface UpdatePasswordResponse {
 
 export const getUserInfo = async (): Promise<UserInfo> => {
   try {
+    console.log('Calling getUserInfo API...');
     const response = await instance.get<ApiResponse<UserInfo>>('/user');
+    console.log('API Response:', response.data);  // API 응답 데이터 확인
     store.dispatch(fetchUserInfo(response.data.data));
     return response.data.data;
   } catch (error) {
-    console.error('Error fetching user info:', error);
+    console.error('Error in getUserInfo API:', error);
     throw error;
   }
 };

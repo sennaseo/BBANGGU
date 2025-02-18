@@ -80,8 +80,8 @@ const PackageRegister: React.FC = () => {
     if (!selectedPackage) return 0;
     const selectedPkg = packageDetails[selectedPackage - 1];
     const totalPrice = selectedPkg.price * selectedPkg.count;
-    // 50% 할인된 가격으로 계산
-    return Math.floor((totalPrice / packageCount) * 0.5).toLocaleString();
+    // 50% 할인된 가격으로 계산 (toLocaleString 제거)
+    return Math.floor((totalPrice / packageCount) * 0.5);
   };
 
   const calculateTotalPrice = () => {
@@ -438,15 +438,27 @@ const PackageRegister: React.FC = () => {
               ${packageCount > 0 
                 ? 'bg-[#FC973B] text-white hover:bg-[#e88934] transition-colors' 
                 : 'bg-[#D7C5B5] text-white cursor-not-allowed'}`}
-            onClick={() => navigate('/owner/package/packing-guide', {
-              state: {
+            onClick={() => {
+              const calculatedPrice = registrationMode === 'auto' 
+                ? calculatePrice() 
+                : calculateManualPrice();
+              
+              console.log('Navigating with values:', {
                 mode: registrationMode,
-                price: registrationMode === 'auto' ? calculatePrice() : calculateManualPrice(),
-                quantity: packageCount,
-                selectedPackage,
-                packageDetails // 자동 모드일 때 필요한 패키지 상세 정보
-              }
-            })}
+                price: calculatedPrice,
+                quantity: packageCount
+              });
+
+              navigate('/owner/package/packing-guide', {
+                state: {
+                  mode: registrationMode,
+                  price: calculatedPrice,  // 숫자 값 전달
+                  quantity: packageCount,
+                  selectedPackage,
+                  packageDetails
+                }
+              });
+            }}
             disabled={packageCount === 0}
           >
             다음

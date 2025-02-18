@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Header from '../../../components/owner/header/Header';
 import ProgressBar from './components/Progress.Bar';
@@ -7,6 +7,9 @@ import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import breadBagIcon from '../../../assets/images/bakery/bread_pakage.svg';
 import wonIcon from '../../../assets/images/bakery/won_icon.png';
 import axios from 'axios';
+import { getUserInfo } from '../../../api/user/user';
+import { getBakeryByOwner, getPickupTime, updatePickupTime } from '../../../api/owner/bakery';
+import { registerPackage } from '../../../api/owner/package';
 
 // 경고 아이콘을 직접 SVG로 구현
 const WarningIcon = () => (
@@ -32,31 +35,157 @@ const generateTimeOptions = () => {
   return options;
 };
 
+// 타입 정의 수정
+interface LocationState {
+  mode: 'auto' | 'manual';
+  price: number;
+  quantity: number;
+  totalPrice: number;
+  selectedPackage?: number;
+}
+
 const PackageSalesSetting: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { price, quantity, totalPrice } = location.state || { price: 0, quantity: 0, totalPrice: 0 };
+  
+  useEffect(() => {
+    console.log('PackageSalesSetting received state:', location.state);
+    if (!location.state) {
+      alert('잘못된 접근입니다.');
+      navigate(-1);
+      return;
+    }
+
+    // 값 검증 추가
+    const { price, quantity, totalPrice } = location.state as LocationState;
+    if (isNaN(price) || isNaN(quantity) || isNaN(totalPrice)) {
+      console.error('Invalid numeric values:', { price, quantity, totalPrice });
+      alert('가격 정보가 올바르지 않습니다.');
+      navigate(-1);
+      return;
+    }
+  }, [location.state, navigate]);
+
+  const { price, quantity, totalPrice } = location.state as LocationState;
   const [packageName, setPackageName] = useState('');
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
+  const [bakeryId, setBakeryId] = useState<number | null>(null);
+  const [isLoadingPickupTime, setIsLoadingPickupTime] = useState(true);
 
   const timeOptions = generateTimeOptions();
 
-  // API 호출 함수 추가
-  const registerPackage = async () => {
-    try {
-      const response = await axios.post('/api/packages', {
-        bakeryId: 1, // TODO: bakeryId 받아오기
-        name: packageName,
-        price: price,
-        quantity: quantity,
-      });
-      
-      if (response.status === 200) {
-        navigate('/owner/main');
+  // 베이커리 정보와 픽업 시간 조회
+  useEffect(() => {
+    const fetchBakeryInfo = async () => {
+      try {
+        const userData = await getUserInfo();
+        
+        if (userData.role !== 'OWNER') {
+          navigate('/');
+          return;
+        }
+
+        try {
+          const bakeryData = await getBakeryByOwner();
+          setBakeryId(bakeryData.bakeryId);
+
+          // 픽업 시간 조회
+          try {
+            const pickupTime = await getPickupTime(bakeryData.bakeryId);
+            console.log('Fetched pickup time:', pickupTime);
+            setStartTime(pickupTime.startTime);
+            setEndTime(pickupTime.endTime);
+          } catch (error) {
+            console.error('Error fetching pickup time:', error);
+            // 픽업 시간 조회 실패는 치명적이지 않으므로 기본값 사용
+          } finally {
+            setIsLoadingPickupTime(false);
+          }
+
+        } catch (error) {
+          console.error('Error fetching bakery:', error);
+          if (axios.isAxiosError(error) && error.response?.status === 404) {
+            alert('베이커리 정보를 찾을 수 없습니다. 베이커리를 먼저 등록해주세요.');
+            navigate('/owner/bakery/register');
+            return;
+          }
+          throw error;
+        }
+      } catch (error) {
+        console.error('사용자 정보 조회 실패:', error);
+        alert('사장님 정보를 가져오는데 실패했습니다.');
+        navigate('/');
       }
+    };
+
+    fetchBakeryInfo();
+  }, [navigate]);
+
+  // API 호출 함수 수정
+  const handleRegisterPackage = async () => {
+    if (!bakeryId) {
+      alert('베이커리 정보를 찾을 수 없습니다.');
+      return;
+    }
+
+    if (!packageName || !startTime || !endTime) {
+      alert('모든 정보를 입력해주세요.');
+      return;
+    }
+
+    try {
+      // 1. 빵꾸러미 등록
+      const packageData = {
+        bakeryId,
+        name: packageName,
+        price,
+        quantity
+      };
+
+      console.log('빵꾸러미 등록 요청:', packageData);
+      await registerPackage(packageData);
+
+      // 2. 픽업 시간 설정
+      try {
+        await updatePickupTime(bakeryId, startTime, endTime);
+      } catch (error) {
+        console.error('픽업 시간 설정 실패:', error);
+        // 픽업 시간 설정 실패는 크리티컬하지 않으므로 계속 진행
+      }
+
+      alert('빵꾸러미가 등록되었습니다.');
+      navigate('/owner/main');
     } catch (error) {
       console.error('패키지 등록 실패:', error);
+      if (axios.isAxiosError(error)) {
+        console.log('에러 응답:', error.response?.data);
+        alert(error.response?.data?.message || '패키지 등록에 실패했습니다.');
+      }
+    }
+  };
+
+  // 시간 변경 핸들러
+  const handleTimeChange = async (type: 'start' | 'end', value: string) => {
+    if (!bakeryId) return;
+
+    try {
+      if (type === 'start') {
+        setStartTime(value);
+        if (endTime) {
+          await updatePickupTime(bakeryId, value, endTime);
+        }
+      } else {
+        setEndTime(value);
+        if (startTime) {
+          await updatePickupTime(bakeryId, startTime, value);
+        }
+      }
+    } catch (error) {
+      console.error('Error updating pickup time:', error);
+      if (axios.isAxiosError(error)) {
+        alert(error.response?.data?.message || '픽업 시간 수정에 실패했습니다.');
+      }
     }
   };
 
@@ -106,8 +235,9 @@ const PackageSalesSetting: React.FC = () => {
               <div className="relative">
                 <select
                   value={startTime}
-                  onChange={(e) => setStartTime(e.target.value)}
+                  onChange={(e) => handleTimeChange('start', e.target.value)}
                   className="w-full px-4 py-3 rounded-[8px] border border-[#E5E5E5] text-[16px] appearance-none bg-white focus:outline-none focus:ring-2 focus:ring-[#FC973B]"
+                  disabled={isLoadingPickupTime}
                 >
                   <option value="">시간 선택</option>
                   {timeOptions.map((time) => (
@@ -131,8 +261,9 @@ const PackageSalesSetting: React.FC = () => {
               <div className="relative">
                 <select
                   value={endTime}
-                  onChange={(e) => setEndTime(e.target.value)}
+                  onChange={(e) => handleTimeChange('end', e.target.value)}
                   className="w-full px-4 py-3 rounded-[8px] border border-[#E5E5E5] text-[16px] appearance-none bg-white focus:outline-none focus:ring-2 focus:ring-[#FC973B]"
+                  disabled={isLoadingPickupTime}
                 >
                   <option value="">시간 선택</option>
                   {timeOptions.map((time) => (
@@ -266,7 +397,7 @@ const PackageSalesSetting: React.FC = () => {
         {/* 하단 버튼 */}
         <div className="mt-auto pt-4">
           <button
-            onClick={registerPackage}
+            onClick={handleRegisterPackage}
             className="w-full bg-[#FC973B] text-white py-4 rounded-[8px] text-[16px] font-medium"
             disabled={!packageName || !startTime || !endTime}
           >
