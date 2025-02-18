@@ -24,8 +24,8 @@ import com.ssafy.bbanggu.common.exception.ErrorCode;
 @Component
 public class JwtTokenProvider {
 
-	private final SecretKey accessTokenSecretKey;
-	private final SecretKey refreshTokenSecretKey;
+	private final SecretKey accessSecretKey;
+	private final SecretKey refreshSecretKey;
 	private final long accessTokenValidity;
 	private final long refreshTokenValidity;
 
@@ -34,68 +34,42 @@ public class JwtTokenProvider {
 			@Value("${jwt.secret.refresh}") String refreshSecret,
 			@Value("${jwt.expiration.access-token}") long accessTokenValidity,
 			@Value("${jwt.expiration.refresh-token}") long refreshTokenValidity) {
-		this.accessTokenSecretKey = Keys.hmacShaKeyFor(accessSecret.getBytes());
-		this.refreshTokenSecretKey = Keys.hmacShaKeyFor(refreshSecret.getBytes());
+		this.accessSecretKey = Keys.hmacShaKeyFor(accessSecret.getBytes());
+		this.refreshSecretKey = Keys.hmacShaKeyFor(refreshSecret.getBytes());
 		this.accessTokenValidity = accessTokenValidity;
 		this.refreshTokenValidity = refreshTokenValidity;
 	}
 
-	// ✅ Access Token 생성 (userId + 추가 정보 포함)
+	// ✅ Access Token 생성
 	public String createAccessToken(Long userId, Map<String, Object> additionalClaims) {
 		return Jwts.builder()
-			.setSubject(String.valueOf(userId)) // 사용자 ID 저장
+			.setSubject(String.valueOf(userId)) // 사용자 아이디 저장
 			.setIssuedAt(new Date()) // 발급 시간
 			.setExpiration(new Date(System.currentTimeMillis() + accessTokenValidity)) // 만료시간 설정
-			.addClaims(additionalClaims) // 추가 클레임 (권한 정보 등)
-			.signWith(accessTokenSecretKey, SignatureAlgorithm.HS256) // 서명 알고리즘
+			.addClaims(additionalClaims)
+			.signWith(accessSecretKey, SignatureAlgorithm.HS256) // HS256 알고리즘 사용
 			.compact();
 	}
 
-	// ✅ Refresh Token 생성 (userId만 포함, 별도 서명 키 사용)
+	// ✅ Refresh Token 생성
 	public String createRefreshToken(Long userId) {
 		return Jwts.builder()
-			.setSubject(String.valueOf(userId)) // 최소한의 정보만 포함
+			.setSubject(String.valueOf(userId)) // 사용자 아이디 저장
 			.setIssuedAt(new Date()) // 발급 시간
 			.setExpiration(new Date(System.currentTimeMillis() + refreshTokenValidity)) // 만료시간 설정
-			.signWith(refreshTokenSecretKey, SignatureAlgorithm.HS256) // 별도 서명 키
+			.signWith(refreshSecretKey, SignatureAlgorithm.HS256) // HS256 알고리즘 사용
 			.compact();
 	}
 
-	// ✅ Access Token 검증
-	public boolean validateAccessToken(String token) {
-		return validateToken(token, accessTokenSecretKey);
-	}
-
-	// ✅ Refresh Token 검증
-	public boolean validateRefreshToken(String token) {
-		return validateToken(token, refreshTokenSecretKey);
-	}
-
-	// ✅ 공통 토큰 검증 로직
-	private boolean validateToken(String token, SecretKey secretKey) {
-		try {
-			Jwts.parserBuilder()
-				.setSigningKey(secretKey)
-				.build()
-				.parseClaimsJws(token);
-			return true;
-		} catch (ExpiredJwtException e) {
-			throw new CustomException(ErrorCode.EXPIRED_TOKEN);
-		} catch (MalformedJwtException e) {
-			throw new CustomException(ErrorCode.INCORRECT_TOKEN_FORMAT);
-		} catch (Exception e) {
-			throw new CustomException(ErrorCode.TOKEN_VERIFICATION_FAILED);
-		}
-	}
 
 	// ✅ Access Token에서 사용자 ID 및 추가 정보 추출
 	public Claims getClaimsFromAccessToken(String token) {
-		return getClaims(token, accessTokenSecretKey);
+		return getClaims(token, accessSecretKey);
 	}
 
 	// ✅ Refresh Token에서 사용자 ID 추출 (추가 정보 없음)
 	public Long getUserIdFromRefreshToken(String token) {
-		String userIdStr = getClaims(token, refreshTokenSecretKey).getSubject();
+		String userIdStr = getClaims(token, refreshSecretKey).getSubject();
 		return Long.parseLong(userIdStr);
 	}
 
@@ -112,10 +86,34 @@ public class JwtTokenProvider {
 		}
 	}
 
+	// ✅ Access Token 검증
+	public boolean validateAccessToken(String token) {
+		return validateToken(token, accessSecretKey);
+	}
+
+	// ✅ Refresh Token 검증
+	public boolean validateRefreshToken(String token) {
+		return validateToken(token, refreshSecretKey);
+	}
+
+	// ✅ JWT 검증
+	public boolean validateToken(String token, SecretKey secretKey) {
+		try {
+			Jwts.parserBuilder().setSigningKey(secretKey).build().parseClaimsJws(token);
+			return true;
+		} catch (ExpiredJwtException e) {
+			throw new CustomException(ErrorCode.EXPIRED_TOKEN);
+		} catch (MalformedJwtException e) {
+			throw new CustomException(ErrorCode.INCORRECT_TOKEN_FORMAT);
+		} catch (Exception e) {
+			throw new CustomException(ErrorCode.TOKEN_VERIFICATION_FAILED);
+		}
+	}
+
 	// ✅ JWT 남은 유효 시간 확인
 	public long getRemainingExpirationTime(String token, boolean isAccessToken) {
 		try {
-			SecretKey key = isAccessToken ? accessTokenSecretKey : refreshTokenSecretKey;
+			SecretKey key = isAccessToken ? accessSecretKey : refreshSecretKey;
 			Claims claims = Jwts.parserBuilder()
 				.setSigningKey(key)
 				.build()

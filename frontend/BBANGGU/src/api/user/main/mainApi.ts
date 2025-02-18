@@ -12,7 +12,7 @@ const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 export const mainApi = {
   getAllBakeries: async () => {
     try {
-      const token = store.getState().user.token;
+      const token = store.getState().auth.accessToken;
       let response;
       if (token) {
         response = await axios.get<ApiResponse<BakeryInfo[]>>(
@@ -34,7 +34,7 @@ export const mainApi = {
   // bakeryId 기반으로 bread-package 데이터를 가져오는 API
   getPackagesByBakeryId: async (bakeryId: number): Promise<PackageType[]> => {
     try {
-      const token = store.getState().user.token;
+      const token = store.getState().auth.accessToken;
       let response;
       if (token) {
         response = await axios.get<PackageResponse>(
@@ -70,7 +70,7 @@ export const mainApi = {
   // /favorite/{bakeryId} 엔드포인트를 호출하여 좋아요 토글 처리하는 API 함수 추가
   toggleFavorite: async (bakeryId: number): Promise<boolean> => {
     try {
-      const token = store.getState().user.token;
+      const token = store.getState().auth.accessToken;
       const response = await axios.post(
         `${BASE_URL}/favorite/${bakeryId}`,
         {},
@@ -89,7 +89,7 @@ export const mainApi = {
   // 관심가게 삭제 API: /favorite/{bakeryId}에 DELETE 요청
   deleteFavorite: async (bakeryId: number): Promise<boolean> => {
     try {
-      const token = store.getState().user.token;
+      const token = store.getState().auth.accessToken;
       const response = await axios.delete(
         `${BASE_URL}/favorite/${bakeryId}`,
         {
@@ -114,7 +114,7 @@ export const mainApi = {
   // 좋아요가 가장 많은 가게 조회 API (/favorite/best)
   getFavoriteBest: async () => {
     try {
-      const token = store.getState().user.token;
+      const token = store.getState().auth.accessToken;
       let response;
       if (token) {
         response = await axios.get<ApiResponse<BakeryInfo[]>>(
@@ -136,7 +136,7 @@ export const mainApi = {
   },
   searchBakery: async (keyword: string) => {
     try {
-      const token = store.getState().user.token;
+      const token = store.getState().auth.accessToken;
       const response = await axios.get<ApiResponse<BakeryInfo[]>>(
         `${BASE_URL}/bakery/search?keyword=${keyword}`,
         { withCredentials: true, headers: { Authorization: `Bearer ${token}` } }

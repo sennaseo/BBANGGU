@@ -116,11 +116,13 @@ public class UserService { // 사용자 관련 비즈니스 로직 처리
 		// 이메일로 사용자 조회
 		User user = userRepository.findByEmail(email)
 			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+		log.info("✅ 이메일로 사용자 찾기 완료");
 
 		// 논리적으로 삭제된 사용자 처리
 		if (user.isDeleted()) {
 			throw new CustomException(ErrorCode.ACCOUNT_DEACTIVATED);
         }
+		log.info("✅ {}번 사용자는 유효한 회원임을 검증", user.getUserId());
 
         // // 비밀번호 검증
         // if (!passwordEncoder.matches(password, user.getPassword())) {
@@ -131,41 +133,32 @@ public class UserService { // 사용자 관련 비즈니스 로직 처리
 		if (!password.equals(user.getPassword())) {
 			throw new CustomException(ErrorCode.INVALID_PASSWORD);
 		}
+		log.info("✅ 로그인 시 입력한 비밀번호와 사용자의 비밀번호가 일치함");
 
 		// ✅ JWT 토큰 생성
+		log.info("🩵 userType: " + user.getRole().name());
+		String userType = user.getRole().name();
 		Map<String, Object> additionalClaims = Map.of(
-			"role", user.getRole().name()
+			"role", userType
 		);
 		String accessToken = jwtTokenProvider.createAccessToken(user.getUserId(), additionalClaims);
 		String refreshToken = jwtTokenProvider.createRefreshToken(user.getUserId());
+		log.info("🩵 토큰 발급 완료");
 
 		// ✅ Refresh Token을 DB 저장
 		user.setRefreshToken(refreshToken);
 		userRepository.save(user);
-
-		// ✅ AccessToken을 HTTP-Only 쿠키에 저장
-		ResponseCookie accessTokenCookie = ResponseCookie.from("accessToken", accessToken)
-			.httpOnly(false) // XSS 공격 방지
-			.secure(true) // HTTPS 환경에서만 사용 (로컬 개발 시 false 가능)
-			.path("/") // 모든 API 요청에서 쿠키 전송 가능
-			.maxAge(30 * 60) // 30분 유지
-			.build();
-
-		// ✅ RefreshToken을 HTTP-Only 쿠키에 저장
-		ResponseCookie refreshTokenCookie = ResponseCookie.from("refreshToken", refreshToken)
-			.httpOnly(true)
-			.secure(true)
-			.path("/")
-			.maxAge(7 * 24 * 60 * 60)
-			.build();
+		log.info("🩵 refresh Token 저장 완료");
 
 		// ✅ 응답 데이터 생성
-		Map<String, Object> tokens = new HashMap<>();
-		tokens.put("accessTokenCookie", accessTokenCookie);
-		tokens.put("refreshTokenCookie", refreshTokenCookie);
-		tokens.put("accessToken", accessToken);
-		tokens.put("userType", user.getRole().name());
-		return tokens;
+		Map<String, Object> response = new HashMap<>();
+		response.put("access_token", accessToken);
+		log.info("🩵 accessToken: " + accessToken);
+		response.put("refreshToken", accessToken);
+		log.info("🩵 refreshToken: " + refreshToken);
+		response.put("userType", userType);
+		log.info("🩵 userType: " + userType);
+		return response;
 	}
 
 
@@ -264,12 +257,17 @@ public class UserService { // 사용자 관련 비즈니스 로직 처리
 			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
 		// 새로운 비밀번호가 기존 비밀번호와 동일한지 검증
-		if (passwordEncoder.matches(newPassword, user.getPassword())) {
+		// if (passwordEncoder.matches(newPassword, user.getPassword())) {
+		// 	throw new CustomException(ErrorCode.SAME_AS_OLD_PASSWORD);
+		// }
+
+		if (newPassword.equals(user.getPassword())) {
 			throw new CustomException(ErrorCode.SAME_AS_OLD_PASSWORD);
 		}
 
 		// 비밀번호 암호화 후 저장
-		user.setPassword(passwordEncoder.encode(newPassword));
+		// user.setPassword(passwordEncoder.encode(newPassword));
+		user.setPassword(newPassword);
 		userRepository.save(user);
 	}
 

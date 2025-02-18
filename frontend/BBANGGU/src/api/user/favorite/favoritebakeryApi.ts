@@ -5,7 +5,7 @@ const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export const favoritebakeryApi = {
   getFavoriteBakery: async () => {
-    const token = store.getState().user.token;
+    const token = store.getState().auth.accessToken;
     if (token) {    
       const response = await axios.get(`${BASE_URL}/favorite`, {
         headers: {

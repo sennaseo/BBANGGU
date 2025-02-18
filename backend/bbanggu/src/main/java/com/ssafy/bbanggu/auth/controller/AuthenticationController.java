@@ -74,7 +74,7 @@ public class AuthenticationController {
 
 		// 8️⃣ 새로운 Access Token 쿠키 설정
 		ResponseCookie accessTokenCookie = ResponseCookie.from("accessToken", newAccessToken)
-			.httpOnly(false)
+			.httpOnly(true)
 			.secure(true)
 			.path("/")
 			.maxAge(30 * 60)

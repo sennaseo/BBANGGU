@@ -1,8 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { ChevronLeft, Star } from 'lucide-react';
-import { reviewApi } from '../../../api/user/review/reviewApi';
 import { ReviewType } from '../../../types/bakery';
+import { getReviewByReservationId } from '../../../services/user/review/reviewService';
+import { reviewApi } from '../../../api/user/review/reviewApi';
+import { reservationApi } from '../../../api/user/mypage/reservation/reservationApi';
+import { Reservation } from '../../../store/slices/reservationSlice';
+
 
 export function ReviewDetail() {
   const { userId, reservationId } = useParams<{ userId: string; reservationId: string }>();
@@ -14,6 +18,7 @@ export function ReviewDetail() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>('');
   const [modalOpen, setModalOpen] = useState<boolean>(false);
+  const [reservation, setReservation] = useState<Reservation | null>(null);
 
   const handleReviewDelete = async () => {
     if (!review) return;
@@ -26,11 +31,27 @@ export function ReviewDetail() {
   };
 
   useEffect(() => {
-    if (userId && reservationId) {
+    const fetchReservation = async () => {
+      try {
+        const res = await reservationApi.getReservationDetailApi(Number(reservationId));
+        setReservation(res);
+        if (!res.reviewStatus || res.reviewStatus.toLowerCase() !== 'completed') {
+          setIsLoading(false);
+        }
+      } catch (error) {
+        console.error("예약 세부 정보 가져오기 실패:", error);
+        setIsLoading(false);
+      }
+    };
+    fetchReservation();
+  }, [reservationId]);
+
+  useEffect(() => {
+    if (userId && reservationId && reservation?.reviewStatus?.toLowerCase() === 'completed') {
       const fetchReview = async () => {
         try {
-          const result = await reviewApi.findReviewByReservationId(userId, reservationId);
-          setReview(result);
+          const result = await getReviewByReservationId(userId, reservationId);
+          setReview(result || null);
         } catch (err) {
           console.error("리뷰 조회 에러", err);
           setError("리뷰를 불러오는 중에 오류가 발생했습니다.");
@@ -40,7 +61,7 @@ export function ReviewDetail() {
       };
       fetchReview();
     }
-  }, [userId, reservationId]);
+  }, [userId, reservationId, reservation]);
 
   if (isLoading) {
     return (
@@ -61,11 +82,11 @@ export function ReviewDetail() {
     );
   }
 
-  if (!review) {
-    const isDeleted = (location.state as any)?.deleted;
+  if (reservation?.reviewStatus?.toLowerCase() === 'deleted') {
+
     return (
       <div className="min-h-screen flex flex-col justify-center items-center bg-gray-50">
-        <p className="text-gray-500 mb-4">{isDeleted ? "삭제되었습니다." : "리뷰가 존재하지 않습니다."}</p>
+        <p className="text-gray-500 mb-4">삭제되었습니다.</p>
         <button className="px-4 py-2 bg-[#fc973b] text-white rounded-md" onClick={() => navigate(-1)}>
           뒤로가기
         </button>
@@ -92,26 +113,26 @@ export function ReviewDetail() {
               <div className="flex items-center">
                 <span className="font-bold text-gray-700 mr-2">별점:</span>
                 <div className="flex items-center">
-                  {[...Array(Math.floor(review.rating))].map((_, i) => (
+                  {[...Array(Math.floor(review?.rating || 0))].map((_, i) => (
                     <Star key={i} className="w-5 h-5 text-yellow-400 fill-yellow-400" />
                   ))}
-                  {review.rating % 1 !== 0 && (
+                  {review?.rating && review?.rating % 1 !== 0 && (
                     <Star className="w-5 h-5 text-yellow-400 opacity-50" />
                   )}
                 </div>
               </div>
             </div>
             <div className="mb-4">
-              {review.reviewImageUrl && review.reviewImageUrl.trim() !== '' && (
+              {review?.reviewImageUrl && review?.reviewImageUrl.trim() !== '' && (
                 <div className="mb-5">
-                  <img src={review.reviewImageUrl} alt="리뷰 이미지" className="w-full rounded-xl" />
+                  <img src={review?.reviewImageUrl} alt="리뷰 이미지" className="w-full rounded-xl" />
                 </div>
               )}
               <span className="font-bold text-gray-700 block mb-1">리뷰 내용:</span>
-              <p className="text-gray-800">{review.content}</p>
+              <p className="text-gray-800">{review?.content}</p>
             </div>
             <div className="text-sm text-gray-500 text-right">
-              작성일: {new Date(review.createdAt).toLocaleDateString()}
+              작성일: {new Date(review?.createdAt || '').toLocaleDateString()}
             </div>
             <div className="mt-4 flex justify-end">
               <button onClick={() => setModalOpen(true)} className="px-4 py-2 bg-red-500 text-white rounded-xl">

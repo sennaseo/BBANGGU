@@ -80,7 +80,8 @@ async def comb(images: List[UploadFile] = File(...), bakeryId: int = Form(...)):
         bread_info[bread['breadCategoryId']] = {
             'name': bread['name'],
             'price': bread['price'],
-            'breadId': bread['breadId']
+            'breadId': bread['breadId'],
+            'breadCategoryId': bread['breadCategoryId']
         }
 
     detected_breads = {}
@@ -93,7 +94,8 @@ async def comb(images: List[UploadFile] = File(...), bakeryId: int = Form(...)):
             'name': bread_info[int(category_id)]['name'],
             'price': bread_info[int(category_id)]['price'],
             'count': count,
-            'breadId': bread_info[int(category_id)]['breadId']
+            'breadId': bread_info[int(category_id)]['breadId'],
+            'breadCategoryId': bread_info[int(category_id)]['breadCategoryId']
         })
 
     return named_detected_breads
@@ -103,6 +105,7 @@ class BreadDTO(BaseModel):
     name: str
     price: int
     count: int
+    breadId: int
 
 
 @app.post("/generate-package")

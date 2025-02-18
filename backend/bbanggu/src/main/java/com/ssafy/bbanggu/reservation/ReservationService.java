@@ -13,6 +13,7 @@ import com.ssafy.bbanggu.bakery.domain.Bakery;
 import com.ssafy.bbanggu.bakery.repository.BakeryRepository;
 import com.ssafy.bbanggu.bakery.service.BakeryPickupService;
 
+import com.ssafy.bbanggu.reservation.dto.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -25,12 +26,6 @@ import com.ssafy.bbanggu.breadpackage.BreadPackageRepository;
 import com.ssafy.bbanggu.common.exception.CustomException;
 import com.ssafy.bbanggu.common.exception.ErrorCode;
 import com.ssafy.bbanggu.payment.PaymentService;
-import com.ssafy.bbanggu.reservation.dto.ReservationCancelRequest;
-import com.ssafy.bbanggu.reservation.dto.ReservationCreateRequest;
-import com.ssafy.bbanggu.reservation.dto.ReservationForOwner;
-import com.ssafy.bbanggu.reservation.dto.ReservationInfo;
-import com.ssafy.bbanggu.reservation.dto.ReservationResponse;
-import com.ssafy.bbanggu.reservation.dto.ValidReservationRequest;
 import com.ssafy.bbanggu.review.domain.Review;
 import com.ssafy.bbanggu.review.repository.ReviewRepository;
 import com.ssafy.bbanggu.saving.dto.SavingDto;
@@ -38,6 +33,7 @@ import com.ssafy.bbanggu.saving.service.EchoSavingService;
 import com.ssafy.bbanggu.user.domain.User;
 import com.ssafy.bbanggu.user.repository.UserRepository;
 
+import io.jsonwebtoken.Claims;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -255,6 +251,18 @@ public class ReservationService {
 	/**
 	 * 사용자 예약 조회 메서드
 	 */
+
+	private ReservationDTO entityToDTO(Reservation reservation){
+		return ReservationDTO.builder()
+			.reservationId(reservation.getReservationId())
+			.createdAt(reservation.getCreatedAt())
+			.pickupAt(reservation.getPickupAt())
+			.status(reservation.getStatus())
+			.bakeryId(reservation.getBakery().getBakeryId())
+			.bakeryName(reservation.getBakery().getName())
+			.build();
+	}
+
 	public Map<String, Object> getUserReservationList(CustomUserDetails userDetails, LocalDate startDate, LocalDate endDate) {
 		LocalDateTime startDateTime = startDate.atStartOfDay();
 		LocalDateTime endDateTime = endDate.atTime(LocalTime.MAX);
@@ -262,7 +270,9 @@ public class ReservationService {
 
 		List<Reservation> data = reservationRepository.findByUser_UserIdAndCreatedAtBetween(userDetails.getUserId(), startDateTime, endDateTime);
 		Map<String, Object> response = new HashMap<>();
-		for (Reservation d: data) {
+		List<ReservationDTO> reservationDTOList = new ArrayList<>();
+		for (Reservation d : data) {
+
 			response.put("reservationId", d.getReservationId());
 			response.put("bakeryId", d.getBakery().getBakeryId());
 			response.put("bakeryName", d.getBakery().getName());
@@ -286,7 +296,7 @@ public class ReservationService {
 	}
 
 	/**
-	 *  사장님 오늘의 예약 조회 메서드
+	 * 사장님 오늘의 예약 조회 메서드
 	 */
 	public ReservationForOwner getTodayOwnerReservations(CustomUserDetails userDetails, long bakeryId) {
 		User user = userRepository.findById(userDetails.getUserId())
@@ -330,8 +340,23 @@ public class ReservationService {
 	}
 
 
+	// 사용자와 예약 ID가 일치하는지 검증
+	public boolean check(long reservationId, String authorization) {
+		String token = authorization.replace("Bearer ", "");
+		Claims claims = jwtTokenProvider.getClaimsFromAccessToken(token);
+		String userIdStr = claims.getSubject();
+		Long userId = Long.parseLong(userIdStr);
+		Reservation reservation = reservationRepository.findById(reservationId).orElse(null);
+		if (reservation == null) {
+			throw new CustomException(ErrorCode.RESERVATION_NOT_FOUND);
+		}
+		return reservation.getUser().getUserId() == userId;
+	}
+
+
 	/**
 	 * 특정 가게의 픽업되지 않은 예약을 자동 처리
+	 *
 	 * @param bakeryId 가게 ID
 	 */
 	@Transactional

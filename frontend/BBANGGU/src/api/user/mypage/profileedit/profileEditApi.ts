@@ -17,7 +17,7 @@ interface UpdateUserProfileData {
 export const profileEditApi = {
     updateUserProfile: async (formData: UpdateUserProfileData): Promise<ApiResponse<UserType[]>> => {
         try {
-            const token = store.getState().user.token;
+            const token = store.getState().auth.accessToken;
             const response = await axios.patch<ApiResponse<UserType[]>>(
                 `${BASE_URL}/user/update`,
                 formData,

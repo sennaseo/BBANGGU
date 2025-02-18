@@ -23,6 +23,15 @@ public interface BreadPackageRepository extends JpaRepository<BreadPackage, Long
 	@Query("SELECT b FROM BreadPackage b WHERE b.bakery.bakeryId = :bakeryId AND DATE(b.createdAt) = CURRENT_DATE AND b.deletedAt IS NULL")
 	BreadPackage findByBakeryIdAndToday(@Param("bakeryId") Long bakeryId);
 
+	// 오늘 날짜의 빵꾸러미를 조회하되, 없다면 가장 최근 빵꾸러미 추출
+	@Query("SELECT b FROM BreadPackage b WHERE b.bakery.bakeryId = :bakeryId AND " +
+		"((DATE(b.createdAt) = CURRENT_DATE AND b.deletedAt IS NULL) OR " +
+		"(NOT EXISTS (SELECT b2 FROM BreadPackage b2 WHERE b2.bakery.bakeryId = :bakeryId AND DATE(b2.createdAt) = CURRENT_DATE AND b2.deletedAt IS NULL))) " +
+		"ORDER BY b.deletedAt DESC NULLS FIRST, b.createdAt DESC " +
+		"LIMIT 1")
+	BreadPackage findTodayOrLastBreadPackage(@Param("bakeryId") Long bakeryId);
+
+
 	List<BreadPackage> findByBakery_BakeryIdAndCreatedAtBetweenAndDeletedAtIsNull(Long bakeryId, LocalDateTime startDate, LocalDateTime endDate);
 
 	// 하루가 지난 빵꾸러미를 자동 삭제 (deleted_at 업데이트)

@@ -9,17 +9,15 @@ import { CustomerSupport } from '../../../components/owner/mypage/CustomerSuppor
 import { AccountManagement } from '../../../components/owner/mypage/AccountMagagement';
 import { RootState } from '../../../store';
 import { logout } from '../../../store/slices/authSlice';
-import { setUserInfo, clearUserInfo } from '../../../store/slices/userSlice';
+import { clearUserInfo } from '../../../store/slices/userSlice';
 import { getUserInfo } from '../../../api/user/user';
-
-type UserRole = 'OWNER' | 'USER';
 
 function MyPage() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   
   const { accessToken } = useSelector((state: RootState) => state.auth);
-  const { userInfo } = useSelector((state: RootState) => state.user);
+  console.log('accessToken@@@@@@@@@@@@@@', accessToken);
 
   useEffect(() => {
     const fetchUserInfo = async () => {
@@ -29,17 +27,8 @@ function MyPage() {
       }
 
       try {
-        const data = await getUserInfo();
-        dispatch(setUserInfo({
-          name: data.name,
-          profileImageUrl: data.profileImageUrl,
-          email: data.email,
-          phone: data.phone,
-          userId: data.userId,
-          role: data.role as UserRole,
-          addressRoad: data.addressRoad,
-          addressDetail: data.addressDetail
-        }));
+        await getUserInfo();
+        
       } catch (error) {
         console.error('Error fetching user info:', error);
         navigate('/login');
@@ -58,12 +47,7 @@ function MyPage() {
   return (
     <div className="min-h-screen bg-white pb-20">
       <PageHeader />
-      <ProfileSection userInfo={{
-        name: userInfo?.name || '',
-        profilePhotoUrl: userInfo?.profileImageUrl || null,
-        email: userInfo?.email,
-        phone: userInfo?.phone
-      }} />
+      <ProfileSection />
       <MenuList />
       <CustomerSupport />
       <AccountManagement onLogout={handleLogout} />

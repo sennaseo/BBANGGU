@@ -3,12 +3,12 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import Header from '../../../components/owner/header/Header';
 import breadBagIcon from '../../../assets/images/bakery/bread_pakage.svg';
 import wonIcon from '../../../assets/images/bakery/won_icon.png';
-import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
+import { ExclamationTriangleIcon, CurrencyDollarIcon, HashtagIcon } from '@heroicons/react/24/outline';
 import { registerPackage, getPickupTime, updatePickupTime, updatePackage } from '../../../api/owner/package';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../../store';
 import { logout } from '../../../store/slices/authSlice';
-import { setUserInfo, clearUserInfo } from '../../../store/slices/userSlice';
+import { clearUserInfo } from '../../../store/slices/userSlice';
 import { getUserInfo } from '../../../api/user/user';
 
 interface PackageForm {
@@ -41,16 +41,16 @@ export default function PackageSettingPage() {
 
       try {
         const data = await getUserInfo();
-        dispatch(setUserInfo({
-          name: data.name,
-          profileImageUrl: data.profileImageUrl,
-          email: data.email,
-          phone: data.phone,
-          userId: data.userId,
-          role: data.role as 'OWNER' | 'USER',
-          addressRoad: data.addressRoad,
-          addressDetail: data.addressDetail
-        }));
+        // dispatch(setUserInfo({
+        //   name: data.name,
+        //   profileImageUrl: data.profileImageUrl,
+        //   email: data.email,
+        //   phone: data.phone,
+        //   userId: data.userId,
+        //   role: data.role as 'OWNER' | 'USER',
+        //   addressRoad: data.addressRoad,
+        //   addressDetail: data.addressDetail
+        // }));
 
         // 점주가 아닌 경우 메인으로 리다이렉트
         if (data.role !== 'OWNER') {
@@ -92,10 +92,8 @@ export default function PackageSettingPage() {
     startTime: DEFAULT_TIMES.startTime,
     endTime: DEFAULT_TIMES.endTime
   });
-  const [isPriceEditing, setIsPriceEditing] = useState(false);
-  const [tempPrice, setTempPrice] = useState('');
   const MIN_PRICE = 1000;  // 최소 가격 상수 추가
-  const MAX_PRICE = 100000;  // 최대 가격 상수
+  // const MAX_PRICE = 100000;  // 최대 가격 상수
   const [isLoading, setIsLoading] = useState(false);
   const [defaultPickupTime, setDefaultPickupTime] = useState<{
     startTime: string;
@@ -115,43 +113,22 @@ export default function PackageSettingPage() {
   };
 
   const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const inputValue = e.target.value.replace(/[^0-9]/g, '');
-    const value = parseInt(inputValue);
-    
-    if (inputValue === '') {
-      setTempPrice('');
-    } else if (!isNaN(value)) {
-      if (value > MAX_PRICE) {
-        setTempPrice(MAX_PRICE.toString());
-      } else {
-        setTempPrice(inputValue);
-      }
-    }
+    const value = parseInt(e.target.value) || 0;  // 빈 문자열이나 NaN인 경우 0으로 설정
+    setForm(prev => ({
+      ...prev,
+      price: value
+    }));
   };
 
   const handlePriceBlur = () => {
-    let finalPrice = 0;
-
-    if (tempPrice !== '') {
-      const value = parseInt(tempPrice);
-      if (!isNaN(value)) {
-        if (value > MAX_PRICE) {
-          alert('최대 설정 가능 금액은 10만원입니다.');
-          finalPrice = MAX_PRICE;
-        } else if (value < MIN_PRICE) {
-          alert('최소 설정 가능 금액은 1,000원입니다.');
-          finalPrice = MIN_PRICE;
-        } else {
-          finalPrice = value;
-        }
-        // 100원 단위로 반올림
-        finalPrice = Math.round(finalPrice / 100) * 100;
-      }
+    // 포커스를 잃었을 때만 최소가격 체크
+    if (form.price < MIN_PRICE) {
+      setForm(prev => ({
+        ...prev,
+        price: MIN_PRICE
+      }));
+      alert(`최소 ${MIN_PRICE.toLocaleString()}원 이상 입력해주세요.`);
     }
-
-    setForm(prev => ({ ...prev, price: finalPrice }));
-    setIsPriceEditing(false);
-    setTempPrice('');
   };
 
   // 픽업 시간 조회
@@ -279,7 +256,29 @@ export default function PackageSettingPage() {
         }}
       />
 
-      <div className="flex-1 flex flex-col p-4 overflow-y-auto">
+      <div className="flex-1 flex flex-col p-4">
+        {/* 안내 문구 추가 */}
+        <div className="mb-6">
+          <h2 className="text-[18px] font-bold text-gray-900 mb-2">
+            빵꾸러미 가격 설정
+          </h2>
+          <div className="bg-[#FFF5EC] rounded-[8px] p-4 space-y-2">
+            <p className="text-[14px] text-[#FC973B] font-medium">
+              💡 빵꾸러미 가격 설정 시 참고해주세요
+            </p>
+            <div className="space-y-1 text-[14px] text-gray-600">
+              <p>• 빵꾸러미 가격은 안에 담길 빵들의 가격 합과 동일해야 해요</p>
+              <p className="pl-4 text-[13px] text-gray-500">
+                예시) 10,000원 빵꾸러미 = 3,000원 + 4,000원 + 3,000원 빵
+              </p>
+              <p>• 빵꾸러미 하나에 여러 개의 같은 빵도 담을 수 있어요</p>
+              <p className="pl-4 text-[13px] text-gray-500">
+                예시) 10,000원 빵꾸러미 = 5,000원 빵 2개
+              </p>
+            </div>
+          </div>
+        </div>
+
         {/* 빵꾸러미 이름 */}
         <div className="mb-8">
           <h3 className="text-[16px] font-bold text-[#242424] mb-2">빵꾸러미 이름</h3>
@@ -297,73 +296,56 @@ export default function PackageSettingPage() {
         </div>
 
         {/* 빵꾸러미 가격 */}
-        <div className="mb-8">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            빵꾸러미 가격
-          </label>
-          {isPriceEditing ? (
-            <input
-              type="text"
-              value={tempPrice}
-              onChange={handlePriceChange}
-              onBlur={handlePriceBlur}
-              className="w-full px-4 py-3 bg-white border border-gray-200 rounded-[4px] focus:outline-none focus:ring-2 focus:ring-[#FC973B]"
-              placeholder="최종 판매 가격을 입력하세요"
-              autoFocus
-            />
-          ) : (
-            <div 
-              onClick={() => setIsPriceEditing(true)}
-              className="w-full px-4 py-3 bg-white border border-gray-200 rounded-[4px] cursor-text"
-            >
-              <div className="flex flex-col gap-1">
-                {/* 할인 전 가격 (입력된 가격의 2배) */}
-                <span className="text-gray-400 line-through text-sm">
-                  {(form.price * 2).toLocaleString()}원
-                </span>
-                {/* 실제 판매가격 */}
-                <span className="text-lg font-bold text-[#FC973B]">
-                  {form.price.toLocaleString()}원
-                  <span className="text-sm font-normal text-gray-500 ml-2">
-                    (50% 할인)
-                  </span>
-                </span>
-              </div>
+        <div className="bg-white rounded-lg shadow-md p-4 mb-4">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-2">
+              <CurrencyDollarIcon className="w-5 h-5 text-[#FC973B]" />
+              <span className="text-[16px] text-gray-900">빵꾸러미 가격</span>
             </div>
-          )}
-          <p className="mt-1 text-sm text-gray-500">
-            * 입력하신 가격이 50% 할인된 최종 판매 가격입니다
-          </p>
+            <div className="flex items-center gap-1">
+              <input
+                type="number"
+                value={form.price || ''}
+                onChange={handlePriceChange}
+                onBlur={handlePriceBlur}
+                className="w-24 text-right border rounded-[8px] px-2 py-1 focus:outline-none focus:ring-2 focus:ring-[#FC973B]"
+              />
+              <span className="text-[14px] text-gray-600">원</span>
+            </div>
+          </div>
+
+          {/* 수량 입력 */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <HashtagIcon className="w-5 h-5 text-[#FC973B]" />
+              <span className="text-[16px] text-gray-900">준비할 수량</span>
+            </div>
+            <div className="flex items-center gap-4">
+              <button 
+                onClick={() => handleQuantityChange('decrease')}
+                className="w-8 h-8 rounded-full border border-[#FC973B] text-[#FC973B] flex items-center justify-center hover:bg-[#FFF5EC]"
+                disabled={form.quantity <= 1}
+              >
+                -
+              </button>
+              <span className="text-[18px] min-w-[20px] text-center">{form.quantity}</span>
+              <button 
+                onClick={() => handleQuantityChange('increase')}
+                className="w-8 h-8 rounded-full border border-[#FC973B] text-[#FC973B] flex items-center justify-center hover:bg-[#FFF5EC]"
+              >
+                +
+              </button>
+            </div>
+          </div>
         </div>
 
-        {/* 빵꾸러미 판매 개수 */}
-        <div className="mb-8">
-          <h3 className="text-[16px] font-bold text-[#242424] mb-2">빵꾸러미 판매 개수</h3>
-          <p className="text-[14px] text-gray-600 mb-4">하루에 몇 개의 빵꾸러미를 판매할까요?</p>
-          <div className="flex items-center bg-white rounded-[8px] border border-[#E5E5E5] px-4 py-3">
-            <span className="text-[14px] text-[#242424]">빵꾸러미 개수</span>
-            <span className="flex-1" />
-            <button 
-              onClick={() => handleQuantityChange('decrease')}
-              className="w-8 h-8 flex items-center justify-center text-[#242424] bg-gray-100 rounded-full 
-                hover:bg-gray-200 active:bg-gray-300 transition-colors duration-200"
-            >
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                <path d="M5 10H15" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-              </svg>
-            </button>
-            <span className="w-[40px] text-center text-[16px] font-medium">
-              {form.quantity}
+        {/* 총 금액 표시 */}
+        <div className="bg-gray-50 rounded-lg p-4 mb-6">
+          <div className="flex justify-between items-center">
+            <span className="text-[16px] text-gray-900">총 금액</span>
+            <span className="text-[20px] font-bold text-[#FC973B]">
+              {(form.price * form.quantity).toLocaleString()}원
             </span>
-            <button 
-              onClick={() => handleQuantityChange('increase')}
-              className="w-8 h-8 flex items-center justify-center text-[#242424] bg-gray-100 rounded-full 
-                hover:bg-gray-200 active:bg-gray-300 transition-colors duration-200"
-            >
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                <path d="M10 5V15M5 10H15" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-              </svg>
-            </button>
           </div>
         </div>
 

@@ -24,6 +24,8 @@ export const login = async (loginData: LoginRequest, dispatch: Dispatch): Promis
       }
     );
 
+    console.log(response.data.data);
+
     // // 쿠키에서 토큰 가져오기
     // const getCookie = (name: string): string | null => {
     //   const matches = document.cookie.match(new RegExp(
@@ -45,8 +47,7 @@ export const login = async (loginData: LoginRequest, dispatch: Dispatch): Promis
       dispatch(loginSuccess({
         data: {
           access_token: accessToken,
-          refresh_token: "",
-          user_type: response.data.data.user_type
+          user_type: response.data.data.userType
         }
       }));
     }

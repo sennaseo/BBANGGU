@@ -1,15 +1,14 @@
 import axios from 'axios';
 import { ApiResponse } from '../../../../types/response';
-import type { ReservationType } from '../../../../types/bakery';
 import { store } from '../../../../store';
-
+import { Reservation } from '../../../../store/slices/reservationSlice';
 const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export const reservationApi = {
     getReservationsApi: async (startDate: string, endDate: string) => {
         try {
-            const token = store.getState().user.token;
-            const response = await axios.get<ApiResponse<ReservationType[]>>(
+            const token = store.getState().auth.accessToken;
+            const response = await axios.get<ApiResponse<Reservation[]>>(
                 `${BASE_URL}/reservation/${startDate}/${endDate}`, 
                 { withCredentials: true, 
                     headers: 
@@ -22,8 +21,8 @@ export const reservationApi = {
     },
     getReservationDetailApi: async (reservationId: number) => {
         try {
-            const token = store.getState().user.token;
-            const response = await axios.get<ApiResponse<ReservationType>>(
+            const token = store.getState().auth.accessToken;
+            const response = await axios.get<ApiResponse<Reservation>>(
                 `${BASE_URL}/reservation/${reservationId}/detail`,
                 { withCredentials: true,
                     headers: 
@@ -36,7 +35,7 @@ export const reservationApi = {
     },
     deleteReservation: async (reservationId: number, cancelReason: string): Promise<boolean> => {
         try {
-            const token = store.getState().user.token;
+            const token = store.getState().auth.accessToken;
             const response = await axios.post<ApiResponse<boolean>>(
                 `${BASE_URL}/reservation/cancel`,
                 { reservationId, cancelReason },
