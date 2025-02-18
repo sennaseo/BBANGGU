@@ -20,23 +20,22 @@ export async function fetchAllBakeriesData(): Promise<{ allbakery: BakeryInfo[] 
   }
 } 
 
-// 서버 에러나서 일단 주석 처리
-// export async function fetchBestFavoriteStores(): Promise<{ favoritebakery: BakeryInfo[] }> {
-//   try {
-//     const response = await mainApi.getFavoriteBest();
-//     const stores: BakeryInfo[] = response.data;
+export async function fetchBestFavoriteStores(): Promise<{ favoritebakery: BakeryInfo[] }> {
+  try {
+    const response = await mainApi.getFavoriteBest();
+    const stores: BakeryInfo[] = response.data;
 
-//     const favoritebakery: BakeryInfo[] = await Promise.all(
-//       stores.map(async (store: BakeryInfo): Promise<BakeryInfo> => {
-//         return store;
-//       })
-//     );
-//     return { favoritebakery };
-//   } catch (error) {
-//     console.error("좋아요 베스트 가게 데이터 조회 실패:", error);
-//     throw error;
-//   }
-// } 
+    const favoritebakery: BakeryInfo[] = await Promise.all(
+      stores.map(async (store: BakeryInfo): Promise<BakeryInfo> => {
+        return store;
+      })
+    );
+    return { favoritebakery };
+  } catch (error) {
+    console.error("좋아요 베스트 가게 데이터 조회 실패:", error);
+    throw error;
+  }
+} 
 
 
 /**

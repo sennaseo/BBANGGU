@@ -78,7 +78,7 @@ public class UserService { // 사용자 관련 비즈니스 로직 처리
 			.build();
 
 		echoSavingRepository.save(echoSaving);
-		return UserResponse.from(user, null);
+		return UserResponse.from(user);
 	}
 
 
@@ -191,12 +191,7 @@ public class UserService { // 사용자 관련 비즈니스 로직 처리
 		}
 		log.info("✅ {}번 사용자 검증 완료", userDetails.getUserId());
 
-		Long bakeryId = null;
-		if (user.getRole().equals(Role.OWNER)) {
-			bakeryId = bakeryRepository.findByUser_UserId(user.getUserId()).getBakeryId();
-		}
-
-		return UserResponse.from(user, bakeryId);
+		return UserResponse.from(user);
 	}
 
 
@@ -242,6 +237,9 @@ public class UserService { // 사용자 관련 비즈니스 로직 처리
 
 		// ✅ 특정 필드만 변경 가능하도록 처리
 		user.setName(Optional.ofNullable(updates.name()).orElse(user.getName()));
+		if (userRepository.existsByPhoneAndUserIdNot(updates.phone(), user.getUserId())) {
+			throw new CustomException(ErrorCode.DUPLICATE_PHONE);
+		}
 		user.setPhone(Optional.ofNullable(updates.phone()).orElse(user.getPhone()));
 
 		userRepository.save(user);

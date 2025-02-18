@@ -1,67 +1,66 @@
 import { useEffect, useState } from 'react';
-import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { ChevronLeft, Star } from 'lucide-react';
 import { ReviewType } from '../../../types/bakery';
 import { getReviewByReservationId } from '../../../services/user/review/reviewService';
 import { reviewApi } from '../../../api/user/review/reviewApi';
 import { reservationApi } from '../../../api/user/mypage/reservation/reservationApi';
 import { Reservation } from '../../../store/slices/reservationSlice';
+import { useSelector } from 'react-redux';
+import { RootState } from '../../../store';
 
 
 export function ReviewDetail() {
   const { userId, reservationId } = useParams<{ userId: string; reservationId: string }>();
   const navigate = useNavigate();
-  const location = useLocation();
-  const bakeryName = (location.state as { bakeryName?: string } | undefined)?.bakeryName;
 
   const [review, setReview] = useState<ReviewType | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>('');
   const [modalOpen, setModalOpen] = useState<boolean>(false);
   const [reservation, setReservation] = useState<Reservation | null>(null);
+  const userInfo = useSelector((state: RootState) => state.user.id);
+
 
   const handleReviewDelete = async () => {
     if (!review) return;
     try {
       await reviewApi.deleteReview(review.reviewId);
-      navigate(`/user/${userId}/mypage/reviews/${reservationId}`, { state: { deleted: true, bakeryName } });
+      navigate(`/user/${userId}/mypage/reservations`, { state: { deleted: true } });
     } catch (error) {
       console.error("리뷰 삭제 실패: ", error);
     }
   };
 
   useEffect(() => {
-    const fetchReservation = async () => {
-      try {
-        const res = await reservationApi.getReservationDetailApi(Number(reservationId));
-        setReservation(res);
-        if (!res.reviewStatus || res.reviewStatus.toLowerCase() !== 'completed') {
-          setIsLoading(false);
-        }
-      } catch (error) {
-        console.error("예약 세부 정보 가져오기 실패:", error);
+    async function fetchReviewAndReservation() {
+      if (!userId || !reservationId) {
+        setError("필수 파라미터가 누락되었습니다.");
         setIsLoading(false);
+        return;
       }
-    };
-    fetchReservation();
-  }, [reservationId]);
-
-  useEffect(() => {
-    if (userId && reservationId && reservation?.reviewStatus?.toLowerCase() === 'completed') {
-      const fetchReview = async () => {
+      const reservationData = await reservationApi.getReservationDetailApi(Number(reservationId));
+      const review = await getReviewByReservationId(userInfo.toString(), reservationId);
+      console.log("reservation", reservation);
+      if (reservation?.reviewStatus?.toLowerCase() === 'completed') {
         try {
-          const result = await getReviewByReservationId(userId, reservationId);
-          setReview(result || null);
+          console.log("review", review);
+          console.log("reservation", reservationData);
+        if (reservationData.reviewStatus === null) {
+          return;
+        }
+          setReview(review || null);
+          setReservation(reservationData || null);
         } catch (err) {
           console.error("리뷰 조회 에러", err);
           setError("리뷰를 불러오는 중에 오류가 발생했습니다.");
         } finally {
           setIsLoading(false);
         }
-      };
-      fetchReview();
+      }
     }
-  }, [userId, reservationId, reservation]);
+    fetchReviewAndReservation();
+  }, [userId, review, reservation]);
 
   if (isLoading) {
     return (
@@ -82,11 +81,10 @@ export function ReviewDetail() {
     );
   }
 
-  if (reservation?.reviewStatus?.toLowerCase() === 'deleted') {
-
+  if (reservation?.reviewStatus === null) {
     return (
       <div className="min-h-screen flex flex-col justify-center items-center bg-gray-50">
-        <p className="text-gray-500 mb-4">삭제되었습니다.</p>
+        <p className="text-gray-500 mb-4">리뷰가 삭제되었습니다.</p>
         <button className="px-4 py-2 bg-[#fc973b] text-white rounded-md" onClick={() => navigate(-1)}>
           뒤로가기
         </button>
@@ -103,9 +101,9 @@ export function ReviewDetail() {
         <h1 className="text-xl font-bold text-gray-800 text-center">내가 쓴 리뷰</h1>
       </div>
       <div className="w-full max-w-md bg-white rounded-lg">
-        {bakeryName && (
+        {reservation?.bakeryName && (
           <div className="mb-4">
-            <p className="text-[20px] text-[#333333] font-bold">{bakeryName}</p>
+            <p className="text-[20px] text-[#333333] font-bold">{reservation.bakeryName}</p>
           </div>
         )}
         <div className="flex flex-col shadow-md rounded-xl p-4">

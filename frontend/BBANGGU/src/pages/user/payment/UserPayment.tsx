@@ -32,7 +32,9 @@ export function UserPayment() {
         // 데이터 변환
         const transformedData: BakeryInfo = {
           ...data,
-          price: data.price || 0  // null인 경우 0으로 설정
+          price: data.price || 0,
+          packageName: data.package?.data[0].name || '',
+          bakeryName: data.name || ''
         }
         setBakeryData(transformedData)
       } catch (err) {

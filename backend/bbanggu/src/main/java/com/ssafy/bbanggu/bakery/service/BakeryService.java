@@ -57,6 +57,7 @@ public class BakeryService {
 	private final BakeryPickupService bakeryPickupService;
 	private final ImageService imageService;
 	private final BreadPackageRepository breadPackageRepository;
+	private final BakeryPickupTimetableRepository bakeryPickupTimetableRepository;
 
 	// 삭제되지 않은 모든 가게 조회
 	@Transactional(readOnly = true)
@@ -233,6 +234,9 @@ public class BakeryService {
 				.build();
 
 		Bakery savedBakery = bakeryRepository.save(bakery);
+
+		BakeryPickupTimetable timetable = BakeryPickupTimetable.builder().bakery(bakery).build();
+		bakeryPickupTimetableRepository.save(timetable);
 		return BakeryCreateDto.from(savedBakery);
 	}
 

@@ -1,7 +1,7 @@
-import type { EchoSaveType } from "../../../types/bakery"
+import { EchoSave } from "../../../store/slices/echosaveSlice"
 
 interface StatsCardsProps {
-  echoSave: EchoSaveType | null
+  echoSave: EchoSave | null
 }
 
 export function StatsCards({ echoSave }: StatsCardsProps) {

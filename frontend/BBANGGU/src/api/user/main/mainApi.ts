@@ -25,6 +25,7 @@ export const mainApi = {
           { withCredentials: true }
         );
       }
+      console.log("getAllBakeries", response.data)
       return response.data;
     } catch (error) {
       console.error('베이커리 목록 조회 실패:', error);
@@ -114,20 +115,20 @@ export const mainApi = {
   // 좋아요가 가장 많은 가게 조회 API (/favorite/best)
   getFavoriteBest: async () => {
     try {
-      // const token = store.getState().auth.accessToken;
-      // let response;
-      // if (token) {
-      //   response = await axios.get<ApiResponse<BakeryInfo[]>>(
-      //     `${BASE_URL}/favorite/best`,
-      //     { withCredentials: true, headers: { Authorization: `Bearer ${token}` } }
-      //   );
-      // } else {
-      //   response = await axios.get<ApiResponse<BakeryInfo[]>>(
-      //     `${BASE_URL}/favorite/best`,
-      //     { withCredentials: true }
-      //   );
-      // }
-      // return response.data;
+      const token = store.getState().auth.accessToken;
+      let response;
+      if (token) {
+        response = await axios.get<ApiResponse<BakeryInfo[]>>(
+          `${BASE_URL}/favorite/best`,
+          { withCredentials: true, headers: { Authorization: `Bearer ${token}` } }
+        );
+      } else {
+        response = await axios.get<ApiResponse<BakeryInfo[]>>(
+          `${BASE_URL}/favorite/best`,
+          { withCredentials: true }
+        );
+      }
+      return response.data;
     } catch (error) {
       console.error(`
         좋아요가 가장 많은 가게 조회 실패:`, error);
