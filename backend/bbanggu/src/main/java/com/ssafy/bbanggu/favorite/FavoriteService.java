@@ -149,41 +149,14 @@ public class FavoriteService {
 				if (bpackage != null) {
 					packageName = bpackage.getName();
 				}
-				response.add(BestBakeryDto.from(b.getBakeryId(), packageName, b.getName(), false));
+
+				boolean is_liked = false;
+				if (userDetails != null) {
+					is_liked = favoriteRepository.existsByUser_UserIdAndBakery_BakeryId(userDetails.getUserId(), b.getBakeryId());
+				}
+				response.add(BestBakeryDto.from(b.getBakeryId(), packageName, b.getName(), is_liked));
 			}
-		}
-		// if (userLat == null || userLng == null) {
-		// 	return bakeryRepository.findTop10ByFavorites().stream()
-		// 		.map(b -> {
-		// 			boolean is_liked = isLoggedIn
-		// 				? favoriteRepository.existsByUser_UserIdAndBakery_BakeryId(userDetails.getUserId(), b.getBakeryId())
-		// 				: false;
-		//
-		// 			BreadPackage breadPackage = breadPackageRepository.findTodayOrLastBreadPackage(b.getBakeryId());
-		// 			if (breadPackage == null) {
-		// 				throw new CustomException(ErrorCode.BREAD_PACKAGE_NOT_FOUND);
-		// 			}
-		// 			return BestBakeryDto.from(b.getBakeryId(), breadPackage.getName(), b.getName(), is_liked);
-		// 		})
-		// 		.toList();
-		// }
-
-		// ✅ 위치 정보가 있는 경우 거리 계산 적용
-		// return bakeryRepository.findBestBakeriesByLocation(userLat, userLng).stream()
-		// 	.map(b -> {
-		// 		boolean is_liked = isLoggedIn
-		// 			? favoriteRepository.existsByUser_UserIdAndBakery_BakeryId(userDetails.getUserId(), b.getBakeryId())
-		// 			: false;
-		//
-		// 		BreadPackage breadPackage = breadPackageRepository.findTodayOrLastBreadPackage(b.getBakeryId());
-		// 		if (breadPackage == null) {
-		// 			throw new CustomException(ErrorCode.BREAD_PACKAGE_NOT_FOUND);
-		// 		}
-		// 		return BestBakeryDto.from(b.getBakeryId(), breadPackage.getName(), b.getName(), is_liked);
-		// 	})
-		// 	.toList();
-
-		else {
+		} else {
 			List<Bakery> list = bakeryRepository.findBestBakeriesByLocation(userLat, userLng);
 
 			for (Bakery b : list) {
