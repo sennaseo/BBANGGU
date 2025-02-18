@@ -123,7 +123,7 @@ public class ReservationController {
 		@PathVariable LocalDate startDate, @PathVariable LocalDate endDate
 	) {
 		log.info("✨ 기간 내 사용자 예약 조회 ✨");
-		Map<String, Object> reservationList = reservationService.getUserReservationList(userDetails, startDate, endDate);
+		List<Map<String, Object>> reservationList = reservationService.getUserReservationList(userDetails, startDate, endDate);
 		if (reservationList.isEmpty()) {
 			ResponseEntity.status(HttpStatus.NO_CONTENT).body(new ApiResponse("기간 내 사용자 예약이 존재하지 않습니다.", null));
 		}

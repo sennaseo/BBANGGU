@@ -8,7 +8,7 @@ import UserBottomNavigation from "../../../components/user/navigations/bottomnav
 import { getUserProfile } from "../../../services/user/mypage/usermypageServices"
 import { logout } from '../../../api/common/logout/logoutApi';
 import { useDispatch, useSelector } from 'react-redux';
-import { logout as authLogout } from '../../../store/slices/authSlice';
+import { logout as authLogout, removeLocalStorage } from '../../../store/slices/authSlice';
 import { clearUserInfo } from '../../../store/slices/userSlice';
 import { LogoutModal } from "../../../components/user/mypage/LogoutModal"
 import { RootState } from '../../../store';
@@ -77,6 +77,7 @@ export default function UserMyPage() {
       // 리덕스 상태 초기화
       dispatch(authLogout());
       dispatch(clearUserInfo());
+      dispatch(removeLocalStorage());
       console.log('리덕스 상태 초기화 완료');
       
       // 모달 닫기

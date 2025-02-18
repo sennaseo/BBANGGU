@@ -110,5 +110,6 @@ class BreadDTO(BaseModel):
 
 @app.post("/generate-package")
 async def comb(breads: List[BreadDTO]):
+    print(breads)
     # 빵 조합 생성
     return distribute_breads(breads)

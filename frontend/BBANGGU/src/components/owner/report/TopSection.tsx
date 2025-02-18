@@ -21,28 +21,46 @@ export function TopSection({ storeName }: TopSectionProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+
   const { userInfo } = useSelector((state: RootState) => state.user);
 
   useEffect(() => {
     const fetchTop3 = async () => {
-      if (!userInfo?.bakeryId) return;
+      if (!userInfo?.bakeryId) {
+        console.log('bakeryId가 없습니다:', userInfo);
+        setError('베이커리 정보가 없습니다.');
+        setTopProducts([]);
+        setTotalInventory(0);
+        return;
+      }
       
       setLoading(true);
       setError(null);
       try {
         const response = await StockTop3Api.getTop3Stocks(userInfo.bakeryId, period);
+        console.log('Top3 API 응답:', response);
         
-        // 새로운 응답 형식에 맞게 데이터 변환
+        // undefined 체크를 먼저 수행
+        if (!response?.data?.top3) {
+          console.log('top3 데이터가 없습니다');
+          setTopProducts([]);
+          setTotalInventory(0);
+          return;
+        }
+        
+        // 데이터 구조에 맞게 매핑
         const products = response.data.top3.map(([name, count]) => ({
-          name,
-          count
+          name: name as string,
+          count: count as number
         }));
         
+        console.log('변환된 products:', products);  // 변환된 데이터 확인
+        
         setTopProducts(products);
-        setTotalInventory(response.data.total);
+        setTotalInventory(response.data.total || 0);
         
       } catch (err: any) {
-        console.error('API 에러:', err);
+        console.error('Top3 API 에러:', err);
         setError(err.message || '데이터를 불러오는데 실패했습니다.');
         setTopProducts([]);
         setTotalInventory(0);
@@ -95,30 +113,28 @@ export function TopSection({ storeName }: TopSectionProps) {
               <p>로딩 중...</p>
             ) : error ? (
               <div className="text-center py-4">
-                <p className="text-gray-500">사장님, {error}</p>
+                <p className="text-gray-500">{error}</p>
               </div>
-            ) : (
-              topProducts.length > 0 ? (
-                topProducts.map((product, index) => (
-                  <div key={product.name} className="flex items-center gap-2">
-                    <span className="flex-shrink-0">
-                      {index === 0 && "🥇"}
-                      {index === 1 && "🥈"}
-                      {index === 2 && "🥉"}
-                    </span>
-                    <span className="flex-1">{product.name}</span>
-                    <span className="text-gray-600">{product.count}개</span>
-                  </div>
-                ))
-              ) : (
-                <div className="text-center text-gray-500 py-2">
-                  {period === 'day' ? (
-                    <p>사장님, 오늘의 재고를 등록해주세요!</p>
-                  ) : (
-                    <p>해당 기간의 재고 데이터가 없습니다.</p>
-                  )}
+            ) : topProducts && topProducts.length > 0 ? (
+              topProducts.map((product, index) => (
+                <div key={product.name} className="flex items-center gap-2">
+                  <span className="flex-shrink-0">
+                    {index === 0 && "🥇"}
+                    {index === 1 && "🥈"}
+                    {index === 2 && "🥉"}
+                  </span>
+                  <span className="flex-1">{product.name}</span>
+                  <span className="text-gray-600">{product.count}개</span>
                 </div>
-              )
+              ))
+            ) : (
+              <div className="text-center text-gray-500 py-2">
+                {period === 'day' ? (
+                  <p>사장님, 오늘의 재고를 등록해주세요!</p>
+                ) : (
+                  <p>해당 기간의 재고 데이터가 없습니다.</p>
+                )}
+              </div>
             )}
           </div>
         </div>

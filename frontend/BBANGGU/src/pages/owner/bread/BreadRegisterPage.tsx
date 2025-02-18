@@ -4,13 +4,15 @@ import { useNavigate } from 'react-router-dom';
 import Header from '../../../components/owner/header/Header';
 import { 
   Croissant, Cookie, CakeSlice,
-  Pizza, Sandwich, IceCream2, Cake,
+  Pizza, Cake,
   Coffee, ChefHat, UtensilsCrossed, Store,
   ShoppingBag, Package, CircleDot, Star
 } from 'lucide-react';
 import { registerBread, getBakeryBreads, BreadInfo, updateBread, deleteBread } from '../../../api/owner/bread';
 import { getUserInfo } from '../../../api/user/user';
 import { UserInfo } from '../../../types/user';
+import axios from 'axios';
+import { getBakeryByOwner } from '../../../api/owner/bakery';
 
 
 interface BreadCategory {
@@ -34,132 +36,116 @@ interface BreadItem {
 export const BREAD_CATEGORIES: BreadCategory[] = [
   { 
     id: 1, 
-    name: '바게트',
-    icon: <UtensilsCrossed className="w-8 h-8" />,
-    bgColor: 'bg-amber-50',
-    iconColor: 'text-amber-600',
-    weight: 250
-  },
-  { 
-    id: 2, 
-    name: '크로와상',
-    icon: <Croissant className="w-8 h-8" />,
-    bgColor: 'bg-rose-50',
-    iconColor: 'text-rose-600',
-    weight: 100
-  },
-  { 
-    id: 3, 
     name: '베이글',
     icon: <CircleDot className="w-8 h-8" />,
     bgColor: 'bg-orange-50',
     iconColor: 'text-orange-600',
-    weight: 500
+    weight: 210
+  },
+  { 
+    id: 2, 
+    name: '바게트',
+    icon: <UtensilsCrossed className="w-8 h-8" />,
+    bgColor: 'bg-amber-50',
+    iconColor: 'text-amber-600',
+    weight: 300
+  },
+  { 
+    id: 3, 
+    name: '케이크',
+    icon: <CakeSlice className="w-8 h-8" />,
+    bgColor: 'bg-pink-50',
+    iconColor: 'text-pink-600',
+    weight: 400
   },
   { 
     id: 4, 
+    name: '번',
+    icon: <Package className="w-8 h-8" />,
+    bgColor: 'bg-yellow-50',
+    iconColor: 'text-yellow-600',
+    weight: 220
+  },
+  { 
+    id: 5, 
+    name: '크로와상',
+    icon: <Croissant className="w-8 h-8" />,
+    bgColor: 'bg-rose-50',
+    iconColor: 'text-rose-600',
+    weight: 150
+  },
+  { 
+    id: 6, 
+    name: '고로케',
+    icon: <Store className="w-8 h-8" />,
+    bgColor: 'bg-brown-50',
+    iconColor: 'text-brown-600',
+    weight: 200
+  },
+  { 
+    id: 7, 
+    name: '휘낭시에',
+    icon: <ChefHat className="w-8 h-8" />,
+    bgColor: 'bg-indigo-50',
+    iconColor: 'text-indigo-600',
+    weight: 170
+  },
+  { 
+    id: 8, 
+    name: '피자빵',
+    icon: <Pizza className="w-8 h-8" />,
+    bgColor: 'bg-red-50',
+    iconColor: 'text-red-600',
+    weight: 190
+  },
+  { 
+    id: 9, 
+    name: '프레첼',
+    icon: <ShoppingBag className="w-8 h-8" />,
+    bgColor: 'bg-purple-50',
+    iconColor: 'text-purple-600',
+    weight: 250
+  },
+  { 
+    id: 10, 
     name: '단팥빵',
     icon: <Cookie className="w-8 h-8" />,
     bgColor: 'bg-red-50',
     iconColor: 'text-red-600',
-    weight: 0
+    weight: 200
   },
   { 
-    id: 5, 
+    id: 11, 
+    name: '스콘',
+    icon: <Star className="w-8 h-8" />,
+    bgColor: 'bg-yellow-50',
+    iconColor: 'text-yellow-600',
+    weight: 200
+  },
+  { 
+    id: 12, 
+    name: '소보로',
+    icon: <Coffee className="w-8 h-8" />,
+    bgColor: 'bg-brown-50',
+    iconColor: 'text-brown-600',
+    weight: 200
+  },
+  { 
+    id: 13, 
+    name: '타르트',
+    icon: <Cake className="w-8 h-8" />,
+    bgColor: 'bg-pink-50',
+    iconColor: 'text-pink-600',
+    weight: 150
+  },
+  { 
+    id: 14, 
     name: '식빵',
     icon: <Package className="w-8 h-8" />,
     bgColor: 'bg-yellow-50',
     iconColor: 'text-yellow-600',
-    weight: 0
-  },
-  { 
-    id: 6, 
-    name: '소보로',
-    icon: <Star className="w-8 h-8" />,
-    bgColor: 'bg-lime-50',
-    iconColor: 'text-lime-600',
-    weight: 0
-  },
-  { 
-    id: 7, 
-    name: '슈크림빵',
-    icon: <IceCream2 className="w-8 h-8" />,
-    bgColor: 'bg-green-50',
-    iconColor: 'text-green-600',
-    weight: 0
-  },
-  { 
-    id: 8, 
-    name: '버터번',
-    icon: <ShoppingBag className="w-8 h-8" />,
-    bgColor: 'bg-emerald-50',
-    iconColor: 'text-emerald-600',
-    weight: 0
-  },
-  { 
-    id: 9, 
-    name: '휘낭시에',
-    icon: <CakeSlice className="w-8 h-8" />,
-    bgColor: 'bg-teal-50',
-    iconColor: 'text-teal-600',
-    weight: 0
-  },
-  { 
-    id: 10, 
-    name: '초코롤',
-    icon: <Coffee className="w-8 h-8" />,
-    bgColor: 'bg-cyan-50',
-    iconColor: 'text-cyan-600',
-    weight: 0
-  },
-  { 
-    id: 11, 
-    name: '패스츄리',
-    icon: <ChefHat className="w-8 h-8" />,
-    bgColor: 'bg-sky-50',
-    iconColor: 'text-sky-600',
-    weight: 0
-  },
-  { 
-    id: 12, 
-    name: '케이크',
-    icon: <Cake className="w-8 h-8" />,
-    bgColor: 'bg-blue-50',
-    iconColor: 'text-blue-600',
-    weight: 0
-  },
-  { 
-    id: 13, 
-    name: '프레첼',
-    icon: <Store className="w-8 h-8" />,
-    bgColor: 'bg-indigo-50',
-    iconColor: 'text-indigo-600',
-    weight: 0
-  },
-  { 
-    id: 14, 
-    name: '스콘',
-    icon: <Cookie className="w-8 h-8" />,
-    bgColor: 'bg-violet-50',
-    iconColor: 'text-violet-600',
-    weight: 0
-  },
-  { 
-    id: 15, 
-    name: '샌드위치',
-    icon: <Sandwich className="w-8 h-8" />,
-    bgColor: 'bg-purple-50',
-    iconColor: 'text-purple-600',
-    weight: 0
-  },
-  { 
-    id: 16, 
-    name: '타르트',
-    icon: <Pizza className="w-8 h-8" />,
-    bgColor: 'bg-fuchsia-50',
-    iconColor: 'text-fuchsia-600',
-    weight: 0
-  },
+    weight: 400
+  }
 ];
 
 // 실제 사용되는 URL 형식에 맞게 함수 수정
@@ -206,13 +192,30 @@ export default function BreadRegisterPage() {
   useEffect(() => {
     const fetchUserInfo = async () => {
       try {
-        const response = await getUserInfo();
-        console.log('사용자 정보:', response);
-        // role 타입을 명시적으로 변환
-        setUserInfo({
-          ...response,
-          role: response.role as 'OWNER' | 'USER'
-        });
+        const data = await getUserInfo();
+        
+        if (data.role !== 'OWNER') {
+          navigate('/');
+          return;
+        }
+
+        // 베이커리 정보 조회
+        try {
+          const bakeryData = await getBakeryByOwner();
+          setUserInfo({
+            ...data,
+            bakeryId: bakeryData.bakeryId,
+            role: data.role as 'OWNER' | 'USER'
+          });
+        } catch (error) {
+          console.error('Error fetching bakery:', error);
+          if (axios.isAxiosError(error) && error.response?.status === 404) {
+            alert('베이커리 정보를 찾을 수 없습니다. 베이커리를 먼저 등록해주세요.');
+            navigate('/owner/bakery/register');
+            return;
+          }
+          throw error;
+        }
       } catch (error) {
         console.error('사용자 정보 조회 실패:', error);
         alert('사장님 정보를 가져오는데 실패했습니다.');
@@ -237,12 +240,82 @@ export default function BreadRegisterPage() {
     };
   }, []);
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const url = URL.createObjectURL(file);
-      setPreviewUrl(url);
+      try {
+        if (file.size > 5 * 1024 * 1024) {
+          throw new Error('이미지 크기는 5MB 이하여야 합니다.');
+        }
+
+        const compressedFile = await compressImage(file);
+        const url = URL.createObjectURL(compressedFile);
+        setPreviewUrl(url);
+      } catch (error) {
+        alert(error instanceof Error ? error.message : '이미지 처리 중 오류가 발생했습니다.');
+      }
     }
+  };
+
+  // 이미지 압축 함수 수정
+  const compressImage = async (file: File): Promise<File> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          let width = img.width;
+          let height = img.height;
+
+          // 최대 크기 지정 (예: 1024px)
+          const MAX_SIZE = 1024;
+          if (width > height && width > MAX_SIZE) {
+            height = (height * MAX_SIZE) / width;
+            width = MAX_SIZE;
+          } else if (height > MAX_SIZE) {
+            width = (width * MAX_SIZE) / height;
+            height = MAX_SIZE;
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          
+          // 이미지 회전 처리 추가
+          if (ctx) {
+            // EXIF 방향 정보에 따른 회전 처리
+            ctx.save();
+            ctx.translate(width / 2, height / 2);
+            ctx.rotate(0);
+            ctx.drawImage(img, -width / 2, -height / 2, width, height);
+            ctx.restore();
+          }
+
+          // 항상 JPEG로 변환
+          canvas.toBlob(
+            (blob) => {
+              if (!blob) {
+                reject(new Error('Canvas to Blob failed'));
+                return;
+              }
+              // 파일 이름에서 확장자 제거하고 .jpg 추가
+              const fileName = file.name.replace(/\.[^/.]+$/, "") + '.jpg';
+              resolve(new File([blob], fileName, {
+                type: 'image/jpeg',
+                lastModified: Date.now(),
+              }));
+            },
+            'image/jpeg',
+            0.7
+          );
+        };
+        img.onerror = reject;
+        img.src = e.target?.result as string;
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
   };
 
   const handleAddBread = () => {
@@ -283,9 +356,15 @@ export default function BreadRegisterPage() {
       for (const bread of breadList) {
         let imageFile: File | undefined;
         if (bread.image && bread.image.startsWith('blob:')) {
-          const response = await fetch(bread.image);
-          const blob = await response.blob();
-          imageFile = new File([blob], `bread-${Date.now()}.${blob.type.split('/')[1]}`, { type: blob.type });
+          try {
+            const response = await fetch(bread.image);
+            const blob = await response.blob();
+            imageFile = new File([blob], `bread-${Date.now()}.jpg`, { 
+              type: 'image/jpeg'
+            });
+          } catch (error) {
+            throw new Error('이미지 처리 중 오류가 발생했습니다.');
+          }
         }
 
         const breadData = {
@@ -398,27 +477,28 @@ export default function BreadRegisterPage() {
     }
   };
 
-  // 빵 삭제 핸들러
+  // 빵 삭제 핸들러 수정
   const handleDeleteBread = async (breadId: number | null) => {
-    if (!breadId) return;  // null 체크
+    if (!breadId || !userInfo?.bakeryId) return;  // bakeryId도 체크
     if (!window.confirm('정말 이 빵을 삭제하시겠습니까?')) return;
 
     try {
-      setIsLoading(true); // 로딩 상태 추가
-      const result = await deleteBread(breadId);
-      console.log('삭제 응답:', result); // 응답 확인용 로그
-
-      if (result.message === "빵 정보 삭제 성공") {
-        // 성공적으로 삭제된 경우 목록에서 제거
-        setExistingBreads(prev => prev.filter(bread => bread.breadId !== breadId));
-        alert('빵이 삭제되었습니다.');
-      }
+      setIsLoading(true);
+      await deleteBread(breadId);
+      
+      // 삭제 성공 후 빵 목록 새로 조회
+      const updatedBreads = await getBakeryBreads(userInfo.bakeryId);
+      setExistingBreads(updatedBreads);
+      
+      alert('빵이 삭제되었습니다.');
     } catch (error: unknown) {
       const err = error as FormError;
       console.error('삭제 실패:', err);
       alert(err.response?.data.message || '빵 삭제 중 오류가 발생했습니다.');
     } finally {
       setIsLoading(false);
+      // 열려있는 메뉴 닫기
+      setOpenMenuId(null);
     }
   };
 

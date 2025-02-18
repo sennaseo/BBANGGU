@@ -26,9 +26,8 @@ public class AIInventoryController {
 
 	@PostMapping("/{bakeryId}")
 	public ResponseEntity<?> analyzeInventory(
-		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@PathVariable long bakeryId) {
-		String response = inventoryService.getResponse(userDetails, bakeryId);
+		String response = inventoryService.getResponse(bakeryId);
 		return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse("gpt 응답 성공", response));
 	}
 }

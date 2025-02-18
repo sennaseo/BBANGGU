@@ -44,6 +44,7 @@ import { PaymentFail } from "./pages/user/payment/PaymentFail";
 import KakaoCallback from './pages/oauth/KakaoCallback';
 import LoginPage from "./pages/login";
 import ChangePasswordPage from "./pages/login/ChangePasswordPage";
+import PackagePackingGuide from './pages/owner/package/PackagePackingGuide';
 
 export default function App() {
   return (
@@ -100,6 +101,7 @@ export default function App() {
               <Route path="/owner/package/sales-setting" element={<PackageSalesSetting />} />
               <Route path="/owner/package/setting" element={<PackageSettingPage />} />
               <Route path="/owner/bread/register" element={<BreadRegisterPage />} />
+              <Route path="/owner/package/packing-guide" element={<PackagePackingGuide />} />
             </Routes>
             <InstallPWA />
           </MobileLayout>

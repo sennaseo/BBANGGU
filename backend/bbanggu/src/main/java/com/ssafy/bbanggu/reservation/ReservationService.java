@@ -60,6 +60,7 @@ public class ReservationService {
 	public Map<String, Object> validateReservation(CustomUserDetails userDetails, ValidReservationRequest request) {
 		Bakery bakery = bakeryRepository.findById(request.bakeryId())
 			.orElseThrow(() -> new CustomException(ErrorCode.BAKERY_NOT_FOUND));
+
 		BreadPackage breadPackage = breadPackageRepository.findByBakeryIdAndToday(bakery.getBakeryId());
 		if (breadPackage == null) {
 			throw new CustomException(ErrorCode.BREAD_PACKAGE_NOT_FOUND);
@@ -263,15 +264,15 @@ public class ReservationService {
 			.build();
 	}
 
-	public Map<String, Object> getUserReservationList(CustomUserDetails userDetails, LocalDate startDate, LocalDate endDate) {
+	public List<Map<String, Object>> getUserReservationList(CustomUserDetails userDetails, LocalDate startDate, LocalDate endDate) {
 		LocalDateTime startDateTime = startDate.atStartOfDay();
 		LocalDateTime endDateTime = endDate.atTime(LocalTime.MAX);
 		log.info("startDateTime: " + startDateTime + "\nendDateTime: " + endDateTime);
 
 		List<Reservation> data = reservationRepository.findByUser_UserIdAndCreatedAtBetween(userDetails.getUserId(), startDateTime, endDateTime);
-		Map<String, Object> response = new HashMap<>();
-		List<ReservationDTO> reservationDTOList = new ArrayList<>();
+		List<Map<String, Object>> responseList = new ArrayList<>();
 		for (Reservation d : data) {
+			Map<String, Object> response = new HashMap<>();
 
 			response.put("reservationId", d.getReservationId());
 			response.put("bakeryId", d.getBakery().getBakeryId());
@@ -290,9 +291,10 @@ public class ReservationService {
 				rState = "DELETED";
 			}
 			response.put("reviewStatus", rState);
+			responseList.add(response);
 		}
 
-		return response;
+		return responseList;
 	}
 
 	/**

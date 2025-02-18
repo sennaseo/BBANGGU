@@ -170,7 +170,7 @@ public class ReviewService {
 	public List<ReviewResponseDto> getUserReviews(CustomUserDetails userDetails, Long userId) {
 		User user = userRepository.findById(userDetails.getUserId())
 			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
-		if (user.getUserId().equals(userId)) {
+		if (!user.getUserId().equals(userId)) {
 			throw new CustomException(ErrorCode.UNAUTHORIZED_USER);
 		}
 
