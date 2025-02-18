@@ -191,12 +191,7 @@ public class UserService { // 사용자 관련 비즈니스 로직 처리
 		}
 		log.info("✅ {}번 사용자 검증 완료", userDetails.getUserId());
 
-		Long bakeryId = null;
-		if (user.getRole().equals(Role.OWNER)) {
-			bakeryId = bakeryRepository.findByUser_UserId(user.getUserId()).getBakeryId();
-		}
-
-		return UserResponse.from(user, bakeryId);
+		return UserResponse.from(user);
 	}
 
 
