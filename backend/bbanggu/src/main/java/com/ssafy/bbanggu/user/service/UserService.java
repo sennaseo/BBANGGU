@@ -78,7 +78,7 @@ public class UserService { // 사용자 관련 비즈니스 로직 처리
 			.build();
 
 		echoSavingRepository.save(echoSaving);
-		return UserResponse.from(user, null);
+		return UserResponse.from(user);
 	}
 
 
