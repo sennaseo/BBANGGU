@@ -237,12 +237,74 @@ export default function BreadRegisterPage() {
     };
   }, []);
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const url = URL.createObjectURL(file);
-      setPreviewUrl(url);
+      // 파일 크기 체크 (예: 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        alert('이미지 크기는 5MB 이하여야 합니다.');
+        return;
+      }
+
+      try {
+        // 이미지 리사이징
+        const compressedFile = await compressImage(file);
+        const url = URL.createObjectURL(compressedFile);
+        setPreviewUrl(url);
+      } catch (error) {
+        console.error('이미지 처리 중 오류:', error);
+        alert('이미지 처리 중 오류가 발생했습니다.');
+      }
     }
+  };
+
+  // 이미지 압축 함수
+  const compressImage = async (file: File): Promise<File> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          let width = img.width;
+          let height = img.height;
+
+          // 최대 크기 지정 (예: 1024px)
+          const MAX_SIZE = 1024;
+          if (width > height && width > MAX_SIZE) {
+            height = (height * MAX_SIZE) / width;
+            width = MAX_SIZE;
+          } else if (height > MAX_SIZE) {
+            width = (width * MAX_SIZE) / height;
+            height = MAX_SIZE;
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx?.drawImage(img, 0, 0, width, height);
+
+          canvas.toBlob(
+            (blob) => {
+              if (!blob) {
+                reject(new Error('Canvas to Blob failed'));
+                return;
+              }
+              resolve(new File([blob], file.name, {
+                type: 'image/jpeg',
+                lastModified: Date.now(),
+              }));
+            },
+            'image/jpeg',
+            0.7  // 품질 설정 (0.7 = 70%)
+          );
+        };
+        img.onerror = reject;
+        img.src = e.target?.result as string;
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
   };
 
   const handleAddBread = () => {
@@ -398,27 +460,28 @@ export default function BreadRegisterPage() {
     }
   };
 
-  // 빵 삭제 핸들러
+  // 빵 삭제 핸들러 수정
   const handleDeleteBread = async (breadId: number | null) => {
-    if (!breadId) return;  // null 체크
+    if (!breadId || !userInfo?.bakeryId) return;  // bakeryId도 체크
     if (!window.confirm('정말 이 빵을 삭제하시겠습니까?')) return;
 
     try {
-      setIsLoading(true); // 로딩 상태 추가
-      const result = await deleteBread(breadId);
-      console.log('삭제 응답:', result); // 응답 확인용 로그
-
-      if (result.message === "빵 정보 삭제 성공") {
-        // 성공적으로 삭제된 경우 목록에서 제거
-        setExistingBreads(prev => prev.filter(bread => bread.breadId !== breadId));
-        alert('빵이 삭제되었습니다.');
-      }
+      setIsLoading(true);
+      await deleteBread(breadId);
+      
+      // 삭제 성공 후 빵 목록 새로 조회
+      const updatedBreads = await getBakeryBreads(userInfo.bakeryId);
+      setExistingBreads(updatedBreads);
+      
+      alert('빵이 삭제되었습니다.');
     } catch (error: unknown) {
       const err = error as FormError;
       console.error('삭제 실패:', err);
       alert(err.response?.data.message || '빵 삭제 중 오류가 발생했습니다.');
     } finally {
       setIsLoading(false);
+      // 열려있는 메뉴 닫기
+      setOpenMenuId(null);
     }
   };
 
