@@ -170,61 +170,43 @@ export interface ReservationInfo {
   cancelReason?: string;
 }
 
-
 export const CustomerList: React.FC<CustomerListProps> = ({ bakeryId, onReservationsUpdate }) => {
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [reservations, setReservations] = useState<ReservationInfo[]>([]);
   const [totalNum, setTotalNum] = useState(0);
   const [endTime, setEndTime] = useState('20:00');
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
   const [selectedReservationId, setSelectedReservationId] = useState<number | null>(null);
   const [isReasonModalOpen, setIsReasonModalOpen] = useState(false);
   const [sortType, setSortType] = useState<SortType>('PAYMENT_TIME');
   const [selectedCancelReason, setSelectedCancelReason] = useState('');
 
-  // 자동 새로고침을 위한 interval 추가
   useEffect(() => {
     const fetchReservations = async () => {
       try {
         setIsLoading(true);
+        // 예약 정보 조회
         const response = await getTodayReservations(bakeryId);
-        
-        // 응답 데이터가 없거나 infos가 없는 경우 빈 배열로 처리
-        const reservationsWithSafeNumber = response.data?.infos 
-          ? response.data.infos.map(reservation => ({
-              ...reservation,
-              phone: reservation.phone.replace(/^010/, '0507')
-            }))
-          : [];
-        
-        setReservations(reservationsWithSafeNumber);
-        onReservationsUpdate(reservationsWithSafeNumber);
-        // totalNum과 endTime도 안전하게 처리
-        setTotalNum(response.data?.totalNum || 0);
-        setEndTime(response.data?.endTime || '20:00');
-      } catch (error: any) {
-        console.error('예약 조회 실패 상세:', error);
-        
-        if (error.response?.status === 404) {
-          // 404는 예약이 없는 정상적인 상황으로 처리
-          setReservations([]);
-          setTotalNum(0);
-          setError(null);
-        } else if (error.response?.status === 500) {
-          setError('서버에 일시적인 문제가 발생했습니다. 잠시 후 다시 시도해주세요.');
-        } else {
-          setError('예약 목록을 불러오는데 실패했습니다.');
+        console.log('예약 조회 결과:', response);
+
+        if (response.data.infos) {
+          setReservations(response.data.infos);
+          onReservationsUpdate(response.data.infos);
+          setTotalNum(response.data?.totalNum || 0);
+          setEndTime(response.data?.endTime || '20:00');
         }
+      } catch (error) {
+        console.error('예약 정보 조회 실패:', error);
+        setError('예약 정보를 불러오는데 실패했습니다.');
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchReservations();
-    
-    const intervalId = setInterval(fetchReservations, 60000);
-    return () => clearInterval(intervalId);
+    if (bakeryId) {  // bakeryId가 있을 때만 호출
+      fetchReservations();
+    }
   }, [bakeryId]);
 
   // 시간 포맷팅 함수
@@ -434,7 +416,7 @@ export const CustomerList: React.FC<CustomerListProps> = ({ bakeryId, onReservat
                           `}
                         >
                           {option.label}
-          </button>
+                        </button>
                       )}
                     </Menu.Item>
                   ))}
