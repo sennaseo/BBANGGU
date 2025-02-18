@@ -12,6 +12,8 @@ import { fetchBakeryList, BakeryInfo } from '../../../store/slices/bakerySlice';
 import { setUserInfo } from '../../../store/slices/userSlice';
 import { loginSuccess } from '../../../store/slices/authSlice';
 import { getUserInfo } from '../../../api/user/user';
+import { useNavigate } from 'react-router-dom';
+
 interface PostcodeData {
   roadAddress: string;
   bname: string;
@@ -42,6 +44,7 @@ export function MapPage() {
   const [userAddress, setUserAddress] = useState<string>("위치를 설정해주세요");
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredBakeries, setFilteredBakeries] = useState<BakeryInfo[]>([]);
+  const navigate = useNavigate();
 
   // Daum Postcode 스크립트 로드
   useEffect(() => {
@@ -220,6 +223,10 @@ export function MapPage() {
     setSelectedStore(storeInfo)
   }
 
+  const handleStoreCardClick = (bakeryId: number) => {
+    navigate(`/user/bakery/${bakeryId}`);
+  };
+
   return (
     <div className="h-screen flex flex-col">
       {/* Header */}
@@ -335,7 +342,11 @@ export function MapPage() {
       </main>
 
       {/* Store Card */}
-      <StoreCard isVisible={!!selectedStore} store={selectedStore} />
+      <StoreCard 
+        isVisible={!!selectedStore} 
+        store={selectedStore} 
+        onStoreClick={handleStoreCardClick}
+      />
       <div className="fixed bottom-0 left-0 right-0 z-10">
         <div className="max-w-[430px] mx-auto">
           <UserBottomNavigation/>
