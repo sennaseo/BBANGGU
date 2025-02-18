@@ -12,15 +12,11 @@ export interface ReviewType {
 }
 
 export interface ReviewState {
-    reviews: ReviewType[];
-    loading: boolean;
-    error: string | null;
+    data: ReviewType[];
 }
 
 const initialState: ReviewState = {
-    reviews: [],
-    loading: false,
-    error: null
+    data: []
 }
 
 const reviewSlice = createSlice({

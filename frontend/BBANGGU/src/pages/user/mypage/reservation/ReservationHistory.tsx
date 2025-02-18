@@ -8,7 +8,7 @@ import { Reservation } from "../../../../store/slices/reservationSlice"
 
 export function ReservationHistory() {
   const navigate = useNavigate()
-  const { userId } = useParams<{ userId: string }>();
+  const { userId, reservationId } = useParams<{ userId: string, reservationId: string }>();
   const [currentReservations, setCurrentReservations] = useState<Reservation[]>([]);
   const [pastReservations, setPastReservations] = useState<Reservation[]>([]);
   const [isPastReservationsOpen, setIsPastReservationsOpen] = useState<boolean>(true);
@@ -149,21 +149,17 @@ export function ReservationHistory() {
                     리뷰가 삭제되었습니다
                   </div>
                 ) : (
-                  <button 
-                    className={`mt-3 w-full text-white py-2 rounded-xl font-semibold ${reservation.reviewStatus?.toLowerCase() === 'completed' ? 'bg-gray-400 hover:bg-gray-500' : 'bg-[#fc973b] hover:bg-[#e88a2d]'}`}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      if (reservation.reviewStatus?.toLowerCase() === 'completed') {
-                        navigate(`/user/${userId}/mypage/reviews/${reservation.reviewId}`);
-                      } else if (reservation?.reviewStatus === null) {
-                        navigate(`/user/${userId}/mypage/reviews/${reservation.reviewId}`);
-                      } else {
+                  reservation.reviewStatus === null && (
+                    <button 
+                      className={`mt-3 w-full text-white py-2 rounded-xl font-semibold bg-[#fc973b] hover:bg-[#e88a2d]`}
+                      onClick={(e) => {
+                        e.stopPropagation();
                         navigate(`/user/${userId}/mypage/reservation/${reservation.reservationId}/write-review`);
-                      }
-                    }}
-                  >
-                    {reservation.reviewStatus?.toLowerCase() === 'completed' ? '리뷰 보기' : '리뷰 쓰기'}
-                  </button>
+                      }}
+                    >
+                      리뷰 쓰기
+                    </button>
+                  )
                 )}
               </>
             )}

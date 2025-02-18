@@ -21,7 +21,11 @@ export default function UserMyReview() {
       }
       try {
         const response = await getUserReviews(userId);
-        setReviews(response);
+        if (Array.isArray(response.data)) {
+          setReviews(response.data);
+        } else {
+          setError('리뷰 데이터가 올바르지 않습니다.');
+        }
       } catch (err) {
         setError(err instanceof Error ? err.message : '리뷰를 불러오는데 실패했습니다.');
       } finally {
@@ -66,8 +70,6 @@ export default function UserMyReview() {
           </div>
         )}
       </main>
-
-      <UserBottomNavigation />
     </div>
   );
 } 
