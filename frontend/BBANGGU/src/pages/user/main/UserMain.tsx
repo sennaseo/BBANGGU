@@ -32,9 +32,9 @@ export default function UserMain() {
       setIsLoading(true)
       try {
         const allBakeryResult = await fetchAllBakeriesData()
-        const favoritebakeryResult = await fetchBestFavoriteStores()
+        // const favoritebakeryResult = await fetchBestFavoriteStores()
         setAllBakeriesData(allBakeryResult.allbakery)
-        setFavoritebakery(favoritebakeryResult.favoritebakery)
+        // setFavoritebakery(favoritebakeryResult.favoritebakery)
         setSearchResults([])
       } catch (err) {
         setError(err as Error)
