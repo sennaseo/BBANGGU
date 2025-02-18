@@ -74,30 +74,40 @@ function PickupTime() {
   }, [pickupTimes]);
 
   // 시간 데이터가 변경될 때마다 localStorage에 저장
-  useEffect(() => {
-    localStorage.setItem(`pickupTimes_${bakeryId}`, JSON.stringify(timeData));
-  }, [timeData, bakeryId]);
+  // useEffect(() => {
+  //   localStorage.setItem(`pickupTimes_${bakeryId}`, JSON.stringify(timeData));
+  // }, [timeData, bakeryId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     try {
       const requestData: { [key: string]: PickupTime | null } = {
-        monday: null,
-        tuesday: null,
-        wednesday: null,
-        thursday: null,
-        friday: null,
-        saturday: null,
-        sunday: null
+        monday: {"startTime":'', "endTime":''},
+        tuesday: {"startTime":'', "endTime":''},
+        wednesday: {"startTime":'', "endTime":''},
+        thursday: {"startTime":'', "endTime":''},
+        friday: {"startTime":'', "endTime":''},
+        saturday: {"startTime":'', "endTime":''},
+        sunday: {"startTime":'', "endTime":''},
       };
       
+  
       selectedDays.forEach(day => {
         const engDay = dayMapping[day as keyof typeof dayMapping];
+        console.log("engDay", engDay);
         if (timeData[day]) {
           requestData[engDay] = timeData[day];
+        }else{
+          console.log('hi');
+          requestData[engDay] = {
+            startTime: "",
+            endTime: ""
+          };
         }
       });
+
+      console.log("requestData", requestData);
 
       await updatePickupTime(bakeryId, requestData);
       alert('픽업 시간이 성공적으로 수정되었습니다.');

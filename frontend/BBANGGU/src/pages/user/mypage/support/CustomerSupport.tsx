@@ -28,7 +28,7 @@ export default function UserCustomerSupport() {
           </p>
           <button 
             className="w-full py-4 bg-[#FEE500] rounded-xl font-bold text-[#3C1E1E]"
-            onClick={() => window.open('https://pf.kakao.com/_xgxkExbxj', '_blank')}
+            onClick={() => window.open('http://pf.kakao.com/_ffeTn', '_blank')}
           >
             카카오톡 상담하기
           </button>
