@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react"
-import { fetchBestFavoriteStores, searchBakery } from "../../../services/user/usermainService"
+import { searchBakery } from "../../../services/user/usermainService"
+// import { fetchBestFavoriteStores } from "../../../services/user/usermainService"
 import SearchBar from "../../../components/user/usermain/SearchBar"
 import Header from "../../../components/user/usermain/Header"
 import BestPackages from "../../../components/user/usermain/BestPackages"
