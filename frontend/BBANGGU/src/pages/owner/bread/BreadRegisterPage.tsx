@@ -11,6 +11,8 @@ import {
 import { registerBread, getBakeryBreads, BreadInfo, updateBread, deleteBread } from '../../../api/owner/bread';
 import { getUserInfo } from '../../../api/user/user';
 import { UserInfo } from '../../../types/user';
+import axios from 'axios';
+import { getBakeryByOwner } from '../../../api/owner/bakery';
 
 
 interface BreadCategory {
@@ -190,13 +192,30 @@ export default function BreadRegisterPage() {
   useEffect(() => {
     const fetchUserInfo = async () => {
       try {
-        const response = await getUserInfo();
-        console.log('사용자 정보:', response);
-        // role 타입을 명시적으로 변환
-        setUserInfo({
-          ...response,
-          role: response.role as 'OWNER' | 'USER'
-        });
+        const data = await getUserInfo();
+        
+        if (data.role !== 'OWNER') {
+          navigate('/');
+          return;
+        }
+
+        // 베이커리 정보 조회
+        try {
+          const bakeryData = await getBakeryByOwner();
+          setUserInfo({
+            ...data,
+            bakeryId: bakeryData.bakeryId,
+            role: data.role as 'OWNER' | 'USER'
+          });
+        } catch (error) {
+          console.error('Error fetching bakery:', error);
+          if (axios.isAxiosError(error) && error.response?.status === 404) {
+            alert('베이커리 정보를 찾을 수 없습니다. 베이커리를 먼저 등록해주세요.');
+            navigate('/owner/bakery/register');
+            return;
+          }
+          throw error;
+        }
       } catch (error) {
         console.error('사용자 정보 조회 실패:', error);
         alert('사장님 정보를 가져오는데 실패했습니다.');

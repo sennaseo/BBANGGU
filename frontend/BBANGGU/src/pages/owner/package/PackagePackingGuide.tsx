@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Header from '../../../components/owner/header/Header';
 import ProgressBar from './components/Progress.Bar';
@@ -22,7 +22,43 @@ interface PackageGuideProps {
 const PackagePackingGuide: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
+
+  // 디버깅을 위한 로그 추가
+  useEffect(() => {
+    console.log('PackingGuide received state:', location.state);
+    if (!location.state) {
+      alert('잘못된 접근입니다.');
+      navigate(-1);
+      return;
+    }
+
+    // 값 검증 추가
+    const { price, quantity } = location.state;
+    if (typeof price !== 'number' || typeof quantity !== 'number' || isNaN(price) || isNaN(quantity)) {
+      console.error('Invalid price or quantity:', { price, quantity });
+      alert('가격 또는 수량 정보가 올바르지 않습니다.');
+      navigate(-1);
+      return;
+    }
+  }, [location.state, navigate]);
+
   const { mode, price, quantity, selectedPackage, packageDetails } = location.state as PackageGuideProps;
+
+  // 버튼 클릭 핸들러 수정
+  const handleComplete = () => {
+    const totalPrice = price * quantity;
+    console.log('Calculating totalPrice:', { price, quantity, totalPrice });
+
+    navigate('/owner/package/sales-setting', {
+      state: {
+        mode,
+        price,
+        quantity,
+        totalPrice,
+        selectedPackage
+      }
+    });
+  };
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
@@ -82,14 +118,7 @@ const PackagePackingGuide: React.FC = () => {
         <div className="mt-auto pt-4">
           <button
             className="w-full bg-[#FC973B] text-white py-4 rounded-[8px] text-[16px] font-medium"
-            onClick={() => navigate('/owner/package/sales-setting', {
-              state: {
-                mode,
-                price,
-                quantity,
-                selectedPackage
-              }
-            })}
+            onClick={handleComplete}
           >
             포장 완료
           </button>

@@ -12,6 +12,7 @@ import ProgressBar from './components/Progress.Bar';
 import { PACKAGE_STEPS, TOTAL_PACKAGE_STEPS } from './constants/PakageSteps';
 import Header from '../../../components/owner/header/Header';
 import axios from 'axios';
+import { getBakeryByOwner } from '../../../api/owner/bakery';
 
 const PackageGuide: React.FC = () => {
   const navigate = useNavigate();
@@ -26,25 +27,14 @@ const PackageGuide: React.FC = () => {
   useEffect(() => {
     const fetchUserInfo = async () => {
       if (!accessToken) {
+        console.log('No access token found, getting from localStorage');
         dispatch(getLocalStorage());
         return;
       }
 
       try {
         const data = await getUserInfo();
-        // dispatch(setUserInfo({
-        //   name: data.name,
-        //   profileImageUrl: data.profileImageUrl,
-        //   email: data.email,
-        //   phone: data.phone,
-        //   userId: data.userId,
-        //   role: data.role as 'OWNER' | 'USER',
-        //   addressRoad: data.addressRoad,
-        //   addressDetail: data.addressDetail,
-        //   bakeryId: data.bakeryId
-        // }));
-
-        // 점주가 아닌 경우 메인으로 리다이렉트
+        
         if (data.role !== 'OWNER') {
           dispatch(logout());
           dispatch(clearUserInfo());
@@ -53,13 +43,25 @@ const PackageGuide: React.FC = () => {
           return;
         }
 
-        setBakeryId(data.bakeryId);
+        // 베이커리 정보 조회
+        try {
+          const bakeryData = await getBakeryByOwner();
+          setBakeryId(bakeryData.bakeryId);
+        } catch (error) {
+          console.error('Error fetching bakery:', error);
+          if (axios.isAxiosError(error) && error.response?.status === 404) {
+            alert('베이커리 정보를 찾을 수 없습니다. 베이커리를 먼저 등록해주세요.');
+            navigate('/owner/bakery/register');
+            return;
+          }
+          throw error;
+        }
       } catch (error) {
-        console.error('Error fetching user info:', error);
+        console.error('Error in fetchUserInfo:', error);
         dispatch(logout());
         dispatch(clearUserInfo());
         dispatch(removeLocalStorage());
-        // navigate('/login');
+        navigate('/login');
       }
     };
 
@@ -70,79 +72,106 @@ const PackageGuide: React.FC = () => {
   // 이미지 캡쳐 및 분석 처리
   const handleCapture = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file && bakeryId) {
+    console.log('Current bakeryId:', bakeryId);  // bakeryId 상태 확인
+    
+    if (!file) {
+      console.log('No file selected');
+      return;
+    }
+    
+    if (!bakeryId) {
+      console.log('No bakeryId found, fetching user info again...');
       try {
-        dispatch(setLoading(true));
-        const compressedFile = await compressImage(file);
-        
-        const formData = new FormData();
-        formData.append('images', compressedFile);
-        formData.append('bakeryId', bakeryId.toString());
-
-        // 요청 데이터 확인
-        console.log('Request Data:', {
-          url: '/ai/detect',
-          bakeryId,
-          fileInfo: {
-            name: compressedFile.name,
-            type: compressedFile.type,
-            size: compressedFile.size
-          },
-          headers: {
-            'Authorization': `Bearer ${accessToken}`,
-            'Content-Type': 'multipart/form-data'
-          }
-        });
-
-        const response = await axios.post(
-          '/ai/detect',
-          formData,
-          {
-            headers: {
-              'Content-Type': 'multipart/form-data',
-              'Authorization': `Bearer ${accessToken}`
-            }
-          }
-        );
-
-        // 응답 데이터 확인
-        console.log('Response Data:', response.data);
-
-        const analyzedItems = response.data;
-        if (Array.isArray(analyzedItems) && analyzedItems.length > 0) {
-          // 분석된 빵 목록을 상태로 저장하고 다음 페이지로 이동
-          dispatch(setItems(analyzedItems.map(item => ({
-            name: item.name,
-            count: item.count,
-            price: item.price,
-            breadId: item.breadId,
-            status: 'confirmed' as const
-          }))));
-
-          navigate('/owner/package/preview');
+        const userData = await getUserInfo();
+        if (userData.bakeryId) {
+          setBakeryId(userData.bakeryId);
+          // 파일 처리 계속 진행
+          await processFile(file, userData.bakeryId);
         } else {
-          throw new Error('빵을 인식하지 못했습니다.');
+          alert('베이커리 정보를 찾을 수 없습니다. 베이커리를 먼저 등록해주세요.');
+          navigate('/owner/bakery/register');
         }
-
       } catch (error) {
-        console.error('에러:', error);
-        if (axios.isAxiosError(error)) {
-          if (error.response?.status === 500) {
-            alert('서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
-          } else if (error.response?.status === 413) {
-            alert('이미지 크기가 너무 큽니다. 다시 시도해주세요.');
-          } else if (error.response?.status === 401) {
-            alert('인증이 필요합니다. 다시 로그인해주세요.');
-            navigate('/login');
-          } else {
-            alert('이미지 분석 중 오류가 발생했습니다.');
+        console.error('Error fetching user info:', error);
+        alert('베이커리 정보를 가져오는데 실패했습니다.');
+      }
+      return;
+    }
+
+    await processFile(file, bakeryId);
+  };
+
+  // 파일 처리 로직을 별도 함수로 분리
+  const processFile = async (file: File, bakeryId: number) => {
+    try {
+      dispatch(setLoading(true));
+      const compressedFile = await compressImage(file);
+      
+      const formData = new FormData();
+      formData.append('images', compressedFile);
+      formData.append('bakeryId', bakeryId.toString());
+
+      // 요청 데이터 확인
+      console.log('Request Data:', {
+        url: '/ai/detect',
+        bakeryId,
+        fileInfo: {
+          name: compressedFile.name,
+          type: compressedFile.type,
+          size: compressedFile.size
+        },
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+
+      const response = await axios.post(
+        '/ai/detect',
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+            'Authorization': `Bearer ${accessToken}`
           }
         }
-      } finally {
-        dispatch(setLoading(false));
+      );
+
+      // 응답 데이터 확인
+      console.log('Response Data:', response.data);
+
+      const analyzedItems = response.data;
+      if (Array.isArray(analyzedItems) && analyzedItems.length > 0) {
+        // 분석된 빵 목록을 상태로 저장하고 다음 페이지로 이동
+        dispatch(setItems(analyzedItems.map(item => ({
+          name: item.name,
+          count: item.count,
+          price: item.price,
+          breadId: item.breadId,
+          status: 'confirmed' as const
+        }))));
+
+        navigate('/owner/package/preview');
+      } else {
+        throw new Error('빵을 인식하지 못했습니다.');
       }
-    } else if (!bakeryId) {
-      alert('베이커리 정보를 찾을 수 없습니다.');
+
+    } catch (error) {
+      console.error('에러:', error);
+      if (axios.isAxiosError(error)) {
+        if (error.response?.status === 500) {
+          alert('서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+        } else if (error.response?.status === 413) {
+          alert('이미지 크기가 너무 큽니다. 다시 시도해주세요.');
+        } else if (error.response?.status === 401) {
+          alert('인증이 필요합니다. 다시 로그인해주세요.');
+          navigate('/login');
+        } else {
+          alert('이미지 분석 중 오류가 발생했습니다.');
+        }
+      }
+    } finally {
+      dispatch(setLoading(false));
     }
   };
 
