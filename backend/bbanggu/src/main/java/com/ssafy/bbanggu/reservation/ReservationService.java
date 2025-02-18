@@ -38,6 +38,7 @@ import com.ssafy.bbanggu.saving.service.EchoSavingService;
 import com.ssafy.bbanggu.user.domain.User;
 import com.ssafy.bbanggu.user.repository.UserRepository;
 
+import io.jsonwebtoken.Claims;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -333,8 +334,9 @@ public class ReservationService {
 	// 사용자와 예약 ID가 일치하는지 검증
 	public boolean check(long reservationId, String authorization) {
 		String token = authorization.replace("Bearer ", "");
-		long userId = jwtTokenProvider.getUserIdFromToken(token);
-
+		Claims claims = jwtTokenProvider.getClaimsFromAccessToken(token);
+		String userIdStr = claims.getSubject();
+		Long userId = Long.parseLong(userIdStr);
 		Reservation reservation = reservationRepository.findById(reservationId).orElse(null);
 		if (reservation == null) {
 			throw new CustomException(ErrorCode.RESERVATION_NOT_FOUND);

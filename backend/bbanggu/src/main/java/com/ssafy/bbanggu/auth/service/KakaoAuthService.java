@@ -1,5 +1,7 @@
 package com.ssafy.bbanggu.auth.service;
 
+import java.util.Map;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.ssafy.bbanggu.auth.dto.JwtToken;
 import com.ssafy.bbanggu.auth.dto.KakaoTokenResponse;
@@ -121,7 +123,10 @@ public class KakaoAuthService {
 				});
 
 			// ✅ 4. JWT 발급
-			JwtToken jwtToken = new JwtToken(jwtUtil.createAccessToken(user.getUserId()), jwtUtil.createRefreshToken(user.getUserId()));
+			Map<String, Object> additionalClaims = Map.of(
+				"role", user.getRole().name()
+			);
+			JwtToken jwtToken = new JwtToken(jwtUtil.createAccessToken(user.getUserId(), additionalClaims), jwtUtil.createRefreshToken(user.getUserId()));
 			System.out.println("✅ JWT 발급 완료: " + jwtToken);
 
 			// ✅ 5. Refresh Token 저장 (즉시 반영)

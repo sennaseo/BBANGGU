@@ -12,6 +12,7 @@ import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
 import java.util.Optional;
 
 import lombok.RequiredArgsConstructor;
@@ -34,12 +35,12 @@ public class AuthenticationController {
 		}
 
 		// 2️⃣ refresh token 유효성 검증
-		if (!jwtTokenProvider.validateToken(refreshToken)) {
+		if (!jwtTokenProvider.validateRefreshToken(refreshToken)) {
 			throw new CustomException(ErrorCode.INVALID_REFRESH_TOKEN);
 		}
 
 		// 3️⃣ refresh token에서 사용자 정보 추출
-		Long userId = jwtTokenProvider.getUserIdFromToken(refreshToken);
+		Long userId = jwtTokenProvider.getUserIdFromRefreshToken(refreshToken);
 
 		// 4️⃣ 사용자 조회 (DB에서 refresh token 일치 여부 확인)
 		Optional<User> user = userRepository.findById(userId);
@@ -48,11 +49,14 @@ public class AuthenticationController {
 		}
 
 		// 5️⃣ 새로운 Access Token 생성
-		String newAccessToken = jwtTokenProvider.createAccessToken(userId);
+		Map<String, Object> additionalClaims = Map.of(
+			"role", user.get().getRole().name()
+		);
+		String newAccessToken = jwtTokenProvider.createAccessToken(userId, additionalClaims);
 		String newRefreshToken = refreshToken;
 
 		// 6️⃣ Sliding Refresh 적용 (Refresh Token이 24시간 이하로 남았을 때만 새로 발급)
-		long refreshTokenRemainingTime = jwtTokenProvider.getRemainingExpirationTime(refreshToken); // 남은 만료 시간
+		long refreshTokenRemainingTime = jwtTokenProvider.getRemainingExpirationTime(refreshToken, false); // 남은 만료 시간
 
 		if (refreshTokenRemainingTime < 24 * 60 * 60 * 1000) { // 24시간 이하로 남았을 경우
 			newRefreshToken = jwtTokenProvider.createRefreshToken(userId); // 새로운 Refresh Token 발급
