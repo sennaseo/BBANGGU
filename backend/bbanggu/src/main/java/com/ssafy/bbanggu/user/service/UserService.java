@@ -139,7 +139,7 @@ public class UserService { // 사용자 관련 비즈니스 로직 처리
 		log.info("🩵 userType: " + user.getRole().name());
 		String userType = user.getRole().name();
 		Map<String, Object> additionalClaims = Map.of(
-			"role", user.getRole().name()
+			"role", userType
 		);
 		String accessToken = jwtTokenProvider.createAccessToken(user.getUserId(), additionalClaims);
 		String refreshToken = jwtTokenProvider.createRefreshToken(user.getUserId());
@@ -148,6 +148,7 @@ public class UserService { // 사용자 관련 비즈니스 로직 처리
 		// ✅ Refresh Token을 DB 저장
 		user.setRefreshToken(refreshToken);
 		userRepository.save(user);
+		log.info("🩵 refresh Token 저장 완료");
 
 		// ✅ 응답 데이터 생성
 		Map<String, Object> response = new HashMap<>();
