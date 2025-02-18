@@ -398,27 +398,28 @@ export default function BreadRegisterPage() {
     }
   };
 
-  // 빵 삭제 핸들러
+  // 빵 삭제 핸들러 수정
   const handleDeleteBread = async (breadId: number | null) => {
-    if (!breadId) return;  // null 체크
+    if (!breadId || !userInfo?.bakeryId) return;  // bakeryId도 체크
     if (!window.confirm('정말 이 빵을 삭제하시겠습니까?')) return;
 
     try {
-      setIsLoading(true); // 로딩 상태 추가
-      const result = await deleteBread(breadId);
-      console.log('삭제 응답:', result); // 응답 확인용 로그
-
-      if (result.message === "빵 정보 삭제 성공") {
-        // 성공적으로 삭제된 경우 목록에서 제거
-        setExistingBreads(prev => prev.filter(bread => bread.breadId !== breadId));
-        alert('빵이 삭제되었습니다.');
-      }
+      setIsLoading(true);
+      await deleteBread(breadId);
+      
+      // 삭제 성공 후 빵 목록 새로 조회
+      const updatedBreads = await getBakeryBreads(userInfo.bakeryId);
+      setExistingBreads(updatedBreads);
+      
+      alert('빵이 삭제되었습니다.');
     } catch (error: unknown) {
       const err = error as FormError;
       console.error('삭제 실패:', err);
       alert(err.response?.data.message || '빵 삭제 중 오류가 발생했습니다.');
     } finally {
       setIsLoading(false);
+      // 열려있는 메뉴 닫기
+      setOpenMenuId(null);
     }
   };
 
