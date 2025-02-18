@@ -11,6 +11,13 @@ export function PaymentSuccess() {
   const userInfo = useSelector((state: RootState) => state.user.userInfo)
   const [error, setError] = useState<string | null>(null)
   
+  // localStorage에서 userInfo 가져오기
+  const localStorageUserInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
+  
+  // userInfo 상태 확인을 위한 로그
+  console.log('===== 현재 userInfo 상태 =====', userInfo);
+  console.log('===== localStorage의 userInfo =====', localStorageUserInfo);
+  
   // sessionStorage에서 reservationId 가져오기
   const storedReservationId = sessionStorage.getItem('currentReservationId');
   console.log('===== sessionStorage에서 가져온 reservationId =====', storedReservationId);
@@ -95,7 +102,9 @@ export function PaymentSuccess() {
           
           <div className="text-center">
             <h2 className="text-2xl font-bold mb-2">예약이 완료되었어요!</h2>
-            <p className="text-gray-600 mb-1">{userInfo?.name}님 덕분에</p>
+            <p className="text-gray-600 mb-1">
+              {localStorageUserInfo.name ? `${localStorageUserInfo.name}님 덕분에` : '고객님 덕분에'}
+            </p>
             <p className="text-gray-600">이 음식은 더 이상 버리지 않게 되었어요!</p>
           </div>
 
