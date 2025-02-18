@@ -78,7 +78,7 @@ public class UserService { // 사용자 관련 비즈니스 로직 처리
 			.build();
 
 		echoSavingRepository.save(echoSaving);
-		return UserResponse.from(user, null);
+		return UserResponse.from(user);
 	}
 
 
@@ -154,9 +154,11 @@ public class UserService { // 사용자 관련 비즈니스 로직 처리
 		Map<String, Object> response = new HashMap<>();
 		response.put("access_token", accessToken);
 		log.info("🩵 accessToken: " + accessToken);
-		response.put("refreshToken", accessToken);
+
+		response.put("refresh_token", refreshToken);
 		log.info("🩵 refreshToken: " + refreshToken);
-		response.put("userType", userType);
+
+		response.put("user_type", userType);
 		log.info("🩵 userType: " + userType);
 		return response;
 	}
@@ -189,12 +191,7 @@ public class UserService { // 사용자 관련 비즈니스 로직 처리
 		}
 		log.info("✅ {}번 사용자 검증 완료", userDetails.getUserId());
 
-		Long bakeryId = null;
-		if (user.getRole().equals(Role.OWNER)) {
-			bakeryId = bakeryRepository.findByUser_UserId(user.getUserId()).getBakeryId();
-		}
-
-		return UserResponse.from(user, bakeryId);
+		return UserResponse.from(user);
 	}
 
 

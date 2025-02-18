@@ -3,8 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../../store';
 import { getUserInfo } from '../../../api/user/user';
-import { setUserInfo, clearUserInfo } from '../../../store/slices/userSlice';
-import { logout } from '../../../store/slices/authSlice';
+import { clearUserInfo } from '../../../store/slices/userSlice';
+import { getLocalStorage, logout, removeLocalStorage } from '../../../store/slices/authSlice';
 import { setLoading, setItems } from '../../../store/slices/packageSlice';
 import { SubmitButton } from '../../../common/form/SubmitButton';
 import cameraExample from '@/assets/images/bakery/camera_ex.png';
@@ -26,29 +26,30 @@ const PackageGuide: React.FC = () => {
   useEffect(() => {
     const fetchUserInfo = async () => {
       if (!accessToken) {
-        navigate('/login');
+        dispatch(getLocalStorage());
         return;
       }
 
       try {
         const data = await getUserInfo();
-        dispatch(setUserInfo({
-          name: data.name,
-          profileImageUrl: data.profileImageUrl,
-          email: data.email,
-          phone: data.phone,
-          userId: data.userId,
-          role: data.role as 'OWNER' | 'USER',
-          addressRoad: data.addressRoad,
-          addressDetail: data.addressDetail,
-          bakeryId: data.bakeryId
-        }));
+        // dispatch(setUserInfo({
+        //   name: data.name,
+        //   profileImageUrl: data.profileImageUrl,
+        //   email: data.email,
+        //   phone: data.phone,
+        //   userId: data.userId,
+        //   role: data.role as 'OWNER' | 'USER',
+        //   addressRoad: data.addressRoad,
+        //   addressDetail: data.addressDetail,
+        //   bakeryId: data.bakeryId
+        // }));
 
         // 점주가 아닌 경우 메인으로 리다이렉트
         if (data.role !== 'OWNER') {
           dispatch(logout());
           dispatch(clearUserInfo());
-          navigate('/');
+          dispatch(removeLocalStorage());
+          navigate('/login');
           return;
         }
 
@@ -57,7 +58,8 @@ const PackageGuide: React.FC = () => {
         console.error('Error fetching user info:', error);
         dispatch(logout());
         dispatch(clearUserInfo());
-        navigate('/login');
+        dispatch(removeLocalStorage());
+        // navigate('/login');
       }
     };
 
