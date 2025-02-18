@@ -149,7 +149,7 @@ public class UserService { // 사용자 관련 비즈니스 로직 처리
 
 		// ✅ 응답 데이터 생성
 		Map<String, Object> response = new HashMap<>();
-		response.put("accessToken", accessToken);
+		response.put("access_token", accessToken);
 		response.put("refreshToken", accessToken);
 		response.put("userType", user.getRole().name());
 		return response;
