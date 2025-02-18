@@ -17,10 +17,12 @@ import com.ssafy.bbanggu.bakery.repository.BakeryRepository;
 import com.ssafy.bbanggu.bakery.service.BakeryPickupService;
 import com.ssafy.bbanggu.bakery.service.BakeryService;
 import com.ssafy.bbanggu.breadpackage.BreadPackage;
+import com.ssafy.bbanggu.breadpackage.BreadPackageRepository;
 import com.ssafy.bbanggu.breadpackage.BreadPackageService;
 import com.ssafy.bbanggu.breadpackage.dto.BreadPackageDto;
 import com.ssafy.bbanggu.common.exception.CustomException;
 import com.ssafy.bbanggu.common.exception.ErrorCode;
+import com.ssafy.bbanggu.favorite.dto.BestBakeryDto;
 import com.ssafy.bbanggu.user.domain.User;
 import com.ssafy.bbanggu.user.repository.UserRepository;
 
@@ -37,7 +39,7 @@ public class FavoriteService {
 	private final UserRepository userRepository;
 	private final BakeryRepository bakeryRepository;
 	private final BakeryPickupService bakeryPickupService;
-	private final BreadPackageService breadPackageService;
+	private final BreadPackageRepository breadPackageRepository;
 
 	// 좋아요 추가
 	@Transactional
@@ -110,7 +112,7 @@ public class FavoriteService {
 					: bakeryService.calculateDistance(userLat, userLng, b.getLatitude(), b.getLongitude());
 				boolean is_liked = favoriteRepository.existsByUser_UserIdAndBakery_BakeryId(userDetails.getUserId(), b.getBakeryId());
 				PickupTimeDto pickupTime = bakeryPickupService.getPickupTimetable(b.getBakeryId());
-				BreadPackage breadPackage = breadPackageService.getPackageById(b.getBakeryId());
+				BreadPackage breadPackage = breadPackageRepository.findByBakeryIdAndToday(b.getBakeryId());
 				int price = 0;
 				if (breadPackage != null) {
 					price = breadPackage.getPrice();
@@ -123,7 +125,7 @@ public class FavoriteService {
 	}
 
 	@Transactional(readOnly = true)
-	public List<BakeryDetailDto> getTop10BestBakeries(CustomUserDetails userDetails) {
+	public List<BestBakeryDto> getTop10BestBakeries(CustomUserDetails userDetails) {
 		// 사용자 위치 정보 추출 (로그인 안 했으면 기본값 null)
 		final Double userLat = (userDetails != null && userDetails.getLatitude() != 0.0)
 			? userDetails.getLatitude()
@@ -140,19 +142,12 @@ public class FavoriteService {
 		if (userLat == null || userLng == null) {
 			return bakeryRepository.findTop10ByFavorites().stream()
 				.map(b -> {
-					double distance = 0.0; // ✅ 로그인X or 주소 미등록 → 거리 0.0 처리
-
 					boolean is_liked = isLoggedIn
 						? favoriteRepository.existsByUser_UserIdAndBakery_BakeryId(userDetails.getUserId(), b.getBakeryId())
 						: false;
 
-					PickupTimeDto pickupTime = bakeryPickupService.getPickupTimetable(b.getBakeryId());
-
-					// ✅ 빵꾸러미 가격 가져오기 (null 체크 포함)
-					BreadPackage breadPackage = breadPackageService.getPackageById(b.getBakeryId());
-					int price = (breadPackage != null) ? breadPackage.getPrice() : 0;
-
-					return BakeryDetailDto.from(b, distance, is_liked, pickupTime, price);
+					BreadPackage breadPackage = breadPackageRepository.findTodayOrLastBreadPackage(b.getBakeryId());
+					return BestBakeryDto.from(b.getBakeryId(), breadPackage.getName(), b.getName(), is_liked);
 				})
 				.toList();
 		}
@@ -160,19 +155,12 @@ public class FavoriteService {
 		// ✅ 위치 정보가 있는 경우 거리 계산 적용
 		return bakeryRepository.findBestBakeriesByLocation(userLat, userLng).stream()
 			.map(b -> {
-				double distance = bakeryService.calculateDistance(userLat, userLng, b.getLatitude(), b.getLongitude());
-
 				boolean is_liked = isLoggedIn
 					? favoriteRepository.existsByUser_UserIdAndBakery_BakeryId(userDetails.getUserId(), b.getBakeryId())
 					: false;
 
-				PickupTimeDto pickupTime = bakeryPickupService.getPickupTimetable(b.getBakeryId());
-
-				// ✅ 빵꾸러미 가격 가져오기 (null 체크 포함)
-				BreadPackage breadPackage = breadPackageService.getPackageById(b.getBakeryId());
-				int price = (breadPackage != null) ? breadPackage.getPrice() : 0;
-
-				return BakeryDetailDto.from(b, distance, is_liked, pickupTime, price);
+				BreadPackage breadPackage = breadPackageRepository.findTodayOrLastBreadPackage(b.getBakeryId());
+				return BestBakeryDto.from(b.getBakeryId(), breadPackage.getName(), b.getName(), is_liked);
 			})
 			.toList();
 	}

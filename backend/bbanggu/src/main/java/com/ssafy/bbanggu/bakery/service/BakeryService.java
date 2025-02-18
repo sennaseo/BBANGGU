@@ -55,6 +55,7 @@ public class BakeryService {
 	private final BakeryPickupService bakeryPickupService;
 	private final BreadPackageService breadPackageService;
 	private final ImageService imageService;
+	private final BreadPackageRepository breadPackageRepository;
 
 	// 삭제되지 않은 모든 가게 조회
 	@Transactional(readOnly = true)
@@ -80,7 +81,7 @@ public class BakeryService {
 					.stream()
 					.map(bakery -> {
 						PickupTimeDto pickupTime = bakeryPickupService.getPickupTimetable(bakery.getBakeryId());
-						BreadPackage breadPackage = breadPackageService.getPackageById(bakery.getBakeryId());
+						BreadPackage breadPackage = breadPackageRepository.findByBakeryIdAndToday(bakery.getBakeryId());
 						int price = 0;
 						if (breadPackage != null) {
 							price = breadPackage.getPrice();
@@ -97,7 +98,7 @@ public class BakeryService {
 
 					boolean is_liked = favoriteRepository.existsByUser_UserIdAndBakery_BakeryId(userDetails.getUserId(), bakery.getBakeryId());
 					PickupTimeDto pickupTime = bakeryPickupService.getPickupTimetable(bakery.getBakeryId());
-					BreadPackage breadPackage = breadPackageService.getPackageById(bakery.getBakeryId());
+					BreadPackage breadPackage = breadPackageRepository.findByBakeryIdAndToday(bakery.getBakeryId());
 					int price = 0;
 					if (breadPackage != null) {
 						price = breadPackage.getPrice();
@@ -115,7 +116,7 @@ public class BakeryService {
 					: calculateDistance(userLat, userLng, bakery.getLatitude(), bakery.getLongitude());
 				boolean is_liked = favoriteRepository.existsByUser_UserIdAndBakery_BakeryId(userDetails.getUserId(), bakery.getBakeryId());
 				PickupTimeDto pickupTime = bakeryPickupService.getPickupTimetable(bakery.getBakeryId());
-				BreadPackage breadPackage = breadPackageService.getPackageById(bakery.getBakeryId());
+				BreadPackage breadPackage = breadPackageRepository.findByBakeryIdAndToday(bakery.getBakeryId());
 				int price = 0;
 				if (breadPackage != null) {
 					price = breadPackage.getPrice();
@@ -158,7 +159,7 @@ public class BakeryService {
 		}
 
 		PickupTimeDto pickupTime = bakeryPickupService.getPickupTimetable(bakery.getBakeryId());
-		BreadPackage breadPackage = breadPackageService.getPackageById(bakery.getBakeryId());
+		BreadPackage breadPackage = breadPackageRepository.findByBakeryIdAndToday(bakery.getBakeryId());
 		int price = 0;
 		if (breadPackage != null) {
 			price = breadPackage.getPrice();
@@ -370,7 +371,7 @@ public class BakeryService {
 					: calculateDistance(userLat, userLng, bakery.getLatitude(), bakery.getLongitude());
 				boolean is_liked = favoriteRepository.existsByUser_UserIdAndBakery_BakeryId(userDetails.getUserId(), bakery.getBakeryId());
 				PickupTimeDto pickupTime = bakeryPickupService.getPickupTimetable(bakery.getBakeryId());
-				BreadPackage breadPackage = breadPackageService.getPackageById(bakery.getBakeryId());
+				BreadPackage breadPackage = breadPackageRepository.findByBakeryIdAndToday(bakery.getBakeryId());
 				int price = 0;
 				if (breadPackage != null) {
 					price = breadPackage.getPrice();

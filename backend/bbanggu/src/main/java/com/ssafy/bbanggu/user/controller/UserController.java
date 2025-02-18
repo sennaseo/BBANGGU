@@ -99,38 +99,17 @@ public class UserController {
     // ✅ 로그인
     @PostMapping("/login")
     public ResponseEntity<ApiResponse> login(@Valid @RequestBody LoginRequest request, BindingResult result) {
+		log.info("🩵 로그인 컨트롤러 들어옴");
 		if (result.hasErrors()) {
 			throw new CustomException(ErrorCode.BAD_REQUEST);
 		}
 
 		// ✅ UserService에서 로그인 & 토큰 생성
-		JwtToken tokens = userService.login(request.getEmail(), request.getPassword());
-		String accessToken = tokens.getAccessToken();
-		String refreshToken = tokens.getRefreshToken();
-
-		// ✅ AccessToken을 HTTP-Only 쿠키에 저장
-		ResponseCookie accessTokenCookie = ResponseCookie.from("accessToken", accessToken)
-			.httpOnly(false) // XSS 공격 방지
-			.secure(true) // HTTPS 환경에서만 사용 (로컬 개발 시 false 가능)
-			.path("/") // 모든 API 요청에서 쿠키 전송 가능
-			.maxAge(30 * 60) // 30분 유지
-			.build();
-
-		// ✅ RefreshToken을 HTTP-Only 쿠키에 저장
-		ResponseCookie refreshTokenCookie = ResponseCookie.from("refreshToken", refreshToken)
-			.httpOnly(true)
-			.secure(true)
-			.path("/")
-			.maxAge(7 * 24 * 60 * 60)
-			.build();
-
-		User user = userRepository.findByEmail(request.getEmail())
-			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+		Map<String, Object> tokens = userService.login(request.getEmail(), request.getPassword());
 
 		Map<String, Object> response = new HashMap<>();
-		response.put("access_token", accessToken);
-		response.put("refresh_token", refreshToken);
-		response.put("user_type", user.getRole());
+		response.put("accessToken", tokens.get("accessToken").toString());
+		response.put("userType", tokens.get("userType").toString());
 
 		return ResponseEntity.ok()
 			.header(HttpHeaders.SET_COOKIE, accessTokenCookie.toString())
