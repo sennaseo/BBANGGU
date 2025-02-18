@@ -30,7 +30,7 @@ export default function ChangePasswordPage() {
   const handleEmailVerification = async () => {
     setIsLoading(true)
     try {
-      const response = await PasswordApi.requestReset(formData.email)
+      await PasswordApi.requestReset(formData.email)
       setShowVerificationField(true)
       setVerificationMessage("인증번호가 이메일로 전송되었습니다.")
     } catch (error: any) {
@@ -68,7 +68,7 @@ export default function ChangePasswordPage() {
 
     setIsLoading(true)
     try {
-      const response = await PasswordApi.confirmReset(formData.email, formData.newPassword)
+      await PasswordApi.confirmReset(formData.email, formData.newPassword)
       setShowSuccessModal(true)
     } catch (error: any) {
       console.error('비밀번호 변경 에러:', error)

@@ -26,7 +26,7 @@ export function MenuGrid() {
           />
         </svg>
       ),
-      label: "관심 뱃찌",
+      label: "관심 가게",
       path: `/user/${userId}/favorite`
     },
     {
