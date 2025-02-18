@@ -104,17 +104,23 @@ public class BakeryPickupService {
 	@Transactional
 	public void createPickupTime(Bakery bakery, BakeryPickupTimetableDto request) {
 		// 새로운 픽업 시간 등록
-		BakeryPickupTimetable timetable = BakeryPickupTimetable.builder()
-			.bakery(bakery)
-			.sunday(formatTime(request.getSunday()))
-			.monday(formatTime(request.getMonday()))
-			.tuesday(formatTime(request.getTuesday()))
-			.wednesday(formatTime(request.getWednesday()))
-			.thursday(formatTime(request.getThursday()))
-			.friday(formatTime(request.getFriday()))
-			.saturday(formatTime(request.getSaturday()))
-			.build();
+		// BakeryPickupTimetable timetable = BakeryPickupTimetable.builder()
+		// 	.bakery(bakery)
+		// 	.sunday(formatTime(request.getSunday()))
+		// 	.monday(formatTime(request.getMonday()))
+		// 	.tuesday(formatTime(request.getTuesday()))
+		// 	.wednesday(formatTime(request.getWednesday()))
+		// 	.thursday(formatTime(request.getThursday()))
+		// 	.friday(formatTime(request.getFriday()))
+		// 	.saturday(formatTime(request.getSaturday()))
+		// 	.build();
 
+		// 기존 데이터 조회
+		BakeryPickupTimetable timetable = bakeryPickupTimetableRepository.findByBakery_BakeryId(bakery.getBakeryId())
+			.orElse(BakeryPickupTimetable.builder().bakery(bakery).build()); // 없으면 새로 생성
+
+		// 업데이트할 데이터 설정
+		timetable.updatePickupTimetable(request);
 		bakeryPickupTimetableRepository.save(timetable);
 	}
 
