@@ -56,6 +56,12 @@ function PickupTime() {
           initialSelectedDays.push(koreanDay);
           initialTimeData[koreanDay] = value;
         }
+      } else {
+        initialSelectedDays.push(key);
+        initialTimeData[key] = {
+          startTime: '',
+          endTime: ''
+        };
       }
     });
 

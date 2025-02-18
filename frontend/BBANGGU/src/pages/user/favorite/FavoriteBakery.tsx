@@ -62,7 +62,12 @@ export const FavoriteBakery = () => {
           <div className="flex flex-col items-center px-5 py-10">
             {/* 빵꾸러미 카드 */}
             <div className="mb-10 bg-white rounded-xl shadow-md overflow-hidden w-[400px]">
-              <div className="relative h-[160px] bg-[#A9A9A9] rounded-lg">
+              <div className="relative h-[160px] rounded-lg">
+                <img 
+                  src="/icon/bbanggu-icon.png"
+                  alt="빵꾸 아이콘"
+                  className="w-full h-[160px] object-contain rounded-lg bg-gray-100" 
+                />
                 <div className="absolute bottom-3 right-3">
                   <div className="bg-black bg-opacity-40 rounded-full p-2">
                     <HeartIcon className="w-5 h-5 text-red-500 fill-red-500" />

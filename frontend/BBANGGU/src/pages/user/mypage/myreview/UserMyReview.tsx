@@ -5,6 +5,8 @@ import { ReviewCard } from '../../../../components/user/myreview/ReviewCard';
 import { getUserReviews } from '../../../../services/user/mypage/myreview/usermyReviewService';
 import type { ReviewType } from '../../../../types/bakery';
 import UserBottomNavigation from '../../../../components/user/navigations/bottomnavigation/UserBottomNavigation';
+import { useDispatch } from 'react-redux';
+import { getLocalStorage } from '../../../../store/slices/authSlice';
 
 export default function UserMyReview() {
   const { userId } = useParams<{ userId: string }>();
@@ -12,11 +14,12 @@ export default function UserMyReview() {
   const [reviews, setReviews] = useState<ReviewType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const dispatch = useDispatch();
 
   useEffect(() => {
     const fetchReviews = async () => {
       if (!userId) {
-        navigate('/login');
+        dispatch(getLocalStorage());
         return;
       }
       try {

@@ -3,8 +3,8 @@ import type { OnboardingSlide } from "../types/onboarding"
 const slides: OnboardingSlide[] = [
   {
     id: 1,
-    title: "소비기한 입맛 빵, 더 저렴하게!",
-    description: "소비기한이 얼마 남지 않은 빵을 할인된 가격으로 만나보세요",
+    title: "맛있는 빵, 더 저렴하게!",
+    description: "마감할인으로 맛있는 빵을 할인된 가격으로 만나보세요",
     imageUrl: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/onboarding1-akRtqaCyuZmkqlkuFDDptrU7ychTQb.png",
   },
   {

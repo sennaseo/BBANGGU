@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
-import { loginSuccess } from '../../store/slices/authSlice';
+import { loginSuccess, setLocalStorage } from '../../store/slices/authSlice';
 import { setUserInfo } from '../../store/slices/userSlice';
 import { getUserInfo } from '../../api/user/user';
 
@@ -24,6 +24,11 @@ export default function KakaoCallback() {
               access_token: token,
               user_type: 'USER'
             }
+          }));
+          dispatch(setLocalStorage({
+            accessToken: token,
+            userType: 'USER',
+            isAuthenticated: true
           }));
 
           // 2. getUserInfo를 사용하여 사용자 정보 조회 및 저장

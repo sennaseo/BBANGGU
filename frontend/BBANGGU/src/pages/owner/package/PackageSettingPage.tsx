@@ -7,7 +7,7 @@ import { ExclamationTriangleIcon, CurrencyDollarIcon, HashtagIcon } from '@heroi
 import { registerPackage, getPickupTime, updatePickupTime, updatePackage } from '../../../api/owner/package';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../../store';
-import { logout } from '../../../store/slices/authSlice';
+import { getLocalStorage, logout, removeLocalStorage } from '../../../store/slices/authSlice';
 import { clearUserInfo } from '../../../store/slices/userSlice';
 import { getUserInfo } from '../../../api/user/user';
 
@@ -35,28 +35,19 @@ export default function PackageSettingPage() {
   useEffect(() => {
     const fetchUserInfo = async () => {
       if (!accessToken) {
-        navigate('/login');
+        dispatch(getLocalStorage());
         return;
       }
 
       try {
         const data = await getUserInfo();
-        // dispatch(setUserInfo({
-        //   name: data.name,
-        //   profileImageUrl: data.profileImageUrl,
-        //   email: data.email,
-        //   phone: data.phone,
-        //   userId: data.userId,
-        //   role: data.role as 'OWNER' | 'USER',
-        //   addressRoad: data.addressRoad,
-        //   addressDetail: data.addressDetail
-        // }));
 
         // 점주가 아닌 경우 메인으로 리다이렉트
         if (data.role !== 'OWNER') {
           dispatch(logout());
           dispatch(clearUserInfo());
-          navigate('/');
+          dispatch(removeLocalStorage());
+          navigate('/login');
           return;
         }
 
@@ -70,7 +61,8 @@ export default function PackageSettingPage() {
       } catch (error) {
         console.error('Error fetching user info:', error);
         dispatch(logout());
-        dispatch(clearUserInfo());
+        dispatch(clearUserInfo());  
+        dispatch(removeLocalStorage());
         navigate('/login');
       }
     };
@@ -235,6 +227,7 @@ export default function PackageSettingPage() {
       if (error.response?.status === 401 || error.message === '인증이 필요합니다.') {
         dispatch(logout());
         dispatch(clearUserInfo());
+        dispatch(removeLocalStorage());
         navigate('/login');
         return;
       }
