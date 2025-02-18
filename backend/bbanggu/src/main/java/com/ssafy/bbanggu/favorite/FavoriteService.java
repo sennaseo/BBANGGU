@@ -1,5 +1,6 @@
 package com.ssafy.bbanggu.favorite;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -12,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.ssafy.bbanggu.auth.security.CustomUserDetails;
 import com.ssafy.bbanggu.bakery.domain.Bakery;
 import com.ssafy.bbanggu.bakery.dto.BakeryDetailDto;
+import com.ssafy.bbanggu.bakery.dto.BakeryDto;
 import com.ssafy.bbanggu.bakery.dto.PickupTimeDto;
 import com.ssafy.bbanggu.bakery.repository.BakeryRepository;
 import com.ssafy.bbanggu.bakery.service.BakeryPickupService;
@@ -135,34 +137,69 @@ public class FavoriteService {
 			? userDetails.getLongitude()
 			: null;
 
-		// 로그인하지 않은 경우, `userId` 없이 좋아요 처리 (is_liked = false)
-		boolean isLoggedIn = (userDetails != null);
+		List<BestBakeryDto> response = new ArrayList<>();
 
 		// 로그인하지 않은 사용자도 조회 가능하도록 예외 방지
 		if (userLat == null || userLng == null) {
-			return bakeryRepository.findTop10ByFavorites().stream()
-				.map(b -> {
-					boolean is_liked = isLoggedIn
-						? favoriteRepository.existsByUser_UserIdAndBakery_BakeryId(userDetails.getUserId(), b.getBakeryId())
-						: false;
+			List<Bakery> list = bakeryRepository.findTop10ByFavorites();
 
-					BreadPackage breadPackage = breadPackageRepository.findTodayOrLastBreadPackage(b.getBakeryId());
-					return BestBakeryDto.from(b.getBakeryId(), breadPackage.getName(), b.getName(), is_liked);
-				})
-				.toList();
+			for (Bakery b : list) {
+				BreadPackage bpackage = breadPackageRepository.findTodayOrLastBreadPackage(b.getBakeryId());
+				String packageName = null;
+				if (bpackage != null) {
+					packageName = bpackage.getName();
+				}
+				response.add(BestBakeryDto.from(b.getBakeryId(), packageName, b.getName(), false));
+			}
 		}
+		// if (userLat == null || userLng == null) {
+		// 	return bakeryRepository.findTop10ByFavorites().stream()
+		// 		.map(b -> {
+		// 			boolean is_liked = isLoggedIn
+		// 				? favoriteRepository.existsByUser_UserIdAndBakery_BakeryId(userDetails.getUserId(), b.getBakeryId())
+		// 				: false;
+		//
+		// 			BreadPackage breadPackage = breadPackageRepository.findTodayOrLastBreadPackage(b.getBakeryId());
+		// 			if (breadPackage == null) {
+		// 				throw new CustomException(ErrorCode.BREAD_PACKAGE_NOT_FOUND);
+		// 			}
+		// 			return BestBakeryDto.from(b.getBakeryId(), breadPackage.getName(), b.getName(), is_liked);
+		// 		})
+		// 		.toList();
+		// }
 
 		// ✅ 위치 정보가 있는 경우 거리 계산 적용
-		return bakeryRepository.findBestBakeriesByLocation(userLat, userLng).stream()
-			.map(b -> {
-				boolean is_liked = isLoggedIn
-					? favoriteRepository.existsByUser_UserIdAndBakery_BakeryId(userDetails.getUserId(), b.getBakeryId())
-					: false;
+		// return bakeryRepository.findBestBakeriesByLocation(userLat, userLng).stream()
+		// 	.map(b -> {
+		// 		boolean is_liked = isLoggedIn
+		// 			? favoriteRepository.existsByUser_UserIdAndBakery_BakeryId(userDetails.getUserId(), b.getBakeryId())
+		// 			: false;
+		//
+		// 		BreadPackage breadPackage = breadPackageRepository.findTodayOrLastBreadPackage(b.getBakeryId());
+		// 		if (breadPackage == null) {
+		// 			throw new CustomException(ErrorCode.BREAD_PACKAGE_NOT_FOUND);
+		// 		}
+		// 		return BestBakeryDto.from(b.getBakeryId(), breadPackage.getName(), b.getName(), is_liked);
+		// 	})
+		// 	.toList();
 
-				BreadPackage breadPackage = breadPackageRepository.findTodayOrLastBreadPackage(b.getBakeryId());
-				return BestBakeryDto.from(b.getBakeryId(), breadPackage.getName(), b.getName(), is_liked);
-			})
-			.toList();
+		else {
+			List<Bakery> list = bakeryRepository.findBestBakeriesByLocation(userLat, userLng);
+
+			for (Bakery b : list) {
+				BreadPackage bpackage = breadPackageRepository.findTodayOrLastBreadPackage(b.getBakeryId());
+				String packageName = null;
+				if (bpackage != null) {
+					packageName = bpackage.getName();
+				}
+
+				log.info("🩵 user_id: {}, bakery_id: {}", userDetails.getUserId(), b.getBakeryId());
+				boolean is_liked = favoriteRepository.existsByUser_UserIdAndBakery_BakeryId(userDetails.getUserId(), b.getBakeryId());
+				response.add(BestBakeryDto.from(b.getBakeryId(), packageName, b.getName(), is_liked));
+			}
+		}
+
+		return response;
 	}
 
 
