@@ -254,7 +254,7 @@ export default function BreadRegisterPage() {
     }
   };
 
-  // 이미지 압축 함수
+  // 이미지 압축 함수 수정
   const compressImage = async (file: File): Promise<File> => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -278,21 +278,33 @@ export default function BreadRegisterPage() {
           canvas.width = width;
           canvas.height = height;
           const ctx = canvas.getContext('2d');
-          ctx?.drawImage(img, 0, 0, width, height);
+          
+          // 이미지 회전 처리 추가
+          if (ctx) {
+            // EXIF 방향 정보에 따른 회전 처리
+            ctx.save();
+            ctx.translate(width / 2, height / 2);
+            ctx.rotate(0);
+            ctx.drawImage(img, -width / 2, -height / 2, width, height);
+            ctx.restore();
+          }
 
+          // 항상 JPEG로 변환
           canvas.toBlob(
             (blob) => {
               if (!blob) {
                 reject(new Error('Canvas to Blob failed'));
                 return;
               }
-              resolve(new File([blob], file.name, {
+              // 파일 이름에서 확장자 제거하고 .jpg 추가
+              const fileName = file.name.replace(/\.[^/.]+$/, "") + '.jpg';
+              resolve(new File([blob], fileName, {
                 type: 'image/jpeg',
                 lastModified: Date.now(),
               }));
             },
             'image/jpeg',
-            0.7  // 품질 설정 (0.7 = 70%)
+            0.7
           );
         };
         img.onerror = reject;
