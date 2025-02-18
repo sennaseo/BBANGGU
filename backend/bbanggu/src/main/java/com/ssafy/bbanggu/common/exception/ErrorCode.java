@@ -26,6 +26,7 @@ public enum ErrorCode {
 	NOT_EQUAL_PASSWORD(1014, HttpStatus.BAD_REQUEST, "입력한 기존 비밀번호가 현재 비밀번호와 일치하지 않습니다."),
 	EQUAL_ORIGIN_AND_NEW_PASSWORD(1015, HttpStatus.BAD_REQUEST, "기존 비밀번호와 동일한 비밀번호로는 변경할 수 없습니다."),
 	PROFILE_IMAGE_UPLOAD_FAILED(1016, HttpStatus.INTERNAL_SERVER_ERROR, "프로필 이미지 저장에 실패하였습니다."),
+	DUPLICATE_PHONE(1017, HttpStatus.BAD_REQUEST, "이미 존재하는 휴대폰 번호입니다. 다시 입력해주세요."),
 
 	// ✅ kakao 인증 관련 예외(1500번대)
 	KAKAO_AUTH_FAILED(1501, HttpStatus.BAD_REQUEST, "카카오 인증에 실패하였습니다."),

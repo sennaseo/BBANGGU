@@ -237,6 +237,9 @@ public class UserService { // 사용자 관련 비즈니스 로직 처리
 
 		// ✅ 특정 필드만 변경 가능하도록 처리
 		user.setName(Optional.ofNullable(updates.name()).orElse(user.getName()));
+		if (userRepository.existsByPhoneAndUserIdNot(updates.phone(), user.getUserId())) {
+			throw new CustomException(ErrorCode.DUPLICATE_PHONE);
+		}
 		user.setPhone(Optional.ofNullable(updates.phone()).orElse(user.getPhone()));
 
 		userRepository.save(user);
