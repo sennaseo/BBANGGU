@@ -136,6 +136,7 @@ public class UserService { // 사용자 관련 비즈니스 로직 처리
 		log.info("✅ 로그인 시 입력한 비밀번호와 사용자의 비밀번호가 일치함");
 
 		// ✅ JWT 토큰 생성
+		log.info("🩵 userType: " + user.getRole().name());
 		Map<String, Object> additionalClaims = Map.of(
 			"role", user.getRole().name()
 		);
