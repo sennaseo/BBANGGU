@@ -91,11 +91,6 @@ public class BreadPackageService {
 	}
 
 
-	public BreadPackage getPackageById(Long bakeryId) {
-		return breadPackageRepository.findByBakeryIdAndToday(bakeryId);
-	}
-
-
 	/**
 	 * 가게의 전체 빵꾸러미 조회
 	 */

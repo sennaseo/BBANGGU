@@ -99,15 +99,18 @@ public class UserController {
     // ✅ 로그인
     @PostMapping("/login")
     public ResponseEntity<ApiResponse> login(@Valid @RequestBody LoginRequest request, BindingResult result) {
+		log.info("🩵 로그인 컨트롤러 들어옴");
 		if (result.hasErrors()) {
 			throw new CustomException(ErrorCode.BAD_REQUEST);
 		}
 
 		// ✅ UserService에서 로그인 & 토큰 생성
 		Map<String, Object> tokens = userService.login(request.getEmail(), request.getPassword());
+
 		Map<String, Object> response = new HashMap<>();
 		response.put("accessToken", tokens.get("accessToken").toString());
 		response.put("userType", tokens.get("userType").toString());
+
 		return ResponseEntity.ok()
 			.header(HttpHeaders.SET_COOKIE, tokens.get("accessTokenCookie").toString())
 			.header(HttpHeaders.SET_COOKIE, tokens.get("refreshTokenCookie").toString())

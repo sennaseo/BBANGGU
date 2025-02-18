@@ -116,11 +116,13 @@ public class UserService { // 사용자 관련 비즈니스 로직 처리
 		// 이메일로 사용자 조회
 		User user = userRepository.findByEmail(email)
 			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+		log.info("✅ 이메일로 사용자 찾기 완료");
 
 		// 논리적으로 삭제된 사용자 처리
 		if (user.isDeleted()) {
 			throw new CustomException(ErrorCode.ACCOUNT_DEACTIVATED);
         }
+		log.info("✅ {}번 사용자는 유효한 회원임을 검증", user.getUserId());
 
         // // 비밀번호 검증
         // if (!passwordEncoder.matches(password, user.getPassword())) {
@@ -131,6 +133,8 @@ public class UserService { // 사용자 관련 비즈니스 로직 처리
 		if (!password.equals(user.getPassword())) {
 			throw new CustomException(ErrorCode.INVALID_PASSWORD);
 		}
+		log.info("✅ 로그인 시 입력한 비밀번호와 사용자의 비밀번호가 일치함");
+
 
 		// ✅ JWT 토큰 생성
 		Map<String, Object> additionalClaims = Map.of(
@@ -138,6 +142,7 @@ public class UserService { // 사용자 관련 비즈니스 로직 처리
 		);
 		String accessToken = jwtTokenProvider.createAccessToken(user.getUserId(), additionalClaims);
 		String refreshToken = jwtTokenProvider.createRefreshToken(user.getUserId());
+		log.info("🩵 토큰 발급 완료");
 
 		// ✅ Refresh Token을 DB 저장
 		user.setRefreshToken(refreshToken);
@@ -264,12 +269,17 @@ public class UserService { // 사용자 관련 비즈니스 로직 처리
 			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
 		// 새로운 비밀번호가 기존 비밀번호와 동일한지 검증
-		if (passwordEncoder.matches(newPassword, user.getPassword())) {
+		// if (passwordEncoder.matches(newPassword, user.getPassword())) {
+		// 	throw new CustomException(ErrorCode.SAME_AS_OLD_PASSWORD);
+		// }
+
+		if (newPassword.equals(user.getPassword())) {
 			throw new CustomException(ErrorCode.SAME_AS_OLD_PASSWORD);
 		}
 
 		// 비밀번호 암호화 후 저장
-		user.setPassword(passwordEncoder.encode(newPassword));
+		// user.setPassword(passwordEncoder.encode(newPassword));
+		user.setPassword(newPassword);
 		userRepository.save(user);
 	}
 

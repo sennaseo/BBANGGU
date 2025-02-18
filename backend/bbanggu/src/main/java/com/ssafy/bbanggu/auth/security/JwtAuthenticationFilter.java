@@ -6,6 +6,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -30,10 +31,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
 		// 1️⃣ 요청 헤더에서 Jwt 토큰 가져오기
 		String token = getTokenFromHeader(request);
+		System.out.println("🩵 헤더에서 얻어온 accessToken: " + token);
 
 		// 2️⃣ 토큰이 존재하고, 유효한 경우에만 인증 처리
 		if (token != null && jwtTokenProvider.validateAccessToken(token)) {
-			Long userId = jwtTokenProvider.getClaimsFromAccessToken(token).get("userId", Long.class);
+			Claims claims = jwtTokenProvider.getClaimsFromAccessToken(token);
+			Long userId = Long.parseLong(claims.getSubject());
+			//Long userId = jwtTokenProvider.getClaimsFromAccessToken(token).get("userId", Long.class);
 			UserDetails userDetails = userDetailsService.loadUserById(userId);
 
 			// 3️⃣ SecurityContext에 사용자 정보 저장
@@ -43,6 +47,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 		}
 
 		// 4️⃣ 다음 필터 실행 (토큰이 없거나 유효하지 않더라도 필터 체인을 계속 진행)
+		System.out.println("🩵 다음 필터 실행");
 		chain.doFilter(request, response);
 	}
 

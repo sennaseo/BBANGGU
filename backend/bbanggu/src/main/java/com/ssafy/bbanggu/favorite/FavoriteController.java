@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.ssafy.bbanggu.auth.security.CustomUserDetails;
 import com.ssafy.bbanggu.bakery.dto.BakeryDetailDto;
 import com.ssafy.bbanggu.common.response.ApiResponse;
+import com.ssafy.bbanggu.favorite.dto.BestBakeryDto;
 import com.ssafy.bbanggu.user.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -65,14 +66,7 @@ public class FavoriteController {
 	public ResponseEntity<ApiResponse> getBestBakeries(
 		@AuthenticationPrincipal CustomUserDetails userDetails
 	) {
-		List<BakeryDetailDto> bestBakeries = favoriteService.getTop10BestBakeries(userDetails);
-		// if (userDetails == null || userDetails.getLatitude() == 0.0 || userDetails.getLongitude() == 0.0) {
-		// 	bestBakeries = favoriteService.getTop10BestBakeries(userDetails);
-		// } else {
-		// 	// ✅ 로그인 & 주소 등록한 사용자 → 거리 기반 추천
-		// 	bestBakeries = favoriteService.getTop10BestBakeries(userDetails.getLatitude(), userDetails.getLongitude());
-		// }
-
+		List<BestBakeryDto> bestBakeries = favoriteService.getTop10BestBakeries(userDetails);
 		return ResponseEntity.ok().body(new ApiResponse("BEST 가게 조회에 성공하였습니다.", bestBakeries));
 	}
 
