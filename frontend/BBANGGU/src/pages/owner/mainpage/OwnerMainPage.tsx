@@ -48,17 +48,7 @@ const OwnerMainPage: React.FC = () => {
 
       try {
         const data = await getUserInfo();
-        // dispatch(setUserInfo({
-        //   name: data.name,
-        //   profileImageUrl: data.profileImageUrl,
-        //   email: data.email,
-        //   phone: data.phone,
-        //   userId: data.userId,
-        //   role: data.role as 'OWNER' | 'USER',
-        //   addressRoad: data.addressRoad,
-        //   addressDetail: data.addressDetail
-        // }));
-
+        
         // 점주가 아닌 경우 메인으로 리다이렉트
         if (data.role !== 'OWNER') {
           dispatch(logout());

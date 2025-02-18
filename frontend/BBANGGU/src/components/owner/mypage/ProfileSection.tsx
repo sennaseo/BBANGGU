@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import defaultProfile from '@/assets/default-profile.jpg';
+// import defaultProfile from '@/assets/default-profile.jpg';
 import { store } from '../../../store';
 
 
@@ -15,19 +15,16 @@ export interface ProfileSectionProps {
 export function ProfileSection() {
 
   const { userInfo } = store.getState().user;
-  const IMG_URL = import.meta.env.VITE_API_BASE_URL;
-
+  const imgBaseUrl = import.meta.env.VITE_IMAGE_BASE_URL;
   return (
     <div className="px-6 py-6">
       <div className="flex items-center space-x-4">
-        <img
-          src={userInfo?.profileImageUrl ? `${IMG_URL}${userInfo.profileImageUrl}` : `${IMG_URL}/bakery3.jpeg`}
-          alt="프로필"
-          className="w-[60px] h-[60px] rounded-full object-cover bg-gray-100"
-          onError={(e) => {
-            const target = e.target as HTMLImageElement;
-            target.src = defaultProfile;
-          }}
+      <img
+          src={
+            userInfo?.profileImageUrl ? `${imgBaseUrl}${userInfo.profileImageUrl}` : `${imgBaseUrl}/uploads/bakery19.jpeg`
+          }
+          alt="Profile"
+          className="w-[80px] h-[80px] rounded-full object-cover bg-gray-100"
         />
         <div>
           <h2 className="text-lg font-semibold">

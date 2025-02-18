@@ -25,21 +25,14 @@ const authSlice = createSlice({
   reducers: {
     loginSuccess: (state, action: PayloadAction<LoginResponse>) => {
       const { access_token, user_type } = action.payload.data;
-      console.log('user_type@@@@@@@@@@@@@@', user_type);
       state.accessToken = access_token;
       state.userType = user_type;
       state.isAuthenticated = true;
-      
-      // localStorage에도 저장
-      // localStorage.setItem('accessToken', access_token);
     },
     logout: (state) => {
       state.accessToken = null;
       state.userType = null;
       state.isAuthenticated = false;
-      
-      // localStorage에서도 제거
-      localStorage.removeItem('accessToken');
     },
   },
 });

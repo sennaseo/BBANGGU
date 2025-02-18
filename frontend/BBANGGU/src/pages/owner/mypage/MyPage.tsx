@@ -7,17 +7,17 @@ import { ProfileSection } from '../../../components/owner/mypage/ProfileSection'
 import { MenuList } from '../../../components/owner/mypage/MenuList';
 import { CustomerSupport } from '../../../components/owner/mypage/CustomerSupport';
 import { AccountManagement } from '../../../components/owner/mypage/AccountMagagement';
-import { RootState } from '../../../store';
+import { RootState, store } from '../../../store';
 import { logout } from '../../../store/slices/authSlice';
-import { clearUserInfo } from '../../../store/slices/userSlice';
+import { clearUserInfo, setBakeryId } from '../../../store/slices/userSlice';
 import { getUserInfo } from '../../../api/user/user';
+import { getBakeryByUserId } from '../../../api/bakery/bakery';
 
 function MyPage() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   
   const { accessToken } = useSelector((state: RootState) => state.auth);
-  console.log('accessToken@@@@@@@@@@@@@@', accessToken);
 
   useEffect(() => {
     const fetchUserInfo = async () => {
@@ -28,7 +28,9 @@ function MyPage() {
 
       try {
         await getUserInfo();
-        
+        const bakery = await getBakeryByUserId();
+        store.dispatch(setBakeryId(bakery.bakeryId));
+        console.log("store.getState().user.userInfo", store.getState().user.userInfo);
       } catch (error) {
         console.error('Error fetching user info:', error);
         navigate('/login');
