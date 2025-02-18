@@ -113,9 +113,9 @@ export default function LoginPage() {
     <div className="min-h-screen bg-white flex flex-col">
       <div className="flex justify-center mt-32 mb-10">
         <img
-          src="/icon/bbanggu-icon.png"
+          src="/icon/bbanggu-logo2.png"
           alt="빵꾸 아이콘"
-          className="w-[150px] h-24 object-contain"
+          className="w-[300px] h-48 object-contain"
         />
       </div>
 
