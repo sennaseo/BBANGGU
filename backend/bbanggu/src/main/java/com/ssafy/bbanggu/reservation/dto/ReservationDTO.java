@@ -13,6 +13,7 @@ public class ReservationDTO {
 	private Long reservationId; // 예약 ID
 	private Long userId; // 사용자 ID
 	private Long bakeryId; // 가게 ID
+	private String bakeryName;
 	private Long breadPackageId; // 패키지 ID
 	private Integer quantity; // 수량
 	private Integer totalPrice; // 총 가격
