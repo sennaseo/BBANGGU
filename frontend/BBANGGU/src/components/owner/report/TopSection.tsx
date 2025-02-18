@@ -19,7 +19,7 @@ export function TopSection({ storeName }: TopSectionProps) {
   const [topProducts, setTopProducts] = useState<TopProduct[]>([]);
   const [totalInventory, setTotalInventory] = useState(0);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [status, setStatus] = useState<string | null>(null);
 
   const { userInfo } = useSelector((state: RootState) => state.user);
 
@@ -28,10 +28,9 @@ export function TopSection({ storeName }: TopSectionProps) {
       if (!userInfo?.bakeryId) return;
       
       setLoading(true);
-      setError(null);
+      setStatus(null);
       try {
         const response = await StockTop3Api.getTop3Stocks(userInfo.bakeryId, period);
-        
         // 새로운 응답 형식에 맞게 데이터 변환
         const products = response.data.top3.map(([name, count]) => ({
           name,
@@ -41,9 +40,15 @@ export function TopSection({ storeName }: TopSectionProps) {
         setTopProducts(products);
         setTotalInventory(response.data.total);
         
+        if (response.data.top3.length === 0) {
+          setTopProducts([]);
+          setTotalInventory(0);
+          setStatus('오늘의 재고를 등록해주세요!');
+        }
       } catch (err: any) {
         console.error('API 에러:', err);
-        setError(err.message || '데이터를 불러오는데 실패했습니다.');
+
+        // setStatus(err.message || '데이터를 불러오는데 실패했습니다.');
         setTopProducts([]);
         setTotalInventory(0);
       } finally {
@@ -93,9 +98,9 @@ export function TopSection({ storeName }: TopSectionProps) {
           <div className="space-y-2">
             {loading ? (
               <p>로딩 중...</p>
-            ) : error ? (
+            ) : status ? (
               <div className="text-center py-4">
-                <p className="text-gray-500">사장님, {error}</p>
+                <p className="text-gray-500">사장님, {status}</p>
               </div>
             ) : (
               topProducts.length > 0 ? (
