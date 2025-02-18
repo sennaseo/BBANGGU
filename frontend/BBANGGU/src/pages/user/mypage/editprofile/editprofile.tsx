@@ -2,7 +2,6 @@ import { ChevronLeft, Eye, EyeOff } from "lucide-react"
 import { useNavigate } from "react-router-dom"
 import { useState, useEffect } from "react"
 import { getUserInfo, updatePassword } from "../../../../api/user/user"
-import { updateUserInfo } from "../../../../api/user/user"
 import { useDaumPostcodePopup } from 'react-daum-postcode';
 
 export function UserEditProfile() {
@@ -86,12 +85,12 @@ export function UserEditProfile() {
       }
 
       // 변경된 필드가 있을 때만 프로필 업데이트 API 호출
-      if (Object.keys(changedData).length > 0) {
-        console.log("changedData", changedData)
-        await updateUserInfo(changedData); // 변경된 데이터 그대로 전송
-      } else {
-        console.log("변경된 필드가 없습니다.")
-      }
+      // if (Object.keys(changedData).length > 0) {
+      //   console.log("changedData", changedData)
+      //   await updateUserInfo(changedData); // 변경된 데이터 그대로 전송
+      // } else {
+      //   console.log("변경된 필드가 없습니다.")
+      // }
 
       // 비밀번호 업데이트: 두 필드 모두 입력된 경우에만 호출
       if (formData.originPassword.trim() !== "" && formData.newPassword.trim() !== "") {

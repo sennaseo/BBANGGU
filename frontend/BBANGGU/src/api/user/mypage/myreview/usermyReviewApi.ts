@@ -1,5 +1,5 @@
 import axios from 'axios';
-import type { ReviewState, ReviewType } from '../../../../store/slices/reviewSlice';
+import type { ReviewState } from '../../../../store/slices/reviewSlice';
 import { store } from '../../../../store';
 const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 

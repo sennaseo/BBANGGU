@@ -8,7 +8,7 @@ import { Reservation } from "../../../../store/slices/reservationSlice"
 
 export function ReservationHistory() {
   const navigate = useNavigate()
-  const { userId, reservationId } = useParams<{ userId: string, reservationId: string }>();
+  const { userId } = useParams<{ userId: string }>();
   const [currentReservations, setCurrentReservations] = useState<Reservation[]>([]);
   const [pastReservations, setPastReservations] = useState<Reservation[]>([]);
   const [isPastReservationsOpen, setIsPastReservationsOpen] = useState<boolean>(true);

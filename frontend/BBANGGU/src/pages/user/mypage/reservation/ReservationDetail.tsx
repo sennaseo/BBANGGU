@@ -69,11 +69,6 @@ export function ReservationDetail() {
   };
   const pickupTime = formatDate(reservation.pickupAt);
 
-  const handleWriteReview = () => {
-    // 리뷰 작성 페이지로 이동 (라우팅 경로는 프로젝트에 맞게 수정)
-    navigate(`/user/mypage/reservation/${reservationId}/write-review`);
-  };
-
   const handleCancelReservation = async (cancelReason: string) => {
     try {
       const result = await deleteReservation(Number(reservationId), cancelReason);

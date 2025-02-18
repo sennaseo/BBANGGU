@@ -1,6 +1,5 @@
 import { reviewApi } from "../../../api/user/review/reviewApi";
 import { BakeryRating, ReviewType } from "../../../types/bakery";
-import { UserInfo } from "../../../types/user";
 
 export async function getReviews(bakeryId: number): Promise<ReviewType[]> {
     try {
@@ -48,7 +47,7 @@ export async function getReviewByReservationId(userInfo: string, reservationId: 
     try {
         const reviews = await reviewApi.getUserReviews(userInfo);
         console.log("reviews", reviews);
-        const review = reviews.find(review => review.reservationId.toString() === reservationId);
+        const review = reviews.data.find(review => review.reservationId.toString() === reservationId);
         console.log("review", review);
         return review;
     } catch (error) {

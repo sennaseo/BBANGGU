@@ -14,7 +14,7 @@ interface ReservationListProps {
 
 export function ReservationList({ reservations = [] }: ReservationListProps) {
   const navigate = useNavigate()
-  const [bakeryList, setBakeryList] = useState<BakeryInfo[]>([])
+  const [bakeryList] = useState<BakeryInfo[]>([])
   const data = useMemo(() => {
     return reservations.length > 0 ? reservations : []
   }, [reservations])

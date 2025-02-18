@@ -24,14 +24,8 @@ const reviewSlice = createSlice({
     initialState,
     reducers: {
         setReviews: (state, action) => {
-            state.reviews = action.payload;
+            state.data = action.payload;
         },
-        setLoading: (state, action) => {
-            state.loading = action.payload;
-        },
-        setError: (state, action) => {
-            state.error = action.payload;
-        }
     }
 })
 

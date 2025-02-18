@@ -4,7 +4,6 @@ import { ChevronLeft } from 'lucide-react';
 import { ReviewCard } from '../../../../components/user/myreview/ReviewCard';
 import { getUserReviews } from '../../../../services/user/mypage/myreview/usermyReviewService';
 import type { ReviewType } from '../../../../store/slices/reviewSlice';
-import UserBottomNavigation from '../../../../components/user/navigations/bottomnavigation/UserBottomNavigation';
 import { useDispatch } from 'react-redux';
 import { getLocalStorage } from '../../../../store/slices/authSlice';
 
