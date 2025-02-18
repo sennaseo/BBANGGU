@@ -22,7 +22,6 @@ export default function KakaoCallback() {
           dispatch(loginSuccess({
             data: {
               access_token: token,
-              refresh_token: '', // 쿠키에 저장되어 있음
               user_type: 'USER'
             }
           }));

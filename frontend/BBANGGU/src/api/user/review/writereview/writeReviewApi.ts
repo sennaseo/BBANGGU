@@ -7,7 +7,7 @@ const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 export const writeReviewApi = {
   submitReview: async (review: ReviewFormData & { file?: File }): Promise<ReviewResponse> => {
     try {
-      const token = store.getState().user.token;
+      const token = store.getState().auth.accessToken;
       // FormData로 리뷰 데이터 감싸기
       const formData = new FormData();
       // review 키의 값은 review.json 파일 형태로 전달

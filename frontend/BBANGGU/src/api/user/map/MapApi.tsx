@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { store } from '../../../store';
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://i12d102.p.ssafy.io:8081';
 
@@ -26,7 +27,7 @@ export const MapApi = {
   },
   getBakeryList: async () => {
     try {
-      const accessToken = localStorage.getItem('accessToken');
+      const accessToken = store.getState().auth.accessToken;
       
       // 1. 가게 위치 정보 조회
       const locationResponse = await axios.get(`${BASE_URL}/bakery/map`);
