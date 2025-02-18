@@ -1,18 +1,30 @@
 import { ChevronLeft, Eye, EyeOff } from "lucide-react"
 import { useNavigate } from "react-router-dom"
 import { useState, useEffect } from "react"
-import { userProfileEditService } from "../../../../services/user/profileedit/userprofileEditService"
-import { getUserProfile } from "../../../../services/user/mypage/usermypageServices"
+import { getUserInfo, updatePassword } from "../../../../api/user/user"
+import { updateUserInfo } from "../../../../api/user/user"
+import { useDaumPostcodePopup } from 'react-daum-postcode';
 
 export function UserEditProfile() {
   const navigate = useNavigate()
+  
+  // 기존 formData 상태 외에 최초 사용자 정보를 저장하기 위한 상태 추가
+  const [initialData, setInitialData] = useState({
+    name: "",
+    phone: "",
+    addressRoad: "",
+    addressDetail: "",
+  })
+
   const [showCurrentPassword, setShowCurrentPassword] = useState(false)
   const [showNewPassword, setShowNewPassword] = useState(false)
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     phone: "",
-    currentPassword: "",
+    addressRoad: "",
+    addressDetail: "",
+    originPassword: "",
     newPassword: "",
   })
 
@@ -20,14 +32,23 @@ export function UserEditProfile() {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const response = await getUserProfile() // 사용자 정보 조회 API 호출
-        const userData = response[0] // API 응답에서 사용자 데이터 가져오기
+        const response = await getUserInfo() // 사용자 정보 조회 API 호출
+        const userData = response // API 응답에서 사용자 데이터 가져오기
         setFormData({
           name: userData.name,
           email: userData.email,
           phone: userData.phone,
-          currentPassword: "",
+          addressRoad: userData.addressRoad ? userData.addressRoad : "",
+          addressDetail: userData.addressDetail ? userData.addressDetail : "",
+          originPassword: "",
           newPassword: "",
+        })
+        // 최초 사용자 정보 저장
+        setInitialData({
+          name: userData.name,
+          phone: userData.phone,
+          addressRoad: userData.addressRoad ? userData.addressRoad : "",
+          addressDetail: userData.addressDetail ? userData.addressDetail : "",
         })
         console.log("userData", userData)
       } catch (error) {
@@ -49,19 +70,80 @@ export function UserEditProfile() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
-      // API 호출하여 프로필 업데이트
-      const updatedData = {
-        name: formData.name,
-        phone: formData.phone,
-        // 추가적인 필드가 필요할 경우 여기에 추가
-        // 예: addressRoad: formData.addressRoad, addressDetail: formData.addressDetail
+      // 변경된 데이터만 추려내기
+      const changedData: { [key: string]: string } = {}
+      if (formData.name.trim() !== initialData.name.trim()) {
+        changedData.name = formData.name.trim()
+      }
+      if (formData.phone.trim() !== initialData.phone.trim()) {
+        changedData.phone = formData.phone.trim()
+      }
+      if (formData.addressRoad.trim() !== initialData.addressRoad.trim()) {
+        changedData.addressRoad = formData.addressRoad.trim()
+      }
+      if (formData.addressDetail.trim() !== initialData.addressDetail.trim()) {
+        changedData.addressDetail = formData.addressDetail.trim()
       }
 
-      await userProfileEditService.updateUserProfile(updatedData) // formData를 전달
+      // 변경된 필드가 있을 때만 프로필 업데이트 API 호출
+      if (Object.keys(changedData).length > 0) {
+        console.log("changedData", changedData)
+        await updateUserInfo(changedData); // 변경된 데이터 그대로 전송
+      } else {
+        console.log("변경된 필드가 없습니다.")
+      }
+
+      // 비밀번호 업데이트: 두 필드 모두 입력된 경우에만 호출
+      if (formData.originPassword.trim() !== "" && formData.newPassword.trim() !== "") {
+        const passwordData = {
+          email: formData.email,
+          originPassword: formData.originPassword,
+          newPassword: formData.newPassword,
+        }
+        await updatePassword(passwordData)
+      }
+
       navigate(-1) // 성공적으로 업데이트 후 이전 페이지로 이동
     } catch (error) {
       console.error('프로필 수정 중 오류 발생:', error)
     }
+  }
+
+  interface AddressBtnProps {
+    scriptUrl?: string,
+    onComplete: (address: string) => void
+  }
+  
+  const AddressBtn = ({scriptUrl, onComplete}: AddressBtnProps) => {
+    const open = useDaumPostcodePopup(scriptUrl);
+  
+    const handleComplete = (data: any) => {
+      let fullAddress = data.address;
+      let extraAddress = "";
+  
+      if (data.addressType === "R") {
+        if (data.bname !== "") {
+          extraAddress += data.bname;
+        }
+        if (data.buildingName !== "") {
+          extraAddress += extraAddress !== "" ? `, ${data.buildingName}` : data.buildingName;
+        }
+        fullAddress += extraAddress !== "" ? ` (${extraAddress})` : "";
+      }
+  
+      onComplete(fullAddress);
+    };
+  
+    const handleOnClickAddressBtn = (e: React.MouseEvent<HTMLButtonElement>) => {
+      e.preventDefault();
+      open({ onComplete: handleComplete });
+    };
+  
+    return (
+      <button onClick={handleOnClickAddressBtn} className="w-full max-w-[100px] bg-[#fc973b] text-white rounded-xl">
+        주소 검색
+      </button>
+    );
   }
 
   return (
@@ -89,13 +171,14 @@ export function UserEditProfile() {
           />
         </div>
 
-        {/* 이메일 */}
+        {/* 이메일 - 수정 불가 처리 위해 readOnly 추가 */}
         <div className="space-y-2">
           <label className="block text-sm font-medium text-[#333333]">Email</label>
           <input
             type="email"
             name="email"
             value={formData.email}
+            readOnly
             onChange={handleInputChange}
             className="w-full p-4 rounded-xl border border-gray-200 focus:outline-none focus:border-[#fc973b]"
           />
@@ -111,6 +194,35 @@ export function UserEditProfile() {
             onChange={handleInputChange}
             className="w-full p-4 rounded-xl border border-gray-200 focus:outline-none focus:border-[#fc973b]"
           />
+        </div>
+
+        {/* 주소 */}
+        <div className="space-y-2">
+          <label className="block text-sm font-medium text-[#333333]">주소</label>
+          <div className="flex">
+            <input
+              type="text"
+              name="addressRoad"
+              value={formData.addressRoad}
+              onChange={handleInputChange}
+              className="w-full p-3 rounded-xl mr-2 border border-gray-200 focus:outline-none focus:border-[#fc973b]"
+            />
+            <AddressBtn onComplete={(address) => setFormData(prev => ({ ...prev, addressRoad: address }))} />
+          </div>
+        </div>
+
+        {/* 상세주소 */}
+        <div className="space-y-2">
+          <label className="block text-sm font-medium text-[#333333]">상세주소</label>
+          <div className="flex">
+            <input
+              type="text"
+              name="addressDetail"
+              value={formData.addressDetail}
+              onChange={handleInputChange}
+              className="w-full p-4 rounded-xl border border-gray-200 focus:outline-none focus:border-[#fc973b]"
+            />
+          </div>
         </div>
 
         {/* 프로필 사진 */}
@@ -134,9 +246,9 @@ export function UserEditProfile() {
           <div className="relative">
             <input
               type={showCurrentPassword ? "text" : "password"}
-              name="currentPassword"
+              name="originPassword"
               placeholder="현재 비밀번호 입력"
-              value={formData.currentPassword}
+              value={formData.originPassword}
               onChange={handleInputChange}
               className="w-full p-4 rounded-xl border border-gray-200 focus:outline-none focus:border-[#fc973b]"
             />
@@ -180,11 +292,10 @@ export function UserEditProfile() {
         {/* 저장하기 버튼 */}
         <button
           type="submit"
-          className="w-full bg-[#fc973b] text-white py-4 rounded-full font-medium mt-8"
+          className="fixed bottom-5 left-0 right-0 max-w-[400px] mx-auto w-full bg-[#fc973b] text-white py-4 rounded-xl font-medium mt-8"
         >
           저장하기
         </button>
       </form>
     </div>
-  )
-} 
+  )}

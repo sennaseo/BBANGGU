@@ -10,6 +10,7 @@ import { FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER } from 'redux-persist
 import reservationReducer from './slices/reservationSlice';
 import reviewReducer from './slices/reviewSlice';
 import echosaveReducer from './slices/echosaveSlice';
+import addressReducer from './slices/addressSlice';
 
 export const store = configureStore({
   reducer: {
@@ -19,7 +20,8 @@ export const store = configureStore({
     package: packageReducer,
     reservation: reservationReducer,
     review: reviewReducer,
-    echosave: echosaveReducer
+    echosave: echosaveReducer,
+    address: addressReducer
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

@@ -115,7 +115,11 @@ export const profileEditApi = {
 
 export const updatePassword = async (data: UpdatePasswordRequest): Promise<UpdatePasswordResponse> => {
   try {
-    const response = await instance.post<UpdatePasswordResponse>('/user/update/password', data);
+    const response = await instance.post<UpdatePasswordResponse>('/user/update/password/reset/confirm', data, {
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
 
     if (!response.data) {
       throw new Error('비밀번호 변경에 실패했습니다.');

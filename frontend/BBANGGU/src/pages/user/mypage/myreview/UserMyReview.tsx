@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ChevronLeft } from 'lucide-react';
 import { ReviewCard } from '../../../../components/user/myreview/ReviewCard';
 import { getUserReviews } from '../../../../services/user/mypage/myreview/usermyReviewService';
-import type { ReviewType } from '../../../../types/bakery';
+import type { ReviewType } from '../../../../store/slices/reviewSlice';
 import UserBottomNavigation from '../../../../components/user/navigations/bottomnavigation/UserBottomNavigation';
 import { useDispatch } from 'react-redux';
 import { getLocalStorage } from '../../../../store/slices/authSlice';
@@ -24,7 +24,11 @@ export default function UserMyReview() {
       }
       try {
         const response = await getUserReviews(userId);
-        setReviews(response.data);
+        if (Array.isArray(response.data)) {
+          setReviews(response.data);
+        } else {
+          setError('리뷰 데이터가 올바르지 않습니다.');
+        }
       } catch (err) {
         setError(err instanceof Error ? err.message : '리뷰를 불러오는데 실패했습니다.');
       } finally {
@@ -69,8 +73,6 @@ export default function UserMyReview() {
           </div>
         )}
       </main>
-
-      <UserBottomNavigation />
     </div>
   );
 } 

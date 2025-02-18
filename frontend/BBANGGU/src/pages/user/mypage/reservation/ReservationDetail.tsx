@@ -27,8 +27,10 @@ export function ReservationDetail() {
 
   // reviewStatus가 'completed'나 'deleted'이면 reviewdetail 페이지로 자동 이동
   useEffect(() => {
-    if (reservation && (reservation.reviewStatus.toLowerCase() === 'completed' || reservation.reviewStatus.toLowerCase() === 'deleted')) {
-      navigate(`/user/${userId}/mypage/reviews/${reservation.reservationId}`);
+    if (reservation && reservation.reviewStatus) {
+      if (reservation.reviewStatus.toLowerCase() === 'completed' || reservation.reviewStatus.toLowerCase() === 'deleted') {
+        navigate(`/user/${userId}/mypage/reviews/${reservation.reservationId}`);
+      }
     }
   }, [reservation, navigate]);
 
@@ -85,7 +87,7 @@ export function ReservationDetail() {
       setShowCancelModal(false);
     }
   };
-
+  console.log("e", reservation)
   return (
     <div className="flex flex-col min-h-screen bg-[#F9F9F9] pb-[80px] relative max-w-[480px] mx-auto">
       {/* 헤더 */}
@@ -194,16 +196,6 @@ export function ReservationDetail() {
           onClose={() => setShowCancelModal(false)}
           onSubmit={handleCancelReservation}
         />
-      )}
-
-      {/* 픽업 완료 상태일 때 리뷰 쓰기 버튼 표시 */}
-      {reservation && reservation.status.toLowerCase() === "completed" && (
-        <button
-          className="fixed max-w-[400px] mx-auto bottom-5 left-0 right-0 bg-[#fc973b] hover:bg-[#e88a2d] text-white font-bold py-3 px-4 rounded-xl"
-          onClick={handleWriteReview}
-        >
-          리뷰 쓰기
-        </button>
       )}
     </div>
   )
