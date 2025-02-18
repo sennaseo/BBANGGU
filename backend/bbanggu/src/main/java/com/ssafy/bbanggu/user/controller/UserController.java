@@ -106,12 +106,13 @@ public class UserController {
 
 		// ✅ UserService에서 로그인 & 토큰 생성
 		Map<String, Object> loginInfo = userService.login(request.getEmail(), request.getPassword());
-		Object accessToken = loginInfo.get("accessToken");
-		log.info("🩵 컨트롤러 accessToken: " + accessToken);
-		Object refreshToken = loginInfo.get("refreshToken");
-		log.info("🩵 컨트롤러 refreshToken: " + refreshToken);
+		Object accessToken = loginInfo.get("access_token");
+		log.info("🩵 컨트롤러 access_token: " + accessToken);
+		Object refreshToken = loginInfo.get("refresh_token");
+		log.info("🩵 컨트롤러 refresh_token: " + refreshToken);
+
 		// ✅ AccessToken을 HTTP-Only 쿠키에 저장
-		ResponseCookie accessTokenCookie = ResponseCookie.from("accessToken", (String)accessToken)
+		ResponseCookie accessTokenCookie = ResponseCookie.from("access_token", (String)accessToken)
 			.httpOnly(false) // XSS 공격 방지
 			.secure(true) // HTTPS 환경에서만 사용 (로컬 개발 시 false 가능)
 			.path("/") // 모든 API 요청에서 쿠키 전송 가능
@@ -119,14 +120,14 @@ public class UserController {
 			.build();
 
 		// ✅ RefreshToken을 HTTP-Only 쿠키에 저장
-		ResponseCookie refreshTokenCookie = ResponseCookie.from("refreshToken", (String)refreshToken)
+		ResponseCookie refreshTokenCookie = ResponseCookie.from("refresh_token", (String)refreshToken)
 			.httpOnly(true)
 			.secure(true)
 			.path("/")
 			.maxAge(7 * 24 * 60 * 60)
 			.build();
 
-		loginInfo.remove("refreshToken");
+		loginInfo.remove("refresh_token");
 
 		return ResponseEntity.ok()
 			.header(HttpHeaders.SET_COOKIE, accessTokenCookie.toString())
