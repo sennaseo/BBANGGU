@@ -7,6 +7,7 @@ import { getKakaoLoginUrl } from "../../api/common/login/KakaoLogin"
 import { getUserInfo } from "../../api/user/user"
 import { setUserInfo } from "../../store/slices/userSlice"
 import { store } from "../../store"
+import { logout, removeLocalStorage } from "../../store/slices/authSlice"
 
 export default function LoginPage() {
   const [formData, setFormData] = useState({
@@ -16,6 +17,21 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false)
   const navigate = useNavigate()
   const dispatch = useDispatch()
+
+  // useEffect(() => {
+  //   const token = store.getState().auth.accessToken;
+  //   console.log('token', token)
+  //   if (token) {
+  //     const userInfo = store.getState().user.userInfo;
+  //   if (userInfo) {
+  //     if (userInfo.role === 'OWNER') {
+  //       navigate('/owner/main');
+  //     } else if (userInfo.role === 'USER') {
+  //         navigate('/user');  
+  //       }
+  //     }
+  //   }
+  // }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
@@ -34,6 +50,12 @@ export default function LoginPage() {
 
     setIsLoading(true)
     try {
+
+      const accessToken = store.getState().auth.accessToken;
+      console.log('accessToken', accessToken)
+      dispatch(logout())
+      dispatch(removeLocalStorage())
+
       // 1. 로그인 API 호출
       await login(formData, dispatch)
 
