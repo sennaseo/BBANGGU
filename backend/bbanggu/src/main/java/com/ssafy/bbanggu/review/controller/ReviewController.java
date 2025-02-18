@@ -94,8 +94,4 @@ public class ReviewController {
 		return ResponseEntity.ok().body(new ApiResponse("가게의 평점 조회가 완료되었습니다.", rating));
 	}
 
-	/**
-	 * 리뷰 상세 조회
-	 */
-
 }
