@@ -19,6 +19,16 @@ import axios from 'axios';
 import { compressImage } from '../../../utils/imageCompression';
 import { BREAD_CATEGORIES } from '../bread/BreadRegisterPage';  // 카테고리 정보 import
 
+// 타입 정의 추가
+interface BreadCombination {
+  breads: {
+    name: string;
+    quantity: number;
+    breadId: number;
+  }[];
+  total_price: number;
+}
+
 const PackagePreview: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -225,7 +235,7 @@ const PackagePreview: React.FC = () => {
     dispatch(deleteItem(name));
   };
 
-  // 재고 등록 API 호출 함수 수정
+  // registerStock 함수 수정
   const registerStock = async () => {
     try {
       dispatch(setLoading(true));
@@ -237,17 +247,18 @@ const PackagePreview: React.FC = () => {
         breadId: item.breadId
       }));
 
-      console.log('빵꾸러미 조합 요청:', {
+      // 요청 데이터 로그
+      console.log('빵꾸러미 조합 요청 데이터:', {
         url: '/ai/generate-package',
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${accessToken}`,
           'Content-Type': 'application/json'
         },
-        data: requestData
+        requestData
       });
 
-      const response = await axios.post(
+      const response = await axios.post<BreadCombination[][]>(
         '/ai/generate-package',
         requestData,
         {
@@ -258,14 +269,15 @@ const PackagePreview: React.FC = () => {
         }
       );
 
-      console.log('빵꾸러미 조합 응답:', response.data);
+      // 응답 데이터 로그
+      console.log('빵꾸러미 조합 응답 데이터:', response.data);
 
-      // PackageRegister로 이동하면서 데이터 전달
-      navigate('/owner/package/register', { 
-        state: { 
+      // PackageLoading로 이동하면서 데이터 전달
+      navigate('/owner/package/loading', {
+        state: {
           packageSuggestions: response.data,
           originalItems: items
-        } 
+        }
       });
 
     } catch (error) {

@@ -5,6 +5,7 @@ export type ReservationStatus = 'PENDING' | 'CONFIRMED' | 'CANCELED' | 'EXPIRED'
 
 // ReservationInfo 인터페이스도 export 추가
 export interface ReservationInfo {
+  reservationId: number;
   name: string;
   profileImageUrl: string | null;
   phone: string;
@@ -12,7 +13,6 @@ export interface ReservationInfo {
   status: ReservationStatus;
   quantitiy: number;
   cancelReason?: string;
-  reservationId: number;
 }
 
 // 내부적으로 사용할 API 응답용 인터페이스 추가
