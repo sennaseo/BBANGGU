@@ -1,6 +1,7 @@
 from itertools import combinations
 from collections import Counter, defaultdict
 
+
 def distribute_breads(breads, price_limit=10000):
     # 빵 정보 변환 및 기본 검증
     classified_breads = {bread.name: bread.count for bread in breads}
@@ -129,10 +130,13 @@ def distribute_breads(breads, price_limit=10000):
 
     return select_best_combinations(all_distributions, price_limit)
 
+
 def select_best_combinations(all_distributions, price_limit=10000):
     valid_combinations = []
 
+    # 각 묶음 개수별로 최고 점수의 조합 찾기
     for num_groups, distribution in all_distributions.items():
+        # price_limit 조건 검사
         if any(group['total_price'] > price_limit for group in distribution):
             continue
 
@@ -149,7 +153,13 @@ def select_best_combinations(all_distributions, price_limit=10000):
 
         valid_combinations.append((num_groups, distribution, total_score))
 
-    valid_combinations.sort(key=lambda x: x[2], reverse=True)
-    max_combinations = min(3, len(valid_combinations))
+    # 각 묶음 개수별로 가장 높은 점수를 가진 조합만 선택
+    best_by_group_count = {}
+    for num_groups, distribution, score in valid_combinations:
+        if num_groups not in best_by_group_count or score > best_by_group_count[num_groups][1]:
+            best_by_group_count[num_groups] = (distribution, score)
 
-    return [combination[1] for combination in valid_combinations[:max_combinations]] if valid_combinations else []
+    # 최종 점수로 정렬하여 상위 3개 선택
+    final_combinations = sorted(best_by_group_count.values(), key=lambda x: x[1], reverse=True)
+
+    return [combination[0] for combination in final_combinations[:3]]
