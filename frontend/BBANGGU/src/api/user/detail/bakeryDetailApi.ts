@@ -8,7 +8,7 @@ const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 export const bakeryDetailApi = {
     getBakeryById: async (bakeryId: number): Promise<BakeryType>=> {
       try {
-        const token = store.getState().user.token;
+        const token = store.getState().auth.accessToken;
         let response;
         if (token) {
           response = await axios.get<ApiResponse<BakeryType>>(

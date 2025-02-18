@@ -47,8 +47,7 @@ export const login = async (loginData: LoginRequest, dispatch: Dispatch): Promis
       dispatch(loginSuccess({
         data: {
           access_token: accessToken,
-          refresh_token: "",
-          user_type: response.data.data.user_type
+          user_type: response.data.data.userType
         }
       }));
     }

@@ -1,9 +1,11 @@
+import { store } from '../../store';
+import { fetchUserInfo } from '../../store/slices/userSlice';
 import { ApiResponse } from '../../types/api';
 import instance from '../axios';
 
-interface UserInfo {
+export interface UserInfo {
   userId: number;
-  bakeryId: number;
+  bakeryId: number | null;
   name: string;
   email: string;
   phone: string;
@@ -38,6 +40,7 @@ interface UpdatePasswordResponse {
 export const getUserInfo = async (): Promise<UserInfo> => {
   try {
     const response = await instance.get<ApiResponse<UserInfo>>('/user');
+    store.dispatch(fetchUserInfo(response.data.data));
     return response.data.data;
   } catch (error) {
     console.error('Error fetching user info:', error);
