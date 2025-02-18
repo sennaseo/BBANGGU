@@ -16,6 +16,7 @@ import com.ssafy.bbanggu.common.exception.ErrorCode;
 import com.ssafy.bbanggu.stock.StockDTO;
 import com.ssafy.bbanggu.stock.StockService;
 
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -31,8 +32,8 @@ public class InventoryService {
 	private final BakeryRepository bakeryRepository;
 
 	public String getResponse(CustomUserDetails userDetails, long bakeryId) {
-		Bakery bakery = bakeryRepository.findByUser_UserId(bakeryId);
-		if (bakery.getUser().getUserId().equals(userDetails.getUserId())) {
+		Optional<Bakery> bakery = bakeryRepository.findById(bakeryId);
+		if (bakery.get().getUser().getUserId().equals(userDetails.getUserId())) {
 			throw new CustomException(ErrorCode.USER_IS_NOT_OWNER);
 		}
 
