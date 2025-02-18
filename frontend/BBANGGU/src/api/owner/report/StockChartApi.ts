@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { store } from '../../../store';
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -40,7 +41,7 @@ interface StockDailyResponse {
 
 export const StockChartApi = {
   getYearlyStock: async (bakeryId: number) => {
-    const accessToken = localStorage.getItem('accessToken');
+    const accessToken = store.getState().auth.accessToken;
     
     try {
       const response = await axios.get<MonthlyStockResponse>(
@@ -61,7 +62,7 @@ export const StockChartApi = {
   },
 
   getWeeklyStock: async (bakeryId: number) => {
-    const accessToken = localStorage.getItem('accessToken');
+    const accessToken = store.getState().auth.accessToken;
     
     try {
       const response = await axios.get<WeeklyStockResponse>(
@@ -82,8 +83,7 @@ export const StockChartApi = {
   },
 
   getDailyStocks: async (bakeryId: number) => {
-    const accessToken = localStorage.getItem('accessToken');
-    
+    const accessToken = store.getState().auth.accessToken;
     try {
       const response = await axios.get<StockDailyResponse>(
         `${BASE_URL}/stock/bakery/${bakeryId}/day`,

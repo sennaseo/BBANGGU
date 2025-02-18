@@ -102,18 +102,40 @@ public class BakeryPickupService {
 
 
 	@Transactional
-	public void createPickupTime(Bakery bakery, BakeryPickupTimetableDto request) {
-		// 새로운 픽업 시간 등록
-		BakeryPickupTimetable timetable = BakeryPickupTimetable.builder()
-			.bakery(bakery)
-			.sunday(formatTime(request.getSunday()))
-			.monday(formatTime(request.getMonday()))
-			.tuesday(formatTime(request.getTuesday()))
-			.wednesday(formatTime(request.getWednesday()))
-			.thursday(formatTime(request.getThursday()))
-			.friday(formatTime(request.getFriday()))
-			.saturday(formatTime(request.getSaturday()))
-			.build();
+	public void createPickupTime(CustomUserDetails userDetails, Long bakeryId, BakeryPickupTimetableDto request) {
+		// ✅ 유효한 빵집인지 검증 (
+		Bakery bakery = bakeryRepository.findByBakeryIdAndDeletedAtIsNull(bakeryId);
+		if (bakery == null) {
+			throw new CustomException(ErrorCode.BAKERY_NOT_FOUND);
+		}
+
+		// ✅ 현재 로그인된 사용자가 이 가게의 사장님인지 검증
+		Long userId = userDetails.getUserId();
+		if (!bakery.getUser().getUserId().equals(userId)) {
+			throw new CustomException(ErrorCode.UNAUTHORIZED_USER);
+		}
+
+		BakeryPickupTimetable timetable = bakeryPickupTimetableRepository.findByBakery_BakeryId(bakery.getBakeryId())
+			.orElseGet(() -> BakeryPickupTimetable.builder()
+				.bakery(bakery)
+				.sunday(null)   // 처음 등록하는 경우 null로 설정
+				.monday(null)
+				.tuesday(null)
+				.wednesday(null)
+				.thursday(null)
+				.friday(null)
+				.saturday(null)
+				.build());
+
+		// ✅ 요청된 데이터만 변경 (null이 아닌 경우만 업데이트)
+		log.info("🩵 요청 데이터만 변경 시작");
+		timetable.setSunday(formatTime(request.getSunday()));
+		timetable.setMonday(formatTime(request.getMonday()));
+		timetable.setTuesday(formatTime(request.getTuesday()));
+		timetable.setWednesday(formatTime(request.getWednesday()));
+		timetable.setThursday(formatTime(request.getThursday()));
+		timetable.setFriday(formatTime(request.getFriday()));
+		timetable.setSaturday(formatTime(request.getSaturday()));
 
 		bakeryPickupTimetableRepository.save(timetable);
 	}
@@ -122,7 +144,8 @@ public class BakeryPickupService {
 	 * { startTime: "HH:mm", endTime: "HH:mm" } → "HHmmHHmm" 변환
 	 */
 	private String formatTime(PickupTimeDto timeDto) {
-		if (timeDto == null || timeDto.getStartTime() == null || timeDto.getEndTime() == null) return null;
+		if (timeDto == null || timeDto.getStartTime() == null || timeDto.getEndTime() == null || timeDto.getStartTime()
+			.isEmpty() || timeDto.getEndTime().isEmpty()) return null;
 		return timeDto.getStartTime().replace(":", "") + timeDto.getEndTime().replace(":", "");
 	}
 
