@@ -186,22 +186,6 @@ const getUsedCategoryIds = (breads: BreadInfo[]) => {
   return new Set(breads.map(bread => bread.breadCategoryId));
 };
 
-// 또는 간단한 로깅 함수 추가
-const mobileLog = (...args: any[]) => {
-  // 화면에 로그 표시
-  const logDiv = document.getElementById('mobile-log') || (() => {
-    const div = document.createElement('div');
-    div.id = 'mobile-log';
-    div.style.cssText = 'position:fixed;bottom:0;left:0;right:0;background:rgba(0,0,0,0.8);color:white;padding:10px;z-index:9999;max-height:30vh;overflow-y:auto;';
-    document.body.appendChild(div);
-    return div;
-  })();
-  
-  logDiv.innerHTML += `<div>${args.map(arg => 
-    typeof arg === 'object' ? JSON.stringify(arg) : arg
-  ).join(' ')}</div>`;
-};
-
 export default function BreadRegisterPage() {
   const navigate = useNavigate();
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
@@ -256,28 +240,15 @@ export default function BreadRegisterPage() {
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      mobileLog('File selected:', {
-        name: file.name,
-        type: file.type,
-        size: file.size
-      });
-
       try {
         if (file.size > 5 * 1024 * 1024) {
           throw new Error('이미지 크기는 5MB 이하여야 합니다.');
         }
 
         const compressedFile = await compressImage(file);
-        mobileLog('Compressed file:', {
-          name: compressedFile.name,
-          type: compressedFile.type,
-          size: compressedFile.size
-        });
-
         const url = URL.createObjectURL(compressedFile);
         setPreviewUrl(url);
       } catch (error) {
-        mobileLog('Error:', error);
         alert(error instanceof Error ? error.message : '이미지 처리 중 오류가 발생했습니다.');
       }
     }
@@ -361,7 +332,6 @@ export default function BreadRegisterPage() {
 
   const handleSave = async () => {
     if (!userInfo?.bakeryId) {
-      mobileLog('No bakeryId found');
       alert('사장님 정보를 찾을 수 없습니다.');
       return;
     }
@@ -372,19 +342,12 @@ export default function BreadRegisterPage() {
         let imageFile: File | undefined;
         if (bread.image && bread.image.startsWith('blob:')) {
           try {
-            mobileLog('Processing image:', bread.image);
             const response = await fetch(bread.image);
             const blob = await response.blob();
             imageFile = new File([blob], `bread-${Date.now()}.jpg`, { 
               type: 'image/jpeg'
             });
-            mobileLog('Created image file:', {
-              name: imageFile.name,
-              type: imageFile.type,
-              size: imageFile.size
-            });
           } catch (error) {
-            mobileLog('Image processing error:', error);
             throw new Error('이미지 처리 중 오류가 발생했습니다.');
           }
         }
@@ -396,14 +359,12 @@ export default function BreadRegisterPage() {
           price: Number(bread.price)
         };
 
-        mobileLog('Sending bread data:', breadData);
         await registerBread(breadData, imageFile);
       }
 
       alert('빵 등록이 완료되었습니다.');
       navigate(-1);
     } catch (error: any) {
-      mobileLog('Save error:', error);
       console.error('빵 등록 실패:', error);
       alert(error.response?.data?.message || '빵 등록 중 오류가 발생했습니다.');
     } finally {
