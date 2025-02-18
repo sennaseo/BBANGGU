@@ -46,7 +46,7 @@ export function MapView({ bakeries = [], onMarkerClick, userAddress }: MapViewPr
   const handleMarkerClick = (bakery: BakeryInfo) => {
     if (mapRef.current && bakery.latitude && bakery.longitude) {
       const position = new kakao.maps.LatLng(bakery.latitude, bakery.longitude);
-      mapRef.current.setCenter(position);
+      mapRef.current.panTo(position);
       onMarkerClick(bakery);
     }
   };

@@ -10,7 +10,7 @@ const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 export const mypageApi = {
     getUsersApi: async () => {
       try {
-        const token = store.getState().user.token;
+        const token = store.getState().auth.accessToken;
         const response = await axios.get<ApiResponse<UserType[]>>(
           `${BASE_URL}/user`,
           {
@@ -29,7 +29,7 @@ export const mypageApi = {
 
     getReservationsApi: async () => {
       try {
-        const token = store.getState().user.token;
+        const token = store.getState().auth.accessToken;
 
         // 오늘 날짜를 yyyy-mm-dd 형식으로 생성
         const today = new Date();
@@ -57,7 +57,7 @@ export const mypageApi = {
 
     getEchoSavesApi: async () => {
       try {
-        const token = store.getState().user.token;
+        const token = store.getState().auth.accessToken;
         const response = await axios.get<ApiResponse<EchoSaveType[]>>(
           `${BASE_URL}/saving`,
           {

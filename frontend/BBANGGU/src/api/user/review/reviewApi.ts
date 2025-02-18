@@ -7,7 +7,7 @@ const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 export const reviewApi = {
     getReviews: async (bakeryId: number): Promise<ReviewType[]> => {
     try {
-      const token = store.getState().user.token;  
+      const token = store.getState().auth.accessToken;  
       const response = await axios.get<ApiResponse<ReviewType[]>>(
         `${BASE_URL}/review/bakery/${bakeryId}`,
         { withCredentials: true,
@@ -43,7 +43,7 @@ export const reviewApi = {
 
   getUserReviews: async (userId: string): Promise<ReviewType[]> => {
     try {
-      const token = store.getState().user.token;
+      const token = store.getState().auth.accessToken;
       const response = await axios.get<ApiResponse<ReviewType[]>>(
         `${BASE_URL}/review/user/${userId}`,
         {
@@ -61,7 +61,7 @@ export const reviewApi = {
   },
   deleteReview: async (reviewId: number): Promise<void> => {
     try {
-      const token = store.getState().user.token;
+      const token = store.getState().auth.accessToken;
       await axios.delete<ApiResponse<void>>(`${BASE_URL}/review/${reviewId}`, { withCredentials: true,
         headers: {
           Authorization: `Bearer ${token}`
