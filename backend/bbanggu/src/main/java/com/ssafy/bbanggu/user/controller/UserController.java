@@ -191,6 +191,7 @@ public class UserController {
 		@RequestPart(value = "user", required = false) UpdateUserRequest updates,
 		@RequestPart(value = "profileImage", required = false) MultipartFile file
 	) {
+		log.info("🩵 회원정보 수정 정보: " + updates.toString());
 		// ✅ 변경할 필드만 업데이트
 		userService.update(userDetails, updates, file);
 		return ResponseEntity.ok(new ApiResponse("회원 정보가 성공적으로 수정되었습니다.", null));
