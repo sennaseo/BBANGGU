@@ -31,6 +31,8 @@ export interface BakeryInfo {
       quantity: number;
     }>;
   };
+  packageName: string;
+  bakeryName: string;
 }
 
 interface BakeryState {

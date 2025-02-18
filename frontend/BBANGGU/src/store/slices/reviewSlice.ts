@@ -6,7 +6,9 @@ export interface ReviewType {
     userId: number;
     bakeryId: number;
     rating: number;
-    comment: string;
+    content: string;
+    reviewImageUrl: string;
+    createdAt: string;
 }
 
 export interface ReviewState {

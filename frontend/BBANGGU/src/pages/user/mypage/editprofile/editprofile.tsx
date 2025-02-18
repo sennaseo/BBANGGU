@@ -1,68 +1,89 @@
-import { ChevronLeft, Eye, EyeOff } from "lucide-react"
-import { useNavigate } from "react-router-dom"
-import { useState, useEffect } from "react"
-import { userProfileEditService } from "../../../../services/user/profileedit/userprofileEditService"
-import { getUserProfile } from "../../../../services/user/mypage/usermypageServices"
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { ChevronLeft } from 'lucide-react';
+import { getUserInfo, updateUserInfo, updatePassword, UserInfo } from '../../../../api/user/user';
 
 export function UserEditProfile() {
-  const navigate = useNavigate()
-  const [showCurrentPassword, setShowCurrentPassword] = useState(false)
-  const [showNewPassword, setShowNewPassword] = useState(false)
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    phone: "",
-    currentPassword: "",
-    newPassword: "",
-  })
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string>('');
 
-  // 사용자 정보를 API로부터 가져오는 useEffect
+  // 회원 정보 폼 상태
+  const [formData, setFormData] = useState<{
+    name: string;
+    email: string;
+    phone: string;
+    addressRoad: string;
+    addressDetail: string;
+    currentPassword: string;
+    newPassword: string;
+  }>({
+    name: '',
+    email: '',
+    phone: '',
+    addressRoad: '',
+    addressDetail: '',
+    currentPassword: '',
+    newPassword: '',
+  });
+
+  // 컴포넌트 마운트 시 사용자 정보를 불러옴
   useEffect(() => {
-    const fetchUserData = async () => {
+    const fetchUser = async () => {
       try {
-        const response = await getUserProfile() // 사용자 정보 조회 API 호출
-        const userData = response[0] // API 응답에서 사용자 데이터 가져오기
+        const user: UserInfo = await getUserInfo();
         setFormData({
-          name: userData.name,
-          email: userData.email,
-          phone: userData.phone,
-          currentPassword: "",
-          newPassword: "",
-        })
-        console.log("userData", userData)
-      } catch (error) {
-        console.error('사용자 정보 조회 중 오류 발생:', error)
+          name: user.name,
+          email: user.email,
+          phone: user.phone,
+          addressRoad: user.addressRoad || '',
+          addressDetail: user.addressDetail || '',
+          currentPassword: '',
+          newPassword: '',
+        });
+      } catch (err: any) {
+        setError('사용자 정보를 불러오는데 실패했습니다.');
       }
-    }
+    };
+    fetchUser();
+  }, []);
 
-    fetchUserData()
-  }, [])
-
+  // 입력값 변경 핸들러
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }))
-  }
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
 
+  // 폼 전송 핸들러
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
+    setError('');
+    setLoading(true);
     try {
-      // API 호출하여 프로필 업데이트
-      const updatedData = {
+      // 사용자 기본 정보 업데이트
+      await updateUserInfo({
         name: formData.name,
         phone: formData.phone,
-        // 추가적인 필드가 필요할 경우 여기에 추가
-        // 예: addressRoad: formData.addressRoad, addressDetail: formData.addressDetail
+        addressRoad: formData.addressRoad,
+        addressDetail: formData.addressDetail,
+      });
+
+      // 비밀번호 변경 요청이 있으면 실행 (두 개의 필드 모두 입력되어야 함)
+      if (formData.currentPassword && formData.newPassword) {
+        await updatePassword({
+          originPassword: formData.currentPassword,
+          newPassword: formData.newPassword,
+        });
       }
 
-      await userProfileEditService.updateUserProfile(updatedData) // formData를 전달
-      navigate(-1) // 성공적으로 업데이트 후 이전 페이지로 이동
-    } catch (error) {
-      console.error('프로필 수정 중 오류 발생:', error)
+      alert('회원 정보가 성공적으로 업데이트되었습니다.');
+      navigate(-1);
+    } catch (err: any) {
+      setError(err.message || '회원 정보 업데이트에 실패했습니다.');
+    } finally {
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <div className="min-h-screen bg-white">
@@ -71,120 +92,112 @@ export function UserEditProfile() {
         <button onClick={() => navigate(-1)}>
           <ChevronLeft className="w-6 h-6" />
         </button>
-        <h1 className="text-xl font-bold absolute left-1/2 -translate-x-1/2">회원정보수정</h1>
-        <div className="w-6"></div>
+        <h1 className="text-xl font-bold absolute left-1/2 -translate-x-1/2 text-[#333333]">회원정보 수정</h1>
+        <div className="w-6" />
       </div>
 
-      {/* 폼 */}
+      {error && (
+        <div className="text-red-500 text-center my-2">
+          {error}
+        </div>
+      )}
+
+      {/* 회원정보 수정 폼 */}
       <form onSubmit={handleSubmit} className="p-5 space-y-6">
         {/* 이름 */}
-        <div className="space-y-2">
-          <label className="block text-sm font-medium text-[#333333]">이름</label>
-          <input
+        <div>
+          <label className="block text-sm font-medium text-gray-700">이름</label>
+          <input 
             type="text"
             name="name"
             value={formData.name}
             onChange={handleInputChange}
-            className="w-full p-4 rounded-xl border border-gray-200 focus:outline-none focus:border-[#fc973b]"
+            className="w-full p-2 border rounded-xl"
           />
         </div>
 
-        {/* 이메일 */}
-        <div className="space-y-2">
-          <label className="block text-sm font-medium text-[#333333]">Email</label>
-          <input
+        {/* 이메일 (읽기전용) */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700">이메일</label>
+          <input 
             type="email"
             name="email"
             value={formData.email}
-            onChange={handleInputChange}
-            className="w-full p-4 rounded-xl border border-gray-200 focus:outline-none focus:border-[#fc973b]"
+            readOnly
+            className="w-full p-2 border rounded-xl bg-gray-100"
           />
         </div>
 
         {/* 전화번호 */}
-        <div className="space-y-2">
-          <label className="block text-sm font-medium text-[#333333]">전화번호</label>
-          <input
+        <div>
+          <label className="block text-sm font-medium text-gray-700">전화번호</label>
+          <input 
             type="tel"
             name="phone"
             value={formData.phone}
             onChange={handleInputChange}
-            className="w-full p-4 rounded-xl border border-gray-200 focus:outline-none focus:border-[#fc973b]"
+            className="w-full p-2 border rounded-xl"
           />
         </div>
 
-        {/* 프로필 사진 */}
-        <div className="space-y-2">
-          <label className="block text-sm font-medium text-[#333333]">프로필 사진</label>
-          <div className="w-full p-4 rounded-xl border border-gray-200 flex items-center justify-center">
-            <button type="button" className="text-[#666666]">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                <path d="M19 3H5C4.9 3 4 3.89543 4 5V19C4 20.1046 4.9 21 5 21H19C20.1046 21 21 20.1046 21 19V5C21 3.89543 20.1046 3 19 3Z" stroke="#666666" strokeWidth="2"/>
-                <path d="M12 8V16M8 12H16" stroke="#666666" strokeWidth="2" strokeLinecap="round"/>
-              </svg>
-            </button>
-          </div>
+        {/* 주소(도로명) */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700">주소(도로명)</label>
+          <input 
+            type="text"
+            name="addressRoad"
+            value={formData.addressRoad}
+            onChange={handleInputChange}
+            className="w-full p-2 border rounded-xl"
+          />
         </div>
 
-        {/* 비밀번호 변경 */}
-        <div className="space-y-4">
-          <h3 className="text-base font-bold text-[#333333]">비밀번호 변경</h3>
-          
-          {/* 현재 비밀번호 */}
-          <div className="relative">
-            <input
-              type={showCurrentPassword ? "text" : "password"}
+        {/* 상세주소 */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700">상세주소</label>
+          <input 
+            type="text"
+            name="addressDetail"
+            value={formData.addressDetail}
+            onChange={handleInputChange}
+            className="w-full p-2 border rounded-xl"
+          />
+        </div>
+
+        {/* 비밀번호 변경 섹션 */}
+        <div className="mt-4">
+          <h2 className="text-lg font-bold">비밀번호 변경</h2>
+          <p className="text-sm text-gray-500">변경하시려면 현재 비밀번호와 새 비밀번호를 입력하세요.</p>
+          <div className="mt-2">
+            <label className="block text-sm font-medium text-gray-700">현재 비밀번호</label>
+            <input 
+              type="password"
               name="currentPassword"
-              placeholder="현재 비밀번호 입력"
               value={formData.currentPassword}
               onChange={handleInputChange}
-              className="w-full p-4 rounded-xl border border-gray-200 focus:outline-none focus:border-[#fc973b]"
+              className="w-full p-2 border rounded-xl"
             />
-            <button
-              type="button"
-              onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-              className="absolute right-4 top-1/2 -translate-y-1/2"
-            >
-              {showCurrentPassword ? (
-                <EyeOff className="w-5 h-5 text-gray-400" />
-              ) : (
-                <Eye className="w-5 h-5 text-gray-400" />
-              )}
-            </button>
           </div>
-
-          {/* 새 비밀번호 */}
-          <div className="relative">
-            <input
-              type={showNewPassword ? "text" : "password"}
+          <div className="mt-2">
+            <label className="block text-sm font-medium text-gray-700">새 비밀번호</label>
+            <input 
+              type="password"
               name="newPassword"
-              placeholder="새 비밀번호 입력"
               value={formData.newPassword}
               onChange={handleInputChange}
-              className="w-full p-4 rounded-xl border border-gray-200 focus:outline-none focus:border-[#fc973b]"
+              className="w-full p-2 border rounded-xl "
             />
-            <button
-              type="button"
-              onClick={() => setShowNewPassword(!showNewPassword)}
-              className="absolute right-4 top-1/2 -translate-y-1/2"
-            >
-              {showNewPassword ? (
-                <EyeOff className="w-5 h-5 text-gray-400" />
-              ) : (
-                <Eye className="w-5 h-5 text-gray-400" />
-              )}
-            </button>
           </div>
         </div>
 
-        {/* 저장하기 버튼 */}
         <button
           type="submit"
-          className="w-full bg-[#fc973b] text-white py-4 rounded-full font-medium mt-8"
+          disabled={loading}
+          className="fixed bottom-5 left-0 right-0 max-w-[400px] mx-auto w-full py-3 bg-[#FC973B] text-white font-semibold rounded-xl hover:bg-[#FC973B]/80"
         >
-          저장하기
+          {loading ? '업데이트 중...' : '저장하기'}
         </button>
       </form>
     </div>
-  )
-} 
+  );
+}

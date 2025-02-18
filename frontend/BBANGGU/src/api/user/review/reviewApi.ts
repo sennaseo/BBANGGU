@@ -44,6 +44,7 @@ export const reviewApi = {
   getUserReviews: async (userId: string): Promise<ReviewType[]> => {
     try {
       const token = store.getState().auth.accessToken;
+      console.log("token", token);
       const response = await axios.get<ApiResponse<ReviewType[]>>(
         `${BASE_URL}/review/user/${userId}`,
         {

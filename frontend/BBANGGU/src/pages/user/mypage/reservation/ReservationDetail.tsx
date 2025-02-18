@@ -27,7 +27,7 @@ export function ReservationDetail() {
 
   // reviewStatus가 'completed'나 'deleted'이면 reviewdetail 페이지로 자동 이동
   useEffect(() => {
-    if (reservation && (reservation.reviewStatus.toLowerCase() === 'completed' || reservation.reviewStatus.toLowerCase() === 'deleted')) {
+    if (reservation && (reservation.reviewStatus.toLowerCase() === 'completed' || reservation.reviewStatus.toLowerCase() === 'deleted' || reservation.reviewStatus.toLowerCase() === 'pending')) {
       navigate(`/user/${userId}/mypage/reviews/${reservation.reservationId}`);
     }
   }, [reservation, navigate]);

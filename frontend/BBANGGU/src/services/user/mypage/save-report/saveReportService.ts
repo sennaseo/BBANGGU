@@ -11,10 +11,17 @@ export async function getSaveReport(): Promise<EchoSave> {
     }
 }
 
-export function calculateImpact(price: number): { reducedCo2e: number, waterSaving: number, reducedTravelDistance: number, savedMoney: number } {
+export function calculateImpact(price: number): { 
+  reducedCo2e: number, 
+  foodWasteReduction: number,
+  waterSaving: number, 
+  reducedTravelDistance: number, 
+  savedMoney: number 
+} {
     const reducedCo2e = 0.0001 * price;          // 예: 5000원 -> 0.5kg CO2 절감
+    const foodWasteReduction = 0.001 * price;       // 예: 5000원 -> 5L 음식물 낭비 감소
     const waterSaving = 0.03 * price;              // 예: 5000원 -> 150리터 절약
     const reducedTravelDistance = 0.00005 * price; // 예: 5000원 -> 0.25km 감소
     const savedMoney = 0.1 * price;                // 예: 5000원 -> 500원 절약
-    return { reducedCo2e, waterSaving, reducedTravelDistance, savedMoney };
+    return { reducedCo2e, foodWasteReduction, waterSaving, reducedTravelDistance, savedMoney };
 }

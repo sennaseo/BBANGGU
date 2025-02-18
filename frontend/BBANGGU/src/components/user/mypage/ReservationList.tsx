@@ -1,44 +1,25 @@
 import { useState, useEffect, useMemo } from "react"
-import type { ReservationType, ExtendedBakeryType } from "../../../types/bakery"
+import type { Reservation } from "../../../store/slices/reservationSlice"
 import { ChevronRight } from "lucide-react"
-import { useNavigate } from "react-router-dom"
+import { useNavigate, useParams } from "react-router-dom"
 import dayjs from 'dayjs'
 import 'dayjs/locale/ko' // 한국어 로케일 추가
+import type { BakeryInfo } from "../../../store/slices/bakerySlice"
 interface ReservationListProps {
-  reservations?: ReservationType[]
+  reservations?: Reservation[]
   params: {
     userId: number
   }
 }
 
-export function ReservationList({ reservations = [], params }: ReservationListProps) {
+export function ReservationList({ reservations = [] }: ReservationListProps) {
   const navigate = useNavigate()
-  const [bakeryList, setBakeryList] = useState<ExtendedBakeryType[]>([])
-  const [bakeryNames, setBakeryNames] = useState<Record<string, string>>({})
+  const [bakeryList, setBakeryList] = useState<BakeryInfo[]>([])
   const data = useMemo(() => {
     return reservations.length > 0 ? reservations : []
   }, [reservations])
+  const { userId } = useParams<{ userId: string }>()
 
-  // API 기본 URL (env에 설정되어 있음)
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
-
-  // 제빵소 리스트를 백엔드 API로부터 가져옵니다.
-  useEffect(() => {
-    if (!params.userId || params.userId === 0) return; // userId가 유효하지 않을 경우 호출하지 않음
-    async function fetchBakeryList() {
-      try {
-        const response = await fetch(`${API_BASE_URL}/bakery?userId=${params.userId}`)
-        const result = await response.json()
-        // result.data가 BakeryType[]라고 가정합니다.
-        setBakeryList(result.data)
-      } catch (error) {
-        console.error("베이커리 리스트 로드 실패:", error)
-      }
-    }
-    fetchBakeryList()
-  }, [params.userId, API_BASE_URL])
-
-  // 예약 데이터와 제빵소 리스트를 기반으로 예약별 제빵소 이름을 설정합니다.
   useEffect(() => {
     if (
       bakeryList.length === 0 ||
@@ -51,15 +32,9 @@ export function ReservationList({ reservations = [], params }: ReservationListPr
       console.log("reservation", data)
       return; // bakeryList가 비어있거나 예약 데이터가 없거나 모든 예약이 완료/취소 상태이면 실행하지 않음
     }
-    const names: Record<string, string> = {};
-    for (const reservation of data) {
-      const bakery = bakeryList.find(b => b.bakeryId === reservation.bakeryId);
-      names[reservation.reservationId] = bakery?.name ?? "베이커리 정보 없음";
-    }
-    setBakeryNames(names);
   }, [data, bakeryList]); // bakeryList가 변경될 때만 실행
 
-  const getStatusLabel = (status: ReservationType["status"]) => {
+  const getStatusLabel = (status: Reservation["status"]) => {
     switch (status.toLowerCase()) {
       case "canceled":
         return "주문 취소"
@@ -72,17 +47,17 @@ export function ReservationList({ reservations = [], params }: ReservationListPr
     }
   }
 
-  const formatPickupDateTime = (reservation: ReservationType) => {
+  const formatPickupDateTime = (reservation: Reservation) => {
     dayjs.locale('ko')
     const createdDate = dayjs(reservation.createdAt)
     const pickupTime = dayjs(reservation.createdAt).add(1, 'hour').format('HH:mm');
     return `${createdDate.format('YYYY년 M월 D일 dddd')} ${pickupTime} 픽업 예약`
   }
 
-  const renderReservation = (reservation: ReservationType) => (
+  const renderReservation = (reservation: Reservation) => (
     <button 
       className="flex items-center bg-[#fc973b] rounded-xl justify-between shadow-md border-t border-dashed border-gray-200 pl-[20px] pr-[10px]"
-      onClick={() => navigate(`/user/${params.userId}/mypage/reservation/${reservation.reservationId}`)}
+      onClick={() => navigate(`/user/${userId}/mypage/reservation/${reservation.reservationId}`)}
     >
       <div 
         key={reservation.reservationId} 
@@ -94,7 +69,7 @@ export function ReservationList({ reservations = [], params }: ReservationListPr
               {getStatusLabel(reservation.status)}
             </span>
             <span className="text-base font-bold text-[16px]">
-              {bakeryNames[reservation.reservationId] || '로딩 중...'}
+              {bakeryList.find(b => b.bakeryId === reservation.bakeryId)?.name || '로딩 중...'}
             </span>
           </div>
         </div>
@@ -119,20 +94,21 @@ export function ReservationList({ reservations = [], params }: ReservationListPr
       reservation.status.toLowerCase() !== "completed" &&
       reservation.status.toLowerCase() !== "canceled"
   );
-  
+  console.log("currentReservations", currentReservations)
   return (
     <div className="flex flex-col">
       {currentReservations.length > 0 ? (
         <>
           {/* 픽업시간이 가장 임박한 주문 표시 */}
           {renderReservation(
-            currentReservations.sort((a, b) =>
-              new Date(a.reservedPickupTime).getTime() - new Date(b.reservedPickupTime).getTime()
-            )[0]
+            currentReservations
+              .sort((a, b) =>
+                new Date(a.pickupAt).getTime() - new Date(b.pickupAt).getTime()
+              )[0]
           )}
           {currentReservations.length > 0 && (
             <button
-              onClick={() => navigate(`/user/${params.userId}/mypage/reservations`)}
+              onClick={() => navigate(`/user/${userId}/mypage/reservations`)}
               className="w-full text-[#B4B4B4] font-regular text-sm bg-white rounded-xl shadow-md py-[8px] border-t border-dashed border-gray-200"
             >
               진행중인 주문 내역 보기

@@ -3,10 +3,10 @@ import { HeartIcon as HeartSolid } from "@heroicons/react/24/solid"
 import { useRef } from "react"
 import DraggableScroller from "./DraggableScroller"
 import { useNavigate } from "react-router-dom"
-import type { BakeryType } from "../../../types/bakery"
+import type { BakeryInfo } from "../../../store/slices/bakerySlice"
 
 interface BestPackagesProps {
-  favoritebakery: BakeryType[]
+  favoritebakery: BakeryInfo[]
   toggleFavoriteForUser: (bakeryId: number, isLiked: boolean) => void
 }
 
@@ -67,8 +67,8 @@ export default function BestPackages({ favoritebakery, toggleFavoriteForUser }: 
                   )}
                 </button>
               </div>
-              <h3 className="font-medium text-[16px] text-[#454545] font-semibold mb-1 line-clamp-1">{item.name}</h3>
-              <p className="text-[12px] text-[#B4B4B4] line-clamp-1">{item.name || "알 수 없음"}</p>
+              <h3 className="font-medium text-[16px] text-[#454545] font-semibold mb-1 line-clamp-1">{item.packageName}</h3>
+              <p className="text-[12px] text-[#B4B4B4] line-clamp-1">{item.bakeryName || "알 수 없음"}</p>
             </div>
           )
         })}
