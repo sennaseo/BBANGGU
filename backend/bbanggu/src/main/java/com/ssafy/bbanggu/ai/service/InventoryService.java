@@ -31,12 +31,7 @@ public class InventoryService {
 	private final StockService stockService;
 	private final BakeryRepository bakeryRepository;
 
-	public String getResponse(CustomUserDetails userDetails, long bakeryId) {
-		Optional<Bakery> bakery = bakeryRepository.findById(bakeryId);
-		if (bakery.get().getUser().getUserId().equals(userDetails.getUserId())) {
-			throw new CustomException(ErrorCode.USER_IS_NOT_OWNER);
-		}
-
+	public String getResponse(long bakeryId) {
 		// 지난 3개월 재고 조회
 		List<StockDTO> stocks = stockService.getStockByPeriod(LocalDate.now().minusMonths(3), LocalDate.now(),
 			bakeryId);
