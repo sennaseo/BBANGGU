@@ -193,6 +193,7 @@ public class FavoriteService {
 					packageName = bpackage.getName();
 				}
 
+				log.info("🩵 user_id: {}, bakery_id: {}", userDetails.getUserId(), b.getBakeryId());
 				boolean is_liked = favoriteRepository.existsByUser_UserIdAndBakery_BakeryId(userDetails.getUserId(), b.getBakeryId());
 				response.add(BestBakeryDto.from(b.getBakeryId(), packageName, b.getName(), is_liked));
 			}
