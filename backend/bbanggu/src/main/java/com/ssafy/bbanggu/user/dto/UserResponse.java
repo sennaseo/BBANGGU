@@ -8,7 +8,6 @@ import com.ssafy.bbanggu.user.domain.User;
  */
 public record UserResponse(
 	Long userId,
-	Long bakeryId,
 	String name,
 	String email,
 	String phone,
@@ -23,10 +22,9 @@ public record UserResponse(
 	 * @param user User 엔티티
 	 * @return UserResponse 객체
 	 */
-	public static UserResponse from(User user, Long bakeryId) {
+	public static UserResponse from(User user) {
 		return new UserResponse(
 			user.getUserId(),
-			bakeryId,
 			user.getName(),
 			user.getEmail(),
 			user.getPhone(),
