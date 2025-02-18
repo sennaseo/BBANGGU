@@ -16,6 +16,7 @@ import com.ssafy.bbanggu.common.exception.ErrorCode;
 import com.ssafy.bbanggu.stock.StockDTO;
 import com.ssafy.bbanggu.stock.StockService;
 
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -30,12 +31,7 @@ public class InventoryService {
 	private final StockService stockService;
 	private final BakeryRepository bakeryRepository;
 
-	public String getResponse(CustomUserDetails userDetails, long bakeryId) {
-		Bakery bakery = bakeryRepository.findByUser_UserId(bakeryId);
-		if (bakery.getUser().getUserId().equals(userDetails.getUserId())) {
-			throw new CustomException(ErrorCode.USER_IS_NOT_OWNER);
-		}
-
+	public String getResponse(long bakeryId) {
 		// 지난 3개월 재고 조회
 		List<StockDTO> stocks = stockService.getStockByPeriod(LocalDate.now().minusMonths(3), LocalDate.now(),
 			bakeryId);

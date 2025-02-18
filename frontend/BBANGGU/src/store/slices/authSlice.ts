@@ -14,9 +14,9 @@ interface LoginResponse {
 }
 
 const initialState: AuthState = {
-  accessToken: "",
-  userType: null,
-  isAuthenticated: false,
+  accessToken: localStorage.getItem('accessToken') || null,
+  userType: localStorage.getItem('userType') || null,
+  isAuthenticated: localStorage.getItem('isAuthenticated') === 'true' || false,
 };
 
 const authSlice = createSlice({
@@ -34,6 +34,22 @@ const authSlice = createSlice({
       state.userType = null;
       state.isAuthenticated = false;
     },
+    getLocalStorage: (state: AuthState) => {
+      state.accessToken = localStorage.getItem('accessToken') || null;
+      state.userType = localStorage.getItem('userType') || null;
+      state.isAuthenticated = localStorage.getItem('isAuthenticated') === 'true' || false;
+    },
+    setLocalStorage: (state: AuthState, action: PayloadAction<AuthState>) => {
+      localStorage.setItem('accessToken', action.payload.accessToken || '');
+      localStorage.setItem('userType', action.payload.userType || '');
+      localStorage.setItem('isAuthenticated', action.payload.isAuthenticated.toString());
+      console.log(state);
+    },
+    removeLocalStorage: () => {
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('userType');
+      localStorage.removeItem('isAuthenticated');
+    },  
   },
 });
 
@@ -42,5 +58,5 @@ export const selectAuth = (state: { auth: AuthState }) => state.auth;
 export const selectIsAuthenticated = (state: { auth: AuthState }) => state.auth.isAuthenticated;
 export const selectUserType = (state: { auth: AuthState }) => state.auth.userType;
 
-export const { loginSuccess, logout } = authSlice.actions;
+export const { loginSuccess, logout, setLocalStorage, removeLocalStorage, getLocalStorage } = authSlice.actions;
 export default authSlice.reducer;

@@ -4,7 +4,9 @@ import BottomNavigation from '../../../components/owner/navigations/BottomNaviga
 function CustomerSupport() {
   const handleKakaoChat = () => {
     // 카카오톡 채널 URL로 이동
-    window.location.href = "https://kakao.com/channel/your-channel";  // 실제 카카오톡 채널 URL로 변경 필요
+    window.open('http://pf.kakao.com/_ffeTn', '_blank');
+    // window.location.href = "http://pf.kakao.com/_ffeTn";  // 실제 카카오톡 채널 URL로 변경 필요
+    // http://pf.kakao.com/_ffeTn/chat // 채팅 주소
   };
 
   return (

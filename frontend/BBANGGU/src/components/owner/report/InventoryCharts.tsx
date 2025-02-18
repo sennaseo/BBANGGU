@@ -54,7 +54,7 @@ interface WeeklyData {
 }
 
 export function InventoryCharts() {
-  const [activeTab, setActiveTab] = useState<"daily" | "weekly" | "monthly">("daily")
+  const [activeTab, setActiveTab] = useState<"daily" | "weekly" | "monthly">("weekly")
   const [monthlyData, setMonthlyData] = useState<MonthlyData[]>([]);
   const [weeklyData, setWeeklyData] = useState<WeeklyData[]>([]);
   const [loading, setLoading] = useState(false);
@@ -76,7 +76,7 @@ export function InventoryCharts() {
         const monthlyTotals = Object.entries(response.data)
           .map(([month, stocks]) => {
             const total = stocks.reduce((sum, item) => sum + item.quantity, 0);
-            const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+            const monthNames = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"];
             return {
               month: parseInt(month),
               name: monthNames[parseInt(month) - 1],

@@ -233,6 +233,8 @@ public class BakeryService {
 				.build();
 
 		Bakery savedBakery = bakeryRepository.save(bakery);
+
+		BakeryPickupTimetable timetable = BakeryPickupTimetable.builder().bakery(bakery).build();
 		return BakeryCreateDto.from(savedBakery);
 	}
 

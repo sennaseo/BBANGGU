@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { store } from '../../../store';
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -14,7 +15,7 @@ interface StockTop3Response {
 
 export const StockTop3Api = {
   getTop3Stocks: async (bakeryId: number, period: Period): Promise<StockTop3Response> => {
-    const accessToken = localStorage.getItem('accessToken');
+    const accessToken = store.getState().auth.accessToken;
     
     try {
       const response = await axios.get<StockTop3Response>(

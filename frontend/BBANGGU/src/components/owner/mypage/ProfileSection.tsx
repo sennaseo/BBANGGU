@@ -1,25 +1,28 @@
 import { Link } from 'react-router-dom';
-// import defaultProfile from '@/assets/default-profile.jpg';
-import { store } from '../../../store';
-
-
-export interface ProfileSectionProps {
-  userInfo: {
-    name: string;
-    profilePhotoUrl: string | null;
-    email?: string;
-    phone?: string;
-  };
-}
+import { useEffect } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { RootState } from '../../../store';
+import { fetchUserInfo } from '../../../store/slices/userSlice';
 
 export function ProfileSection() {
+  const dispatch = useDispatch();
+  const userInfo = useSelector((state: RootState) => state.user.userInfo);
+  
+  useEffect(() => {
+    if (!userInfo) {
+      const storedUserInfo = localStorage.getItem('userInfo');
+      if (storedUserInfo) {
+        dispatch(fetchUserInfo(JSON.parse(storedUserInfo)));  // Redux 상태 복원
+      }
+    }
+  }, [dispatch, userInfo]);
 
-  const { userInfo } = store.getState().user;
   const imgBaseUrl = import.meta.env.VITE_IMAGE_BASE_URL;
+
   return (
     <div className="px-6 py-6">
       <div className="flex items-center space-x-4">
-      <img
+        <img
           src={
             userInfo?.profileImageUrl ? `${imgBaseUrl}${userInfo.profileImageUrl}` : `${imgBaseUrl}/uploads/bakery19.jpeg`
           }
