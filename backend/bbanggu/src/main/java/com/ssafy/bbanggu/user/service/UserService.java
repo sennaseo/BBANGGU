@@ -137,6 +137,7 @@ public class UserService { // 사용자 관련 비즈니스 로직 처리
 
 		// ✅ JWT 토큰 생성
 		log.info("🩵 userType: " + user.getRole().name());
+		String userType = user.getRole().name();
 		Map<String, Object> additionalClaims = Map.of(
 			"role", user.getRole().name()
 		);
@@ -152,7 +153,7 @@ public class UserService { // 사용자 관련 비즈니스 로직 처리
 		Map<String, Object> response = new HashMap<>();
 		response.put("access_token", accessToken);
 		response.put("refreshToken", accessToken);
-		response.put("userType", user.getRole().name());
+		response.put("userType", userType);
 		return response;
 	}
 
