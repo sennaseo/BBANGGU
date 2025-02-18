@@ -6,6 +6,7 @@ import { PACKAGE_STEPS, TOTAL_PACKAGE_STEPS } from './constants/PakageSteps';
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import breadBagIcon from '../../../assets/images/bakery/bread_pakage.svg';
 import wonIcon from '../../../assets/images/bakery/won_icon.png';
+import axios from 'axios';
 
 // 경고 아이콘을 직접 SVG로 구현
 const WarningIcon = () => (
@@ -40,6 +41,24 @@ const PackageSalesSetting: React.FC = () => {
   const [endTime, setEndTime] = useState('');
 
   const timeOptions = generateTimeOptions();
+
+  // API 호출 함수 추가
+  const registerPackage = async () => {
+    try {
+      const response = await axios.post('/api/packages', {
+        bakeryId: 1, // TODO: bakeryId 받아오기
+        name: packageName,
+        price: price,
+        quantity: quantity,
+      });
+      
+      if (response.status === 200) {
+        navigate('/owner/main');
+      }
+    } catch (error) {
+      console.error('패키지 등록 실패:', error);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
@@ -247,11 +266,9 @@ const PackageSalesSetting: React.FC = () => {
         {/* 하단 버튼 */}
         <div className="mt-auto pt-4">
           <button
+            onClick={registerPackage}
             className="w-full bg-[#FC973B] text-white py-4 rounded-[8px] text-[16px] font-medium"
-            onClick={() => {
-              // TODO: 판매 시작 로직 구현
-              navigate('/owner/main');  // 메인 페이지로 이동
-            }}
+            disabled={!packageName || !startTime || !endTime}
           >
             빵꾸러미 판매 시작
           </button>

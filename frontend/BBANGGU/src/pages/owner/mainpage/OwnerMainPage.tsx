@@ -29,12 +29,11 @@ const OwnerMainPage: React.FC = () => {
   const dispatch = useDispatch();
   const [activeTab, setActiveTab] = useState<'package' | 'review'>('package');
   const [packages, setPackages] = useState<BreadPackage[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [bakeryId, setBakeryId] = useState<number | null>(null);
   const [reservations, setReservations] = useState<ReservationInfo[]>([]);
   
-  // auth 상태와 userInfo 상태 모두 가져오기
   const { accessToken } = useSelector((state: RootState) => state.auth);
   const navigate = useNavigate();
 
@@ -49,7 +48,6 @@ const OwnerMainPage: React.FC = () => {
       try {
         const data = await getUserInfo();
         
-        // 점주가 아닌 경우 메인으로 리다이렉트
         if (data.role !== 'OWNER') {
           dispatch(logout());
           dispatch(clearUserInfo());
@@ -57,7 +55,7 @@ const OwnerMainPage: React.FC = () => {
           return;
         }
 
-        setBakeryId(data.userId);
+        setBakeryId(data.bakeryId);
       } catch (error) {
         console.error('Error fetching user info:', error);
         dispatch(logout());
@@ -106,7 +104,7 @@ const OwnerMainPage: React.FC = () => {
     setReservations(newReservations);
   };
 
-  if (isLoading) {
+  if (isLoading && !bakeryId) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">

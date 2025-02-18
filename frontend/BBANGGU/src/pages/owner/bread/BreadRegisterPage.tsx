@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import Header from '../../../components/owner/header/Header';
 import { 
   Croissant, Cookie, CakeSlice,
-  Pizza, Sandwich, IceCream2, Cake,
+  Pizza, Cake,
   Coffee, ChefHat, UtensilsCrossed, Store,
   ShoppingBag, Package, CircleDot, Star
 } from 'lucide-react';
@@ -34,132 +34,116 @@ interface BreadItem {
 export const BREAD_CATEGORIES: BreadCategory[] = [
   { 
     id: 1, 
-    name: '바게트',
-    icon: <UtensilsCrossed className="w-8 h-8" />,
-    bgColor: 'bg-amber-50',
-    iconColor: 'text-amber-600',
-    weight: 250
-  },
-  { 
-    id: 2, 
-    name: '크로와상',
-    icon: <Croissant className="w-8 h-8" />,
-    bgColor: 'bg-rose-50',
-    iconColor: 'text-rose-600',
-    weight: 100
-  },
-  { 
-    id: 3, 
     name: '베이글',
     icon: <CircleDot className="w-8 h-8" />,
     bgColor: 'bg-orange-50',
     iconColor: 'text-orange-600',
-    weight: 500
+    weight: 210
+  },
+  { 
+    id: 2, 
+    name: '바게트',
+    icon: <UtensilsCrossed className="w-8 h-8" />,
+    bgColor: 'bg-amber-50',
+    iconColor: 'text-amber-600',
+    weight: 300
+  },
+  { 
+    id: 3, 
+    name: '케이크',
+    icon: <CakeSlice className="w-8 h-8" />,
+    bgColor: 'bg-pink-50',
+    iconColor: 'text-pink-600',
+    weight: 400
   },
   { 
     id: 4, 
+    name: '번',
+    icon: <Package className="w-8 h-8" />,
+    bgColor: 'bg-yellow-50',
+    iconColor: 'text-yellow-600',
+    weight: 220
+  },
+  { 
+    id: 5, 
+    name: '크로와상',
+    icon: <Croissant className="w-8 h-8" />,
+    bgColor: 'bg-rose-50',
+    iconColor: 'text-rose-600',
+    weight: 150
+  },
+  { 
+    id: 6, 
+    name: '고로케',
+    icon: <Store className="w-8 h-8" />,
+    bgColor: 'bg-brown-50',
+    iconColor: 'text-brown-600',
+    weight: 200
+  },
+  { 
+    id: 7, 
+    name: '휘낭시에',
+    icon: <ChefHat className="w-8 h-8" />,
+    bgColor: 'bg-indigo-50',
+    iconColor: 'text-indigo-600',
+    weight: 170
+  },
+  { 
+    id: 8, 
+    name: '피자빵',
+    icon: <Pizza className="w-8 h-8" />,
+    bgColor: 'bg-red-50',
+    iconColor: 'text-red-600',
+    weight: 190
+  },
+  { 
+    id: 9, 
+    name: '프레첼',
+    icon: <ShoppingBag className="w-8 h-8" />,
+    bgColor: 'bg-purple-50',
+    iconColor: 'text-purple-600',
+    weight: 250
+  },
+  { 
+    id: 10, 
     name: '단팥빵',
     icon: <Cookie className="w-8 h-8" />,
     bgColor: 'bg-red-50',
     iconColor: 'text-red-600',
-    weight: 0
+    weight: 200
   },
   { 
-    id: 5, 
+    id: 11, 
+    name: '스콘',
+    icon: <Star className="w-8 h-8" />,
+    bgColor: 'bg-yellow-50',
+    iconColor: 'text-yellow-600',
+    weight: 200
+  },
+  { 
+    id: 12, 
+    name: '소보로',
+    icon: <Coffee className="w-8 h-8" />,
+    bgColor: 'bg-brown-50',
+    iconColor: 'text-brown-600',
+    weight: 200
+  },
+  { 
+    id: 13, 
+    name: '타르트',
+    icon: <Cake className="w-8 h-8" />,
+    bgColor: 'bg-pink-50',
+    iconColor: 'text-pink-600',
+    weight: 150
+  },
+  { 
+    id: 14, 
     name: '식빵',
     icon: <Package className="w-8 h-8" />,
     bgColor: 'bg-yellow-50',
     iconColor: 'text-yellow-600',
-    weight: 0
-  },
-  { 
-    id: 6, 
-    name: '소보로',
-    icon: <Star className="w-8 h-8" />,
-    bgColor: 'bg-lime-50',
-    iconColor: 'text-lime-600',
-    weight: 0
-  },
-  { 
-    id: 7, 
-    name: '슈크림빵',
-    icon: <IceCream2 className="w-8 h-8" />,
-    bgColor: 'bg-green-50',
-    iconColor: 'text-green-600',
-    weight: 0
-  },
-  { 
-    id: 8, 
-    name: '버터번',
-    icon: <ShoppingBag className="w-8 h-8" />,
-    bgColor: 'bg-emerald-50',
-    iconColor: 'text-emerald-600',
-    weight: 0
-  },
-  { 
-    id: 9, 
-    name: '휘낭시에',
-    icon: <CakeSlice className="w-8 h-8" />,
-    bgColor: 'bg-teal-50',
-    iconColor: 'text-teal-600',
-    weight: 0
-  },
-  { 
-    id: 10, 
-    name: '초코롤',
-    icon: <Coffee className="w-8 h-8" />,
-    bgColor: 'bg-cyan-50',
-    iconColor: 'text-cyan-600',
-    weight: 0
-  },
-  { 
-    id: 11, 
-    name: '패스츄리',
-    icon: <ChefHat className="w-8 h-8" />,
-    bgColor: 'bg-sky-50',
-    iconColor: 'text-sky-600',
-    weight: 0
-  },
-  { 
-    id: 12, 
-    name: '케이크',
-    icon: <Cake className="w-8 h-8" />,
-    bgColor: 'bg-blue-50',
-    iconColor: 'text-blue-600',
-    weight: 0
-  },
-  { 
-    id: 13, 
-    name: '프레첼',
-    icon: <Store className="w-8 h-8" />,
-    bgColor: 'bg-indigo-50',
-    iconColor: 'text-indigo-600',
-    weight: 0
-  },
-  { 
-    id: 14, 
-    name: '스콘',
-    icon: <Cookie className="w-8 h-8" />,
-    bgColor: 'bg-violet-50',
-    iconColor: 'text-violet-600',
-    weight: 0
-  },
-  { 
-    id: 15, 
-    name: '샌드위치',
-    icon: <Sandwich className="w-8 h-8" />,
-    bgColor: 'bg-purple-50',
-    iconColor: 'text-purple-600',
-    weight: 0
-  },
-  { 
-    id: 16, 
-    name: '타르트',
-    icon: <Pizza className="w-8 h-8" />,
-    bgColor: 'bg-fuchsia-50',
-    iconColor: 'text-fuchsia-600',
-    weight: 0
-  },
+    weight: 400
+  }
 ];
 
 // 실제 사용되는 URL 형식에 맞게 함수 수정
