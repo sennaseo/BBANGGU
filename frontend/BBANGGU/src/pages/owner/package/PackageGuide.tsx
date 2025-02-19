@@ -7,7 +7,7 @@ import { clearUserInfo } from '../../../store/slices/userSlice';
 import { getLocalStorage, logout, removeLocalStorage } from '../../../store/slices/authSlice';
 import { setLoading, setItems } from '../../../store/slices/packageSlice';
 import { SubmitButton } from '../../../common/form/SubmitButton';
-import cameraExample from '@/assets/images/bakery/camera_ex.png';
+import cameraExample from '../../../../dist/bakery/camera_ex.png';
 import ProgressBar from './components/Progress.Bar';
 import { PACKAGE_STEPS, TOTAL_PACKAGE_STEPS } from './constants/PakageSteps';
 import Header from '../../../components/owner/header/Header';

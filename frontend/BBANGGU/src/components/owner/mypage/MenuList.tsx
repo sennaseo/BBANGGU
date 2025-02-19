@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
-import pickupTimeIcon from '@/assets/icons/pickup-time-icon.svg';
-import settlementIcon from '@/assets/icons/settlement-icon.svg';
+import pickupTimeIcon from '../../../../dist/icons/pickup-time-icon.svg';
+import settlementIcon from '../../../../dist/icons/settlement-icon.svg';
 import { getBakeryByUserId, getSettlementInfo } from '../../../api/bakery/bakery';
 import { getAllPickupTimes } from '../../../api/pickup/pickup';
 

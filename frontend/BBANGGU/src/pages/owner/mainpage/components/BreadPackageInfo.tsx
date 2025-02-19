@@ -1,5 +1,5 @@
 // import { useNavigate } from 'react-router-dom';
-import breadPackageIcon from '../../../../assets/images/bakery/bread_pakage.svg';
+import breadPackageIcon from '../../../../../dist/bakery/bread_pakage.svg';
 import { ReservationStatus } from '../../../../api/owner/reservation';
 import { BreadPackage } from '../../../../api/owner/package';
 

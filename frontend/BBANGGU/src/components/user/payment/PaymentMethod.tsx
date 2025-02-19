@@ -81,7 +81,7 @@ export function PaymentMethod({ totalPrice }: PaymentMethodProps) {
               }`}
               onClick={() => setSelectedMethod('naverpay')}
             >
-              <img src="/src/assets/icons/payment/naverpay.png" alt="네이버페이" className="h-5" />
+              <img src="../../../../dist/icons/payment/naverpay.png" alt="네이버페이" className="h-5" />
             </button>
             <button 
               className={`border rounded-xl p-4 flex flex-col items-center justify-center ${
@@ -89,7 +89,7 @@ export function PaymentMethod({ totalPrice }: PaymentMethodProps) {
               }`}
               onClick={() => setSelectedMethod('kakaopay')}
             >
-              <img src="/src/assets/icons/payment/kakaopay.png" alt="카카오페이" className="h-10" />
+              <img src="../../../../dist/icons/payment/kakaopay.png" alt="카카오페이" className="h-10" />
             </button>
             <button 
               className={`border rounded-xl p-4 flex flex-col items-center justify-center ${
@@ -97,7 +97,7 @@ export function PaymentMethod({ totalPrice }: PaymentMethodProps) {
               }`}
               onClick={() => setSelectedMethod('tosspay')}
             >
-              <img src="/src/assets/icons/payment/tosspay.png" alt="토스페이" className="h-11" />
+              <img src="../../../../dist/icons/payment/tosspay.png" alt="토스페이" className="h-11" />
             </button>
           </div>
         </div>
