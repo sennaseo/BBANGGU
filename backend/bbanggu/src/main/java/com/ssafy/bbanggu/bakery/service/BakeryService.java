@@ -38,6 +38,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
@@ -75,6 +76,10 @@ public class BakeryService {
 
 		Sort.Direction direction = sortOrder.equalsIgnoreCase("asc") ? Sort.Direction.ASC : Sort.Direction.DESC;
 
+		LocalDate today = LocalDate.now();
+		LocalDateTime startOfToday = today.atStartOfDay();
+		LocalDateTime endOfToday = today.plusDays(1).atStartOfDay();
+
 		// ✅ 1. JPA에서 SQL 정렬 & 페이징 적용 (distance가 아닌 경우)
 		if (!"distance".equals(sortBy)) {
 			Pageable sortedPageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(direction, sortBy));
@@ -83,7 +88,7 @@ public class BakeryService {
 					.stream()
 					.map(bakery -> {
 						PickupTimeDto pickupTime = bakeryPickupService.getPickupTimetable(bakery.getBakeryId());
-						BreadPackage breadPackage = breadPackageRepository.findByBakeryIdAndToday(bakery.getBakeryId());
+						BreadPackage breadPackage = breadPackageRepository.findByBakeryIdAndToday(bakery.getBakeryId(), startOfToday, endOfToday);
 						int price = 0;
 						if (breadPackage != null) {
 							price = breadPackage.getPrice();
@@ -100,7 +105,7 @@ public class BakeryService {
 
 					boolean is_liked = favoriteRepository.existsByUser_UserIdAndBakery_BakeryId(userDetails.getUserId(), bakery.getBakeryId());
 					PickupTimeDto pickupTime = bakeryPickupService.getPickupTimetable(bakery.getBakeryId());
-					BreadPackage breadPackage = breadPackageRepository.findByBakeryIdAndToday(bakery.getBakeryId());
+					BreadPackage breadPackage = breadPackageRepository.findByBakeryIdAndToday(bakery.getBakeryId(), startOfToday, endOfToday);
 					int price = 0;
 					if (breadPackage != null) {
 						price = breadPackage.getPrice();
@@ -118,7 +123,7 @@ public class BakeryService {
 					: calculateDistance(userLat, userLng, bakery.getLatitude(), bakery.getLongitude());
 				boolean is_liked = favoriteRepository.existsByUser_UserIdAndBakery_BakeryId(userDetails.getUserId(), bakery.getBakeryId());
 				PickupTimeDto pickupTime = bakeryPickupService.getPickupTimetable(bakery.getBakeryId());
-				BreadPackage breadPackage = breadPackageRepository.findByBakeryIdAndToday(bakery.getBakeryId());
+				BreadPackage breadPackage = breadPackageRepository.findByBakeryIdAndToday(bakery.getBakeryId(), startOfToday, endOfToday);
 				int price = 0;
 				if (breadPackage != null) {
 					price = breadPackage.getPrice();
@@ -160,8 +165,12 @@ public class BakeryService {
 			throw new CustomException(ErrorCode.BAKERY_NOT_FOUND);
 		}
 
+		LocalDate today = LocalDate.now();
+		LocalDateTime startOfToday = today.atStartOfDay();
+		LocalDateTime endOfToday = today.plusDays(1).atStartOfDay();
+
 		PickupTimeDto pickupTime = bakeryPickupService.getPickupTimetable(bakery.getBakeryId());
-		BreadPackage breadPackage = breadPackageRepository.findByBakeryIdAndToday(bakery.getBakeryId());
+		BreadPackage breadPackage = breadPackageRepository.findByBakeryIdAndToday(bakery.getBakeryId(), startOfToday, endOfToday);
 		int price = 0;
 		if (breadPackage != null) {
 			price = breadPackage.getPrice();
@@ -385,7 +394,12 @@ public class BakeryService {
 					: calculateDistance(userLat, userLng, bakery.getLatitude(), bakery.getLongitude());
 				boolean is_liked = favoriteRepository.existsByUser_UserIdAndBakery_BakeryId(userDetails.getUserId(), bakery.getBakeryId());
 				PickupTimeDto pickupTime = bakeryPickupService.getPickupTimetable(bakery.getBakeryId());
-				BreadPackage breadPackage = breadPackageRepository.findByBakeryIdAndToday(bakery.getBakeryId());
+
+				LocalDate today = LocalDate.now();
+				LocalDateTime startOfToday = today.atStartOfDay();
+				LocalDateTime endOfToday = today.plusDays(1).atStartOfDay();
+
+				BreadPackage breadPackage = breadPackageRepository.findByBakeryIdAndToday(bakery.getBakeryId(), startOfToday, endOfToday);
 				int price = 0;
 				if (breadPackage != null) {
 					price = breadPackage.getPrice();

@@ -20,8 +20,16 @@ public interface BreadPackageRepository extends JpaRepository<BreadPackage, Long
 
 	// BreadPackageRepository
 	// ✅ 오늘 날짜의 빵꾸러미만 조회
-	@Query("SELECT b FROM BreadPackage b WHERE b.bakery.bakeryId = :bakeryId AND DATE(b.createdAt) = CURRENT_DATE AND b.deletedAt IS NULL")
-	BreadPackage findByBakeryIdAndToday(@Param("bakeryId") Long bakeryId);
+	@Query("SELECT b FROM BreadPackage b "
+		+ "WHERE b.bakery.bakeryId = :bakeryId "
+		+ "AND b.createdAt >= :startOfToday "
+		+ "AND b.createdAt < :startOfTomorrow "
+		+ "AND b.deletedAt IS NULL")
+	BreadPackage findByBakeryIdAndToday(
+		@Param("bakeryId") Long bakeryId,
+		@Param("startOfToday") LocalDateTime startOfToday,
+		@Param("startOfTomorrow") LocalDateTime startOfTomorrow
+	);
 
 	// 오늘 날짜의 빵꾸러미를 조회하되, 없다면 가장 최근 빵꾸러미 추출
 	@Query("""
