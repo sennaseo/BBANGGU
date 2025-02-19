@@ -3,7 +3,6 @@ import {
   StarIcon,
 } from "@heroicons/react/24/outline";
 import { MapPinIcon, HeartIcon as HeartSolid } from "@heroicons/react/24/solid";
-import type { BakeryType } from "../../../types/bakery";
 import { useState } from "react";
 import { BakeryInfo } from "../../../store/slices/bakerySlice";
 
