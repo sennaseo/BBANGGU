@@ -94,6 +94,7 @@ public class ReservationService {
 			.orElseThrow(() -> new CustomException(ErrorCode.BAKERY_NOT_FOUND));
 
 		System.out.println("!!!!!!!!! bakery 조회 성공: " + bakery.getBakeryId());
+		System.out.println("현재 시간: " + LocalDateTime.now());
 
 		BreadPackage breadPackage = breadPackageRepository.findByBakeryIdAndToday(bakery.getBakeryId());
 		if (breadPackage == null) {
