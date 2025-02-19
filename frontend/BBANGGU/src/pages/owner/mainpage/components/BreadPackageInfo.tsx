@@ -1,13 +1,12 @@
 // import { useNavigate } from 'react-router-dom';
-import breadPackageIcon from '/bakery/bread_pakage.svg';
-import { ReservationStatus } from '../../../../api/owner/reservation';
-import { BreadPackage } from '../../../../api/owner/package';
+import breadPackageIcon from "/bakery/bread_pakage.svg";
+import { ReservationStatus } from "../../../../api/owner/reservation";
+import { BreadPackage } from "../../../../api/owner/package";
 
 // 빵꾸러미 수정 / 삭제 기능 주석 처리 - 이번 pjt 에서는 제외
 // import React, { useState } from 'react';
 // import { EllipsisVerticalIcon, PencilSquareIcon, TrashIcon } from '@heroicons/react/24/outline';
 // import { deletePackage } from '../../../../api/owner/package';
-
 
 interface BreadPackageInfoProps {
   currentPackage: BreadPackage;
@@ -18,14 +17,14 @@ interface BreadPackageInfoProps {
   onPackageDeleted?: () => void;
 }
 
-export const BreadPackageInfo: React.FC<BreadPackageInfoProps> = ({ 
-  currentPackage
+export const BreadPackageInfo: React.FC<BreadPackageInfoProps> = ({
+  currentPackage,
 }) => {
-  console.log('currentPackage', currentPackage);
+  console.log("currentPackage", currentPackage);
   // const [showMenu, setShowMenu] = useState(false);  // 주석처리
- 
+
   // 안전한 숫자 변환 함수
-  const safeToLocaleString = (num: number) => num?.toLocaleString() || '0';
+  const safeToLocaleString = (num: number) => num?.toLocaleString() || "0";
 
   /* 수정/삭제 관련 함수들 주석처리
   const handleEdit = () => {
@@ -99,14 +98,18 @@ export const BreadPackageInfo: React.FC<BreadPackageInfoProps> = ({
             오늘의 빵꾸러미
           </span>
         </div>
-        
+
         {/* 가격과 수량 정보 */}
         <div className="bg-[#FAFAFA] rounded-xl p-4 mb-8 border border-gray-50">
           <div className="flex items-center gap-6">
             {/* 가격 정보 */}
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-sm">
-                <img src={breadPackageIcon} alt="빵꾸러미" className="w-6 h-6" />
+                <img
+                  src={breadPackageIcon}
+                  alt="빵꾸러미"
+                  className="w-6 h-6"
+                />
               </div>
               <div className="flex flex-col">
                 <span className="text-gray-400 line-through text-sm">
@@ -129,10 +132,14 @@ export const BreadPackageInfo: React.FC<BreadPackageInfoProps> = ({
                 <span className="text-[24px] font-bold text-[#242424]">
                   {currentPackage.quantity}
                 </span>
-                <span className="text-gray-500 ml-1">/ {currentPackage.initialQuantity}개</span>
+                <span className="text-gray-500 ml-1">
+                  / {currentPackage.initialQuantity}개
+                </span>
               </div>
               <div className="flex items-center -ml-1">
-                <span className="text-[14px] text-gray-400">현재 남은 수량</span>
+                <span className="text-[14px] text-gray-400">
+                  현재 남은 수량
+                </span>
               </div>
             </div>
           </div>
@@ -156,7 +163,7 @@ export const BreadPackageInfo: React.FC<BreadPackageInfoProps> = ({
                 오늘 절약한 환경 수치
               </span>
               <span className="text-[#FC973B] text-xl font-bold">
-                {currentPackage.savedMoney / currentPackage.price * 20}g
+                {(currentPackage.savedMoney / currentPackage.price) * 20}g
               </span>
             </div>
           </div>
@@ -164,4 +171,4 @@ export const BreadPackageInfo: React.FC<BreadPackageInfoProps> = ({
       </div>
     </>
   );
-}; 
+};
