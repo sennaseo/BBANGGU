@@ -96,7 +96,8 @@ public class ReservationService {
 		LocalDate today = LocalDate.now();
 		LocalDateTime startOfToday = today.atStartOfDay();
 		LocalDateTime endOfToday = today.plusDays(1).atStartOfDay();
-		BreadPackage breadPackage = breadPackageRepository.findByBakeryIdAndToday(bakery.getBakeryId(), startOfToday, endOfToday);
+		BreadPackage breadPackage = breadPackageRepository.findByBakeryIdAndToday(bakery.getBakeryId(), startOfToday,
+			endOfToday);
 		if (breadPackage == null) {
 			throw new CustomException(ErrorCode.BREAD_PACKAGE_NOT_FOUND);
 		}
@@ -132,7 +133,7 @@ public class ReservationService {
 			.build();
 
 		// 빵꾸러미 pending 설정
-		breadPackage.setPending(request.quantity());
+		breadPackage.setPending(breadPackage.getPending() + request.quantity());
 
 		Reservation savedReservation = reservationRepository.save(reservation);
 		log.info("🩵 빵꾸러미 예약 생성 완료 (PENDING) 🩵");
@@ -353,7 +354,8 @@ public class ReservationService {
 		LocalDate today = LocalDate.now();
 		LocalDateTime startOfToday = today.atStartOfDay();
 		LocalDateTime endOfToday = today.plusDays(1).atStartOfDay();
-		List<ReservationInfo> reservationList = reservationRepository.findTodayReservationsByBakeryId(bakeryId, startOfToday, endOfToday);
+		List<ReservationInfo> reservationList = reservationRepository.findTodayReservationsByBakeryId(bakeryId,
+			startOfToday, endOfToday);
 		String endTime = null;
 		if (!reservationList.isEmpty()) {
 			endTime = bakeryPickupService.getPickupTimetable(bakeryId).getEndTime();
