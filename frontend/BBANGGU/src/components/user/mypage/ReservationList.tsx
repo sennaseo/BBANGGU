@@ -1,10 +1,9 @@
-import { useState, useEffect, useMemo } from "react"
+import { useEffect, useMemo } from "react"
 import type { Reservation } from "../../../store/slices/reservationSlice"
 import { ChevronRight } from "lucide-react"
 import { useNavigate, useParams } from "react-router-dom"
 import dayjs from 'dayjs'
 import 'dayjs/locale/ko' // 한국어 로케일 추가
-import type { BakeryInfo } from "../../../store/slices/bakerySlice"
 interface ReservationListProps {
   reservations?: Reservation[]
   params: {
