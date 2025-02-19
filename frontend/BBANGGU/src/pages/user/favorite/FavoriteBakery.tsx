@@ -102,7 +102,7 @@ export const FavoriteBakery = () => {
       {/* 헤더 */}
       <div className="px-5 py-4">
         <div className="flex items-center">
-          <img src="../../../../public/logo.png" alt="관심가게" className="w-7" />
+          <img src="/logo.png" alt="관심가게" className="w-7" />
           <span className="ml-2 text-[#FC973B] font-bold">관심가게</span>
         </div>
       </div>
