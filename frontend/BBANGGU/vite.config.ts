@@ -17,7 +17,7 @@ export default defineConfig({
       },
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
       scope: '/',
-      base: '/',
+      base: '/public',
       manifest: {
         name: '빵구앱',
         short_name: '빵구',

@@ -18,15 +18,61 @@ import { HiPencil } from 'react-icons/hi';
 import axios from 'axios';
 import { compressImage } from '../../../utils/imageCompression';
 import { BREAD_CATEGORIES } from '../bread/BreadRegisterPage';  // 카테고리 정보 import
+import { getUserInfo } from '../../../api/user/user';
+import { getBakeryByOwner } from '../../../api/owner/bakery';
+import LoadingSpinner from '../../../components/common/LoadingSpinner';
+
+// 타입 정의 추가
+interface BreadCombination {
+  breads: {
+    name: string;
+    quantity: number;
+    breadId: number;
+  }[];
+  total_price: number;
+}
 
 const PackagePreview: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const dispatch = useDispatch();
+  const [bakeryId, setBakeryId] = useState<number | null>(null);
   const items = useSelector((state: RootState) => state.package.items);
-  const { bakeryId } = useSelector((state: RootState) => state.user.userInfo ?? { bakeryId: null });
   const { accessToken } = useSelector((state: RootState) => state.auth);
   const [newItemIds, setNewItemIds] = useState<string[]>([]);
+  const isLoading = useSelector((state: RootState) => state.package.loading);
+
+  useEffect(() => {
+    const fetchBakeryInfo = async () => {
+      try {
+        const userData = await getUserInfo();
+        
+        if (userData.role !== 'OWNER') {
+          navigate('/');
+          return;
+        }
+
+        try {
+          const bakeryData = await getBakeryByOwner();
+          setBakeryId(bakeryData.bakeryId);
+        } catch (error) {
+          console.error('Error fetching bakery:', error);
+          if (axios.isAxiosError(error) && error.response?.status === 404) {
+            alert('베이커리 정보를 찾을 수 없습니다. 베이커리를 먼저 등록해주세요.');
+            navigate('/owner/bakery/register');
+            return;
+          }
+          throw error;
+        }
+      } catch (error) {
+        console.error('사용자 정보 조회 실패:', error);
+        alert('사장님 정보를 가져오는데 실패했습니다.');
+        navigate('/');
+      }
+    };
+
+    fetchBakeryInfo();
+  }, [navigate]);
 
   useEffect(() => {
     const analyzedItems = location.state?.analyzedItems;
@@ -225,7 +271,7 @@ const PackagePreview: React.FC = () => {
     dispatch(deleteItem(name));
   };
 
-  // 재고 등록 API 호출 함수 수정
+  // registerStock 함수 수정
   const registerStock = async () => {
     try {
       dispatch(setLoading(true));
@@ -237,17 +283,18 @@ const PackagePreview: React.FC = () => {
         breadId: item.breadId
       }));
 
-      console.log('빵꾸러미 조합 요청:', {
+      // 요청 데이터 로그
+      console.log('빵꾸러미 조합 요청 데이터:', {
         url: '/ai/generate-package',
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${accessToken}`,
           'Content-Type': 'application/json'
         },
-        data: requestData
+        requestData
       });
 
-      const response = await axios.post(
+      const response = await axios.post<BreadCombination[][]>(
         '/ai/generate-package',
         requestData,
         {
@@ -258,14 +305,15 @@ const PackagePreview: React.FC = () => {
         }
       );
 
-      console.log('빵꾸러미 조합 응답:', response.data);
+      // 응답 데이터 로그
+      console.log('빵꾸러미 조합 응답 데이터:', response.data);
 
-      // PackageRegister로 이동하면서 데이터 전달
-      navigate('/owner/package/register', { 
-        state: { 
+      // PackageLoading로 이동하면서 데이터 전달
+      navigate('/owner/package/loading', {
+        state: {
           packageSuggestions: response.data,
           originalItems: items
-        } 
+        }
       });
 
     } catch (error) {
@@ -284,11 +332,30 @@ const PackagePreview: React.FC = () => {
   };
 
   return (
-    <div className="h-[100vh] bg-white flex flex-col">
+    <div className="min-h-screen bg-white flex flex-col relative">
       <Header 
-        title="재고 확인" 
+        title="미리보기" 
+        onBack={() => navigate(-1)}
       />
-      
+
+      {/* 로딩 오버레이 */}
+      {isLoading && (
+        <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white/90 p-8 rounded-2xl flex flex-col items-center shadow-xl 
+            animate-fadeIn mx-4 border border-gray-100">
+            <LoadingSpinner />
+            <p className="mt-6 text-xl font-semibold text-[#FC973B]">
+              빵을 분석하고 있어요
+            </p>
+            <div className="flex items-center gap-1 mt-2">
+              <div className="w-2 h-2 bg-[#FC973B] rounded-full animate-bounce" style={{ animationDelay: '0s' }}></div>
+              <div className="w-2 h-2 bg-[#FC973B] rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+              <div className="w-2 h-2 bg-[#FC973B] rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <ProgressBar 
         currentStep={PACKAGE_STEPS.PREVIEW} 
         totalSteps={TOTAL_PACKAGE_STEPS}

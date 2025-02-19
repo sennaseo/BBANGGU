@@ -21,7 +21,7 @@ export default function BakeryPackage({ packages }: BakeryPackageProps) {
         <div className="flex items-center gap-3">
           <div className="flex items-center justify-center bg-[#FFF5E9] rounded-xl w-[104px] h-[104px]">
             <img 
-              src="/src/assets/images/bakery/빵꾸러미.png" 
+              src="/bakery/빵꾸러미.png" 
               alt="빵꾸러미" 
               className=" h-[80px]"
             />

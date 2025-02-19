@@ -1,7 +1,8 @@
 import axios from "axios";
 import { ApiResponse } from "../../../types/response";
-import type { BakeryRating, ReviewType } from "../../../types/bakery";
 import { store } from '../../../store';
+import type { ReviewState, ReviewType } from '../../../store/slices/reviewSlice';
+import { BakeryRating } from "../../../types/bakery";
 const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export const reviewApi = {
@@ -41,10 +42,10 @@ export const reviewApi = {
     }
   },
 
-  getUserReviews: async (userId: string): Promise<ReviewType[]> => {
+  getUserReviews: async (userId: string): Promise<ReviewState> => {
     try {
       const token = store.getState().auth.accessToken;
-      const response = await axios.get<ApiResponse<ReviewType[]>>(
+      const response = await axios.get<ApiResponse<ReviewState>>(
         `${BASE_URL}/review/user/${userId}`,
         {
           withCredentials: true,

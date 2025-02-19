@@ -9,13 +9,13 @@ import numpy as np
 from PIL import Image
 from ultralytics import YOLO
 
-model = YOLO("./models/best.pt")
+model = YOLO("./models/yolo_bbanggu.pt")
 class_names = model.names
 
 
 def detect(image_bytes):
     image = read_imagefile(image_bytes)
-    results = model(image, conf=0.2)
+    results = model(image, conf=0.4)
     detections = results[0].boxes.cls.tolist()
     counts = Counter(detections)
     output_json = {class_names[int(class_id)]: count for class_id, count in counts.items()}

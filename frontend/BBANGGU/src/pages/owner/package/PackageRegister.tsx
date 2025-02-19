@@ -3,11 +3,20 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import Header from '../../../components/owner/header/Header';
 import ProgressBar from './components/Progress.Bar';
 import { PACKAGE_STEPS, TOTAL_PACKAGE_STEPS } from './constants/PakageSteps';
-import breadLogo from '../../../assets/images/bakery/bread_logo.svg';
-import breadIcon from '../../../assets/images/bakery/bread_icon.png';
-import wonIcon from '../../../assets/images/bakery/won_icon.png';
-import robotIcon from '../../../assets/images/bakery/robot.svg';
-import breadBagIcon from '../../../assets/images/bakery/bread_pakage.svg';
+import breadLogo from '/bakery/bread_logo.svg';
+import breadIcon from '/bakery/bread_icon.png';
+import wonIcon from '/bakery/won_icon.png';
+import robotIcon from '/bakery/robot.svg';
+import breadBagIcon from '/bakery/bread_pakage.svg';
+
+interface BreadCombination {
+  breads: {
+    name: string;
+    quantity: number;
+    breadId: number;
+  }[];
+  totalprice: number;
+}
 
 interface PackageDetail {
   id: number;
@@ -22,26 +31,26 @@ interface PackageDetail {
 const PackageRegister: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const packageData = location.state?.packageSuggestions;
+  const packageData = location.state?.packageSuggestions as BreadCombination[][] | undefined;
   const [selectedPackage, setSelectedPackage] = useState<number | null>(null);
   const [packageCount, setPackageCount] = useState<number>(0);
   const [packageDetails, setPackageDetails] = useState<PackageDetail[]>([]);
+  const [isManualOpen, setIsManualOpen] = useState<boolean>(false);
+  const [registrationMode, setRegistrationMode] = useState<'auto' | 'manual' | null>(null);
 
   useEffect(() => {
-    if (!packageData) {
-      // 데이터 없이 직접 접근한 경우 이전 페이지로
+    if (!packageData || !Array.isArray(packageData)) {
       navigate(-1);
       return;
     }
 
-    // 받은 데이터로 패키지 상세 정보 설정
-    const suggestions = packageData.map((pkg: any, index: number) => ({
+    const suggestions = packageData.map((pkg, index) => ({
       id: index + 1,
-      price: pkg[0].total_price,  // 첫 번째 조합의 가격 사용
-      count: pkg.length,  // 조합 개수
-      packages: pkg.map((combination: any, pkgIndex: number) => ({
+      price: Math.min(...pkg.map(item => item.totalprice)),
+      count: pkg.length,
+      packages: pkg.map((combination, pkgIndex) => ({
         id: pkgIndex + 1,
-        contents: combination.breads.map((bread: any) => 
+        contents: combination.breads.map(bread => 
           `${bread.name} x ${bread.quantity}`
         ).join(', ')
       }))
@@ -51,72 +60,52 @@ const PackageRegister: React.FC = () => {
   }, [packageData, navigate]);
 
   const handlePackageSelect = (id: number) => {
+    if (isManualOpen) return; // 수동 모드가 열려있으면 선택 불가
+
     // 이미 선택된 패키지를 다시 클릭하면 선택 해제
     if (selectedPackage === id) {
       setSelectedPackage(null);
-      setPackageCount(0);  // 개수도 초기화
+      setPackageCount(0);
+      setRegistrationMode(null);
       return;
     }
     
     setSelectedPackage(id);
+    setRegistrationMode('auto');
     const selectedPkg = packageDetails[id - 1];
     setPackageCount(selectedPkg.count);
-  };
-
-  const handleCountChange = (type: 'increase' | 'decrease') => {
-    if (!selectedPackage) return;
-    
-    const selectedPkg = packageDetails[selectedPackage - 1];
-    const totalPrice = selectedPkg.price * selectedPkg.count;  // 총 가격
-    
-    if (type === 'increase') {
-      const nextCount = packageCount + 1;
-      // 다음 개수로 나눴을 때 소수점이 없는 경우만 증가
-      if (nextCount <= 10 && Number.isInteger(totalPrice / nextCount)) {
-        setPackageCount(nextCount);
-      }
-    } else {
-      setPackageCount(prev => Math.max(prev - 1, 1));  // 최소값 1로 변경
-    }
   };
 
   const calculatePrice = () => {
     if (!selectedPackage) return 0;
     const selectedPkg = packageDetails[selectedPackage - 1];
     const totalPrice = selectedPkg.price * selectedPkg.count;
-    return Math.floor(totalPrice / packageCount).toLocaleString();
+    // 50% 할인된 가격으로 계산 (toLocaleString 제거)
+    return Math.floor((totalPrice / packageCount) * 0.5);
   };
 
   const calculateTotalPrice = () => {
     if (!selectedPackage) return 0;
     const selectedPkg = packageDetails[selectedPackage - 1];
     const totalPrice = selectedPkg.price * selectedPkg.count;
-    return totalPrice.toLocaleString();
-  };
-
-  // 감소 버튼 disabled 조건을 위한 함수 추가
-  const isDecreaseDisabled = () => {
-    if (!selectedPackage) return true;
-    return packageCount <= 1;  // 1보다 작아지지 않도록
+    // 50% 할인된 총 금액
+    return Math.floor(totalPrice * 0.5).toLocaleString();
   };
 
   // 총 빵 개수와 총 금액 계산
   const calculateTotalStats = () => {
-    if (!packageData) return { totalCount: 0, totalPrice: 0 };
+    // location.state에서 원본 요청 데이터 가져오기
+    const originalItems = location.state?.originalItems;
+    if (!originalItems) return { totalCount: 0, totalPrice: 0 };
 
-    // 첫 번째 조합의 모든 빵을 합산 (모든 조합은 동일한 빵을 사용)
-    const firstCombination = packageData[0]?.[0];
-    if (!firstCombination) return { totalCount: 0, totalPrice: 0 };
-
-    const totalCount = firstCombination.breads.reduce((sum: number, bread: { quantity: number }) => 
-      sum + bread.quantity, 0
+    // 총 빵 개수: 각 빵의 count 합산
+    const totalCount = originalItems.reduce((sum: number, item: { count: number }) => 
+      sum + item.count, 0
     );
 
-    // 모든 조합의 total_price 중 가장 큰 값 사용
-    const totalPrice = Math.max(
-      ...packageData.map((combinations: { total_price: number }[]) => 
-        combinations[0]?.total_price || 0
-      )
+    // 총 금액: 각 빵의 (가격 * 개수) 합산
+    const totalPrice = originalItems.reduce((sum: number, item: { price: number; count: number }) => 
+      sum + (item.price * item.count), 0
     );
 
     return { totalCount, totalPrice };
@@ -124,18 +113,54 @@ const PackageRegister: React.FC = () => {
 
   const { totalCount, totalPrice } = calculateTotalStats();
 
-  // 최대 가능한 빵꾸러미 개수 계산
-  const maxPackageCount = totalCount;  // 총 빵 개수를 최대값으로 설정
-
-  // 기존의 isIncreaseDisabled 함수 제거하고 새로운 함수로 통합
-  const isIncreaseDisabled = () => {
-    if (!selectedPackage) return true;
-    if (packageCount >= maxPackageCount) return true;  // 최대 개수 제한
+  const handleManualToggle = () => {
+    const newIsOpen = !isManualOpen;
+    setIsManualOpen(newIsOpen);
     
-    const selectedPkg = packageDetails[selectedPackage - 1];
-    const totalPrice = selectedPkg.price * selectedPkg.count;
-    const nextCount = packageCount + 1;
-    return !Number.isInteger(totalPrice / nextCount);
+    if (newIsOpen) {
+      // 수동 모드 활성화 시 자동 선택 초기화
+      setSelectedPackage(null);
+      setPackageCount(1); // 수동 모드의 기본값
+      setRegistrationMode('manual');
+    } else {
+      // 수동 모드 비활성화 시
+      setPackageCount(0);
+      setRegistrationMode(null);
+    }
+  };
+
+  // 수동 모드용 카운트 변경 핸들러 추가
+  const handleManualCountChange = (type: 'increase' | 'decrease') => {
+    if (type === 'increase') {
+      if (packageCount < totalCount) {  // 총 빵 개수를 넘지 않도록
+        setPackageCount(prev => prev + 1);
+      }
+    } else {
+      setPackageCount(prev => Math.max(prev - 1, 1));  // 최소 1개
+    }
+  };
+
+  // 수동 모드용 가격 계산 함수
+  const calculateManualPrice = () => {
+    if (packageCount === 0) return 0;
+    // 총 금액을 빵꾸러미 개수로 나누고 50% 할인
+    return Math.floor((totalPrice / packageCount) * 0.5);
+  };
+
+  // 수동 모드용 총 금액 계산 함수
+  const calculateManualTotalPrice = () => {
+    // 총 금액의 50% 할인
+    return Math.floor(totalPrice * 0.5);
+  };
+
+  // 수동 모드 감소 버튼 disabled 조건
+  const isManualDecreaseDisabled = () => {
+    return packageCount <= 1;
+  };
+
+  // 수동 모드 증가 버튼 disabled 조건
+  const isManualIncreaseDisabled = () => {
+    return packageCount >= totalCount;
   };
 
   return (
@@ -206,14 +231,15 @@ const PackageRegister: React.FC = () => {
           </div>
 
           {/* 추천 조합 카드들 */}
-          <div className="grid grid-cols-3 gap-4">
+          <div className={`grid grid-cols-3 gap-4 ${isManualOpen ? 'opacity-50 pointer-events-none' : ''}`}>
             {packageDetails.map((pkg) => (
               <div
                 key={pkg.id}
-                className={`bg-white rounded-[8px] p-4 text-center 
+                className={`bg-white rounded-[8px] p-4 text-center cursor-pointer
+                  ${isManualOpen ? 'cursor-not-allowed' : 'hover:bg-[#FFF9F5]'}
                   active:scale-95 transition-transform duration-200
                   ${selectedPackage === pkg.id 
-                    ? 'ring-2 ring-[#FC973B] bg-[#FFF9F5] shadow-[0_-2px_4px_-1px_rgba(0,0,0,0.06),0_4px_6px_-1px_rgba(0,0,0,0.1)]' 
+                    ? 'ring-2 ring-[#FC973B] bg-[#FFF9F5]' 
                     : 'border border-[#E5E5E5]'
                   }`}
                 onClick={() => handlePackageSelect(pkg.id)}
@@ -266,66 +292,143 @@ const PackageRegister: React.FC = () => {
           </div>
         )}
 
-        <div className="flex-1">
-          <div className="bg-white rounded-[8px] shadow-[0_-2px_4px_-1px_rgba(0,0,0,0.06),0_4px_6px_-1px_rgba(0,0,0,0.1)] p-6 mb-8">
-            <div className="text-center mb-6">
-              <p className="text-[16px] font-medium mb-2">
-                50%의 가격으로 빵꾸러미를 만들어보세요!
+        {/* 추천 빵꾸러미 구성 섹션 아래에 추가 */}
+        {selectedPackage && (
+          <>
+            {/* 섹션 제목 */}
+            <div className="mt-6 mb-4">
+              <h2 className="text-[20px] font-bold text-[#242424]">
+                50% 마감 할인으로 모두가 윈윈!
+              </h2>
+              <p className="text-[14px] text-[#6B7280] mt-1">
+                남은 빵도 판매하고 고객도 합리적인 가격으로 구매할 수 있어요
               </p>
-              <p className="text-[14px] text-gray-500 mb-4">
-                원하는 개수와 구성으로 자유롭게 준비하실 수 있어요
-              </p>
-              <div className="bg-[#FFF5EC] rounded-lg p-3 text-[14px] text-[#FC973B]">
-                <span className="font-medium">💡 Tip.</span> AI 추천 개수가 적절하지 않나요?<br/>
-                최대 {maxPackageCount}개까지 원하시는 만큼 조절해보세요!
-              </div>
-            </div>
-            
-            {/* 빵꾸러미 개수 */}
-            <div className="flex justify-between items-center mb-4">
-              <span className="text-[16px] text-[#242424]">빵꾸러미 개수</span>
-              <div className="flex items-center gap-4">
-                <button 
-                  className={`w-8 h-8 rounded-full border flex items-center justify-center
-                    transition-all duration-200 
-                    ${(!selectedPackage || isDecreaseDisabled())
-                      ? 'border-[#E5E5E5] text-gray-300 cursor-not-allowed bg-gray-50'
-                      : 'border-[#FC973B] text-[#FC973B] cursor-pointer hover:bg-[#FFF9F5] active:bg-[#FC973B] active:text-white'
-                    }`}
-                  onClick={() => handleCountChange('decrease')}
-                  disabled={!selectedPackage || isDecreaseDisabled()}
-                >
-                  <span className="text-lg">-</span>
-                </button>
-                <span className="text-[18px] min-w-[20px] text-center">{packageCount}</span>
-                <button 
-                  className={`w-8 h-8 rounded-full border flex items-center justify-center
-                    transition-all duration-200
-                    ${(!selectedPackage || isIncreaseDisabled())
-                      ? 'border-[#E5E5E5] text-gray-300 cursor-not-allowed bg-gray-50'
-                      : 'border-[#FC973B] text-[#FC973B] cursor-pointer hover:bg-[#FFF9F5] active:bg-[#FC973B] active:text-white'
-                    }`}
-                  onClick={() => handleCountChange('increase')}
-                  disabled={!selectedPackage || isIncreaseDisabled()}
-                >
-                  <span className="text-lg">+</span>
-                </button>
-              </div>
             </div>
 
-            {/* 가격 정보 표시 */}
-            <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <span className="text-[16px] text-[#242424]">개당 가격</span>
-                <span className="text-[16px] text-[#242424]">{calculatePrice()}원</span>
-              </div>
-              <div className="h-[1px] bg-[#E5E5E5]" />
-              <div className="flex justify-between items-center">
-                <span className="text-[16px] text-[#242424]">총계</span>
-                <span className="text-[18px] font-bold text-[#242424]">{calculateTotalPrice()}원</span>
+            {/* 판매 정보 컨테이너 */}
+            <div className="bg-white rounded-[8px] shadow-[0_-2px_4px_-1px_rgba(0,0,0,0.06),0_4px_6px_-1px_rgba(0,0,0,0.1)] p-6 mb-12">
+              {/* 판매 정보 */}
+              <div className="space-y-4">
+                {/* 가격 정보 */}
+                <div className="flex justify-between items-center">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[16px] text-[#242424]">개당 판매가격 (50% 할인)</span>
+                    <span className="text-[14px] text-[#6B7280]">x {packageCount}개</span>
+                  </div>
+                  <span className="text-[16px] text-[#242424]">{calculatePrice()}원</span>
+                </div>
+
+                {/* 구분선 */}
+                <div className="h-[1px] bg-[#E5E5E5]" />
+
+                {/* 최종 판매 금액 */}
+                <div className="flex justify-between items-center">
+                  <span className="text-[16px] text-[#242424]">총 판매 금액</span>
+                  <span className="text-[18px] font-bold text-[#FC973B]">{calculateTotalPrice()}원</span>
+                </div>
               </div>
             </div>
-          </div>
+          </>
+        )}
+
+        {/* 수기 등록 섹션 - 드롭다운 스타일 */}
+        <div className="mt-8 mb-12">
+          {/* 드롭다운 헤더 */}
+          <button 
+            onClick={handleManualToggle}
+            className={`w-full flex items-center justify-between p-5
+              ${selectedPackage ? 'opacity-50 cursor-not-allowed' : 'bg-gradient-to-r from-[#FFF9F5] to-white hover:from-[#FFF5EC]'} 
+              rounded-xl border border-[#FFE5D1] transition-all duration-200
+              ${isManualOpen ? 'shadow-lg ring-1 ring-[#FC973B]' : 'shadow-sm hover:shadow-md'}`}
+            disabled={selectedPackage !== null}
+          >
+            <div className="flex items-center gap-3">
+              <div className="bg-white p-2 rounded-lg shadow-sm">
+                <img src={breadBagIcon} alt="Manual" className="w-5 h-5" />
+              </div>
+              <div className="flex flex-col items-start">
+                <span className="text-[16px] text-[#242424] font-medium">수기로 등록하고 싶다면?</span>
+                <span className="text-[14px] text-[#FC973B]">총 {totalCount}개의 빵을 원하는대로 나눠보세요</span>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-[14px] text-[#6B7280]">
+                {isManualOpen ? '접기' : '펼치기'}
+              </span>
+              <svg 
+                className={`w-5 h-5 text-[#FC973B] transition-transform duration-300 ease-in-out
+                  ${isManualOpen ? 'rotate-180' : ''}`}
+                fill="none" 
+                stroke="currentColor" 
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
+          </button>
+
+          {/* 드롭다운 콘텐츠 */}
+          {isManualOpen && (
+            <div className="mt-3 bg-white rounded-xl shadow-lg border border-[#FFE5D1] p-6 
+              animate-slide-down transition-all duration-300">
+              <div className="space-y-6">
+                {/* 빵꾸러미 개수 선택 */}
+                <div className="flex justify-between items-center">
+                  <span className="text-[16px] text-[#242424] font-medium">빵꾸러미 개수</span>
+                  <div className="flex items-center gap-4 bg-[#FFF9F5] px-4 py-2 rounded-lg">
+                    <button 
+                      onClick={() => handleManualCountChange('decrease')}
+                      disabled={isManualDecreaseDisabled()}
+                      className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all
+                        ${isManualDecreaseDisabled()
+                          ? 'text-gray-300 cursor-not-allowed'
+                          : 'text-[#FC973B] hover:bg-white hover:shadow-sm active:scale-95'
+                        }`}
+                    >
+                      -
+                    </button>
+                    <span className="text-[18px] font-medium min-w-[24px] text-center text-[#242424]">
+                      {packageCount}
+                    </span>
+                    <button 
+                      onClick={() => handleManualCountChange('increase')}
+                      disabled={isManualIncreaseDisabled()}
+                      className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all
+                        ${isManualIncreaseDisabled()
+                          ? 'text-gray-300 cursor-not-allowed'
+                          : 'text-[#FC973B] hover:bg-white hover:shadow-sm active:scale-95'
+                        }`}
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+
+                {/* 구분선 */}
+                <div className="h-[1px] bg-[#FFE5D1]" />
+
+                {/* 가격 정보 */}
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[16px] text-[#242424]">개당 판매가격 (50% 할인)</span>
+                      <span className="text-[14px] text-[#FC973B]">x {packageCount}개</span>
+                    </div>
+                    <span className="text-[16px] font-medium text-[#242424]">
+                      {calculateManualPrice().toLocaleString()}원
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between items-center bg-[#FFF9F5] p-4 rounded-lg">
+                    <span className="text-[16px] font-medium text-[#242424]">총 판매 금액</span>
+                    <span className="text-[20px] font-bold text-[#FC973B]">
+                      {calculateManualTotalPrice().toLocaleString()}원
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* 하단 버튼 */}
@@ -335,13 +438,27 @@ const PackageRegister: React.FC = () => {
               ${packageCount > 0 
                 ? 'bg-[#FC973B] text-white hover:bg-[#e88934] transition-colors' 
                 : 'bg-[#D7C5B5] text-white cursor-not-allowed'}`}
-            onClick={() => navigate('/owner/package/sales-setting', {
-              state: {
-                price: calculatePrice(),
-                quantity: packageCount,
-                totalPrice: calculateTotalPrice()
-              }
-            })}
+            onClick={() => {
+              const calculatedPrice = registrationMode === 'auto' 
+                ? calculatePrice() 
+                : calculateManualPrice();
+              
+              console.log('Navigating with values:', {
+                mode: registrationMode,
+                price: calculatedPrice,
+                quantity: packageCount
+              });
+
+              navigate('/owner/package/packing-guide', {
+                state: {
+                  mode: registrationMode,
+                  price: calculatedPrice,  // 숫자 값 전달
+                  quantity: packageCount,
+                  selectedPackage,
+                  packageDetails
+                }
+              });
+            }}
             disabled={packageCount === 0}
           >
             다음

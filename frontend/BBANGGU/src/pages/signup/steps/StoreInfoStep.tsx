@@ -14,14 +14,6 @@ interface StoreInfoStepProps {
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void
 }
 
-declare global {
-  interface Window {
-    daum: {
-      Postcode: new (options: { oncomplete: (data: PostcodeData) => void }) => { open: () => void };
-    };
-  }
-}
-
 interface PostcodeData {
   roadAddress: string;
   bname: string;

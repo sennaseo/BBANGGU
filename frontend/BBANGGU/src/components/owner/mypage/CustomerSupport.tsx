@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
-import qnaIcon from '@/assets/icons/qna-icon.svg';
-import supportIcon from '@/assets/icons/support-icon.svg';
+import qnaIcon from '/icons/qna-icon.svg';
+import supportIcon from '/icons/support-icon.svg';
 
 export function CustomerSupport() {
   return (

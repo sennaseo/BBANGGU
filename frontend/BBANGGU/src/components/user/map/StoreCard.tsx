@@ -20,9 +20,10 @@ interface BakeryInfo {
 interface StoreCardProps {
   isVisible: boolean;
   store: BakeryInfo | null;
+  onStoreClick?: (bakeryId: number) => void;
 }
 
-export function StoreCard({ isVisible, store }: StoreCardProps) {
+export function StoreCard({ isVisible, store, onStoreClick }: StoreCardProps) {
   if (!isVisible || !store) return null;
 
   const operatingHours = store.pickupTime 
@@ -30,8 +31,11 @@ export function StoreCard({ isVisible, store }: StoreCardProps) {
     : "영업시간 정보 없음";
 
   return (
-    <div className="fixed bottom-[60px] left-0 right-0 mx-auto max-w-[430px] p-4 z-20">
-      <div className="flex items-center bg-white rounded-xl p-4 shadow-lg">
+    <div 
+      className="fixed bottom-[60px] left-0 right-0 mx-auto max-w-[430px] p-4 z-20"
+      onClick={() => onStoreClick && onStoreClick(store.bakeryId)}
+    >
+      <div className="flex items-center bg-white rounded-xl p-4 shadow-lg cursor-pointer hover:bg-gray-50">
         <img 
           src={store.bakeryImageUrl || "/placeholder.svg"} 
           alt={store.name} 

@@ -1,10 +1,12 @@
 import axiosInstance from '../axios';
+import axios from 'axios';
 
 // ReservationStatus 타입 정의 수정
 export type ReservationStatus = 'PENDING' | 'CONFIRMED' | 'CANCELED' | 'EXPIRED' | 'COMPLETED';
 
 // ReservationInfo 인터페이스도 export 추가
 export interface ReservationInfo {
+  reservationId: number;
   name: string;
   profileImageUrl: string | null;
   phone: string;
@@ -12,7 +14,6 @@ export interface ReservationInfo {
   status: ReservationStatus;
   quantitiy: number;
   cancelReason?: string;
-  reservationId: number;
 }
 
 // 내부적으로 사용할 API 응답용 인터페이스 추가
@@ -56,53 +57,27 @@ interface CancelResponse {
 
 export const getTodayReservations = async (bakeryId: number) => {
   try {
+    console.log('예약 조회 API 호출:', {
+      url: `/reservation/${bakeryId}`,
+      bakeryId
+    });
+
+    // 단순히 bakeryId path parameter로만 요청
     const response = await axiosInstance.get<ReservationResponse>(
       `/reservation/${bakeryId}`
     );
-
-    console.log('오늘의 예약 조회 응답:', response.data);
-    return response.data;
-  } catch (error) {
-    console.error('오늘의 예약 조회 실패:', error);
-    throw error;
-  }
-};
-
-
-export const getReservations = async (bakeryId: number) => {
-  try {
-    // 오늘 날짜의 시작과 끝 시간 계산
-    const today = new Date();
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-
-    // ISO 문자열 형식을 서버가 기대하는 형식으로 변경
-    const startDate = today.toISOString().split('T')[0] + 'T00:00:00.000Z';
-    const endDate = tomorrow.toISOString().split('T')[0] + 'T00:00:00.000Z';
-
-    console.log('API 요청 정보:', {
-      url: `/reservation/${bakeryId}`,
-      params: {
-        startDate,
-        endDate
-      }
-    });
-
-    const response = await axiosInstance.get<ReservationResponse>(
-      `/reservation/${bakeryId}`,
-      {
-        params: {
-          bakeryId,
-          startDate,
-          endDate
-        }
-      }
-    );
     
-    console.log('API 응답 전체:', response);
+    console.log('예약 조회 응답:', response.data);
     return response.data;
   } catch (error) {
-    console.error('예약 조회 실패 상세:', error);
+    console.error('예약 조회 실패:', error);
+    if (axios.isAxiosError(error)) {
+      console.error('API 에러 상세:', {
+        status: error.response?.status,
+        data: error.response?.data,
+        message: error.message
+      });
+    }
     throw error;
   }
 };

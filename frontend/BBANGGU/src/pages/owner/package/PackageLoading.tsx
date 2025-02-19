@@ -1,16 +1,25 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import breadLoading from '../../../assets/images/bakery/cat.gif';
-import breadLoading2 from '../../../assets/images/bakery/wrote.gif';
+import React, { useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import breadLoading from '/bakery/cat.gif';
+import breadLoading2 from '/bakery/wrote.gif';
 
 const PackageLoading: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    // 3초 후 자동으로 다음 페이지로 이동
+    const timer = setTimeout(() => {
+      navigate('/owner/package/register', {
+        state: location.state // 이전 페이지에서 받은 state를 그대로 전달
+      });
+    }, 3000);
+
+    return () => clearTimeout(timer);
+  }, [navigate, location.state]);
 
   return (
-    <div 
-      className="h-[100vh] bg-[#FDFCFB] flex flex-col cursor-pointer" 
-      onClick={() => navigate('/owner/package/register')}
-    >
+    <div className="h-[100vh] bg-[#FDFCFB] flex flex-col">
       <div className="flex-1 flex flex-col items-center justify-center p-4">
         {/* 빵 로딩 애니메이션 */}
         <div className="mb-10">
@@ -28,10 +37,10 @@ const PackageLoading: React.FC = () => {
 
         {/* 안내 메시지 */}
         <img 
-            src={breadLoading2} 
-            alt="bread loading" 
-            className="w-[250px]"
-          />
+          src={breadLoading2} 
+          alt="bread loading" 
+          className="w-[250px]"
+        />
       </div>
     </div>
   );

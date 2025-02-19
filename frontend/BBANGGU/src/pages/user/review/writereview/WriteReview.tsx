@@ -54,10 +54,7 @@ export function WriteReview() {
       await writeReviewService.submitReview(reviewData);
       alert('리뷰가 성공적으로 등록되었습니다.');
       navigate('..', { 
-        state: { 
-          reviewSubmitted: true,
-          updatedReservationId: reservationId 
-        } 
+        state: { reviewSubmitted: true }
       });
     } catch (error) {
       setAlertModal({
