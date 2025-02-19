@@ -44,7 +44,7 @@ public class ReservationController {
 	 * @return reservationId, status
 	 */
 	@PostMapping("/check")
-	public ResponseEntity<ApiResponse> check(
+	public ResponseEntity<ApiResponse> valid(
 		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@Valid @RequestBody ValidReservationRequest request
 	) {
