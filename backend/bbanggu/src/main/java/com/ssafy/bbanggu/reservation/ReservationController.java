@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ssafy.bbanggu.auth.security.CustomUserDetails;
@@ -55,7 +56,7 @@ public class ReservationController {
 	@PostMapping("/uncheck")
 	public ResponseEntity<ApiResponse> uncheck(
 		@AuthenticationPrincipal CustomUserDetails userDetails,
-		@RequestBody long reservationId, @RequestBody int quantity
+		@RequestParam long reservationId, @RequestParam int quantity
 	) {
 		log.info("✨ 빵꾸러미 결제대기 취소 ✨");
 		reservationService.uncheckReservation(userDetails, reservationId, quantity);
