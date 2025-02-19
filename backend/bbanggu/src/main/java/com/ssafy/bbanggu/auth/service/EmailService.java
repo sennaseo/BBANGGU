@@ -10,25 +10,28 @@ import java.util.Random;
 
 import com.ssafy.bbanggu.common.exception.CustomException;
 import com.ssafy.bbanggu.common.exception.ErrorCode;
+import com.ssafy.bbanggu.user.repository.UserRepository;
 
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
+import lombok.RequiredArgsConstructor;
 
 @Service
+@RequiredArgsConstructor
 public class EmailService {
 	private final JavaMailSender mailSender;
 	private final InMemoryStoreService storeService;
-
-	public EmailService(JavaMailSender mailSender, InMemoryStoreService storeService) {
-		this.mailSender = mailSender;
-		this.storeService = storeService;
-	}
+	private final UserRepository userRepository;
 
 	/**
 	 * 이메일로 인증번호 전송
 	 * @param email 이메일 주소
 	 */
 	public void sendAuthenticationCode(String email) {
+		if (userRepository.existsByEmail(email)) {
+			throw new CustomException(ErrorCode.EMAIL_ALREADY_IN_USE);
+		}
+
 		// 1. 인증번호 생성
 		String authCode = generateAuthCode();
 
