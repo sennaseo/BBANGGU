@@ -101,7 +101,7 @@ public class BakeryController {
 		@RequestPart(name = "settlementImage", required = false) MultipartFile settlementImage,
 		@AuthenticationPrincipal CustomUserDetails userDetails
 	) {
-		BakerySettlementDto createSettlement = bakeryService.createSettlement(settlement, settlementImage, userDetails);
+		BakerySettlementDto createSettlement = bakeryService.createSettlement(settlement, settlementImage);
 		return ResponseEntity.status(HttpStatus.CREATED)
 			.body(new ApiResponse("가게 정산 정보 등록이 완료되었습니다.", createSettlement));
 	}
