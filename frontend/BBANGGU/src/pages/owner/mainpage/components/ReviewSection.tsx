@@ -2,8 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { ChevronDownIcon } from '@heroicons/react/24/solid';
 import { reviewApi } from '../../../../api/user/review/reviewApi';
 import type { BakeryRating, ReviewType } from '../../../../types/bakery';
+import { getUserInfo } from '../../../../api/user/user';
+import { getBakeryByOwner } from '../../../../api/owner/bakery';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
-export const ReviewSection: React.FC<{ bakeryId: number }> = ({ bakeryId }) => {
+export const ReviewSection: React.FC = () => {
+  const navigate = useNavigate();
   const [reviews, setReviews] = useState<ReviewType[]>([]);
   const [bakeryRating, setBakeryRating] = useState<BakeryRating | null>(null);
   const [activeFilter, setActiveFilter] = useState<'all' | 'photo'>('all');
@@ -11,10 +16,46 @@ export const ReviewSection: React.FC<{ bakeryId: number }> = ({ bakeryId }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [bakeryId, setBakeryId] = useState<number | null>(null);
 
-  // 리뷰 데이터 fetch
+  // 베이커리 정보 조회
+  useEffect(() => {
+    const fetchBakeryInfo = async () => {
+      try {
+        const userData = await getUserInfo();
+        
+        if (userData.role !== 'OWNER') {
+          navigate('/');
+          return;
+        }
+
+        try {
+          const bakeryData = await getBakeryByOwner();
+          setBakeryId(bakeryData.bakeryId);
+        } catch (error) {
+          console.error('Error fetching bakery:', error);
+          if (axios.isAxiosError(error) && error.response?.status === 404) {
+            alert('베이커리 정보를 찾을 수 없습니다. 베이커리를 먼저 등록해주세요.');
+            navigate('/owner/bakery/register');
+            return;
+          }
+          throw error;
+        }
+      } catch (error) {
+        console.error('사용자 정보 조회 실패:', error);
+        alert('사장님 정보를 가져오는데 실패했습니다.');
+        navigate('/');
+      }
+    };
+
+    fetchBakeryInfo();
+  }, [navigate]);
+
+  // bakeryId가 있을 때만 리뷰 데이터 fetch
   useEffect(() => {
     const fetchReviewData = async () => {
+      if (!bakeryId) return;
+
       try {
         setIsLoading(true);
         const [reviewsData, ratingData] = await Promise.all([
