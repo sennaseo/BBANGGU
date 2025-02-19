@@ -48,7 +48,7 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
 	// ✅ 특정 가게(bakeryId)의 오늘 픽업 완료된 예약들의 구매 수량 총합 구하기
 	@Query("SELECT COALESCE(SUM(r.quantity), 0) FROM Reservation r " +
 		"WHERE r.bakery.bakeryId = :bakeryId " +
-		"AND DATE(r.pickupAt) = CURRENT_DATE " +
+		"AND DATE(CONVERT_TZ(r.pickupAt, '+00:00', '+09:00')) = CURRENT_DATE " +
 		"AND r.pickupAt IS NOT NULL")
 	int getTotalPickedUpQuantityTodayByBakeryId(Long bakeryId);
 
