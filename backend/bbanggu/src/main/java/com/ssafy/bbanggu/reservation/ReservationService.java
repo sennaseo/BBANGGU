@@ -7,13 +7,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
-import com.ssafy.bbanggu.bakery.domain.Bakery;
-import com.ssafy.bbanggu.bakery.repository.BakeryRepository;
-import com.ssafy.bbanggu.bakery.service.BakeryPickupService;
-
-import com.ssafy.bbanggu.reservation.dto.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -21,11 +17,21 @@ import org.springframework.stereotype.Service;
 
 import com.ssafy.bbanggu.auth.security.CustomUserDetails;
 import com.ssafy.bbanggu.auth.security.JwtTokenProvider;
+import com.ssafy.bbanggu.bakery.domain.Bakery;
+import com.ssafy.bbanggu.bakery.repository.BakeryRepository;
+import com.ssafy.bbanggu.bakery.service.BakeryPickupService;
 import com.ssafy.bbanggu.breadpackage.BreadPackage;
 import com.ssafy.bbanggu.breadpackage.BreadPackageRepository;
 import com.ssafy.bbanggu.common.exception.CustomException;
 import com.ssafy.bbanggu.common.exception.ErrorCode;
 import com.ssafy.bbanggu.payment.PaymentService;
+import com.ssafy.bbanggu.reservation.dto.ReservationCancelRequest;
+import com.ssafy.bbanggu.reservation.dto.ReservationCreateRequest;
+import com.ssafy.bbanggu.reservation.dto.ReservationDTO;
+import com.ssafy.bbanggu.reservation.dto.ReservationForOwner;
+import com.ssafy.bbanggu.reservation.dto.ReservationInfo;
+import com.ssafy.bbanggu.reservation.dto.ReservationResponse;
+import com.ssafy.bbanggu.reservation.dto.ValidReservationRequest;
 import com.ssafy.bbanggu.review.domain.Review;
 import com.ssafy.bbanggu.review.repository.ReviewRepository;
 import com.ssafy.bbanggu.saving.dto.SavingDto;
@@ -54,6 +60,28 @@ public class ReservationService {
 	private final EchoSavingService echoSavingService;
 	private final ReviewRepository reviewRepository;
 
+	public void uncheckReservation(CustomUserDetails userDetails, long reservationId, int quantity) {
+		User user = userRepository.findById(userDetails.getUserId())
+			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+		Reservation reservation = reservationRepository.findById(reservationId).orElseThrow(() -> new CustomException(
+			ErrorCode.RESERVATION_NOT_FOUND));
+
+		if (!Objects.equals(user.getUserId(), reservation.getUser().getUserId())) {
+			throw new CustomException(ErrorCode.USER_NOT_RESERVATION_USER);
+		}
+		log.info("✅ 사용자의 예약 확인");
+
+		reservation.setCancelledAt(LocalDateTime.now());
+		reservation.setStatus("CANCELED");
+		reservationRepository.save(reservation);
+		log.info("✅ 결제대기 취소 완료");
+
+		BreadPackage breadPackage = breadPackageRepository.findById(reservation.getBreadPackage().getPackageId())
+			.orElseThrow(() -> new CustomException(ErrorCode.BREAD_PACKAGE_NOT_FOUND));
+		breadPackage.setPending(breadPackage.getPending() + quantity);
+		log.info("✅ 빵꾸러미 결제대기 복구완료");
+	}
 	/**
 	 * 예약 검증 메서드 (PENDING)
 	 */
@@ -109,7 +137,6 @@ public class ReservationService {
 		return response;
 	}
 
-
 	/**
 	 * 예약 생성 메서드 (CONFIRMED)
 	 */
@@ -127,7 +154,8 @@ public class ReservationService {
 		log.info("✅ {}번 사용자 검증 완료", userDetails.getUserId());
 
 		// 결제 정보 검증
-		ResponseEntity<String> response = paymentService.check(request.paymentKey(), request.amount(), request.orderId());
+		ResponseEntity<String> response = paymentService.check(request.paymentKey(), request.amount(),
+			request.orderId());
 		if (response.getStatusCode() != HttpStatus.OK) {
 			throw new CustomException(ErrorCode.PAYMENT_NOT_VALID);
 		}
@@ -147,7 +175,8 @@ public class ReservationService {
 		breadPackage.setQuantity(quantity_origin - breadPackage.getPending());
 		breadPackage.setPending(0);
 		BreadPackage newBreadPackage = breadPackageRepository.save(breadPackage);
-		log.info("✅ {}번 빵꾸러미 남은 개수: {} -> {}개", newBreadPackage.getPackageId(), quantity_origin, newBreadPackage.getQuantity());
+		log.info("✅ {}번 빵꾸러미 남은 개수: {} -> {}개", newBreadPackage.getPackageId(), quantity_origin,
+			newBreadPackage.getQuantity());
 		log.info("🩵 예약 성공 (CONFIRMED) 🩵");
 
 		// 예약한 사용자의 에코 값 업데이트
@@ -162,7 +191,6 @@ public class ReservationService {
 
 		return responseData;
 	}
-
 
 	/**
 	 * 예약 취소 메서드 (CANCELED)
@@ -185,7 +213,8 @@ public class ReservationService {
 		log.info("✅ 현재 로그인한 사용자는 예약 취소 권한이 있음");
 
 		// 결제 취소
-		ResponseEntity<String> response = paymentService.cancelPayment(reservation.getPaymentKey(), request.cancelReason());
+		ResponseEntity<String> response = paymentService.cancelPayment(reservation.getPaymentKey(),
+			request.cancelReason());
 		System.out.println(response.getBody());
 
 		// 해당 예약의 상태를 "CANCELED"로 변경
@@ -200,7 +229,8 @@ public class ReservationService {
 		int quantity_origin = breadPackage.getQuantity();
 		breadPackage.setQuantity(quantity_origin + reservation.getQuantity());
 		BreadPackage newBreadPackage = breadPackageRepository.save(breadPackage);
-		log.info("✅ {}번 빵꾸러미 남은 개수: {} -> {}개", newBreadPackage.getPackageId(), quantity_origin, newBreadPackage.getQuantity());
+		log.info("✅ {}번 빵꾸러미 남은 개수: {} -> {}개", newBreadPackage.getPackageId(), quantity_origin,
+			newBreadPackage.getQuantity());
 		log.info("🩵 예약 취소 성공 (CANCELED) 🩵");
 
 		Map<String, Object> responseData = new HashMap<>();
@@ -209,7 +239,6 @@ public class ReservationService {
 
 		return responseData;
 	}
-
 
 	/**
 	 * 예약 완료 처리 메서드 (COMPLETED)
@@ -248,12 +277,11 @@ public class ReservationService {
 		return responseData;
 	}
 
-
 	/**
 	 * 사용자 예약 조회 메서드
 	 */
 
-	private ReservationDTO entityToDTO(Reservation reservation){
+	private ReservationDTO entityToDTO(Reservation reservation) {
 		return ReservationDTO.builder()
 			.reservationId(reservation.getReservationId())
 			.createdAt(reservation.getCreatedAt())
@@ -264,12 +292,14 @@ public class ReservationService {
 			.build();
 	}
 
-	public List<Map<String, Object>> getUserReservationList(CustomUserDetails userDetails, LocalDate startDate, LocalDate endDate) {
+	public List<Map<String, Object>> getUserReservationList(CustomUserDetails userDetails, LocalDate startDate,
+		LocalDate endDate) {
 		LocalDateTime startDateTime = startDate.atStartOfDay();
 		LocalDateTime endDateTime = endDate.atTime(LocalTime.MAX);
 		log.info("startDateTime: " + startDateTime + "\nendDateTime: " + endDateTime);
 
-		List<Reservation> data = reservationRepository.findByUser_UserIdAndCreatedAtBetween(userDetails.getUserId(), startDateTime, endDateTime);
+		List<Reservation> data = reservationRepository.findByUser_UserIdAndCreatedAtBetween(userDetails.getUserId(),
+			startDateTime, endDateTime);
 		List<Map<String, Object>> responseList = new ArrayList<>();
 		for (Reservation d : data) {
 			Map<String, Object> response = new HashMap<>();
@@ -325,22 +355,23 @@ public class ReservationService {
 	/**
 	 * 사장님 예약 조회 메서드
 	 */
-	public List<ReservationResponse> getOwnerReservationList(CustomUserDetails userDetails, long bakeryId, LocalDate startDate, LocalDate endDate) {
+	public List<ReservationResponse> getOwnerReservationList(CustomUserDetails userDetails, long bakeryId,
+		LocalDate startDate, LocalDate endDate) {
 		// TODO: bakeryId와 UserId로 소유자 검증 필요
-//		String token = authorization.replace("Bearer ", "");
-//		long userId = jwtTokenProvider.getUserIdFromToken(token);
+		//		String token = authorization.replace("Bearer ", "");
+		//		long userId = jwtTokenProvider.getUserIdFromToken(token);
 
 		LocalDateTime startDateTime = startDate.atStartOfDay();
 		LocalDateTime endDateTime = endDate.atTime(LocalTime.MAX);
 
-		List<Reservation> reservationList = reservationRepository.findByBakery_BakeryIdAndCreatedAtBetween(bakeryId, startDateTime, endDateTime);
+		List<Reservation> reservationList = reservationRepository.findByBakery_BakeryIdAndCreatedAtBetween(bakeryId,
+			startDateTime, endDateTime);
 		List<ReservationResponse> reservationDTOList = new ArrayList<>();
 		// for (Reservation reservation : reservationList) {
 		// 	reservationDTOList.add(entityToDto(reservation));
 		// }
 		return reservationDTOList;
 	}
-
 
 	// 사용자와 예약 ID가 일치하는지 검증
 	public boolean check(long reservationId, String authorization) {
@@ -354,7 +385,6 @@ public class ReservationService {
 		}
 		return reservation.getUser().getUserId() == userId;
 	}
-
 
 	/**
 	 * 특정 가게의 픽업되지 않은 예약을 자동 처리
