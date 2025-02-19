@@ -343,7 +343,10 @@ public class ReservationService {
 		}
 		log.info("✅ 현재 로그인한 {}번 유저는 {}번 빵집의 사장님임", user.getUserId(), bakeryId);
 
-		List<ReservationInfo> reservationList = reservationRepository.findTodayReservationsByBakeryId(bakeryId);
+		LocalDate today = LocalDate.now();
+		LocalDateTime startOfToday = today.atStartOfDay();
+		LocalDateTime endOfToday = today.plusDays(1).atStartOfDay();
+		List<ReservationInfo> reservationList = reservationRepository.findTodayReservationsByBakeryId(bakeryId, startOfToday, endOfToday);
 		String endTime = null;
 		if (!reservationList.isEmpty()) {
 			endTime = bakeryPickupService.getPickupTimetable(bakeryId).getEndTime();
