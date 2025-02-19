@@ -168,6 +168,7 @@ public class ReviewService {
 	/**
 	 * 사용자 리뷰 조회
 	 */
+	@Transactional
 	public List<ReviewResponseDto> getUserReviews(CustomUserDetails userDetails, Long userId) {
 		User user = userRepository.findById(userDetails.getUserId())
 			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
