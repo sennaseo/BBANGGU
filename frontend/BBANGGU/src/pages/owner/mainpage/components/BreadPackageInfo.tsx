@@ -123,25 +123,38 @@ export const BreadPackageInfo: React.FC<BreadPackageInfoProps> = ({
                 </div>
               </div>
             </div>
-
             <div className="h-10 w-[1px] bg-gray-200"></div>
-
             {/* 수량 정보 */}
-            <div className="flex flex-col">
-              <div className="flex items-center -ml-1">
-                <span className="text-[24px] font-bold text-[#242424]">
-                  {currentPackage.quantity}
-                </span>
-                <span className="text-gray-500 ml-1">
-                  / {currentPackage.initialQuantity}개
-                </span>
+            {currentPackage.quantity === 0 ? (
+              <div className="flex flex-col">
+                <div className="flex items-center -ml-1">
+                  <span className="text-[24px] font-bold text-[#242424]">
+                    판매완료
+                  </span>
+                </div>
+                <div className="flex items-center -ml-1">
+                  <span className="text-[14px] text-gray-400">
+                    판매한 빵꾸러미: {currentPackage.initialQuantity}개
+                  </span>
+                </div>
               </div>
-              <div className="flex items-center -ml-1">
-                <span className="text-[14px] text-gray-400">
-                  현재 남은 수량
-                </span>
+            ) : (
+              <div className="flex flex-col">
+                <div className="flex items-center -ml-1">
+                  <span className="text-[24px] font-bold text-[#242424]">
+                    {currentPackage.quantity}
+                  </span>
+                  <span className="text-gray-500 ml-1">
+                    / {currentPackage.initialQuantity}개
+                  </span>
+                </div>
+                <div className="flex items-center -ml-1">
+                  <span className="text-[14px] text-gray-400">
+                    현재 남은 수량
+                  </span>
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
 
