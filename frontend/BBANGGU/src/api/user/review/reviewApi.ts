@@ -17,7 +17,9 @@ export const reviewApi = {
           }
         }
       );
-      return response.data.data;
+      return response.data.data.map(review => ({
+        ...review
+      }));
     } catch (error) {
       if (axios.isAxiosError(error)) {
         console.error(`리뷰 조회 실패 - 가게(${bakeryId}):`, error);

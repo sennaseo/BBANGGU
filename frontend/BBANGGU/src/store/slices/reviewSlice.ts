@@ -5,6 +5,8 @@ export interface ReviewType {
     reservationId: number;
     userId: number;
     bakeryId: number;
+    userName: string;
+    profileImageUrl: string;
     rating: number;
     content: string;
     reviewImageUrl: string;

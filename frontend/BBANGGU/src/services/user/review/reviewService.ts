@@ -3,8 +3,13 @@ import { BakeryRating, ReviewType } from "../../../types/bakery";
 
 export async function getReviews(bakeryId: number): Promise<ReviewType[]> {
     try {
+        console.log("📌 리뷰 데이터 조회 시작!!")
         const reviews = await reviewApi.getReviews(bakeryId);
-        return reviews;
+        console.log("📌 가져온 리뷰 데이터:", reviews);
+        return reviews.map(review => ({
+            ...review,
+            formattedDate: new Date(review.createdAt).toLocaleString() // 날짜 포맷팅 추가
+        }));
     } catch (error) {
         console.error("리뷰 조회 실패:", error);
         throw error;
