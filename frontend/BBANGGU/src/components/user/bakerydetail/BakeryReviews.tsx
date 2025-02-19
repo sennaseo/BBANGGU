@@ -11,7 +11,7 @@ interface BakeryReviewsProps {
 export default function BakeryReviews({ bakeryId, reviews, user }: BakeryReviewsProps) {
   if (reviews.length === 0) {
     return (
-      <div className="py-[15px]">
+      <div className="py-[15px]" style={{ marginTop: "0px !important", paddingTop: "0px !important" }}>
         <h2 className="text-[16px] font-bold mb-[15px]">리뷰 구경하기</h2>
         <p className="text-[14px] text-[#757575]">아직 리뷰가 없습니다.</p>
       </div>
@@ -19,7 +19,7 @@ export default function BakeryReviews({ bakeryId, reviews, user }: BakeryReviews
   }
 
   return (
-    <div className="py-[15px]">
+    <div className="py-[15px]" style={{ marginTop: "0px !important", paddingTop: "0px !important" }}>
       <Link
         to={`/user/bakery/${bakeryId}/reviews`}
         className="mb-[15px] flex w-full items-center justify-between"
@@ -27,7 +27,6 @@ export default function BakeryReviews({ bakeryId, reviews, user }: BakeryReviews
         <h2 className="text-[16px] font-bold text-[#333333]">리뷰 구경하기</h2>
         <ChevronRight className="h-5 w-5" />
       </Link>
-
       {reviews.length > 0 ? (
         <div className="space-y-6">
           {reviews.slice(0, 2).map((review) => {
