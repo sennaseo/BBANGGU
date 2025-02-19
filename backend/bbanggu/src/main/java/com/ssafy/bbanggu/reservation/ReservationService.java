@@ -93,6 +93,8 @@ public class ReservationService {
 		Bakery bakery = bakeryRepository.findById(request.bakeryId())
 			.orElseThrow(() -> new CustomException(ErrorCode.BAKERY_NOT_FOUND));
 
+		System.out.println("!!!!!!!!! bakery 조회 성공: " + bakery.getBakeryId());
+
 		BreadPackage breadPackage = breadPackageRepository.findByBakeryIdAndToday(bakery.getBakeryId());
 		if (breadPackage == null) {
 			throw new CustomException(ErrorCode.BREAD_PACKAGE_NOT_FOUND);
