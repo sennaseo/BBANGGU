@@ -115,7 +115,7 @@ export function EditStore() {
       if (formData.bakeryImageUrl && typeof formData.bakeryImageUrl === "string") {
           const res = await fetch(formData.bakeryImageUrl);
           const blob = await res.blob();
-          profileImageFile = new File([blob], "profile.jpg", { type: blob.type });
+          profileImageFile = new File([blob], `profile.${blob.type.split("/")[1] || "jpg"}`, { type: blob.type })
       }
   
       // 가게 배경사진 파일
@@ -124,7 +124,7 @@ export function EditStore() {
       if (formData.bakeryBackgroundImgUrl && typeof formData.bakeryBackgroundImgUrl === "string") {
           const res = await fetch(formData.bakeryBackgroundImgUrl);
           const blob = await res.blob();
-          bakeryBackgroundImgFile = new File([blob], "bakeryBackgroundImg.jpg", { type: blob.type });
+          bakeryBackgroundImgFile = new File([blob], `bakeryBackgroundImg.${blob.type.split("/")[1] || "jpg"}`, { type: blob.type })
       }
   
       // 이미지 파일들이 제대로 변환되었는지 로그로 확인

@@ -33,6 +33,7 @@ interface FormData {
   storeDescription: string
   storePhone: string
   bankName: string
+  businessLicenseFileUrl: string
 }
 
 const initialFormData: FormData = {
@@ -56,6 +57,7 @@ const initialFormData: FormData = {
   storeDescription: "",
   storePhone: "",
   bankName: "",
+  businessLicenseFileUrl: "",
 }
 
 export default function OwnerSignupPage() {
@@ -104,6 +106,9 @@ export default function OwnerSignupPage() {
       setButtonVariant("primary")
       if (error.code === 3001) {
         alert('너무 많은 요청을 보냈습니다. 나중에 다시 시도하세요.');
+      } else if (error.code === 1006) {
+        alert('이미 사용 중인 이메일입니다.');
+        setIsEmailVerificationSent(false)
       } else {
         alert('인증번호 전송에 실패했습니다.');
       }
@@ -178,15 +183,26 @@ export default function OwnerSignupPage() {
         businessRegistrationNumber: formData.businessRegistrationNumber,
         addressRoad: formData.storeAddress,
         addressDetail: formData.storeAddressDetail,
-        bakeryImageUrl: "https://example.com/bakery.jpg",
-        bakryBackgroundImgUrl: "https://example.com/background.jpg"
+        storePhoto: formData.storePhoto,
       };
 
+ 
+      let bakeryImageUrl: File | undefined = undefined;
+  
+      if (formData.storePhoto && typeof formData.storePhoto === "string") {
+        const res = await fetch(formData.storePhoto);
+        const blob = await res.blob();
+        bakeryImageUrl = new File([blob], 'store-photo.jpg', { type: blob.type });
+      }
+  
       console.log('Store data being sent to API:', storeData);  // API로 보내는 데이터 확인
-      
-      const response = await OwnerApi.registerStore(storeData);
+  
+      const response = await OwnerApi.registerStore({
+        ...storeData,
+        bakeryImage: bakeryImageUrl,  // File 객체로 전달
+      });
+  
       console.log('API response:', response);  // API 응답 확인
-      
       setCurrentStep("settlement");
     } catch (error: any) {
       console.error('Store registration error details:', error.response?.data || error);
@@ -197,35 +213,62 @@ export default function OwnerSignupPage() {
   const handleSettlementInfoSubmit = async () => {
     try {
       if (!formData.userId) {
-        throw new Error('회원 정보가 없습니다.');
+        throw new Error("회원 정보가 없습니다.");
       }
-
+  
+      // 🔹 FormData 객체 생성
+      const formDataToSend = new FormData();
+  
       const settlementData = {
         userId: formData.userId,
         bankName: formData.bankName,
         accountHolderName: formData.accountHolder,
         accountNumber: formData.accountNumber,
         emailForTaxInvoice: formData.taxEmail,
-        businessLicenseFileUrl: "https://example.com/license.jpg"  // 임시 URL 사용
       };
-
-      console.log('Settlement data being sent:', settlementData);
-
-      const response = await OwnerApi.registerSettlement(settlementData);
-      console.log('Settlement registration response:', response);  // 응답 확인
-      
+      console.log("🔹 정산 정보:", settlementData);
+      console.log("image", formData.businessLicenseFileUrl)
+  
+      // 🔹 JSON 데이터를 Blob으로 변환 후 추가
+      formDataToSend.append(
+        "settlement",
+        new Blob([JSON.stringify(settlementData)], { type: "application/json" })
+      );
+  
+      // 🔹 파일이 문자열(URL)인 경우 변환하여 추가
+      if (formData.businessLicenseFileUrl) {
+        if (typeof formData.businessLicenseFileUrl === "string") {
+          const res = await fetch(formData.businessLicenseFileUrl);
+          const blob = await res.blob();
+          formDataToSend.append(  
+          "businessLicenseFileUrl",
+            new File([blob], `businessLicenseFile.${blob.type.split("/")[1] || "jpg"}`, { type: blob.type })
+          );
+        } else {
+          // 🔹 파일 객체일 경우 그대로 추가
+          formDataToSend.append("businessLicenseFile", formData.businessLicenseFileUrl);
+        }
+      }
+  
+      console.log("Settlement data being sent:", settlementData);
+  
+      // 🔹 API 호출 (FormData를 그대로 전달)
+      const response = await OwnerApi.registerSettlement(formDataToSend);
+      console.log("Settlement registration response:", response);
+  
       setCurrentStep("complete");
     } catch (error: any) {
-      console.error('Settlement registration error:', error.response?.data || error);
-      
+      console.error("Settlement registration error:", error.response?.data || error);
+  
       if (error.response?.status === 500) {
-        alert('서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+        alert("서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
       } else {
-        alert('정산 정보 등록에 실패했습니다. 입력하신 정보를 다시 확인해주세요.');
+        alert("정산 정보 등록에 실패했습니다. 입력하신 정보를 다시 확인해주세요.");
       }
     }
   };
-
+  
+  
   const isEmailValid = formData.email.includes("@") && formData.email.includes(".")
   const isPasswordValid = formData.password.length >= 8
   const doPasswordsMatch = formData.password === formData.confirmPassword
@@ -416,7 +459,7 @@ export default function OwnerSignupPage() {
           </div>
         )
       case "complete":
-        return <SignupCompleteStep isOwner />
+        return <SignupCompleteStep isOwner={true} email={formData.email} password={formData.password} />
     }
   }
 
