@@ -47,7 +47,7 @@ export function UserSaveReport() {
       {/* 총 절약 금액 */}
       <div className="bg-whtie text-center pt-5 mx-5">
         <div className="w-[110px] h-[110px] bg-[#FC973B] rounded-full mx-auto mb-4 flex items-center justify-center">
-          <img src="/src/assets/pig.png" alt="절약 금액" className="w-13 h-13" />
+          <img src="../../../../dist/pig.png" alt="절약 금액" className="w-13 h-13" />
         </div>
         <h2 className="text-[#333333] text-lg mb-2 font-bold">총 절약 금액</h2>
         <p className="text-[#FC973B] text-4xl font-bold">{Number(saveReport?.savedMoney || 0).toLocaleString()}원</p>
@@ -58,7 +58,7 @@ export function UserSaveReport() {
       <div className="px-10 pt-5 grid grid-cols-2 gap-4">
         <div className="bg-[#F9F9F9] rounded-xl shadow-md py-5 flex flex-col items-center justify-center">
           <div className="text-center mb-2">
-            <img src="/src/assets/tree-fill.png" alt="탄소 배출 감소" className="w-12 h-12 mx-auto mb-2" />
+            <img src="../../../../dist/tree-fill.png" alt="탄소 배출 감소" className="w-12 h-12 mx-auto mb-2" />
             <h3 className="text-[16px] text-[#666666]">탄소 배출 감소</h3>
           </div>
 
@@ -67,7 +67,7 @@ export function UserSaveReport() {
 
         <div className="bg-[#F9F9F9] rounded-xl shadow-md flex flex-col items-center justify-center">
           <div className="text-center mb-2">
-            <img src="/src/assets/mdi_bread.png" alt="음식물 낭비 감소" className="w-12 h-12 mx-auto mb-2" />
+            <img src="../../../../dist/mdi_bread.png" alt="음식물 낭비 감소" className="w-12 h-12 mx-auto mb-2" />
             <h3 className="text-[16px] text-[#666666]">음식물 낭비 감소</h3>
           </div>
 
@@ -76,7 +76,7 @@ export function UserSaveReport() {
 
         <div className="bg-[#F9F9F9] rounded-xl shadow-md py-5 flex flex-col items-center justify-center">
           <div className="text-center mb-2">
-            <img src="/src/assets/fe_car.png" alt="주행거리 감소" className="w-12 h-12 mx-auto mb-2" />
+            <img src="../../../../dist/fe_car.png" alt="주행거리 감소" className="w-12 h-12 mx-auto mb-2" />
 
             <h3 className="text-[16px] text-[#666666]">주행거리 감소</h3>
           </div>
@@ -85,7 +85,7 @@ export function UserSaveReport() {
 
         <div className="bg-[#F9F9F9] rounded-xl shadow-md py-5 flex flex-col items-center justify-center">
           <div className="text-center mb-2">
-            <img src="/src/assets/shower-fill.png" alt="샤워물 절약" className="w-12 h-12 mx-auto mb-2" />
+            <img src="../../../../dist/shower-fill.png" alt="샤워물 절약" className="w-12 h-12 mx-auto mb-2" />
 
             <h3 className="text-[16px] text-[#666666]">샤워물 절약</h3>
           </div>

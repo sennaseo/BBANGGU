@@ -153,7 +153,7 @@ export function ReservationDetail() {
         {isLocationExpanded && (
           <div className="relative h-[200px] rounded-lg mt-3 overflow-hidden bg-[#F8F9FA]">
             <img
-              src="/src/assets/지도.png"
+              src="../../../../dist/images/지도.png"
               alt="매장 위치"
               className="w-full h-full object-cover"
             />

@@ -11,7 +11,7 @@ import { useDispatch } from 'react-redux';
 import { logout } from '../../../store/slices/authSlice';
 import { clearUserInfo } from '../../../store/slices/userSlice';
 import { getUserInfo } from '../../../api/user/user';
-import breadPackageIcon from '../../../assets/images/bakery/빵꾸러미.png';
+import breadPackageIcon from '../../../../dist/bakery/빵꾸러미.png';
 import { getBakeryByOwner } from '../../../api/owner/bakery';
 
 // 인터페이스 정의
