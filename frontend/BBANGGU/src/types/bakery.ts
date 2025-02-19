@@ -9,7 +9,7 @@ export interface UserType {
 
 export interface ReviewType {
   userName: string
-  profileImageUrl: string | "default-profile.png"
+  profileImageUrl: string | "default-profile.jpg"
   reviewId: number
   bakeryId: number
   rating: number
