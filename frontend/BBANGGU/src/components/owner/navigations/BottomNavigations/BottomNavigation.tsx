@@ -27,7 +27,7 @@ function BottomNavigation() {
   };
 
   return (
-    <nav className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[440px] bg-white border-t border-gray-200">
+    <nav className="fixed bottom-[env(safe-area-inset-bottom,0px)] left-1/2 -translate-x-1/2 w-full max-w-[440px] bg-white border-t border-gray-200">
       <div className="flex justify-around items-center h-16">
         {/* 내 가게 링크를 메인 페이지로 변경 */}
         <Link 

@@ -11,7 +11,7 @@ import { useDispatch } from 'react-redux';
 import { logout } from '../../../store/slices/authSlice';
 import { clearUserInfo } from '../../../store/slices/userSlice';
 import { getUserInfo } from '../../../api/user/user';
-import breadPackageIcon from '../../../assets/images/bakery/빵꾸러미.png';
+import breadPackageIcon from '../../../../dist/assets/빵꾸러미-CkUT9K0_.png';
 import { getBakeryByOwner } from '../../../api/owner/bakery';
 
 // 인터페이스 정의
@@ -148,17 +148,34 @@ const OwnerMainPage: React.FC = () => {
         {activeTab === 'package' ? (
           <>
             {currentPackage ? (
-              <BreadPackageInfo 
-                currentPackage={currentPackage}
-                reservations={reservations}
-                onPackageDeleted={() => {
-                  if (currentPackage.bakeryId) {
-                    getBakeryPackages(currentPackage.bakeryId)
-                      .then(response => setCurrentPackage(response.data[0]))
-                      .catch(console.error);
-                  }
-                }}
-              />
+              <>
+                <BreadPackageInfo 
+                  currentPackage={currentPackage}
+                  reservations={reservations}
+                  onPackageDeleted={() => {
+                    if (currentPackage.bakeryId) {
+                      getBakeryPackages(currentPackage.bakeryId)
+                        .then(response => setCurrentPackage(response.data[0]))
+                        .catch(console.error);
+                    }
+                  }}
+                />
+                <div className="mb-6">
+                  <button
+                    onClick={() => navigate('/owner/bread/register')}
+                    className="w-full flex items-center justify-center gap-3 py-4 bg-gradient-to-r from-[#FFF9F5] to-[#FFF5EC] text-[#FC973B] rounded-xl hover:shadow-md transition-all border border-[#FC973B]/10"
+                  >
+                    <div className="flex items-center gap-2">
+                      <BuildingStorefrontIcon className="w-5 h-5" />
+                    </div>
+                    <span className="font-medium">우리가게 빵 등록하기</span>
+                  </button>
+                </div>
+                <CustomerList 
+                  bakeryId={currentPackage.bakeryId || 0}
+                  onReservationsUpdate={handleReservationsUpdate}
+                />
+              </>
             ) : (
               // 빵꾸러미가 없을 때 보여줄 빈 상태 화면
               <div className="bg-white rounded-[20px] border border-gray-100 p-8 mb-6 flex flex-col items-center">
@@ -172,8 +189,9 @@ const OwnerMainPage: React.FC = () => {
                 <h3 className="text-[20px] font-bold text-[#242424] mb-2">
                   등록된 빵꾸러미가 없습니다
                 </h3>
-                <p className="text-gray-500 mb-6">
-                  새로운 빵꾸러미를 등록해보세요!
+                <p className="text-gray-500 mb-6 text-center">
+                  빵꾸러미를 등록하고<br />
+                  예약을 받아보세요!
                 </p>
                 <button
                   onClick={() => navigate('/owner/package/guide')}
@@ -183,26 +201,9 @@ const OwnerMainPage: React.FC = () => {
                 </button>
               </div>
             )}
-            <div className="mb-6">
-              <button
-                onClick={() => navigate('/owner/bread/register')}
-                className="w-full flex items-center justify-center gap-3 py-4 bg-gradient-to-r from-[#FFF9F5] to-[#FFF5EC] text-[#FC973B] rounded-xl hover:shadow-md transition-all border border-[#FC973B]/10"
-              >
-                <div className="flex items-center gap-2">
-                  <BuildingStorefrontIcon className="w-5 h-5" />
-                </div>
-                <span className="font-medium">우리가게 빵 등록하기</span>
-              </button>
-            </div>
-            <CustomerList 
-              bakeryId={currentPackage?.bakeryId || 0}
-              onReservationsUpdate={handleReservationsUpdate}
-            />
           </>
         ) : (
-          <ReviewSection 
-            bakeryId={currentPackage?.bakeryId || 0}
-          />
+          <ReviewSection />
         )}
       </div>
       <BottomNavigation />

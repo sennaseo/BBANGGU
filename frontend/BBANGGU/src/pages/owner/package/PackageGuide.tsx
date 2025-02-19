@@ -7,12 +7,13 @@ import { clearUserInfo } from '../../../store/slices/userSlice';
 import { getLocalStorage, logout, removeLocalStorage } from '../../../store/slices/authSlice';
 import { setLoading, setItems } from '../../../store/slices/packageSlice';
 import { SubmitButton } from '../../../common/form/SubmitButton';
-import cameraExample from '@/assets/images/bakery/camera_ex.png';
+import cameraExample from '../../../../dist/bakery/camera_ex.png';
 import ProgressBar from './components/Progress.Bar';
 import { PACKAGE_STEPS, TOTAL_PACKAGE_STEPS } from './constants/PakageSteps';
 import Header from '../../../components/owner/header/Header';
 import axios from 'axios';
 import { getBakeryByOwner } from '../../../api/owner/bakery';
+import LoadingSpinner from '../../../components/common/LoadingSpinner';
 
 const PackageGuide: React.FC = () => {
   const navigate = useNavigate();
@@ -22,6 +23,7 @@ const PackageGuide: React.FC = () => {
   
   // Redux에서 auth 상태 가져오기
   const { accessToken } = useSelector((state: RootState) => state.auth);
+  const isLoading = useSelector((state: RootState) => state.package.loading);
 
   // 권한 체크 및 유저 정보 조회
   useEffect(() => {
@@ -227,12 +229,30 @@ const PackageGuide: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white flex flex-col">
+    <div className="min-h-screen bg-white flex flex-col relative">
       <Header 
         title="촬영 가이드" 
         onBack={() => navigate(-1)}
       />
       
+      {/* 로딩 오버레이 */}
+      {isLoading && (
+        <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white/90 p-8 rounded-2xl flex flex-col items-center shadow-xl 
+            animate-fadeIn mx-4 border border-gray-100">
+            <LoadingSpinner />
+            <p className="mt-6 text-xl font-semibold text-[#FC973B]">
+              빵을 분석하고 있어요
+            </p>
+            <div className="flex items-center gap-1 mt-2">
+              <div className="w-2 h-2 bg-[#FC973B] rounded-full animate-bounce" style={{ animationDelay: '0s' }}></div>
+              <div className="w-2 h-2 bg-[#FC973B] rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+              <div className="w-2 h-2 bg-[#FC973B] rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="mt-4">
         <ProgressBar 
           currentStep={PACKAGE_STEPS.GUIDE} 

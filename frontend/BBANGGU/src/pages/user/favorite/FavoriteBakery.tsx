@@ -41,7 +41,7 @@ export const FavoriteBakery = () => {
         {/* 헤더 */}
         <div className="fixed top-0 bg-white max-w-[440px] w-full left-1/2 -translate-x-1/2 px-5 py-4 shadow-sm">
           <div className="flex items-center">
-            <img src="/src/assets/logo.png" alt="관심가게" className="w-7" />
+            <img src="../../../../dist/logo.png" alt="관심가게" className="w-7" />
             <span className="ml-2 text-[#FC973B] font-bold">관심가게</span>
           </div>
         </div>
@@ -102,7 +102,7 @@ export const FavoriteBakery = () => {
       {/* 헤더 */}
       <div className="px-5 py-4">
         <div className="flex items-center">
-          <img src="/src/assets/logo.png" alt="관심가게" className="w-7" />
+          <img src="../../../../dist/logo.png" alt="관심가게" className="w-7" />
           <span className="ml-2 text-[#FC973B] font-bold">관심가게</span>
         </div>
       </div>
