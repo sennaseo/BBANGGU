@@ -93,10 +93,10 @@ public class ReservationService {
 		Bakery bakery = bakeryRepository.findById(request.bakeryId())
 			.orElseThrow(() -> new CustomException(ErrorCode.BAKERY_NOT_FOUND));
 
-		System.out.println("!!!!!!!!! bakery 조회 성공: " + bakery.getBakeryId());
-		System.out.println("현재 시간: " + LocalDateTime.now());
-
-		BreadPackage breadPackage = breadPackageRepository.findByBakeryIdAndToday(bakery.getBakeryId());
+		LocalDate today = LocalDate.now();
+		LocalDateTime startOfToday = today.atStartOfDay();
+		LocalDateTime endOfToday = today.plusDays(1).atStartOfDay();
+		BreadPackage breadPackage = breadPackageRepository.findByBakeryIdAndToday(bakery.getBakeryId(), startOfToday, endOfToday);
 		if (breadPackage == null) {
 			throw new CustomException(ErrorCode.BREAD_PACKAGE_NOT_FOUND);
 		}

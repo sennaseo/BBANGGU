@@ -1,5 +1,6 @@
 package com.ssafy.bbanggu.breadpackage;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -160,7 +161,11 @@ public class BreadPackageService {
 		}
 		log.info("✅ 현재 로그인한 사용자가 해당 빵집의 사장님입니다^^");
 
-		BreadPackage breadPackage = breadPackageRepository.findByBakeryIdAndToday(bakeryId);
+		LocalDate today = LocalDate.now();
+		LocalDateTime startOfToday = today.atStartOfDay();
+		LocalDateTime endOfToday = today.plusDays(1).atStartOfDay();
+
+		BreadPackage breadPackage = breadPackageRepository.findByBakeryIdAndToday(bakeryId, startOfToday, endOfToday);
 		if (breadPackage == null) {
 			log.info("빵집 ID: {}의 오늘 빵꾸러미가 없습니다", bakeryId);
 			// 빈 빵꾸러미 리턴
