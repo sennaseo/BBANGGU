@@ -5,9 +5,10 @@ import {
 import { MapPinIcon, HeartIcon as HeartSolid } from "@heroicons/react/24/solid";
 import type { BakeryType } from "../../../types/bakery";
 import { useState } from "react";
+import { BakeryInfo } from "../../../store/slices/bakerySlice";
 
 interface RecommendedStoresProps {
-  allbakery: BakeryType[];
+  allbakery: BakeryInfo[];
   toggleFavoriteForUser: (bakeryId: number, isLiked: boolean) => void;
   onStoreClick: (id: number) => void;
 }
@@ -21,7 +22,7 @@ export default function RecommendedStores({
   console.log(imgBaseUrl);
   const [sortType, setSortType] = useState<string>("distance");
   const validStores = allbakery.filter(
-    (store): store is BakeryType =>
+    (store): store is BakeryInfo =>
       store != null && store.bakeryId !== undefined
   );
   const sortedStores = validStores.sort((a, b) => {
@@ -109,7 +110,8 @@ export default function RecommendedStores({
                   </button>
                 </div>
               </div>
-              {store.price ? (
+
+              {store.package.data[0].quantity !== 0 ? (
                 <div>
                   <span className="text-[18px] font-bold text-[#333333]">
                     {store.price.toLocaleString()}원

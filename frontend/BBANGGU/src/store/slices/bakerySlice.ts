@@ -1,5 +1,5 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { MapApi } from '../../api/user/map/MapApi';
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { MapApi } from "../../api/user/map/MapApi";
 
 interface PickupTime {
   startTime: string;
@@ -48,17 +48,17 @@ const initialState: BakeryState = {
 };
 
 export const fetchBakeryList = createAsyncThunk(
-  'bakery/fetchBakeryList',
+  "bakery/fetchBakeryList",
   async () => {
-    console.log('fetchBakeryList 시작');
+    console.log("fetchBakeryList 시작");
     const response = await MapApi.getBakeryList();
-    console.log('받아온 가게 목록:', response.data);
+    console.log("받아온 가게 목록:", response.data);
     return response.data;
   }
 );
 
 const bakerySlice = createSlice({
-  name: 'bakery',
+  name: "bakery",
   initialState,
   reducers: {},
   extraReducers: (builder) => {
@@ -73,9 +73,10 @@ const bakerySlice = createSlice({
       })
       .addCase(fetchBakeryList.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message || '가게 정보를 불러오는데 실패했습니다.';
+        state.error =
+          action.error.message || "가게 정보를 불러오는데 실패했습니다.";
       });
   },
 });
 
-export default bakerySlice.reducer; 
+export default bakerySlice.reducer;

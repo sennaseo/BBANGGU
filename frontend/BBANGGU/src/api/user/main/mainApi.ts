@@ -1,13 +1,13 @@
-import axios from 'axios';
-import { ApiResponse } from '../../../types/response';
-import type { PackageType, PackageResponse } from '../../../types/bakery';
-import type { BakeryInfo } from '../../../store/slices/bakerySlice';
-import { store } from '../../../store';
+import axios from "axios";
+import { ApiResponse } from "../../../types/response";
+import type { PackageType, PackageResponse } from "../../../types/bakery";
+import type { BakeryInfo } from "../../../store/slices/bakerySlice";
+import { store } from "../../../store";
+import { error } from "console";
 
 // const BASE_URL = 'http://127.0.0.1:8080';
 // const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://13.124.56.79:8081';
 const BASE_URL = import.meta.env.VITE_API_BASE_URL;
-
 
 export const mainApi = {
   getAllBakeries: async () => {
@@ -17,7 +17,10 @@ export const mainApi = {
       if (token) {
         response = await axios.get<ApiResponse<BakeryInfo[]>>(
           `${BASE_URL}/bakery`,
-          { withCredentials: true, headers: { Authorization: `Bearer ${token}` } }
+          {
+            withCredentials: true,
+            headers: { Authorization: `Bearer ${token}` },
+          }
         );
       } else {
         response = await axios.get<ApiResponse<BakeryInfo[]>>(
@@ -25,10 +28,27 @@ export const mainApi = {
           { withCredentials: true }
         );
       }
-      console.log("getAllBakeries", response.data)
+
+      response.data.data.forEach((bakery: BakeryInfo) => {
+        bakery.package = { data: [] };
+        mainApi
+          .getPackagesByBakeryId(bakery.bakeryId)
+          .then((breadPackage) => {
+            bakery.package.data[0] = {
+              name: breadPackage[0].name,
+              price: breadPackage[0].price,
+              quantity: breadPackage[0].quantity,
+            };
+          })
+          .catch((error) => {
+            console.error("패키지 조회 중 문제 발생", error);
+          });
+      });
+
+      console.log("getAllBakeries", response.data);
       return response.data;
     } catch (error) {
-      console.error('베이커리 목록 조회 실패:', error);
+      console.error("베이커리 목록 조회 실패:", error);
       throw error;
     }
   },
@@ -40,7 +60,10 @@ export const mainApi = {
       if (token) {
         response = await axios.get<PackageResponse>(
           `${BASE_URL}/bread-package/bakery/${bakeryId}`,
-          { withCredentials: true, headers: { Authorization: `Bearer ${token}` } }
+          {
+            withCredentials: true,
+            headers: { Authorization: `Bearer ${token}` },
+          }
         );
       } else {
         response = await axios.get<PackageResponse>(
@@ -91,16 +114,13 @@ export const mainApi = {
   deleteFavorite: async (bakeryId: number): Promise<boolean> => {
     try {
       const token = store.getState().auth.accessToken;
-      const response = await axios.delete(
-        `${BASE_URL}/favorite/${bakeryId}`,
-        {
-          withCredentials: false,
-          headers: { 
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}` 
-          }
+      const response = await axios.delete(`${BASE_URL}/favorite/${bakeryId}`, {
+        withCredentials: false,
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
-      );
+      });
       console.log("deleteFavorite", response.data.data);
       return response.data.data;
     } catch (error) {
@@ -110,7 +130,7 @@ export const mainApi = {
       }
       throw error;
     }
-  }, 
+  },
 
   // 좋아요가 가장 많은 가게 조회 API (/favorite/best)
   getFavoriteBest: async () => {
@@ -120,7 +140,10 @@ export const mainApi = {
       if (token) {
         response = await axios.get<ApiResponse<BakeryInfo[]>>(
           `${BASE_URL}/favorite/best`,
-          { withCredentials: true, headers: { Authorization: `Bearer ${token}` } }
+          {
+            withCredentials: true,
+            headers: { Authorization: `Bearer ${token}` },
+          }
         );
       } else {
         response = await axios.get<ApiResponse<BakeryInfo[]>>(
@@ -130,8 +153,11 @@ export const mainApi = {
       }
       return response.data;
     } catch (error) {
-      console.error(`
-        좋아요가 가장 많은 가게 조회 실패:`, error);
+      console.error(
+        `
+        좋아요가 가장 많은 가게 조회 실패:`,
+        error
+      );
       throw error;
     }
   },
@@ -147,6 +173,5 @@ export const mainApi = {
       console.error(`베이커리 검색 실패:`, error);
       throw error;
     }
-  } 
-}
-
+  },
+};
