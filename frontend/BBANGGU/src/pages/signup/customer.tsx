@@ -52,6 +52,8 @@ export default function CustomerSignupPage() {
       setIsEmailVerificationSent(false)
       if (error.code === 3001) {
         alert('너무 많은 요청을 보냈습니다. 나중에 다시 시도하세요.');
+      } else if (error.code === 1006) {
+        alert('이미 사용 중인 이메일입니다.');
       } else {
         alert('인증번호 전송에 실패했습니다.');
       }
@@ -215,7 +217,7 @@ export default function CustomerSignupPage() {
           </div>
         )
       case "complete":
-        return <SignupCompleteStep userName={formData.name} />
+        return <SignupCompleteStep userName={formData.name} email={formData.email} password={formData.password} />
     }
   }
 
