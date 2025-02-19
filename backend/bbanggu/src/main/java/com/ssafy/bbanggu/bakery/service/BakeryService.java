@@ -254,9 +254,9 @@ public class BakeryService {
 	 * 가게 정산 정보 등록
 	 */
 	@Transactional
-	public BakerySettlementDto createSettlement(BakerySettlementDto settlement, MultipartFile settlementImage, CustomUserDetails userDetails) {
+	public BakerySettlementDto createSettlement(BakerySettlementDto settlement, MultipartFile settlementImage) {
 		User user = User.builder()
-			.userId(userDetails.getUserId())
+			.userId(settlement.userId())
 			.build();
 
 		String settlementImageFileUrl = null;
