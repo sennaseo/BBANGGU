@@ -130,6 +130,7 @@ export const ReviewSection: React.FC = () => {
   };
 
   const photoReviewCount = reviews.filter(review => review.reviewImageUrl).length;
+  
 
   return (
     <div className="w-full">
@@ -254,6 +255,10 @@ export const ReviewSection: React.FC = () => {
                     src={review.profileImageUrl}
                     alt="Profile"
                     className="w-10 h-10 rounded-full object-cover border border-gray-300"
+                    onError={(e) => { 
+                      (e.target as HTMLImageElement).src = "/default-profile.jpg"; 
+
+                    }}
                   />
                   <div className="ml-3">
                     <p className="font-bold text-[#333333]">{review.userName}</p>
