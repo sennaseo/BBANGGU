@@ -1,6 +1,7 @@
-import axios from 'axios';
+import axios from "axios";
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://i12d102.p.ssafy.io:8081';
+const BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || "http://i12d102.p.ssafy.io:8081";
 
 interface ReservationCheckResponse {
   message: string;
@@ -13,30 +14,60 @@ interface ReservationCheckResponse {
 export const ReservationApi = {
   checkReservation: async (bakeryId: number, quantity: number) => {
     try {
-      const accessToken = localStorage.getItem('accessToken');
-      
-      console.log('===== 예약 검증 요청 =====');
-      console.log('요청 데이터:', { bakeryId, quantity });
-      console.log('토큰:', accessToken?.substring(0, 10) + '...');
+      const accessToken = localStorage.getItem("accessToken");
+
+      console.log("===== 예약 검증 요청 =====");
+      console.log("요청 데이터:", { bakeryId, quantity });
+      console.log("토큰:", accessToken?.substring(0, 10) + "...");
 
       const response = await axios.post<ReservationCheckResponse>(
         `${BASE_URL}/reservation/check`,
         { bakeryId, quantity },
         {
           headers: {
-            'Authorization': `Bearer ${accessToken}`,
-            'Content-Type': 'application/json'
-          }
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          },
         }
       );
-      
-      console.log('===== 예약 검증 응답 =====');
-      console.log('응답 데이터:', response.data);
-      
+
+      console.log("===== 예약 검증 응답 =====");
+      console.log("응답 데이터:", response.data);
+
       return response.data;
     } catch (error: any) {
-      console.error('===== 예약 검증 에러 =====');
-      console.error('에러 응답:', error.response?.data);
+      console.error("===== 예약 검증 에러 =====");
+      console.error("에러 응답:", error.response?.data);
+      throw error;
+    }
+  },
+
+  uncheckReservation: async (reservationId: number) => {
+    try {
+      const accessToken = localStorage.getItem("accessToken");
+
+      console.log("===== pending 취소 요청 =====");
+      console.log("reservationId : ", reservationId);
+      console.log("토큰:", accessToken?.substring(0, 10) + "...");
+
+      const response = await axios.post<ReservationCheckResponse>(
+        `${BASE_URL}/reservation/check`,
+        { bakeryId, quantity },
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      console.log("===== 예약 검증 응답 =====");
+      console.log("응답 데이터:", response.data);
+
+      return response.data;
+    } catch (error: any) {
+      console.error("===== 예약 검증 에러 =====");
+      console.error("에러 응답:", error.response?.data);
       throw error;
     }
   },
@@ -48,13 +79,13 @@ export const ReservationApi = {
     amount: number;
   }) => {
     try {
-      const accessToken = localStorage.getItem('accessToken');
-      
-      console.log('===== 예약 생성 요청 데이터 =====', {
+      const accessToken = localStorage.getItem("accessToken");
+
+      console.log("===== 예약 생성 요청 데이터 =====", {
         ...paymentData,
         headers: {
-          'Authorization': `Bearer ${accessToken}`,
-        }
+          Authorization: `Bearer ${accessToken}`,
+        },
       });
 
       const response = await axios.post(
@@ -62,17 +93,17 @@ export const ReservationApi = {
         paymentData,
         {
           headers: {
-            'Authorization': `Bearer ${accessToken}`,
-            'Content-Type': 'application/json'
-          }
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          },
         }
       );
-      
+
       return response.data;
     } catch (error: any) {
-      console.error('===== 예약 생성 에러 =====');
-      console.error('에러 응답:', error.response?.data);
+      console.error("===== 예약 생성 에러 =====");
+      console.error("에러 응답:", error.response?.data);
       throw error;
     }
   },
-}; 
+};
