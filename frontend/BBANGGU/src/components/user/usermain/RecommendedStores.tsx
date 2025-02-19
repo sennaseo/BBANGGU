@@ -113,10 +113,10 @@ export default function RecommendedStores({
               {store.package.data[0].quantity !== 0 ? (
                 <div>
                   <span className="text-[18px] font-bold text-[#333333]">
-                    {store.price.toLocaleString()}원
+                    {store.package.data[0].price.toLocaleString()}원
                   </span>
                   <span className="text-[14px] text-[#D2D2D2] line-through ml-2">
-                    {(store.price * 2).toLocaleString()}원
+                    {(store.package.data[0].price * 2).toLocaleString()}원
                   </span>
                 </div>
               ) : (

@@ -2,17 +2,12 @@ package com.ssafy.bbanggu.breadpackage;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.List;
-import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.parameters.P;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -29,7 +24,6 @@ import com.ssafy.bbanggu.breadpackage.dto.TodayBreadPackageDto;
 import com.ssafy.bbanggu.common.exception.CustomException;
 import com.ssafy.bbanggu.common.exception.ErrorCode;
 import com.ssafy.bbanggu.common.response.ApiResponse;
-import com.ssafy.bbanggu.common.response.ErrorResponse;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -56,7 +50,6 @@ public class BreadPackageController {
 		return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse("빵꾸러미 등록 성공", createdPackage));
 	}
 
-
 	/**
 	 * 빵꾸러미 삭제 API
 	 */
@@ -66,7 +59,6 @@ public class BreadPackageController {
 		breadPackageService.deletePackage(package_id);
 		return ResponseEntity.ok().body(new ApiResponse("빵꾸러미 삭제가 성공적으로 완료되었습니다.", null));
 	}
-
 
 	/**
 	 * 가게별 빵꾸러미 현황 조회 API
@@ -79,12 +71,11 @@ public class BreadPackageController {
 	public ResponseEntity<ApiResponse> getTodayPackagesByBakeryId(
 		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@PathVariable Long bakery_id
-	){
+	) {
 		log.info("✨ {}번 빵집 빵꾸러미 현황 ✨", bakery_id);
 		TodayBreadPackageDto response = breadPackageService.getTodayPackagesByBakeryId(userDetails, bakery_id);
 		return ResponseEntity.ok(new ApiResponse("오늘의 빵꾸러미 조회가 완료되었습니다.", response));
 	}
-
 
 	/**
 	 * 가게의 전체 빵꾸러미 조회 API
@@ -93,14 +84,12 @@ public class BreadPackageController {
 	public ResponseEntity<ApiResponse> getPackagesByBakeryId(@PathVariable Long bakeryId) {
 		log.info("✨ {}번 가게의 빵꾸러미 조회 ✨", bakeryId);
 		List<BreadPackageDto> packages = breadPackageService.getPackagesByBakeryId(bakeryId);
-		if(!packages.isEmpty()) {
+		if (!packages.isEmpty()) {
 			return ResponseEntity.ok().body(new ApiResponse(bakeryId + "번 가게의 빵꾸러미를 모두 조회하였습니다.", packages));
-		}
-		else {
+		} else {
 			return ResponseEntity.ok().body(new ApiResponse(bakeryId + "번 가게에는 빵꾸러미가 존재하지 않습니다.", packages));
 		}
 	}
-
 
 	/**
 	 * 가게의 기간 내 빵꾸러미 전체 조회 API
@@ -129,7 +118,6 @@ public class BreadPackageController {
 		}
 	}
 
-
 	/**
 	 * 빵꾸러미 수정 API
 	 */
@@ -138,12 +126,11 @@ public class BreadPackageController {
 		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@PathVariable Long package_id,
 		@Valid @RequestBody BreadPackageDto request
-	){
+	) {
 		log.info("✨ 빵꾸러미 수정 ✨");
 		BreadPackageDto updatedPackage = breadPackageService.updateBreadPackage(userDetails, package_id, request);
 		return ResponseEntity.ok().body(new ApiResponse("빵꾸러미 수정이 성공적으로 완료되었습니다.", updatedPackage));
 	}
-
 
 	/**
 	 * 오늘 빵꾸러미를 등록한 가게의 빵꾸러미를 다음날 수동 삭제하는 API

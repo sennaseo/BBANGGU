@@ -55,11 +55,11 @@ export function UserPayment() {
         event.preventDefault();
 
         try {
-          // 진행 중인 결제 취소
-          await cancelPaymentProcess(orderInfo.reservationId);
+          // // 진행 중인 결제 취소
+          // await cancelPaymentProcess(orderInfo.reservationId);
 
-          // 예약 상태 롤백
-          await rollbackReservation(orderInfo.reservationId);
+          // // 예약 상태 롤백
+          // await rollbackReservation(orderInfo.reservationId);
 
           // 사용자에게 알림
           alert("결제가 취소되었습니다.");
@@ -104,16 +104,17 @@ export function UserPayment() {
 
     try {
       await ReservationApi.uncheckReservation(
-        sessionStorage.getItem("currentReservationId")
+        Number(sessionStorage.getItem("currentReservationId")),
+        orderInfo.quantity
       );
-      setCurrentReservationId(null);
+      sessionStorage.removeItem("currentReservationId");
       setOrderInfo({
-        quantity: 1,
+        quantity: 0,
         totalPrice: 0,
         reservationId: 0,
       });
     } catch (error) {
-      console.error("예약 취소 실패:", error);
+      console.error("결제대기 취소 실패:", error);
     }
   };
 
