@@ -3,7 +3,6 @@ import react from '@vitejs/plugin-react'
 import { fileURLToPath } from 'node:url'
 import path from 'path'
 import { VitePWA } from 'vite-plugin-pwa'
-import { viteStaticCopy } from 'vite-plugin-static-copy';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -58,14 +57,6 @@ export default defineConfig({
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg}']
       }
-    }),
-    viteStaticCopy({
-      targets: [
-        {
-          src: 'src/assets',  // 복사할 원본 폴더
-          dest: 'src/assets'      // 빌드 후 위치 (dist/src/assets)
-        }
-      ]
     })
   ],
   resolve: {
