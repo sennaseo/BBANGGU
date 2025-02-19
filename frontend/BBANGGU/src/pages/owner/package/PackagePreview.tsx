@@ -20,6 +20,7 @@ import { compressImage } from '../../../utils/imageCompression';
 import { BREAD_CATEGORIES } from '../bread/BreadRegisterPage';  // 카테고리 정보 import
 import { getUserInfo } from '../../../api/user/user';
 import { getBakeryByOwner } from '../../../api/owner/bakery';
+import LoadingSpinner from '../../../components/common/LoadingSpinner';
 
 // 타입 정의 추가
 interface BreadCombination {
@@ -39,6 +40,7 @@ const PackagePreview: React.FC = () => {
   const items = useSelector((state: RootState) => state.package.items);
   const { accessToken } = useSelector((state: RootState) => state.auth);
   const [newItemIds, setNewItemIds] = useState<string[]>([]);
+  const isLoading = useSelector((state: RootState) => state.package.loading);
 
   useEffect(() => {
     const fetchBakeryInfo = async () => {
@@ -330,11 +332,30 @@ const PackagePreview: React.FC = () => {
   };
 
   return (
-    <div className="h-[100vh] bg-white flex flex-col">
+    <div className="min-h-screen bg-white flex flex-col relative">
       <Header 
-        title="재고 확인" 
+        title="미리보기" 
+        onBack={() => navigate(-1)}
       />
-      
+
+      {/* 로딩 오버레이 */}
+      {isLoading && (
+        <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white/90 p-8 rounded-2xl flex flex-col items-center shadow-xl 
+            animate-fadeIn mx-4 border border-gray-100">
+            <LoadingSpinner />
+            <p className="mt-6 text-xl font-semibold text-[#FC973B]">
+              빵을 분석하고 있어요
+            </p>
+            <div className="flex items-center gap-1 mt-2">
+              <div className="w-2 h-2 bg-[#FC973B] rounded-full animate-bounce" style={{ animationDelay: '0s' }}></div>
+              <div className="w-2 h-2 bg-[#FC973B] rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+              <div className="w-2 h-2 bg-[#FC973B] rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <ProgressBar 
         currentStep={PACKAGE_STEPS.PREVIEW} 
         totalSteps={TOTAL_PACKAGE_STEPS}
