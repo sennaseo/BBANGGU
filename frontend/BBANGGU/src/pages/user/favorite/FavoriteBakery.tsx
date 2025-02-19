@@ -153,7 +153,7 @@ export const FavoriteBakery = () => {
                     <span className="text-[#FC973B]">
                       <StarIcon className="size-4 solid fill-[#FFB933] stroke-none" />
                     </span>
-                    <span className="text-[#787878] font-semibold">{bakery.star}</span>
+                    <span className="text-[#787878] font-semibold">{bakery.star.toFixed(1)}</span>
                     <span className="text-xs text-[#E1E1E1]">({bakery.reviewCnt})</span>
                   </div>
                   <div className="absolute right-0 -top-6">
