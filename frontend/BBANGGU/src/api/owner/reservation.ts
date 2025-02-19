@@ -56,6 +56,21 @@ interface CancelResponse {
 
 export const getTodayReservations = async (bakeryId: number) => {
   try {
+    const response = await axiosInstance.get<ReservationResponse>(
+      `/reservation/${bakeryId}`
+    );
+
+    console.log('오늘의 예약 조회 응답:', response.data);
+    return response.data;
+  } catch (error) {
+    console.error('오늘의 예약 조회 실패:', error);
+    throw error;
+  }
+};
+
+
+export const getReservations = async (bakeryId: number) => {
+  try {
     // 오늘 날짜의 시작과 끝 시간 계산
     const today = new Date();
     const tomorrow = new Date(today);
