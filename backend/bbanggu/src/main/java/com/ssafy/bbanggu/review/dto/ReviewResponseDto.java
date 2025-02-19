@@ -7,6 +7,8 @@ import com.ssafy.bbanggu.review.domain.Review;
 public record ReviewResponseDto (
 	Long reviewId,
 	Long reservationId,
+	String userName,
+	String profileImageUrl,
 	int rating,
 	String content,
 	String reviewImageUrl,
@@ -16,6 +18,8 @@ public record ReviewResponseDto (
 		return new ReviewResponseDto(
 			review.getReviewId(),
 			review.getReservation().getReservationId(),
+			review.getUser().getName(),
+			review.getUser().getProfileImageUrl(),
 			review.getRating(),
 			review.getContent(),
 			review.getReviewImageUrl(),
