@@ -35,16 +35,21 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
 		String status);
 
 	@Query("""
-		    SELECT new com.ssafy.bbanggu.reservation.dto.ReservationInfo(
-		        r.reservationId, u.name, u.profileImageUrl, u.phone, r.createdAt, r.status, r.quantity
-		    )
-		    FROM Reservation r
-		    JOIN r.user u
-		    WHERE r.bakery.bakeryId = :bakeryId
-		    AND DATE(r.createdAt) = CURRENT_DATE
-		    ORDER BY r.createdAt DESC
-		""")
-	List<ReservationInfo> findTodayReservationsByBakeryId(@Param("bakeryId") Long bakeryId);
+    SELECT new com.ssafy.bbanggu.reservation.dto.ReservationInfo(
+        r.reservationId, u.name, u.profileImageUrl, u.phone, r.createdAt, r.status, r.quantity
+    )
+    FROM Reservation r
+    JOIN r.user u
+    WHERE r.bakery.bakeryId = :bakeryId
+    AND r.createdAt >= :startOfToday
+    AND r.createdAt < :startOfTomorrow
+    ORDER BY r.createdAt DESC
+""")
+	List<ReservationInfo> findTodayReservationsByBakeryId(
+		@Param("bakeryId") Long bakeryId,
+		@Param("startOfToday") LocalDateTime startOfToday,
+		@Param("startOfTomorrow") LocalDateTime startOfTomorrow
+	);
 
 	// ✅ 특정 가게(bakeryId)의 오늘 픽업 완료된 예약들의 구매 수량 총합 구하기
 	@Query("SELECT COALESCE(SUM(r.quantity), 0) FROM Reservation r " +
