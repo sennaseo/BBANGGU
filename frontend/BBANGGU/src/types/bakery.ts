@@ -8,6 +8,8 @@ export interface UserType {
 }
 
 export interface ReviewType {
+  userName: string
+  profileImageUrl: string | "default-profile.png"
   reviewId: number
   bakeryId: number
   rating: number
