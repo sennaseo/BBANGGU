@@ -17,22 +17,25 @@ export function SettlementInfoStep({ formData, onChange }: SettlementInfoStepPro
   const [imagePreview, setImagePreview] = useState<string | null>(null)
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
+    const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader()
+      const reader = new FileReader();
       reader.onloadend = () => {
-        setImagePreview(reader.result as string)
+        setImagePreview(reader.result as string);
+  
+        // 🔹 `onChange`를 통해 File 객체를 전달하도록 수정
         onChange({
           ...e,
           target: {
-            name: "businessRegistration",
-            value: reader.result as string,
+            name: "businessLicenseFileUrl",
+            value: reader.result as string, 
           },
-        } as React.ChangeEvent<HTMLInputElement>)
-      }
-      reader.readAsDataURL(file)
+        } as React.ChangeEvent<HTMLInputElement>);
+      };
+      reader.readAsDataURL(file);
     }
-  }
+  };
+  
 
   const handleAccountNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value.replace(/[^0-9]/g, "")
