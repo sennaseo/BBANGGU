@@ -18,7 +18,7 @@ interface PaymentMethodProps {
 
 export function PaymentMethod({
   totalPrice,
-  reservationId,
+  // reservationId,
   onPaymentStart,
   onPaymentEnd,
 }: PaymentMethodProps) {
@@ -82,7 +82,7 @@ export function PaymentMethod({
     };
   }, [isProcessing, onPaymentEnd]);
 
-  const isPaymentDisabled = !selectedMethod || !isAgreed || isProcessing;
+  // const isPaymentDisabled = !selectedMethod || !isAgreed || isProcessing;
 
   return (
     <div className="w-full max-w-[430px] mx-auto min-h-screen bg-white pb-20">

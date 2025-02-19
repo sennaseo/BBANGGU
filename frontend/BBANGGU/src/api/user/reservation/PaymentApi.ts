@@ -1,4 +1,5 @@
 import axios from "axios";
+import { ApiResponse } from "../../../types/response";
 
 const BASE_URL =
   import.meta.env.VITE_API_BASE_URL || "http://i12d102.p.ssafy.io:8081";
@@ -42,17 +43,18 @@ export const ReservationApi = {
     }
   },
 
-  uncheckReservation: async (reservationId: number) => {
+  uncheckReservation: async (reservationId: number, quantity: number) => {
     try {
       const accessToken = localStorage.getItem("accessToken");
 
       console.log("===== pending 취소 요청 =====");
       console.log("reservationId : ", reservationId);
+      console.log("quantity : ", quantity);
       console.log("토큰:", accessToken?.substring(0, 10) + "...");
 
-      const response = await axios.post<ReservationCheckResponse>(
-        `${BASE_URL}/reservation/check`,
-        { bakeryId, quantity },
+      const response = await axios.post<ApiResponse<boolean>>(
+        `${BASE_URL}/reservation/uncheck`,
+        { reservationId, quantity },
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -61,13 +63,9 @@ export const ReservationApi = {
         }
       );
 
-      console.log("===== 예약 검증 응답 =====");
-      console.log("응답 데이터:", response.data);
-
-      return response.data;
+      console.log("응답 메시지: ", response.data.message);
     } catch (error: any) {
-      console.error("===== 예약 검증 에러 =====");
-      console.error("에러 응답:", error.response?.data);
+      console.error("에러: ", error);
       throw error;
     }
   },
