@@ -15,12 +15,11 @@ interface BakeryInfo {
   reviewCnt: number;
 }
 
-interface UpdateBakeryRequest {
+export interface UpdateBakeryRequest {
   name?: string;
   description?: string;
   addressRoad?: string;
   addressDetail?: string;
-  photoUrl?: string;
 }
 
 interface SettlementInfo {
@@ -53,18 +52,49 @@ export const getBakeryByUserId = async (): Promise<BakeryInfo> => {
     throw error;
   }
 };
-
-// 가게 정보 수정
-export const updateBakery = async (bakeryId: number, data: UpdateBakeryRequest): Promise<BakeryInfo> => {
+export const updateBakery = async (
+  bakeryId: number,
+  data: UpdateBakeryRequest,
+  profileImage?: File,
+  storeImage?: File
+): Promise<BakeryInfo> => {
   try {
-    const response = await instance.put(`/bakery/${bakeryId}`, data);
+    const formData = new FormData();
+
+    // 📌 JSON 데이터를 'bakery' 키로 추가 (백엔드 명세에 맞춤)
+    formData.append("bakery", new Blob([JSON.stringify(data)], { type: "application/json" }));
+
+    // 📌 가게 프로필 이미지 추가 (백엔드에서 기대하는 bakeryImage 키 사용)
+    if (profileImage) {
+      formData.append("bakeryImage", profileImage);
+    }
+
+    // 📌 가게 대표 이미지 추가 (백엔드에서 기대하는 bakeryBackgroundImage 키 사용)
+    if (storeImage) {
+      formData.append("bakeryBackgroundImage", storeImage);
+    }
+
+    // FormData 내용 확인 (디버깅용)
+    formData.forEach((value, key) => {
+      console.log(`${key}:`, value);
+    });
+
+    // 📌 API 요청 (headers에서 'Content-Type' 제거 → Axios가 자동 설정)
+    const response = await instance.patch(`/bakery/${bakeryId}`, formData, {
+      headers: {
+        Accept: "application/json",
+      },
+    });
+
+    // 📌 응답 데이터 타입 캐스팅
     const responseData: ApiResponse<BakeryInfo> = response.data;
     return responseData.data;
   } catch (error) {
-    console.error('Error updating bakery:', error);
+    console.error("Error updating bakery:", error);
     throw error;
   }
 };
+
 
 // 정산 정보 조회
 export const getSettlementInfo = async (bakeryId: number): Promise<SettlementInfo> => {

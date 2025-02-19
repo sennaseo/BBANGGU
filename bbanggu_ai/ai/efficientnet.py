@@ -5,11 +5,12 @@ import torch.nn as nn
 import torchvision.models as models
 import torchvision.transforms as transforms
 from PIL import Image
-from torchvision.models import EfficientNet_B2_Weights
+from torchvision.models import EfficientNet_B7_Weights, EfficientNet_B2_Weights
 
 
 def load_model(model_path, num_classes):
-    model = models.efficientnet_b2(weights=EfficientNet_B2_Weights.DEFAULT)
+    # model = models.efficientnet_b2(weights=EfficientNet_B2_Weights.DEFAULT)
+    model = models.efficientnet_b7(weights=EfficientNet_B7_Weights.DEFAULT)
     model.classifier[1] = nn.Linear(model.classifier[1].in_features, num_classes)
     model.load_state_dict(torch.load(model_path, map_location=torch.device('cpu')))
     model.eval()
@@ -17,7 +18,7 @@ def load_model(model_path, num_classes):
 
 
 def classify(cropped_image_dir: str, class_filter: list = None):
-    model_path = './models/efficientnet_b2.pth'
+    model_path = './models/efficientnet_b7.pth'
     class_names = [
         'bagel', 'baguette', 'bun', 'cake', 'croissant', 'croquette',
         'financier', 'pizza', 'pretzel', 'red_bean', 'scone', 'soboro', 'tart', 'white_bread'
