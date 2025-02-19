@@ -63,7 +63,7 @@ export default defineConfig({
       targets: [
         {
           src: 'src/assets',  // 복사할 원본 폴더
-          dest: 'assets'      // 빌드 후 위치 (dist/assets)
+          dest: 'src/assets'      // 빌드 후 위치 (dist/src/assets)
         }
       ]
     })
