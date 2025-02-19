@@ -79,7 +79,7 @@ public class ReservationService {
 
 		BreadPackage breadPackage = breadPackageRepository.findById(reservation.getBreadPackage().getPackageId())
 			.orElseThrow(() -> new CustomException(ErrorCode.BREAD_PACKAGE_NOT_FOUND));
-		breadPackage.setPending(breadPackage.getPending() + quantity);
+		breadPackage.setPending(breadPackage.getPending() - quantity);
 		log.info("✅ 빵꾸러미 결제대기 복구완료");
 	}
 	/**
