@@ -33,22 +33,17 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
 	List<Reservation> findByBakery_BakeryIdAndCreatedAtBetween(long bakeryId, LocalDateTime startDate, LocalDateTime endDate);
 	Optional<Reservation> findByUser_UserIdAndBreadPackageAndStatus(long userId, BreadPackage breadPackage, String status);
 
-	@Query("""
-        SELECT new com.ssafy.bbanggu.reservation.dto.ReservationInfo(
-            r.reservationId, u.name, u.profileImageUrl, u.phone, r.createdAt, r.status, r.quantity
-        )
-        FROM Reservation r
-        JOIN r.user u
-        WHERE r.bakery.bakeryId = :bakeryId
-        AND DATE(r.createdAt) = CURRENT_DATE
-        ORDER BY r.createdAt DESC
-    """)
+	@Query("SELECT COALESCE(SUM(r.quantity), 0) FROM Reservation r " +
+		"WHERE r.bakery.bakeryId = :bakeryId " +
+		"AND r.pickupAt >= CONCAT(CURRENT_DATE, ' 00:00:00') " +
+		"AND r.pickupAt < CONCAT(CURRENT_DATE + INTERVAL 1 DAY, ' 00:00:00') " +
+		"AND r.pickupAt IS NOT NULL")
 	List<ReservationInfo> findTodayReservationsByBakeryId(@Param("bakeryId") Long bakeryId);
 
 	// ✅ 특정 가게(bakeryId)의 오늘 픽업 완료된 예약들의 구매 수량 총합 구하기
 	@Query("SELECT COALESCE(SUM(r.quantity), 0) FROM Reservation r " +
 		"WHERE r.bakery.bakeryId = :bakeryId " +
-		"AND DATE(CONVERT_TZ(r.pickupAt, '+00:00', '+09:00')) = CURRENT_DATE " +
+		"AND DATE(r.pickupAt) = CURRENT_DATE " +
 		"AND r.pickupAt IS NOT NULL")
 	int getTotalPickedUpQuantityTodayByBakeryId(Long bakeryId);
 
