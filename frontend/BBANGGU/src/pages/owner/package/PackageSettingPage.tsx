@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Header from '../../../components/owner/header/Header';
-import breadBagIcon from '../../../../dist/bakery/bread_pakage.svg';
-import wonIcon from '../../../../dist/bakery/won_icon.png';
+import breadBagIcon from '../../../../public/bakery/bread_pakage.svg';
+import wonIcon from '../../../../public/bakery/won_icon.png';
 import { ExclamationTriangleIcon, CurrencyDollarIcon, HashtagIcon } from '@heroicons/react/24/outline';
 import { registerPackage, getPickupTime, updatePickupTime, updatePackage } from '../../../api/owner/package';
 import { useDispatch, useSelector } from 'react-redux';

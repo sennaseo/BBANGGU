@@ -1,5 +1,5 @@
 import React from 'react';
-import breadLoading from '../../../dist/bakery/cat.gif';
+import breadLoading from '/bakery/cat.gif';
 
 const LoadingSpinner: React.FC = () => {
   return (
