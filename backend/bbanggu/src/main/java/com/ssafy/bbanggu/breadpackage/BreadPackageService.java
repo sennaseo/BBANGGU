@@ -102,6 +102,7 @@ public class BreadPackageService {
 		}
 
 		List<BreadPackage> breadPackages = breadPackageRepository.findByBakery_BakeryIdAndDeletedAtIsNull(bakeryId);
+		System.out.println("!!!!!빵꾸러미 조회 테스트!!!!!: " + breadPackages.get(0).getPending());
 		return breadPackages.stream()
 			.map(BreadPackageDto::from)
 			.collect(Collectors.toList());
@@ -189,6 +190,7 @@ public class BreadPackageService {
 
 	/**
 	 * 특정 가게의 하루 지난 빵꾸러미를 삭제 처리
+	 *
 	 * @param bakeryId 가게 ID
 	 */
 	@Transactional
