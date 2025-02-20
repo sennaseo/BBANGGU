@@ -447,4 +447,11 @@ public class ReservationService {
 
 		return response;
 	}
+
+	public int getReservationCnt(CustomUserDetails userDetails) {
+		User user = userRepository.findById(userDetails.getUserId())
+			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+		return reservationRepository.countCompletedReservationsByUserId(user.getUserId());
+	}
 }
