@@ -71,4 +71,7 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
 	// 오늘 빵꾸러미를 등록한 모든 가게의 아이디 조회
 	@Query("SELECT DISTINCT bp.bakery.bakeryId FROM BreadPackage bp WHERE bp.deletedAt IS NULL")
 	List<Long> findAllActiveBakeryIdsWithPackages();
+
+	@Query("SELECT COUNT(r) FROM Reservation r WHERE r.user.userId = :userId AND r.status = 'COMPLETED'")
+	int countCompletedReservationsByUserId(@Param("userId") Long userId);
 }

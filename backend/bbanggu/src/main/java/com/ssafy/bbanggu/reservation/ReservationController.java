@@ -137,6 +137,18 @@ public class ReservationController {
 	}
 
 	/**
+	 * 사용자의 픽업 완료된 예약 개수 조회
+	 *
+	 * @param userDetails 로그인한 사용자 정보
+	 * @return 예약 개수
+	 */
+	@GetMapping("/user/total")
+	public ResponseEntity<ApiResponse> getUserTotalReservationCnt(@AuthenticationPrincipal CustomUserDetails userDetails) {
+		int response = reservationService.getReservationCnt(userDetails);
+		return ResponseEntity.ok(new ApiResponse("사용자가 산 빵꾸러미의 전체 개수를 조회하였습니다.", response));
+	}
+
+	/**
 	 * 사장님 오늘의 예약 조회
 	 *
 	 * @param userDetails 현재 로그인한 사용자 정보
