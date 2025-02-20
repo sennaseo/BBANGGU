@@ -75,7 +75,7 @@ export default function BakeryDetail() {
           <div className="px-[20px]">
             {userInfo && <BakeryInfo bakery={bakery} onFavoriteUpdate={toggleLike} />}
           </div>
-          <BakeryPackage packages={bakery.package.data} />
+          <BakeryPackage bakeryId={bakery.package.data[0].bakeryId} />
           <BakeryLocation location={bakery}/>
           <div className="px-[20px]">
             {userInfo && <BakeryReviews bakeryId={bakery.bakeryId} reviews={bakery.review} user={userInfo} />}
