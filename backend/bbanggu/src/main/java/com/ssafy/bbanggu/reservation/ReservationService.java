@@ -134,6 +134,7 @@ public class ReservationService {
 
 		// 빵꾸러미 pending 설정
 		breadPackage.setPending(breadPackage.getPending() + request.quantity());
+		breadPackage.setQuantity(breadPackage.getQuantity() - request.quantity());
 
 		Reservation savedReservation = reservationRepository.save(reservation);
 		log.info("🩵 빵꾸러미 예약 생성 완료 (PENDING) 🩵");
@@ -180,8 +181,7 @@ public class ReservationService {
 			.orElseThrow(() -> new CustomException(ErrorCode.BREAD_PACKAGE_NOT_FOUND));
 
 		int quantity_origin = breadPackage.getQuantity();
-		breadPackage.setQuantity(quantity_origin - breadPackage.getPending());
-		breadPackage.setPending(0);
+		breadPackage.setPending(breadPackage.getPending() - reservation.getQuantity());
 		BreadPackage newBreadPackage = breadPackageRepository.save(breadPackage);
 		log.info("✅ {}번 빵꾸러미 남은 개수: {} -> {}개", newBreadPackage.getPackageId(), quantity_origin,
 			newBreadPackage.getQuantity());
