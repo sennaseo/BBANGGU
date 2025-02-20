@@ -15,8 +15,7 @@ public record BreadPackageDto (
 	@NotNull(message = "필수 입력 필드 '개수'가 입력되지 않았습니다.")
 	Integer quantity,
 	String name,
-	Integer initialQuantity,
-	Integer pending
+	Integer initialQuantity
 ) {
 	public static BreadPackageDto from(BreadPackage breadPackage) {
 		return new BreadPackageDto(
@@ -25,8 +24,7 @@ public record BreadPackageDto (
 			breadPackage.getPrice(),
 			breadPackage.getQuantity(),
 			breadPackage.getName(),
-			breadPackage.getInitialQuantity(),
-			breadPackage.getPending()
+			breadPackage.getInitialQuantity()
 		);
 	}
 }
