@@ -141,6 +141,7 @@ public class ReviewService {
 		if (totalReviews == 0) {
 			return 0;
 		}
+
 		return (double) totalRatingSum / totalReviews;
 	}
 
@@ -167,6 +168,7 @@ public class ReviewService {
 	/**
 	 * 사용자 리뷰 조회
 	 */
+	@Transactional
 	public List<ReviewResponseDto> getUserReviews(CustomUserDetails userDetails, Long userId) {
 		User user = userRepository.findById(userDetails.getUserId())
 			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
@@ -180,6 +182,8 @@ public class ReviewService {
 			.map(review -> new ReviewResponseDto(
 				review.getReviewId(),
 				review.getReservation().getReservationId(),
+				review.getUser().getName(),
+				review.getUser().getProfileImageUrl(),
 				review.getRating(),
 				review.getContent(),
 				review.getReviewImageUrl(),
@@ -191,6 +195,7 @@ public class ReviewService {
 	/**
 	 * 가게 리뷰 조회
 	 */
+	@Transactional
 	public List<ReviewResponseDto> getBakeryReviews(Long bakeryId, boolean photoOnly) {
 		Bakery bakery = bakeryRepository.findByBakeryIdAndDeletedAtIsNull(bakeryId);
 		if (bakery == null) {
@@ -208,6 +213,8 @@ public class ReviewService {
 			.map(review -> new ReviewResponseDto(
 				review.getReviewId(),
 				review.getReservation().getReservationId(),
+				review.getUser().getName(),
+				review.getUser().getProfileImageUrl(),
 				review.getRating(),
 				review.getContent(),
 				review.getReviewImageUrl(),

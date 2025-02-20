@@ -18,13 +18,13 @@ const CANCEL_REASONS = [
 ] as const;
 
 // 취소 모달 컴포넌트
-const CancelModal = ({ 
-  isOpen, 
-  onClose, 
-  onConfirm 
-}: { 
-  isOpen: boolean; 
-  onClose: () => void; 
+const CancelModal = ({
+  isOpen,
+  onClose,
+  onConfirm
+}: {
+  isOpen: boolean;
+  onClose: () => void;
   onConfirm: (reason: string) => void;
 }) => {
   const [selectedReason, setSelectedReason] = useState<string>(CANCEL_REASONS[0]);
@@ -97,19 +97,19 @@ const CancelModal = ({
             </button>
           </div>
         </Dialog.Panel>
-        </div>
+      </div>
     </Dialog>
   );
 };
 
 // 취소 사유 모달 컴포넌트 추가
-const CancelReasonModal = ({ 
-  isOpen, 
-  onClose, 
-  reason 
-}: { 
-  isOpen: boolean; 
-  onClose: () => void; 
+const CancelReasonModal = ({
+  isOpen,
+  onClose,
+  reason
+}: {
+  isOpen: boolean;
+  onClose: () => void;
   reason: string;
 }) => {
   return (
@@ -124,7 +124,7 @@ const CancelReasonModal = ({
             {reason}
           </p>
           <div className="mt-6 flex justify-end">
-          <button 
+            <button
               onClick={onClose}
               className="px-4 py-2 text-gray-500 hover:text-gray-700 font-medium"
             >
@@ -141,10 +141,10 @@ const CancelReasonModal = ({
 const maskPhoneNumber = (phone: string) => {
   // 기존 번호에서 하이픈 제거하고 숫자만 추출
   const numbers = phone.replace(/-/g, '');
-  
+
   // 010을 0507로 변경하고 나머지는 마스킹
   const safeNumber = numbers.replace(/^010/, '0507');
-  
+
   // 안심번호 형식으로 포맷팅 (0507-****-1234)
   return safeNumber.replace(/(\d{4})(\d{4})(\d{4})/, '$1-****-$3');
 };
@@ -170,70 +170,52 @@ export interface ReservationInfo {
   cancelReason?: string;
 }
 
-
 export const CustomerList: React.FC<CustomerListProps> = ({ bakeryId, onReservationsUpdate }) => {
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [reservations, setReservations] = useState<ReservationInfo[]>([]);
   const [totalNum, setTotalNum] = useState(0);
   const [endTime, setEndTime] = useState('20:00');
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
   const [selectedReservationId, setSelectedReservationId] = useState<number | null>(null);
   const [isReasonModalOpen, setIsReasonModalOpen] = useState(false);
   const [sortType, setSortType] = useState<SortType>('PAYMENT_TIME');
   const [selectedCancelReason, setSelectedCancelReason] = useState('');
 
-  // 자동 새로고침을 위한 interval 추가
   useEffect(() => {
     const fetchReservations = async () => {
       try {
         setIsLoading(true);
+        // 예약 정보 조회
         const response = await getTodayReservations(bakeryId);
-        
-        // 응답 데이터가 없거나 infos가 없는 경우 빈 배열로 처리
-        const reservationsWithSafeNumber = response.data?.infos 
-          ? response.data.infos.map(reservation => ({
-              ...reservation,
-              phone: reservation.phone.replace(/^010/, '0507')
-            }))
-          : [];
-        
-        setReservations(reservationsWithSafeNumber);
-        onReservationsUpdate(reservationsWithSafeNumber);
-        // totalNum과 endTime도 안전하게 처리
-        setTotalNum(response.data?.totalNum || 0);
-        setEndTime(response.data?.endTime || '20:00');
-      } catch (error: any) {
-        console.error('예약 조회 실패 상세:', error);
-        
-        if (error.response?.status === 404) {
-          // 404는 예약이 없는 정상적인 상황으로 처리
-          setReservations([]);
-          setTotalNum(0);
-          setError(null);
-        } else if (error.response?.status === 500) {
-          setError('서버에 일시적인 문제가 발생했습니다. 잠시 후 다시 시도해주세요.');
-        } else {
-          setError('예약 목록을 불러오는데 실패했습니다.');
+        console.log('예약 조회 결과:', response);
+
+        if (response.data.infos) {
+          setReservations(response.data.infos);
+          onReservationsUpdate(response.data.infos);
+          setTotalNum(response.data?.totalNum || 0);
+          setEndTime(response.data?.endTime || '20:00');
         }
+      } catch (error) {
+        console.error('예약 정보 조회 실패:', error);
+        setError('예약 정보를 불러오는데 실패했습니다.');
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchReservations();
-    
-    const intervalId = setInterval(fetchReservations, 60000);
-    return () => clearInterval(intervalId);
+    if (bakeryId) {  // bakeryId가 있을 때만 호출
+      fetchReservations();
+    }
   }, [bakeryId]);
 
   // 시간 포맷팅 함수
   const formatTime = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleTimeString('ko-KR', { 
-      hour: '2-digit', 
+    return date.toLocaleTimeString('ko-KR', {
+      hour: '2-digit',
       minute: '2-digit',
-      hour12: false 
+      hour12: false
     });
   };
 
@@ -302,7 +284,7 @@ export const CustomerList: React.FC<CustomerListProps> = ({ bakeryId, onReservat
         if (a.status === 'CONFIRMED' && b.status !== 'CONFIRMED') return -1;
         if (a.status !== 'CONFIRMED' && b.status === 'CONFIRMED') return 1;
       }
-      
+
       // 같은 상태면 결제 시간순 정렬
       return new Date(b.paymentTime).getTime() - new Date(a.paymentTime).getTime();
     });
@@ -316,14 +298,14 @@ export const CustomerList: React.FC<CustomerListProps> = ({ bakeryId, onReservat
 
         if (response.data) {
           // 성공 시 UI 업데이트
-          setReservations(prev => prev.map(reservation => 
+          setReservations(prev => prev.map(reservation =>
             reservation.reservationId === reservationId
               ? { ...reservation, status: 'COMPLETED' }
               : reservation
           ));
 
           // 상위 컴포넌트 상태 업데이트
-          onReservationsUpdate(reservations.map(reservation => 
+          onReservationsUpdate(reservations.map(reservation =>
             reservation.reservationId === reservationId
               ? { ...reservation, status: 'COMPLETED' }
               : reservation
@@ -344,7 +326,7 @@ export const CustomerList: React.FC<CustomerListProps> = ({ bakeryId, onReservat
       reservationId,
       reservation: reservations.find(r => r.reservationId === reservationId)
     });
-    
+
     setSelectedReservationId(reservationId);
     setIsCancelModalOpen(true);
   };
@@ -360,7 +342,7 @@ export const CustomerList: React.FC<CustomerListProps> = ({ bakeryId, onReservat
 
       if (response.data) {
         // 상태 업데이트
-        setReservations(prev => prev.map(reservation => 
+        setReservations(prev => prev.map(reservation =>
           reservation.reservationId === selectedReservationId
             ? { ...reservation, status: 'CANCELED', cancelReason: reason }
             : reservation
@@ -395,21 +377,21 @@ export const CustomerList: React.FC<CustomerListProps> = ({ bakeryId, onReservat
             <Menu as="div" className="relative">
               <Menu.Button className="flex items-center gap-1.5 text-gray-600 hover:text-gray-900 transition-colors text-sm">
                 {SORT_OPTIONS.find(option => option.value === sortType)?.label}
-                <svg 
-                  className="w-4 h-4" 
-                  fill="none" 
-                  viewBox="0 0 24 24" 
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
                   stroke="currentColor"
                 >
-                  <path 
-                    strokeLinecap="round" 
-                    strokeLinejoin="round" 
-                    strokeWidth={1.5} 
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={1.5}
                     d="M19 9l-7 7-7-7"
                   />
                 </svg>
               </Menu.Button>
-              
+
               <Transition
                 enter="transition duration-100 ease-out"
                 enterFrom="transform scale-95 opacity-0"
@@ -434,7 +416,7 @@ export const CustomerList: React.FC<CustomerListProps> = ({ bakeryId, onReservat
                           `}
                         >
                           {option.label}
-          </button>
+                        </button>
                       )}
                     </Menu.Item>
                   ))}
@@ -445,25 +427,26 @@ export const CustomerList: React.FC<CustomerListProps> = ({ bakeryId, onReservat
         </div>
 
         {/* 리스트 부분 */}
-        <div className="divide-y divide-gray-100">
-          {sortedReservations.map((reservation, index) => {
-            const statusInfo = getStatusStyle(reservation.status);
-            
-            return (
-              <div 
-                key={index} 
-                className={`p-5 flex items-center justify-between transition-all duration-200
+        {reservations.length > 0 ? (
+          <div className="divide-y divide-gray-100">
+            {sortedReservations.map((reservation, index) => {
+              const statusInfo = getStatusStyle(reservation.status);
+
+              return (
+                <div
+                  key={index}
+                  className={`p-5 flex items-center justify-between transition-all duration-200
                   ${reservation.status !== 'CANCELED' ? 'hover:bg-gray-50' : ''}`}
-              >
-                {/* 왼쪽: 고객 정보 */}
-                <div className="flex flex-col">
-                <div className="flex items-center gap-2">
-                    <span className="text-[16px] font-bold text-[#242424]">
-                      {reservation.name}
-                    </span>
-                    <div className="flex items-center gap-1.5 text-[13px]" 
-                      dangerouslySetInnerHTML={{ 
-                        __html: `
+                >
+                  {/* 왼쪽: 고객 정보 */}
+                  <div className="flex flex-col">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[16px] font-bold text-[#242424]">
+                        {reservation.name}
+                      </span>
+                      <div className="flex items-center gap-1.5 text-[13px]"
+                        dangerouslySetInnerHTML={{
+                          __html: `
                           <span class="${statusInfo.style}">
                             ${statusInfo.icon}
                           </span>
@@ -471,163 +454,169 @@ export const CustomerList: React.FC<CustomerListProps> = ({ bakeryId, onReservat
                             ${statusInfo.text}
                           </span>
                         `
-                      }} 
-                    />
+                        }}
+                      />
+                    </div>
+                    <div className="mt-1 flex items-center gap-3">
+                      <span className="text-[14px] text-gray-600">
+                        빵꾸러미 {reservation.quantitiy}개
+                      </span>
+                      <span className="text-[14px] text-gray-500">
+                        {formatTime(reservation.paymentTime)} 결제
+                      </span>
+                    </div>
                   </div>
-                  <div className="mt-1 flex items-center gap-3">
-                    <span className="text-[14px] text-gray-600">
-                      빵꾸러미 {reservation.quantitiy}개
-                    </span>
-                    <span className="text-[14px] text-gray-500">
-                      {formatTime(reservation.paymentTime)} 결제
-                    </span>
-                  </div>
-                </div>
 
-                {/* 오른쪽: 더보기 메뉴 */}
-                {(reservation.status === 'CONFIRMED' || reservation.status === 'COMPLETED' || reservation.status === 'CANCELED') && (
-                  <Menu as="div" className="relative">
-                    <Menu.Button className="p-2 rounded-full hover:bg-gray-100 transition-colors">
-                      <EllipsisVerticalIcon className="w-5 h-5 text-gray-500" />
-                    </Menu.Button>
-                    
-                    <Transition
-                      enter="transition duration-100 ease-out"
-                      enterFrom="transform scale-95 opacity-0"
-                      enterTo="transform scale-100 opacity-100"
-                      leave="transition duration-75 ease-out"
-                      leaveFrom="transform scale-100 opacity-100"
-                      leaveTo="transform scale-95 opacity-0"
-                    >
-                      <Menu.Items className="absolute right-0 mt-2 w-48 origin-top-right bg-white rounded-lg shadow-lg border border-gray-100 focus:outline-none z-10">
-                        <div className="p-1">
-                          {/* 전화번호 메뉴 아이템 */}
-                          <Menu.Item>
-                            {({ active }) => (
-                              <button
-                                onClick={() => {
-                                  navigator.clipboard.writeText(reservation.phone);
-                                  alert('전화번호가 복사되었습니다.');
-                                }}
-                                className={`
-                                  ${active ? 'bg-gray-50' : ''}
-                                  group flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-gray-700
-                                `}
-                              >
-                                <svg 
-                                  className="w-4 h-4" 
-                                  fill="none" 
-                                  viewBox="0 0 24 24" 
-                                  stroke="currentColor"
-                                >
-                                  <path 
-                                    strokeLinecap="round" 
-                                    strokeLinejoin="round" 
-                                    strokeWidth={2} 
-                                    d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
-                                  />
-                                </svg>
-                                <div className="flex flex-col items-start">
-                                  <span className="text-gray-900">연락처</span>
-                                  <span className="text-gray-500 text-xs">
-                                    {maskPhoneNumber(reservation.phone)}
-                                  </span>
-                                </div>
-                              </button>
-                            )}
-                          </Menu.Item>
+                  {/* 오른쪽: 더보기 메뉴 */}
+                  {(reservation.status === 'CONFIRMED' || reservation.status === 'COMPLETED' || reservation.status === 'CANCELED') && (
+                    <Menu as="div" className="relative">
+                      <Menu.Button className="p-2 rounded-full hover:bg-gray-100 transition-colors">
+                        <EllipsisVerticalIcon className="w-5 h-5 text-gray-500" />
+                      </Menu.Button>
 
-                          {/* 픽업 완료 버튼 - CONFIRMED 상태일 때만 */}
-                          {reservation.status === 'CONFIRMED' && (
-                            <Menu.Item>
-                              {({ active }) => (
-                                <button
-                                  onClick={() => handlePickupComplete(reservation.reservationId)}
-                                  className={`
-                                    ${active ? 'bg-[#FFF9F5] text-[#FC973B]' : 'text-gray-700'}
-                                    group flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm
-                                  `}
-                                >
-                                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                  </svg>
-                                  픽업완료
-                                </button>
-                              )}
-                            </Menu.Item>
-                          )}
-
-                          {/* 주문 취소 버튼 */}
-                          {!['COMPLETED', 'CANCELED'].includes(reservation.status) && (
-                            <Menu.Item>
-                              {({ active }) => (
-                                <button
-                                  onClick={() => handleCancelReservation(reservation.reservationId)}
-                                  className={`
-                                    ${active ? 'bg-red-50 text-red-600' : 'text-gray-700'}
-                                    group flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm
-                                  `}
-                                >
-                                  <svg 
-                                    className="w-4 h-4" 
-                                    fill="none" 
-                                    viewBox="0 0 24 24" 
-                                    stroke="currentColor"
-                                  >
-                                    <path 
-                                      strokeLinecap="round" 
-                                      strokeLinejoin="round" 
-                                      strokeWidth={2} 
-                                      d="M6 18L18 6M6 6l12 12"
-                                    />
-                                  </svg>
-                                  주문취소
-                                </button>
-                              )}
-                            </Menu.Item>
-                          )}
-
-                          {/* 취소 사유 보기 버튼 - CANCELED 상태일 때만 */}
-                          {reservation.status === 'CANCELED' && (
+                      <Transition
+                        enter="transition duration-100 ease-out"
+                        enterFrom="transform scale-95 opacity-0"
+                        enterTo="transform scale-100 opacity-100"
+                        leave="transition duration-75 ease-out"
+                        leaveFrom="transform scale-100 opacity-100"
+                        leaveTo="transform scale-95 opacity-0"
+                      >
+                        <Menu.Items className="absolute right-0 mt-2 w-48 origin-top-right bg-white rounded-lg shadow-lg border border-gray-100 focus:outline-none z-10">
+                          <div className="p-1">
+                            {/* 전화번호 메뉴 아이템 */}
                             <Menu.Item>
                               {({ active }) => (
                                 <button
                                   onClick={() => {
-                                    setSelectedCancelReason(reservation.cancelReason || '취소 사유가 없습니다.');
-                                    setIsReasonModalOpen(true);
+                                    navigator.clipboard.writeText(reservation.phone);
+                                    alert('전화번호가 복사되었습니다.');
                                   }}
                                   className={`
-                                    ${active ? 'bg-gray-50' : ''}
-                                    group flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-gray-700
-                                  `}
+                                  ${active ? 'bg-gray-50' : ''}
+                                  group flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-gray-700
+                                `}
                                 >
-                                  <svg 
-                                    className="w-4 h-4" 
-                                    fill="none" 
-                                    viewBox="0 0 24 24" 
+                                  <svg
+                                    className="w-4 h-4"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
                                     stroke="currentColor"
                                   >
-                                    <path 
-                                      strokeLinecap="round" 
-                                      strokeLinejoin="round" 
-                                      strokeWidth={2} 
-                                      d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      strokeWidth={2}
+                                      d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
                                     />
                                   </svg>
-                                  취소 사유 보기
+                                  <div className="flex flex-col items-start">
+                                    <span className="text-gray-900">연락처</span>
+                                    <span className="text-gray-500 text-xs">
+                                      {maskPhoneNumber(reservation.phone)}
+                                    </span>
+                                  </div>
                                 </button>
                               )}
                             </Menu.Item>
-                          )}
-                        </div>
-                      </Menu.Items>
-                    </Transition>
-                  </Menu>
-                )}
-              </div>
-            );
-          })}
+
+                            {/* 픽업 완료 버튼 - CONFIRMED 상태일 때만 */}
+                            {reservation.status === 'CONFIRMED' && (
+                              <Menu.Item>
+                                {({ active }) => (
+                                  <button
+                                    onClick={() => handlePickupComplete(reservation.reservationId)}
+                                    className={`
+                                    ${active ? 'bg-[#FFF9F5] text-[#FC973B]' : 'text-gray-700'}
+                                    group flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm
+                                  `}
+                                  >
+                                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                    </svg>
+                                    픽업완료
+                                  </button>
+                                )}
+                              </Menu.Item>
+                            )}
+
+                            {/* 주문 취소 버튼 */}
+                            {!['COMPLETED', 'CANCELED'].includes(reservation.status) && (
+                              <Menu.Item>
+                                {({ active }) => (
+                                  <button
+                                    onClick={() => handleCancelReservation(reservation.reservationId)}
+                                    className={`
+                                    ${active ? 'bg-red-50 text-red-600' : 'text-gray-700'}
+                                    group flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm
+                                  `}
+                                  >
+                                    <svg
+                                      className="w-4 h-4"
+                                      fill="none"
+                                      viewBox="0 0 24 24"
+                                      stroke="currentColor"
+                                    >
+                                      <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M6 18L18 6M6 6l12 12"
+                                      />
+                                    </svg>
+                                    주문취소
+                                  </button>
+                                )}
+                              </Menu.Item>
+                            )}
+
+                            {/* 취소 사유 보기 버튼 - CANCELED 상태일 때만 */}
+                            {reservation.status === 'CANCELED' && (
+                              <Menu.Item>
+                                {({ active }) => (
+                                  <button
+                                    onClick={() => {
+                                      setSelectedCancelReason(reservation.cancelReason || '취소 사유가 없습니다.');
+                                      setIsReasonModalOpen(true);
+                                    }}
+                                    className={`
+                                    ${active ? 'bg-gray-50' : ''}
+                                    group flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-gray-700
+                                  `}
+                                  >
+                                    <svg
+                                      className="w-4 h-4"
+                                      fill="none"
+                                      viewBox="0 0 24 24"
+                                      stroke="currentColor"
+                                    >
+                                      <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                                      />
+                                    </svg>
+                                    취소 사유 보기
+                                  </button>
+                                )}
+                              </Menu.Item>
+                            )}
+                          </div>
+                        </Menu.Items>
+                      </Transition>
+                    </Menu>
+                  )}
+                </div>
+              );
+            })}
           </div>
+        ) : (
+          <div className="flex flex-col items-center justify-center py-12 text-gray-500">
+            <p className="text-lg font-semibold">오늘의 예약이 없습니다</p>
+            <p className="text-sm text-center">고객이 예약을 하면 여기에 표시됩니다.</p>
+          </div>
+        )}
       </div>
 
       {/* 취소 모달 */}

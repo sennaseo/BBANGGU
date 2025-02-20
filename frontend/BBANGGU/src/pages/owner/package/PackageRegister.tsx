@@ -3,11 +3,11 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import Header from '../../../components/owner/header/Header';
 import ProgressBar from './components/Progress.Bar';
 import { PACKAGE_STEPS, TOTAL_PACKAGE_STEPS } from './constants/PakageSteps';
-import breadLogo from '../../../assets/images/bakery/bread_logo.svg';
-import breadIcon from '../../../assets/images/bakery/bread_icon.png';
-import wonIcon from '../../../assets/images/bakery/won_icon.png';
-import robotIcon from '../../../assets/images/bakery/robot.svg';
-import breadBagIcon from '../../../assets/images/bakery/bread_pakage.svg';
+import breadLogo from '/bakery/bread_logo.svg';
+import breadIcon from '/bakery/bread_icon.png';
+import wonIcon from '/bakery/won_icon.png';
+import robotIcon from '/bakery/robot.svg';
+import breadBagIcon from '/bakery/bread_pakage.svg';
 
 interface BreadCombination {
   breads: {

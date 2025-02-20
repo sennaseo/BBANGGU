@@ -1,5 +1,7 @@
 package com.ssafy.bbanggu.favorite;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -114,7 +116,12 @@ public class FavoriteService {
 					: bakeryService.calculateDistance(userLat, userLng, b.getLatitude(), b.getLongitude());
 				boolean is_liked = favoriteRepository.existsByUser_UserIdAndBakery_BakeryId(userDetails.getUserId(), b.getBakeryId());
 				PickupTimeDto pickupTime = bakeryPickupService.getPickupTimetable(b.getBakeryId());
-				BreadPackage breadPackage = breadPackageRepository.findByBakeryIdAndToday(b.getBakeryId());
+
+				LocalDate today = LocalDate.now();
+				LocalDateTime startOfToday = today.atStartOfDay();
+				LocalDateTime endOfToday = today.plusDays(1).atStartOfDay();
+
+				BreadPackage breadPackage = breadPackageRepository.findByBakeryIdAndToday(b.getBakeryId(), startOfToday, endOfToday);
 				int price = 0;
 				if (breadPackage != null) {
 					price = breadPackage.getPrice();

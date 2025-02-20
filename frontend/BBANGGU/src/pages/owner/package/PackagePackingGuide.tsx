@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import Header from '../../../components/owner/header/Header';
 import ProgressBar from './components/Progress.Bar';
 import { PACKAGE_STEPS, TOTAL_PACKAGE_STEPS } from './constants/PakageSteps';
-import breadBagIcon from '../../../assets/images/bakery/bread_pakage.svg';
+import breadBagIcon from '/bakery/bread_pakage.svg';
 
 interface PackageGuideProps {
   mode: 'auto' | 'manual';

@@ -94,7 +94,7 @@ export function PaymentSuccess() {
         <div className="flex flex-col items-center space-y-6 mb-10">
           <div className="w-[120px] h-[120px] bg-[#FFF5E9] rounded-full flex items-center justify-center mb-4">
             <img 
-              src="/src/assets/images/bakery/빵꾸러미.png" 
+              src="/bakery/빵꾸러미.png" 
               alt="빵꾸러미" 
               className="h-[80px]"
             />

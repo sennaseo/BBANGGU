@@ -1,10 +1,9 @@
-import { useState, useEffect, useMemo } from "react"
+import { useEffect, useMemo } from "react"
 import type { Reservation } from "../../../store/slices/reservationSlice"
 import { ChevronRight } from "lucide-react"
 import { useNavigate, useParams } from "react-router-dom"
 import dayjs from 'dayjs'
 import 'dayjs/locale/ko' // 한국어 로케일 추가
-import type { BakeryInfo } from "../../../store/slices/bakerySlice"
 interface ReservationListProps {
   reservations?: Reservation[]
   params: {
@@ -14,7 +13,6 @@ interface ReservationListProps {
 
 export function ReservationList({ reservations = [] }: ReservationListProps) {
   const navigate = useNavigate()
-  const [bakeryList] = useState<BakeryInfo[]>([])
   const data = useMemo(() => {
     return reservations.length > 0 ? reservations : []
   }, [reservations])
@@ -22,7 +20,6 @@ export function ReservationList({ reservations = [] }: ReservationListProps) {
 
   useEffect(() => {
     if (
-      bakeryList.length === 0 ||
       data.length === 0 ||
       data.every(
         (reservation) =>
@@ -32,7 +29,7 @@ export function ReservationList({ reservations = [] }: ReservationListProps) {
       console.log("reservation", data)
       return; // bakeryList가 비어있거나 예약 데이터가 없거나 모든 예약이 완료/취소 상태이면 실행하지 않음
     }
-  }, [data, bakeryList]); // bakeryList가 변경될 때만 실행
+  }, [data]); // bakeryList가 변경될 때만 실행
 
   const getStatusLabel = (status: Reservation["status"]) => {
     switch (status.toLowerCase()) {
@@ -69,7 +66,7 @@ export function ReservationList({ reservations = [] }: ReservationListProps) {
               {getStatusLabel(reservation.status)}
             </span>
             <span className="text-base font-bold text-[16px]">
-              {bakeryList.find(b => b.bakeryId === reservation.bakeryId)?.name || '로딩 중...'}
+              {data.find(b => b.bakeryId === reservation.bakeryId)?.bakeryName || '로딩 중...'}
             </span>
           </div>
         </div>

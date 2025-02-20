@@ -97,10 +97,11 @@ public class BakeryController {
 	 */
 	@PostMapping("/settlement")
 	public ResponseEntity<ApiResponse> createSettlement(
-		@RequestBody @Valid BakerySettlementDto settlement,
+		@Valid @RequestPart(name = "settlement", required = false) BakerySettlementDto settlement,
+		@RequestPart(name = "settlementImage", required = false) MultipartFile settlementImage,
 		@AuthenticationPrincipal CustomUserDetails userDetails
 	) {
-		BakerySettlementDto createSettlement = bakeryService.createSettlement(settlement, userDetails);
+		BakerySettlementDto createSettlement = bakeryService.createSettlement(settlement, settlementImage);
 		return ResponseEntity.status(HttpStatus.CREATED)
 			.body(new ApiResponse("가게 정산 정보 등록이 완료되었습니다.", createSettlement));
 	}

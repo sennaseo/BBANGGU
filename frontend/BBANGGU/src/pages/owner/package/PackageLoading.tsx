@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import breadLoading from '../../../assets/images/bakery/cat.gif';
-import breadLoading2 from '../../../assets/images/bakery/wrote.gif';
+import breadLoading from '/bakery/cat.gif';
+import breadLoading2 from '/bakery/wrote.gif';
 
 const PackageLoading: React.FC = () => {
   const navigate = useNavigate();

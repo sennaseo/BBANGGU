@@ -26,6 +26,7 @@ export default function BakeryDetail() {
     try {
       const bakeryData = await fetchBakeryDetail(Number(bakeryId));
       setBakery(bakeryData);
+      console.log("bakeryData", bakeryData)
     } catch (err) {
       setError("베이커리 정보를 불러오는 데 실패했습니다.")
         console.error(err)
@@ -81,7 +82,7 @@ export default function BakeryDetail() {
           </div>  
         </div>
       </div>
-      <OrderButton bakeryId={bakery.bakeryId} />
+      {bakery.package.data[0].quantity > 0 && <OrderButton bakeryId={bakery.bakeryId} />}
     </div>
   )
 }

@@ -4,7 +4,7 @@ import { Header } from '../../../components/owner/editprofile/Header';
 import BottomNavigation from '../../../components/owner/navigations/BottomNavigations/BottomNavigation';
 import { SubmitButton } from '../../../common/form/SubmitButton';
 import { IoTrashOutline } from 'react-icons/io5';
-import { getBakeryByUserId, updateBakery } from '../../../api/bakery/bakery';
+import { getBakeryByUserId, updateBakery, UpdateBakeryRequest } from '../../../api/bakery/bakery';
 
 interface BakeryInfo {
   bakeryId: number;
@@ -18,20 +18,21 @@ interface BakeryInfo {
 
 export function EditStore() {
   const navigate = useNavigate();
-  const [storeImage, setStoreImage] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [profileImage, setProfileImage] = useState<string | null>(null);
   const profileImageRef = useRef<HTMLInputElement>(null);
   const [bakeryInfo, setBakeryInfo] = useState<BakeryInfo | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   // 폼 데이터 상태 추가
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<BakeryInfo>({
+    bakeryId: 0,
     name: '',
     description: '',
     addressRoad: '',
-    addressDetail: ''
+    addressDetail: '',
+    bakeryImageUrl: null,
+    bakeryBackgroundImgUrl: null,
   });
 
   useEffect(() => {
@@ -39,16 +40,22 @@ export function EditStore() {
       try {
         const data = await getBakeryByUserId();
         setBakeryInfo(data);
+        console.log(data);
         // 가게 정보를 폼 데이터에 설정
-        setFormData({
-          name: data.name,
-          description: data.description,
-          addressRoad: data.addressRoad,
-          addressDetail: data.addressDetail
-        });
-        // 이미지 상태 설정
-        setStoreImage(data.bakeryBackgroundImgUrl);
-        setProfileImage(data.bakeryImageUrl);
+        if (data) {
+          if (data) {
+            setFormData({
+              bakeryId: data.bakeryId,
+              name: data.name,
+              description: data.description,
+              addressRoad: data.addressRoad,
+              addressDetail: data.addressDetail,
+              bakeryImageUrl: data.bakeryImageUrl || null,
+              bakeryBackgroundImgUrl: data.bakeryBackgroundImgUrl || null
+            });
+          }
+        }
+
       } catch (error) {
         console.error('가게 정보 조회 실패:', error);
         if (error instanceof Error) {
@@ -75,12 +82,12 @@ export function EditStore() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
+  
     if (!bakeryInfo) {
       alert('가게 정보를 찾을 수 없습니다.');
       return;
     }
-
+  
     // 필수 입력값 검증
     if (!formData.name.trim()) {
       alert('가게 이름을 입력해주세요.');
@@ -98,17 +105,41 @@ export function EditStore() {
       alert('상세 주소를 입력해주세요.');
       return;
     }
-
+  
     try {
-      const updateData = {
+
+      console.log("🖼️ 폼 데이터:", formData);
+      // 가게 프로필 이미지 파일
+      let profileImageFile: File | undefined = undefined;
+  
+      if (formData.bakeryImageUrl && typeof formData.bakeryImageUrl === "string") {
+          const res = await fetch(formData.bakeryImageUrl);
+          const blob = await res.blob();
+          profileImageFile = new File([blob], `profile.${blob.type.split("/")[1] || "jpg"}`, { type: blob.type })
+      }
+  
+      // 가게 배경사진 파일
+      let bakeryBackgroundImgFile: File | undefined = undefined;
+  
+      if (formData.bakeryBackgroundImgUrl && typeof formData.bakeryBackgroundImgUrl === "string") {
+          const res = await fetch(formData.bakeryBackgroundImgUrl);
+          const blob = await res.blob();
+          bakeryBackgroundImgFile = new File([blob], `bakeryBackgroundImg.${blob.type.split("/")[1] || "jpg"}`, { type: blob.type })
+      }
+  
+      // 이미지 파일들이 제대로 변환되었는지 로그로 확인
+      console.log('프로필 이미지:', profileImageFile);
+      console.log('배경 이미지:', bakeryBackgroundImgFile);
+  
+      const updateData: UpdateBakeryRequest = {
         name: formData.name,
         description: formData.description,
         addressRoad: formData.addressRoad,
         addressDetail: formData.addressDetail,
-        photoUrl: profileImage || undefined // null 대신 undefined 사용
       };
-
-      await updateBakery(bakeryInfo.bakeryId, updateData);
+  
+      await updateBakery(bakeryInfo.bakeryId, updateData, profileImageFile, bakeryBackgroundImgFile);
+  
       alert('가게 정보가 성공적으로 수정되었습니다.');
       navigate('/owner/mypage');
     } catch (error) {
@@ -120,13 +151,28 @@ export function EditStore() {
       }
     }
   };
-
+  // 가게 프로필 이미지 클릭
+  const handleProfileImageClick = () => {
+    profileImageRef.current?.click();
+  };
+  
+  // 가게 이미지 클릭
   const handleImageClick = () => {
     fileInputRef.current?.click();
   };
 
+
+  const handleDeleteImage = (name: keyof typeof formData) => {
+    setFormData(prev => ({
+      ...prev,
+      [name]: null
+    }));
+  };
+  
+
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+    const { files, name } = e.target;
+    const file = files?.[0];
     if (file) {
       if (file.size > 5 * 1024 * 1024) {
         alert('파일 크기는 5MB 이하여야 합니다.');
@@ -140,45 +186,47 @@ export function EditStore() {
 
       const reader = new FileReader();
       reader.onloadend = () => {
-        setStoreImage(reader.result as string);
+        setFormData(prev => ({
+          ...prev,
+          [name]: reader.result as string
+        }));
       };
       reader.readAsDataURL(file);
     }
   };
 
-  const handleDeleteImage = () => {
-    setStoreImage(null);
-  };
 
-  const handleProfileImageClick = () => {
-    profileImageRef.current?.click();
-  };
 
-  const handleProfileImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      if (file.size > 5 * 1024 * 1024) {
-        alert('파일 크기는 5MB 이하여야 합니다.');
-        return;
-      }
-
-      if (!file.type.startsWith('image/')) {
-        alert('이미지 파일만 업로드 가능합니다.');
-        return;
-      }
-
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setProfileImage(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleDeleteProfileImage = () => {
-    setProfileImage(null);
-  };
-
+  // const handleProfileImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  //   const { files, name } = e.target;
+  //   const file = files?.[0];
+    
+  //   if (file) {
+  //     if (file.size > 5 * 1024 * 1024) {
+  //       alert('파일 크기는 5MB 이하여야 합니다.');
+  //       return;
+  //     }
+  
+  //     if (!file.type.startsWith('image/')) {
+  //       alert('이미지 파일만 업로드 가능합니다.');
+  //       return;
+  //     }
+  
+  //     const reader = new FileReader();
+  //     reader.onloadend = () => {
+  //       setFormData(prev => ({
+  //         ...prev,
+  //         [name]: reader.result as string  // `name` 속성을 활용해 동적으로 저장
+  //       }));
+  //     };
+  //     reader.readAsDataURL(file);
+  
+  //     // 미리보기 URL 생성 (Blob URL 활용)
+  //     const previewUrl = URL.createObjectURL(file);
+  //     console.log("🖼️ 미리보기 URL:", previewUrl);
+  //   }
+  // };
+  
   const inputClassName = "w-full px-4 py-3 rounded-[8px] border border-[#EFEFEF] placeholder-[#8E8E8E] focus:outline-none focus:border-[#FF9B50]";
 
   if (isLoading) {
@@ -263,7 +311,8 @@ export function EditStore() {
             <input
               type="file"
               ref={profileImageRef}
-              onChange={handleProfileImageChange}
+              name="bakeryImageUrl"
+              onChange={handleImageChange}
               accept="image/*"
               className="hidden"
             />
@@ -271,12 +320,13 @@ export function EditStore() {
               <div className="relative">
                 <button 
                   type="button" 
+                  name="bakeryImageUrl"
                   onClick={handleProfileImageClick}
                   className="w-[120px] h-[120px] border border-[#EFEFEF] rounded-[8px] flex items-center justify-center overflow-hidden"
                 >
-                  {profileImage ? (
+                  {formData.bakeryImageUrl ? (
                     <img 
-                      src={profileImage} 
+                      src={formData.bakeryImageUrl} 
                       alt="가게 프로필 이미지 미리보기" 
                       className="w-full h-full object-cover"
                     />
@@ -286,10 +336,11 @@ export function EditStore() {
                     </svg>
                   )}
                 </button>
-                {profileImage && (
+                {formData.bakeryImageUrl && (
                   <button
                     type="button"
-                    onClick={handleDeleteProfileImage}
+                    name="bakeryImageUrl"
+                    onClick={() => handleDeleteImage("bakeryImageUrl")}
                     className="absolute top-2 right-2 p-1.5 bg-black bg-opacity-50 rounded-full text-white hover:bg-opacity-70"
                   >
                     <IoTrashOutline className="w-5 h-5" />
@@ -309,6 +360,7 @@ export function EditStore() {
             <input
               type="file"
               ref={fileInputRef}
+              name="bakeryBackgroundImgUrl"
               onChange={handleImageChange}
               accept="image/*"
               className="hidden"
@@ -316,12 +368,13 @@ export function EditStore() {
             <div className="relative">
               <button 
                 type="button" 
+                name="bakeryBackgroundImgUrl"
                 onClick={handleImageClick}
                 className="w-full h-[200px] border border-[#EFEFEF] rounded-[8px] flex items-center justify-center overflow-hidden"
               >
-                {storeImage ? (
+                {formData.bakeryBackgroundImgUrl ? (
                   <img 
-                    src={storeImage} 
+                    src={formData.bakeryBackgroundImgUrl} 
                     alt="가게 대표 이미지 미리보기" 
                     className="w-full h-full object-cover"
                   />
@@ -331,10 +384,11 @@ export function EditStore() {
                   </svg>
                 )}
               </button>
-              {storeImage && (
+              {formData.bakeryBackgroundImgUrl && (
                 <button
                   type="button"
-                  onClick={handleDeleteImage}
+                  name="bakeryBackgroundImgUrl"
+                  onClick={() => handleDeleteImage("bakeryBackgroundImgUrl")}
                   className="absolute top-2 right-2 p-1.5 bg-black bg-opacity-50 rounded-full text-white hover:bg-opacity-70"
                 >
                   <IoTrashOutline className="w-5 h-5" />

@@ -1,29 +1,39 @@
-import { HeartIcon as HeartOutline, StarIcon } from "@heroicons/react/24/outline"
-import { MapPinIcon, HeartIcon as HeartSolid } from "@heroicons/react/24/solid"
-import type { BakeryType } from "../../../types/bakery"
+import {
+  HeartIcon as HeartOutline,
+  StarIcon,
+} from "@heroicons/react/24/outline";
+import { MapPinIcon, HeartIcon as HeartSolid } from "@heroicons/react/24/solid";
 import { useState } from "react";
+import { BakeryInfo } from "../../../store/slices/bakerySlice";
 
 interface RecommendedStoresProps {
-  allbakery: BakeryType[]
-  toggleFavoriteForUser: (bakeryId: number, isLiked: boolean) => void
-  onStoreClick: (id: number) => void
+  allbakery: BakeryInfo[];
+  toggleFavoriteForUser: (bakeryId: number, isLiked: boolean) => void;
+  onStoreClick: (id: number) => void;
 }
 
-export default function RecommendedStores({ allbakery, onStoreClick, toggleFavoriteForUser }: RecommendedStoresProps) {
+export default function RecommendedStores({
+  allbakery,
+  onStoreClick,
+  toggleFavoriteForUser,
+}: RecommendedStoresProps) {
   const imgBaseUrl = import.meta.env.VITE_IMAGE_BASE_URL;
   console.log(imgBaseUrl);
   const [sortType, setSortType] = useState<string>("distance");
-  const validStores = allbakery.filter((store): store is BakeryType => store != null && store.bakeryId !== undefined);
+  const validStores = allbakery.filter(
+    (store): store is BakeryInfo =>
+      store != null && store.bakeryId !== undefined
+  );
   const sortedStores = validStores.sort((a, b) => {
     switch (sortType) {
       case "distance":
-        return ((a?.distance ?? 0) - (b?.distance ?? 0));
+        return (a?.distance ?? 0) - (b?.distance ?? 0);
       case "price":
-        return ((a?.price ?? 0) - (b?.price ?? 0));
+        return (a?.price ?? 0) - (b?.price ?? 0);
       case "review":
-        return ((b?.reviewCnt ?? 0) - (a?.reviewCnt ?? 0));
+        return (b?.reviewCnt ?? 0) - (a?.reviewCnt ?? 0);
       case "rating":
-        return ((b?.star ?? 0) - (a?.star ?? 0));
+        return (b?.star ?? 0) - (a?.star ?? 0);
       default:
         return 0;
     }
@@ -49,28 +59,39 @@ export default function RecommendedStores({ allbakery, onStoreClick, toggleFavor
           <div
             key={`store-${store.bakeryId ?? index}`}
             className="flex gap-4 p-4 bg-white rounded-[12px] border border-[#e1e1e1] mx-5 cursor-pointer"
-            onClick={() => onStoreClick(store.bakeryId)}>
+            onClick={() => onStoreClick(store.bakeryId)}
+          >
             <img
-              src={store.bakeryImageUrl ? `${imgBaseUrl}${store.bakeryImageUrl}` : `${imgBaseUrl}/uploads/7ac950cf-8a1e-4087-9215-9a84b67eb93e_breadjjanggu.jpg`}
+              src={
+                store.bakeryImageUrl
+                  ? `${imgBaseUrl}${store.bakeryImageUrl}`
+                  : `${imgBaseUrl}/uploads/7ac950cf-8a1e-4087-9215-9a84b67eb93e_breadjjanggu.jpg`
+              }
               alt={store.name}
               className="w-[100px] h-[100px] object-cover rounded-[12px]"
             />
             <div className="flex-1">
-
               <div className="flex items-start justify-between">
                 <div>
-                  <h3 className="font-bold text-[16px] text-[#333333] mb-1">{store.name}</h3>
+                  <h3 className="font-bold text-[16px] text-[#333333] mb-1">
+                    {store.name}
+                  </h3>
                   <div className="flex items-center gap-1 text-[14px] text-[#757575] mb-1">
                     <span className="flex items-center gap-1">
                       <StarIcon className="size-3.5 solid fill-[#FFB933] stroke-none" />{" "}
                       {(store.star || 0).toFixed(1)}
                     </span>
-                    <span className="text-[12px] text-[#E1E1E1]">({store.reviewCnt ?? 0})</span>
+                    <span className="text-[12px] text-[#E1E1E1]">
+                      ({store.reviewCnt ?? 0})
+                    </span>
                     <span className="flex items-center text-[#D2D2D2] gap-0.5">
                       <MapPinIcon className="size-3.5" /> {store.distance}
                     </span>
                   </div>
-                  <div className="text-[12px] text-[#BFBFBF] mb-1">픽업시간 : {(store.pickupTime?.startTime)} - {(store.pickupTime?.endTime)}</div>
+                  <div className="text-[12px] text-[#BFBFBF] mb-1">
+                    픽업시간 : {store.pickupTime?.startTime} -{" "}
+                    {store.pickupTime?.endTime}
+                  </div>
                 </div>
                 <div className="flex gap-2">
                   <button
@@ -78,7 +99,8 @@ export default function RecommendedStores({ allbakery, onStoreClick, toggleFavor
                     onClick={(e) => {
                       e.stopPropagation();
                       toggleFavoriteForUser(store.bakeryId, store.is_liked);
-                    }}>
+                    }}
+                  >
                     {store.is_liked ? (
                       <HeartSolid className="w-6 h-6 text-[#fc973b]" />
                     ) : (
@@ -87,20 +109,27 @@ export default function RecommendedStores({ allbakery, onStoreClick, toggleFavor
                   </button>
                 </div>
               </div>
-              <div>
-                <span className="text-[18px] font-bold text-[#333333]">
-                  {(store.price || 0).toLocaleString()}원
-                </span>
-                <span className="text-[14px] text-[#D2D2D2] line-through ml-2">
-                  {((store.price || 0)*2).toLocaleString()}원
-                </span>
-              </div>
+
+              {store.package.data[0].quantity !== 0 ? (
+                <div>
+                  <span className="text-[18px] font-bold text-[#333333]">
+                    {store.package.data[0].price.toLocaleString()}원
+                  </span>
+                  <span className="text-[14px] text-[#D2D2D2] line-through ml-2">
+                    {(store.package.data[0].price * 2).toLocaleString()}원
+                  </span>
+                </div>
+              ) : (
+                <div>
+                  <span className="text-[18px] font-bold text-[#D2D2D2]">
+                    빵꾸러미 없음
+                  </span>
+                </div>
+              )}
             </div>
           </div>
-
         ))}
       </div>
     </section>
-  )
+  );
 }
-

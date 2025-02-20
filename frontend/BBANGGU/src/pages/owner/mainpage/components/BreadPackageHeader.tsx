@@ -1,5 +1,5 @@
-import defaultBakeryImage from '../../../../assets/images/bakery/onwer_default_header_img.png';
-import cameraIcon from '../../../../assets/images/bakery/owner_camera_icon.svg';
+import defaultBakeryImage from '/bakery/onwer_default_header_img.png';
+import cameraIcon from '/bakery/owner_camera_icon.svg';
 import { useNavigate } from 'react-router-dom';
 
 interface BreadPackageHeaderProps {

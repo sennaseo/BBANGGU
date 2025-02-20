@@ -4,7 +4,6 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
-import com.ssafy.bbanggu.auth.security.CustomUserDetails;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -13,14 +12,14 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.ssafy.bbanggu.auth.security.CustomUserDetails;
 import com.ssafy.bbanggu.common.response.ApiResponse;
 import com.ssafy.bbanggu.reservation.dto.ReservationCancelRequest;
 import com.ssafy.bbanggu.reservation.dto.ReservationCreateRequest;
-import com.ssafy.bbanggu.reservation.dto.ReservationDTO;
 import com.ssafy.bbanggu.reservation.dto.ReservationForOwner;
 import com.ssafy.bbanggu.reservation.dto.ReservationResponse;
 import com.ssafy.bbanggu.reservation.dto.ValidReservationRequest;
@@ -45,7 +44,7 @@ public class ReservationController {
 	 * @return reservationId, status
 	 */
 	@PostMapping("/check")
-	public ResponseEntity<ApiResponse> valid (
+	public ResponseEntity<ApiResponse> valid(
 		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@Valid @RequestBody ValidReservationRequest request
 	) {
@@ -54,6 +53,15 @@ public class ReservationController {
 		return ResponseEntity.ok().body(new ApiResponse("빵꾸러미 예약 검증이 완료되었습니다.", response));
 	}
 
+	@PostMapping("/uncheck")
+	public ResponseEntity<ApiResponse> uncheck(
+		@AuthenticationPrincipal CustomUserDetails userDetails,
+		@RequestParam long reservationId, @RequestParam int quantity
+	) {
+		log.info("✨ 빵꾸러미 결제대기 취소 ✨");
+		reservationService.uncheckReservation(userDetails, reservationId, quantity);
+		return ResponseEntity.ok().body(new ApiResponse("빵꾸러미 결제대기 취소가 완료되었습니다.", null));
+	}
 
 	/**
 	 * 예약 생성 (CONFIRMED) API
@@ -72,7 +80,6 @@ public class ReservationController {
 		return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse("결제 검증 및 예약 생성에 성공하였습니다.", response));
 	}
 
-
 	/**
 	 * 예약 취소 (CANCELED) API
 	 *
@@ -90,7 +97,6 @@ public class ReservationController {
 		return ResponseEntity.ok().body(new ApiResponse("예약 및 결제 취소가 완료되었습니다.", response));
 	}
 
-
 	/**
 	 * 픽업 완료 처리 (COMPLETED) API
 	 *
@@ -99,7 +105,7 @@ public class ReservationController {
 	 * @return reservationId, status
 	 */
 	@PutMapping("/pickup/{reservationId}")
-	public ResponseEntity<ApiResponse> pickup (
+	public ResponseEntity<ApiResponse> pickup(
 		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@PathVariable long reservationId
 	) {
@@ -107,7 +113,6 @@ public class ReservationController {
 		Map<String, Object> response = reservationService.pickUp(reservationId, userDetails);
 		return ResponseEntity.ok().body(new ApiResponse("빵꾸러미 픽업 처리가 완료되었습니다.", response));
 	}
-
 
 	/**
 	 * 기간 내 사용자 예약 조회 API
@@ -118,18 +123,18 @@ public class ReservationController {
 	 * @return 사용자 기간 내 예약 리스트
 	 */
 	@GetMapping("/{startDate}/{endDate}")
-	public ResponseEntity<?> getUserReservationList (
+	public ResponseEntity<?> getUserReservationList(
 		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@PathVariable LocalDate startDate, @PathVariable LocalDate endDate
 	) {
 		log.info("✨ 기간 내 사용자 예약 조회 ✨");
-		List<Map<String, Object>> reservationList = reservationService.getUserReservationList(userDetails, startDate, endDate);
+		List<Map<String, Object>> reservationList = reservationService.getUserReservationList(userDetails, startDate,
+			endDate);
 		if (reservationList.isEmpty()) {
 			ResponseEntity.status(HttpStatus.NO_CONTENT).body(new ApiResponse("기간 내 사용자 예약이 존재하지 않습니다.", null));
 		}
 		return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse("기간 내 사용자 예약 조회가 완료되었습니다.", reservationList));
 	}
-
 
 	/**
 	 * 사장님 오늘의 예약 조회
@@ -142,11 +147,10 @@ public class ReservationController {
 	public ResponseEntity<ApiResponse> getOwnerReservationList(
 		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@PathVariable long bakeryId
-	){
+	) {
 		ReservationForOwner response = reservationService.getTodayOwnerReservations(userDetails, bakeryId);
 		return ResponseEntity.ok().body(new ApiResponse("오늘의 예약 내역 조회에 성공하였습니다.", response));
 	}
-
 
 	@GetMapping("/bakery/{bakeryId}/{startDate}/{endDate}")
 	public ResponseEntity<ApiResponse> getOwnerReservationList(
@@ -154,7 +158,8 @@ public class ReservationController {
 		@PathVariable long bakeryId,
 		@PathVariable LocalDate startDate, @PathVariable LocalDate endDate
 	) {
-		List<ReservationResponse> reservationList = reservationService.getOwnerReservationList(userDetails, bakeryId, startDate, endDate);
+		List<ReservationResponse> reservationList = reservationService.getOwnerReservationList(userDetails, bakeryId,
+			startDate, endDate);
 		if (reservationList.isEmpty()) {
 			ResponseEntity.status(HttpStatus.NO_CONTENT).body(new ApiResponse("예약이 없습니다.", null));
 		}
@@ -170,7 +175,6 @@ public class ReservationController {
 		return ResponseEntity.ok("✅ [" + bakeryId + "] 노쇼 예약이 자동 픽업 처리되었습니다.");
 	}
 
-
 	/**
 	 * 예약 ID로 예약 상세 조회 API
 	 *
@@ -182,7 +186,7 @@ public class ReservationController {
 	public ResponseEntity<ApiResponse> getReservationInfo(
 		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@PathVariable Long reservationId
-	){
+	) {
 		Map<String, Object> response = reservationService.getReservationInfo(userDetails, reservationId);
 		return ResponseEntity.ok(new ApiResponse("해당 예약 정보를 불러오는데에 성공하였습니다.", response));
 	}
