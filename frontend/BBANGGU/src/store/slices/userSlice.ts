@@ -47,5 +47,5 @@ const userSlice = createSlice({
   }
 });
 
-export const { setUserInfo, clearUserInfo, fetchUserInfo, setBakeryId } = userSlice.actions;
+export const { setUserInfo, setReservationCount, clearUserInfo, fetchUserInfo, setBakeryId } = userSlice.actions;
 export default userSlice.reducer;

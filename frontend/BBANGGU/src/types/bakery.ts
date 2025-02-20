@@ -70,7 +70,7 @@ export interface ReservationType {
   pickupAt: string
   createdAt: string
   cancelledAt?: string
-  status: "pending" | "canceled" | "completed" | "confirmed"
+  status: "pending" | "COMPLETED" | "canceled" | "confirmed"
 }
 
 export interface EchoSaveType {
@@ -99,6 +99,8 @@ export interface ExtendedBakeryType extends BakeryType {
 }
 
 export interface ExtendedUserType extends UserType {
+  addressDetail: string
+  addressRoad: string
   reservation: ReservationType[];
   echosave: EchoSaveType[];
 }
