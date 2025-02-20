@@ -39,11 +39,54 @@ interface UpdatePasswordResponse {
 
 export const getUserInfo = async (): Promise<UserInfo> => {
   try {
-    console.log('Calling getUserInfo API...');
-    const response = await instance.get<ApiResponse<UserInfo>>('/user');
-    console.log('API Response:', response.data);  // API 응답 데이터 확인
-    store.dispatch(fetchUserInfo(response.data.data));
-    return response.data.data;
+    console.log('1. getUserInfo API 호출 시작');
+    const userResponse = await instance.get<ApiResponse<UserInfo>>('/user');
+    console.log('2. 사용자 정보 응답:', userResponse.data);
+    
+    // 사용자가 OWNER인 경우 베이커리 정보도 가져오기
+    if (userResponse.data.data.role === 'OWNER') {
+      try {
+        console.log('3. OWNER 계정 확인됨, 베이커리 정보 조회 시작');
+        const bakeryResponse = await instance.get<ApiResponse<any>>('/bakery');
+        console.log('4. 베이커리 응답:', bakeryResponse.data);
+        
+        if (bakeryResponse.data.data) {
+          console.log('5. 베이커리 데이터 존재함:', bakeryResponse.data.data);
+          
+          // 현재 사용자의 베이커리 찾기
+          const userBakery = bakeryResponse.data.data.find(
+            (bakery: any) => bakery.userId === userResponse.data.data.userId
+          );
+          
+          console.log('5-1. 찾은 사용자의 베이커리:', userBakery);
+          
+          if (userBakery) {
+            const userData = {
+              ...userResponse.data.data,
+              bakeryId: userBakery.bakeryId
+            };
+            console.log('6. 병합된 사용자 데이터:', userData);
+            
+            store.dispatch(fetchUserInfo(userData));
+            console.log('7. Redux store 업데이트 완료');
+            
+            return userData;
+          }
+        }
+      } catch (bakeryError) {
+        console.error('베이커리 정보 조회 실패:', bakeryError);
+      }
+    }
+    
+    // 베이커리 정보가 없는 경우 기본 userInfo 반환
+    const defaultUserData = {
+      ...userResponse.data.data,
+      bakeryId: null
+    };
+    console.log('8. 기본 사용자 데이터 반환:', defaultUserData);
+    
+    store.dispatch(fetchUserInfo(defaultUserData));
+    return defaultUserData;
   } catch (error) {
     console.error('Error in getUserInfo API:', error);
     throw error;
