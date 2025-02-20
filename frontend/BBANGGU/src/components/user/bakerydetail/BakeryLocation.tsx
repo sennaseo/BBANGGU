@@ -11,10 +11,10 @@ export default function BakeryLocation({ location }: BakeryLocationProps) {
   const [isMapVisible, setIsMapVisible] = useState(false);
 
   return (
-    <div className="bg-[#F2F2F2] py-[20px]">
+    <div className="bg-[#F2F2F2] ">
       {/* 위치 안내 버튼 */}
       <button
-        className="flex w-full justify-between items-center px-[20px] gap-3"
+        className="flex w-full justify-between items-center py-[20px] px-[20px] gap-3"
         onClick={() => setIsMapVisible(!isMapVisible)}
       >
         <div className="flex gap-3 items-center">
@@ -32,7 +32,7 @@ export default function BakeryLocation({ location }: BakeryLocationProps) {
       {/* ✅ 지도 컨테이너 (하단 여백 완전 제거) */}
       {isMapVisible && (
         <div
-          className="w-full h-[300px] mt-4 rounded-lg border border-gray-300 overflow-hidden"
+          className="w-full h-[300px] rounded-lg border border-gray-300 overflow-hidden"
           style={{ marginBottom: "0px !important", paddingBottom: "0px !important" }}
         >
           <MapView
