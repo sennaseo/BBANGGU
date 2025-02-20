@@ -169,17 +169,6 @@ const OwnerMainPage: React.FC = () => {
                     }
                   }}
                 />
-                <div className="mb-6">
-                  <button
-                    onClick={() => navigate("/owner/bread/register")}
-                    className="w-full flex items-center justify-center gap-3 py-4 bg-gradient-to-r from-[#FFF9F5] to-[#FFF5EC] text-[#FC973B] rounded-xl hover:shadow-md transition-all border border-[#FC973B]/10"
-                  >
-                    <div className="flex items-center gap-2">
-                      <BuildingStorefrontIcon className="w-5 h-5" />
-                    </div>
-                    <span className="font-medium">우리가게 빵 등록하기</span>
-                  </button>
-                </div>
                 <CustomerList
                   bakeryId={currentPackage.bakeryId || 0}
                   onReservationsUpdate={handleReservationsUpdate}
@@ -211,6 +200,18 @@ const OwnerMainPage: React.FC = () => {
                 </button>
               </div>
             )}
+            {/* 패키지 유무와 관계없이 항상 표시되는 빵 등록하기 버튼 */}
+            <div className="mb-6">
+              <button
+                onClick={() => navigate("/owner/bread/register")}
+                className="w-full flex items-center justify-center gap-3 py-4 bg-gradient-to-r from-[#FFF9F5] to-[#FFF5EC] text-[#FC973B] rounded-xl hover:shadow-md transition-all border border-[#FC973B]/10"
+              >
+                <div className="flex items-center gap-2">
+                  <BuildingStorefrontIcon className="w-5 h-5" />
+                </div>
+                <span className="font-medium">우리가게 빵 등록하기</span>
+              </button>
+            </div>
           </>
         ) : (
           <ReviewSection />
