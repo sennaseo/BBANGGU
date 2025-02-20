@@ -13,6 +13,8 @@ export function ProfileSection({ user }: ProfileSectionProps) {
   // 리덕스에서 사용자 정보 가져오기
   const userInfo = useSelector((state: RootState) => state.user.userInfo)
 
+  console.log(userInfo?.profileImageUrl);
+  
   return (
     <div className="bg-[#F9F9F9] rounded-xl p-[25px] shadow-md stroke-[#C0C0C0]">
       <div className="flex justify-between items-center">
@@ -24,7 +26,11 @@ export function ProfileSection({ user }: ProfileSectionProps) {
         </div>
         <img
           src={
-            userInfo?.profileImageUrl ? `${imgBaseUrl}${userInfo.profileImageUrl}` : `${imgBaseUrl}/uploads/bakery19.jpeg`
+            userInfo?.profileImageUrl 
+            ? userInfo.profileImageUrl.startsWith("http://") 
+              ? userInfo.profileImageUrl 
+            : `${imgBaseUrl}${userInfo.profileImageUrl}` 
+            : `${imgBaseUrl}/uploads/bakery19.jpeg`
           }
           alt="Profile"
           className="w-[90px] h-[90px] rounded-full object-cover"
