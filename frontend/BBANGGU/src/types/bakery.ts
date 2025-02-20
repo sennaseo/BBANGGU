@@ -29,6 +29,7 @@ export interface PackageType {
   price: number
   quantity: number
   name: string
+  pending: number
 }
 
 export interface BakeryType {

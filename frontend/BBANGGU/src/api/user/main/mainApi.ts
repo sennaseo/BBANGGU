@@ -73,14 +73,14 @@ export const mainApi = {
       const packages = response.data.data;
       if (!packages || packages.length === 0) {
         // console.warn(`패키지 데이터 없음 - 가게(${bakeryId})의 패키지 정보가 없습니다.`);
-        return [{ packageId: 0, bakeryId, name: "", price: 0, quantity: 0 }];
+        return [{ packageId: 0, bakeryId, name: "", price: 0, quantity: 0, pending: 0 }];
       }
       return packages;
     } catch (error) {
       if (axios.isAxiosError(error)) {
         if (error.response?.status === 404) {
           console.warn(`404 상태 - 가게(${bakeryId})의 패키지 정보 없음`);
-          return [{ packageId: 0, bakeryId, name: "", price: 0, quantity: 0 }];
+          return [{ packageId: 0, bakeryId, name: "", price: 0, quantity: 0, pending: 0 }];
         }
         console.error(`가게(${bakeryId})의 패키지 조회 중 에러:`, error);
       } else {

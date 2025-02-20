@@ -50,7 +50,6 @@ export default function LoginPage() {
 
     setIsLoading(true)
     try {
-
       const accessToken = store.getState().auth.accessToken;
       console.log('accessToken', accessToken)
       dispatch(logout())
@@ -61,15 +60,14 @@ export default function LoginPage() {
 
       // 4. 사용자 정보 가져오기
       const userResponse = await getUserInfo()
-      console.log('4. 사용자 정보 응답:', userResponse)
+      console.log('사용자 정보 API 응답 전체:', userResponse)
+      console.log('bakeryId 확인:', userResponse.bakeryId)
       
-      // 5. Redux store에 저장되는 데이터 확인
-      console.log('5. Redux store에 저장될 데이터:', userResponse)
       dispatch(setUserInfo(userResponse))
       
       // 6. 최종 Redux 상태 확인
       const state = store.getState()
-      console.log('6. 최종 Redux 상태:', state)
+      console.log('Redux store 최종 상태:', state.user.userInfo)
 
       // 사용자 역할에 따른 리다이렉션
       if (state.user.userInfo?.role === 'OWNER') {
