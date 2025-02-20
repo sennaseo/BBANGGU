@@ -20,7 +20,7 @@ export async function getUserProfile(): Promise<ExtendedUserType[]> {
           reservations = [];
           echosaves = [];
         }
-        extendedUsers.push({ ...user, reservation: reservations, echosave: echosaves });
+        extendedUsers.push({ ...user, reservation: reservations, echosave: echosaves, addressDetail: "", addressRoad: "" });
       }
       return extendedUsers;
     } catch {

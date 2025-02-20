@@ -8,13 +8,6 @@ import profileEditApi from "../../../../api/user/mypage/profileedit/profileEditA
 export function UserEditProfile() {
   const navigate = useNavigate()
 
-  const [initialData, setInitialData] = useState({
-    name: "",
-    phone: "",
-    addressRoad: "",
-    addressDetail: "",
-  })
-
   const [showCurrentPassword, setShowCurrentPassword] = useState(false)
   const [showNewPassword, setShowNewPassword] = useState(false)
   const [formData, setFormData] = useState({
@@ -43,12 +36,6 @@ export function UserEditProfile() {
           addressDetail: userData.addressDetail || "",
           originPassword: "",
           newPassword: "",
-        })
-        setInitialData({
-          name: userData.name,
-          phone: userData.phone,
-          addressRoad: userData.addressRoad || "",
-          addressDetail: userData.addressDetail || "",
         })
       } catch (error) {
         console.error('사용자 정보 조회 중 오류 발생:', error)
