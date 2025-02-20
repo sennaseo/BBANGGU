@@ -3,13 +3,13 @@ import { MenuGrid } from "../../../components/user/mypage/MenuGrid"
 import { StatsCards } from "../../../components/user/mypage/StatsCards"
 import { Bell, Settings } from "lucide-react"
 import { useNavigate } from "react-router-dom"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import UserBottomNavigation from "../../../components/user/navigations/bottomnavigation/UserBottomNavigation"
 import { getUserProfile } from "../../../services/user/mypage/usermypageServices"
 import { logout } from '../../../api/common/logout/logoutApi';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout as authLogout, removeLocalStorage } from '../../../store/slices/authSlice';
-import { clearUserInfo } from '../../../store/slices/userSlice';
+import { clearUserInfo, setUserInfo } from '../../../store/slices/userSlice';
 import { LogoutModal } from "../../../components/user/mypage/LogoutModal"
 import { RootState } from '../../../store';
 import { Reservation } from "../../../store/slices/reservationSlice"
@@ -19,7 +19,6 @@ export default function UserMyPage() {
   const navigate = useNavigate()
   const dispatch = useDispatch()
   
-  // 리덕스에서 유저 정보 가져오기
   const userInfo = useSelector((state: RootState) => state.user.userInfo);
   
   const [reservationData, setReservationData] = useState<{
@@ -33,22 +32,70 @@ export default function UserMyPage() {
   const [error, setError] = useState(null);
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
 
+  const reloadUserProfile = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const updatedProfile = await getUserProfile();
+      console.log("📌 최신 유저 데이터:", updatedProfile);
+  
+      if (updatedProfile?.[0] && JSON.stringify(userInfo) !== JSON.stringify(updatedProfile[0])) {
+        dispatch(setUserInfo({
+          userId: updatedProfile[0].userId,
+          name: updatedProfile[0].name,
+          email: updatedProfile[0].email,
+          phone: updatedProfile[0].phone,
+          profileImageUrl: updatedProfile[0].profileImageUrl || "",
+          bakeryId: null,
+          addressRoad: updatedProfile[0].addressRoad || "",
+          addressDetail: updatedProfile[0].addressDetail || "",
+          role: "USER"
+        }));
+      } else {
+        console.log("⚡ 유저 정보 변경 없음, Redux 업데이트 생략");
+      }
+  
+      setReservationData({
+        currentReservation: updatedProfile[0].reservation[0] as unknown as Reservation | null,
+        latestEchoSave: updatedProfile[0].echosave as unknown as EchoSave | null,
+      });
+    } catch (error) {
+      console.error("❌ 마이페이지 데이터 로드 실패:", error);
+      setError(error as any);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [dispatch, userInfo]);
+
+  // 초기 로딩 시에만 실행되도록 수정
   useEffect(() => {
     if (!userInfo) {
       navigate("/login");
-    } else {
-      console.log("userInfo", userInfo);
-      getUserProfile()
-        .then((data) => {
-          setReservationData({
-            currentReservation: data[0].reservation[0] as unknown as Reservation | null,
-            latestEchoSave: data[0].echosave as unknown as EchoSave | null,
-          });
-        })
-        .catch(setError)
-        .finally(() => setIsLoading(false));
+      return;
     }
-  }, [userInfo, navigate]);
+    
+    // 초기 데이터 로딩
+    reloadUserProfile();
+    
+    // cleanup function
+    return () => {
+      setIsLoading(false);
+      setError(null);
+    };
+  }, []); // 빈 의존성 배열로 변경
+
+  const handleSettingsClick = useCallback(() => {
+    navigate(`/user/${userInfo?.userId}/mypage/edit`);
+    
+    // 페이지 포커스 시 데이터 리로드
+    const handleFocus = () => {
+      reloadUserProfile();
+    };
+
+    window.addEventListener('focus', handleFocus);
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+    };
+  }, [navigate, userInfo?.userId, reloadUserProfile]);
 
   if (isLoading) {
     return (
@@ -69,21 +116,12 @@ export default function UserMyPage() {
   const handleLogoutConfirm = async () => {
     try {
       console.log('로그아웃 시작');
-      
-      // API 호출
+      dispatch(removeLocalStorage());
       const response = await logout();
       console.log('로그아웃 성공:', response);
-      
-      // 리덕스 상태 초기화
       dispatch(authLogout());
       dispatch(clearUserInfo());
-      dispatch(removeLocalStorage());
-      console.log('리덕스 상태 초기화 완료');
-      
-      // 모달 닫기
       setIsLogoutModalOpen(false);
-      
-      // 로그인 페이지로 이동
       navigate('/login');
     } catch (error) {
       console.error('로그아웃 실패:', error);
@@ -102,7 +140,7 @@ export default function UserMyPage() {
           />
           <Settings 
             className="w-6 h-6 text-333333 cursor-pointer" 
-            onClick={() => navigate(`/user/${userInfo.userId}/mypage/edit`)}
+            onClick={handleSettingsClick}
           />
         </div>
       </header>

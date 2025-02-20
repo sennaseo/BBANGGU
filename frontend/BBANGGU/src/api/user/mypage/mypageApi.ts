@@ -37,7 +37,7 @@ export const mypageApi = {
         const mm = String(today.getMonth() + 1).padStart(2, "0");
         const dd = String(today.getDate()).padStart(2, "0");
         const formattedDate = `${yyyy}-${mm}-${dd}`;
-
+        
         const response = await axios.get<ApiResponse<ReservationType[]>>(
           `${BASE_URL}/reservation/${formattedDate}/${formattedDate}`,
           {
@@ -75,6 +75,27 @@ export const mypageApi = {
       }
     },
     
-
+    getCompletedReservationsCountApi: async () => {
+      try {
+        const token = store.getState().auth.accessToken;
+    
+        // ✅ 백엔드에서 "COMPLETED" 상태의 예약 개수 반환하는 API 호출
+        const response = await axios.get<ApiResponse<{ count: number }>>(
+          `${BASE_URL}/reservation/user/total`, 
+          {
+            withCredentials: true,
+            headers: {
+              Authorization: `Bearer ${token}`,
+            }
+          }
+        );
+        
+        console.log("완료된 예약 개수:", response.data.data);
+        return response.data.data;
+      } catch (error) {
+        console.error('완료된 예약 개수 조회 실패:', error);
+        throw error;
+      }
+    },
 }
 

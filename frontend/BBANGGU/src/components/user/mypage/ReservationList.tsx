@@ -81,7 +81,7 @@ export function ReservationList({ reservations = [] }: ReservationListProps) {
   const renderEmptyState = () => (
     <div className="bg-[#fc973b] rounded-xl p-6 text-center shadow-md border-t border-dashed border-gray-200">
       <p className="text-white font-bold text-md">아직 주문 내역이 없어요.</p>
-      <p className="text-white text-sm mt-1">첫 주문을 시작해보세요!</p>
+      <p className="text-white text-sm mt-1">오늘의 첫 주문을 시작해보세요!</p>
     </div>
   )
   console.log("data", data)
