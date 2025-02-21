@@ -126,8 +126,8 @@ export default function UserMyPage() {
   const handleLogoutConfirm = async () => {
     try {
       console.log("로그아웃 시작");
-      dispatch(removeLocalStorage());
       const response = await logout();
+      dispatch(removeLocalStorage());
       console.log("로그아웃 성공:", response);
       dispatch(authLogout());
       dispatch(clearUserInfo());

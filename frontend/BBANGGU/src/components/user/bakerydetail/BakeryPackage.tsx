@@ -14,7 +14,6 @@ export default function BakeryPackage({ bakeryId }: BakeryPackageProps) {
       try {
         if (bakeryId) {
           const data = await mainApi.getPackagesByBakeryId(bakeryId);
-          console.log(data[0]);
           setPackageData(data[0] ?? { quantity: 0, pending: 0, price: 0 });
         }
       } catch (error) {
