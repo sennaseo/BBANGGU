@@ -36,7 +36,7 @@ interface RatingSummaryProps {
               .reverse()
               .map(({ stars, count, percentage }) => (
                 <div key={stars} className="flex items-center gap-2 mb-1 last:mb-0">
-                  <span className="text-xs w-3">{stars}</span>
+                  <span className="text-xs w-3">{6-stars}</span>
                   <div className="flex-1 h-2 bg-[#D9D9D9] rounded-full overflow-hidden">
                     <div className="h-full bg-[#FFB933] rounded-full" style={{ width: `${percentage}%` }} />
                   </div>
