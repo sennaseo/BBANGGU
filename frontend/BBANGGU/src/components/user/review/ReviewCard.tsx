@@ -18,9 +18,12 @@ export default function ReviewCard({ review, user }: ReviewCardProps) {
             src={user.profileImageUrl || "/placeholder.svg"}
             alt={user.name}
             className="w-10 h-10 rounded-full object-cover"
+            onError={(e) => {
+              (e.target as HTMLImageElement).src = "/default-profile.jpg";
+            }}
           />
           <div>
-            <h3 className="text-[15px] font-medium">{user.name}</h3>
+            <h3 className="text-[15px] font-medium">{review.userName}</h3>
             <div className="flex items-center gap-2">
               <div className="flex gap-0.5">
                 {Array(5)

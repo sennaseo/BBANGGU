@@ -8,7 +8,7 @@ interface BakeryReviewsProps {
   user: UserType
 }
 
-export default function BakeryReviews({ bakeryId, reviews, user }: BakeryReviewsProps) {
+export default function BakeryReviews({ bakeryId, reviews }: BakeryReviewsProps) {
   if (reviews.length === 0) {
     return (
       <div className="py-[15px]" style={{ marginTop: "0px !important", paddingTop: "0px !important" }}>
@@ -69,14 +69,14 @@ export default function BakeryReviews({ bakeryId, reviews, user }: BakeryReviews
                   {/* 사용자 정보 */}
                   <div className="mt-3 flex items-center gap-2 text-[12px] text-gray-500">
                     <img
-                      src={user.profileImageUrl || "/placeholder.svg"}
-                      alt={user.name}
+                      src={review.profileImageUrl || "/placeholder.svg"}
+                      alt={review.userName}
                       className="w-[24px] h-[24px] rounded-full object-cover"
                       onError={(e) => {
                         (e.target as HTMLImageElement).src = "/default-profile.jpg";
                       }}
                     />
-                    <span className="text-[#606060]">{user.name}</span>
+                    <span className="text-[#606060]">{review.userName}</span>
                     <span className="ml-auto">{new Date(review.createdAt).toLocaleDateString()}</span>
                   </div>
                 </div>
