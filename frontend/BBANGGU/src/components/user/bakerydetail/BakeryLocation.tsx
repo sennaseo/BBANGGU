@@ -21,7 +21,7 @@ export default function BakeryLocation({ location }: BakeryLocationProps) {
           <h2 className="whitespace-nowrap text-[14px] font-medium text-[#333333]">위치안내</h2>
           <p className="text-[12px] font-light text-[#BDBDBD]">{location.addressRoad}</p>
           <p className="text-[12px] font-light text-[#BDBDBD]">({location.addressDetail})</p>
-        </div>
+        </div> 
         {isMapVisible ? (
           <ChevronUp className="h-6 w-6 text-[#A2A2A2]" />
         ) : (

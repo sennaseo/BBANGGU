@@ -13,7 +13,6 @@ export interface Reservation {
     bakeryName: string;
     packageName: string;
     quantity: number;
-    
 }
 
 export interface ReservationState {
