@@ -1,4 +1,5 @@
 server:
+  port: ${SERVER_PORT:8081}
   error:
     include-stacktrace: never
 spring:
@@ -56,7 +57,7 @@ spring:
       favor-parameter: false
   ai:
     openai:
-      api-key: ***REMOVED-OPENAI-KEY***
+      api-key: ${OPENAI_API_KEY}
       chat:
         options:
           model: gpt-4o
@@ -73,6 +74,7 @@ kakao:
     url: https://dapi.kakao.com/v2/local/search/address.json
   client-id: ${KAKAO_CLIENT_ID}
   redirect-uri: ${KAKAO_REDIRECT_URI}
+  front-base-url: ${FRONT_BASE_URL:http://localhost:5173}
   auth-uri: https://kauth.kakao.com/oauth/authorize
   api-url:
     token: https://kauth.kakao.com/oauth/token

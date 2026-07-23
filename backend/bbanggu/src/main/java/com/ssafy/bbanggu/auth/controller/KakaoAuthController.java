@@ -6,6 +6,7 @@ import java.nio.charset.StandardCharsets;
 
 import com.ssafy.bbanggu.auth.dto.JwtToken;
 import com.ssafy.bbanggu.auth.service.KakaoAuthService;
+import com.ssafy.bbanggu.common.config.KakaoConfig;
 import com.ssafy.bbanggu.common.exception.CustomException;
 import com.ssafy.bbanggu.common.response.ApiResponse;
 
@@ -25,6 +26,7 @@ import org.springframework.web.bind.annotation.*;
 public class KakaoAuthController {
 
 	private final KakaoAuthService kakaoAuthService;
+	private final KakaoConfig kakaoConfig;
 
 	/**
 	 * ✅ 1. 카카오 로그인 요청 (Redirect)
@@ -68,7 +70,8 @@ public class KakaoAuthController {
 			response.addHeader(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString());
 
 			// ✅ 리다이렉트 URL에 사용자 정보도 함께 전달
-			String redirectUrl = String.format("https://i12d102.p.ssafy.io/oauth/kakao/callback?auth=success&token=%s",
+			String redirectUrl = String.format("%s/oauth/kakao/callback?auth=success&token=%s",
+				kakaoConfig.getFrontBaseUrl(),
 				URLEncoder.encode(jwtToken.getAccessToken(), StandardCharsets.UTF_8));
 
 			response.setStatus(HttpServletResponse.SC_FOUND);
