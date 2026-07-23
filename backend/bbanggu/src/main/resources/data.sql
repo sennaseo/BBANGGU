@@ -17,12 +17,12 @@ COMMIT;
 SELECT SLEEP(0.5);
 
 INSERT INTO user (name, email, password, phone, user_type)
-VALUES ('신은찬', 'ssafy1@ssafy.com', 'ssafy123', '010-0000-0001', 'OWNER'),
-       ('김휘동', 'ssafy2@ssafy.com', 'ssafy123', '010-0000-0002', 'OWNER'),
-       ('김유진', 'ssafy3@ssafy.com', 'ssafy123', '010-0000-0003', 'OWNER'),
-       ('정나금', 'ssafy4@ssafy.com', 'ssafy123', '010-0000-0004', 'OWNER'),
-       ('서유민', 'ssafy5@ssafy.com', 'ssafy123', '010-0000-0005', 'OWNER'),
-       ('권가영', 'ssafy6@ssafy.com', 'ssafy123', '010-0000-0006', 'OWNER');
+VALUES ('신은찬', 'ssafy1@ssafy.com', '$2b$10$2PCLkIVZ86e8vzgu43lwlOcSLrVtkNbIfh7QMywtB9VpwaCv3l//S', '010-0000-0001', 'OWNER'),
+       ('김휘동', 'ssafy2@ssafy.com', '$2b$10$2PCLkIVZ86e8vzgu43lwlOcSLrVtkNbIfh7QMywtB9VpwaCv3l//S', '010-0000-0002', 'OWNER'),
+       ('김유진', 'ssafy3@ssafy.com', '$2b$10$2PCLkIVZ86e8vzgu43lwlOcSLrVtkNbIfh7QMywtB9VpwaCv3l//S', '010-0000-0003', 'OWNER'),
+       ('정나금', 'ssafy4@ssafy.com', '$2b$10$2PCLkIVZ86e8vzgu43lwlOcSLrVtkNbIfh7QMywtB9VpwaCv3l//S', '010-0000-0004', 'OWNER'),
+       ('서유민', 'ssafy5@ssafy.com', '$2b$10$2PCLkIVZ86e8vzgu43lwlOcSLrVtkNbIfh7QMywtB9VpwaCv3l//S', '010-0000-0005', 'OWNER'),
+       ('권가영', 'ssafy6@ssafy.com', '$2b$10$2PCLkIVZ86e8vzgu43lwlOcSLrVtkNbIfh7QMywtB9VpwaCv3l//S', '010-0000-0006', 'OWNER');
 COMMIT;
 SELECT SLEEP(0.5);
 

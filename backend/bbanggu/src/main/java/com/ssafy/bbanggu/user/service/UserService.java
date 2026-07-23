@@ -63,11 +63,10 @@ public class UserService { // 사용자 관련 비즈니스 로직 처리
 		}
 
 		// 1️⃣ 비밀번호 암호화
-		//String encodedPassword = passwordEncoder.encode(request.password());
+		String encodedPassword = passwordEncoder.encode(request.password());
 
 		// 2️⃣ User 엔티티 생성 및 저장 (회원가입)
-		// User user = User.createNormalUser(request.name(), request.email(), encodedPassword, request.phone(), request.toEntity().getRole());
-		User user = User.createNormalUser(request.name(), request.email(), request.password(), request.phone(), request.toEntity().getRole());
+		User user = User.createNormalUser(request.name(), request.email(), encodedPassword, request.phone(), request.toEntity().getRole());
 		userRepository.save(user);
 
 		// 3️⃣ 절약 정보 자동 생성 및 초기화
@@ -124,13 +123,8 @@ public class UserService { // 사용자 관련 비즈니스 로직 처리
         }
 		log.info("✅ {}번 사용자는 유효한 회원임을 검증", user.getUserId());
 
-        // // 비밀번호 검증
-        // if (!passwordEncoder.matches(password, user.getPassword())) {
-        //  throw new CustomException(ErrorCode.INVALID_PASSWORD);
-        // }
-
-		// 단순 문자열 비교로 변경
-		if (!password.equals(user.getPassword())) {
+		// 비밀번호 검증
+		if (!passwordEncoder.matches(password, user.getPassword())) {
 			throw new CustomException(ErrorCode.INVALID_PASSWORD);
 		}
 		log.info("✅ 로그인 시 입력한 비밀번호와 사용자의 비밀번호가 일치함");
@@ -153,13 +147,8 @@ public class UserService { // 사용자 관련 비즈니스 로직 처리
 		// ✅ 응답 데이터 생성
 		Map<String, Object> response = new HashMap<>();
 		response.put("access_token", accessToken);
-		log.info("🩵 accessToken: " + accessToken);
-
 		response.put("refresh_token", refreshToken);
-		log.info("🩵 refreshToken: " + refreshToken);
-
 		response.put("user_type", userType);
-		log.info("🩵 userType: " + userType);
 		return response;
 	}
 
@@ -257,17 +246,12 @@ public class UserService { // 사용자 관련 비즈니스 로직 처리
 			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
 		// 새로운 비밀번호가 기존 비밀번호와 동일한지 검증
-		// if (passwordEncoder.matches(newPassword, user.getPassword())) {
-		// 	throw new CustomException(ErrorCode.SAME_AS_OLD_PASSWORD);
-		// }
-
-		if (newPassword.equals(user.getPassword())) {
+		if (passwordEncoder.matches(newPassword, user.getPassword())) {
 			throw new CustomException(ErrorCode.SAME_AS_OLD_PASSWORD);
 		}
 
 		// 비밀번호 암호화 후 저장
-		// user.setPassword(passwordEncoder.encode(newPassword));
-		user.setPassword(newPassword);
+		user.setPassword(passwordEncoder.encode(newPassword));
 		userRepository.save(user);
 	}
 
@@ -313,20 +297,17 @@ public class UserService { // 사용자 관련 비즈니스 로직 처리
 		User user = userRepository.findById(userDetails.getUserId())
 			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
-		// 비밀번호 검증
-		// if (!passwordEncoder.matches(password, user.getPassword())) {
-		// 	throw new CustomException(ErrorCode.INVALID_PASSWORD);
-		// }
-
-		if (!request.originPassword().equals(user.getPassword())) {
+		// 기존 비밀번호 검증
+		if (!passwordEncoder.matches(request.originPassword(), user.getPassword())) {
 			throw new CustomException(ErrorCode.NOT_EQUAL_PASSWORD);
 		}
 
-		if(user.getPassword().equals(request.newPassword())) {
+		// 새 비밀번호가 기존과 동일한지 검증
+		if (passwordEncoder.matches(request.newPassword(), user.getPassword())) {
 			throw new CustomException(ErrorCode.EQUAL_ORIGIN_AND_NEW_PASSWORD);
 		}
 
-		user.setPassword(request.newPassword());
+		user.setPassword(passwordEncoder.encode(request.newPassword()));
 		userRepository.save(user);
 	}
 }

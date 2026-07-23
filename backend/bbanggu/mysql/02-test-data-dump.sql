@@ -1,15 +1,15 @@
 INSERT INTO user (
     user_id, kakao_id, email, password, name, phone, profile_image_url, user_type, refresh_token, created_at, deleted_at
 ) VALUES
-(101, 1234567890123456, 'user101@example.com', 'password123', 'Alice Kim', '010-1234-5678', 
+(101, 1234567890123456, 'user101@example.com', '$2b$10$eS7s7zhvR81ELCQg8NuMMu/2mOLgUuk7q3riENVFT/6KZG1.mjf1W', 'Alice Kim', '010-1234-5678', 
  'https://example.com/user101.jpg', 'OWNER', 'refresh_token_101', NOW(), NULL),
-(102, 1234567890123457, 'user102@example.com', 'password456', 'Bob Lee', '010-2345-6789', 
+(102, 1234567890123457, 'user102@example.com', '$2b$10$DshFt1rYftSFzvLS0BJ4DuHgjcnsUz2z/x//rH.LzmmQwLtY7dn2K', 'Bob Lee', '010-2345-6789', 
  'https://example.com/user102.jpg', 'OWNER', 'refresh_token_102', NOW(), NULL),
-(103, 1234567890123458, 'user103@example.com', 'password789', 'Charlie Park', '010-3456-7890', 
+(103, 1234567890123458, 'user103@example.com', '$2b$10$UjqyY/qxdelmpotJ1tuZkuYDSiMfTp.wCZas/h53mc1jUW2OMeKZW', 'Charlie Park', '010-3456-7890', 
  'https://example.com/user103.jpg', 'OWNER', 'refresh_token_103', NOW(), NULL),
-(104, 1234567890123459, 'user104@example.com', 'passwordABC', 'David Choi', '010-4567-8901', 
+(104, 1234567890123459, 'user104@example.com', '$2b$10$nSAIt3i0/AHoBrnoedFhe.QHxkgkfqBafQYpg3uqUE0qjvTgE7NuG', 'David Choi', '010-4567-8901', 
  'https://example.com/user104.jpg', 'OWNER', 'refresh_token_104', NOW(), NULL),
-(105, 1234567890123460, 'user105@example.com', 'passwordXYZ', 'Emma Jung', '010-5678-9012', 
+(105, 1234567890123460, 'user105@example.com', '$2b$10$cqlP5v4EO.69GVGgPo/LRez83DnO2fPOi2253v9.3leFmnVTE6qKe', 'Emma Jung', '010-5678-9012', 
  'https://example.com/user105.jpg', 'OWNER', 'refresh_token_105', NOW(), NULL);
 
 
