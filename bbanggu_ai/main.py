@@ -46,7 +46,7 @@ class_names = [
 
 
 @app.post("/detect")
-async def comb(images: List[UploadFile] = File(...), bakeryId: int = Form(...)):
+async def detect_and_classify(images: List[UploadFile] = File(...), bakeryId: int = Form(...)):
     # 크롭된 이미지 저장할 폴더 생성(요청마다 다른 폴더 생성함)
     unique_id = str(uuid.uuid4())
     cropped_image_dir = os.path.join("cropped_objects", unique_id)
@@ -109,7 +109,7 @@ class BreadDTO(BaseModel):
 
 
 @app.post("/generate-package")
-async def comb(breads: List[BreadDTO]):
+async def generate_package(breads: List[BreadDTO]):
     print(breads)
     # 빵 조합 생성
     return distribute_breads(breads)
