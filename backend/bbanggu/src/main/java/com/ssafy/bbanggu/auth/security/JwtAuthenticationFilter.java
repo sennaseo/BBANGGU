@@ -27,27 +27,30 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 	@Override
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
 		throws ServletException, IOException {
-		System.out.println("🔥 JwtAuthenticationFilter 실행됨! 요청 URL: " + request.getRequestURI());
-
 		// 1️⃣ 요청 헤더에서 Jwt 토큰 가져오기
 		String token = getTokenFromHeader(request);
-		System.out.println("🩵 헤더에서 얻어온 accessToken: " + token);
 
 		// 2️⃣ 토큰이 존재하고, 유효한 경우에만 인증 처리
-		if (token != null && jwtTokenProvider.validateAccessToken(token)) {
-			Claims claims = jwtTokenProvider.getClaimsFromAccessToken(token);
-			Long userId = Long.parseLong(claims.getSubject());
-			//Long userId = jwtTokenProvider.getClaimsFromAccessToken(token).get("userId", Long.class);
-			UserDetails userDetails = userDetailsService.loadUserById(userId);
+		// 유효하지 않은 토큰(만료·위조·"null" 문자열 등)은 인증 없이 통과시킨다.
+		// 보호된 엔드포인트는 이후 인가 단계에서 401로 걸러지고, 공개 엔드포인트는 게스트로 접근 가능해야 하기 때문.
+		if (token != null) {
+			try {
+				if (jwtTokenProvider.validateAccessToken(token)) {
+					Claims claims = jwtTokenProvider.getClaimsFromAccessToken(token);
+					Long userId = Long.parseLong(claims.getSubject());
+					UserDetails userDetails = userDetailsService.loadUserById(userId);
 
-			// 3️⃣ SecurityContext에 사용자 정보 저장
-			UsernamePasswordAuthenticationToken authentication =
-				new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-			SecurityContextHolder.getContext().setAuthentication(authentication);
+					// 3️⃣ SecurityContext에 사용자 정보 저장
+					UsernamePasswordAuthenticationToken authentication =
+						new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+					SecurityContextHolder.getContext().setAuthentication(authentication);
+				}
+			} catch (Exception e) {
+				SecurityContextHolder.clearContext();
+			}
 		}
 
 		// 4️⃣ 다음 필터 실행 (토큰이 없거나 유효하지 않더라도 필터 체인을 계속 진행)
-		System.out.println("🩵 다음 필터 실행");
 		chain.doFilter(request, response);
 	}
 

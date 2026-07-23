@@ -2,6 +2,7 @@ package com.ssafy.bbanggu.common.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -30,19 +31,34 @@ public class SecurityConfig {
 			.cors(cors -> cors.configurationSource(corsConfigurationSource())) // CORS 설정 추가
 			.csrf(csrf -> csrf.disable()) // ✅ CSRF 보호 비활성화
 			.authorizeHttpRequests(auth -> auth
+				// 인증 이전 단계에서 쓰이는 공개 API (로그인·회원가입·비밀번호 재설정·이메일 인증·토큰 재발급·카카오)
 				.requestMatchers(
 					"/oauth/kakao/**",
 					"/user/login",
+					"/user/register",
 					"/user/password/reset",
 					"/user/password/reset/confirm",
+					"/auth/**",
 					"/swagger-ui/**",
 					"/v3/api-docs/**",
-					"/user/register",
-					"/auth/**",
 					"/favicon.ico",
-					"/saving/all",
-					"/**"
-				).permitAll() // ✅ 공개 API
+					"/saving/all"
+				).permitAll()
+				// 점주 회원가입 위저드가 로그인(토큰 발급) 전에 가게/정산 등록을 호출하는 구조라 공개로 유지
+				// TODO: 가입 후 자동 로그인으로 바꾸고 이 두 개를 인증 필수로 전환할 것
+				.requestMatchers(HttpMethod.POST, "/bakery", "/bakery/settlement").permitAll()
+				// 게스트(비로그인)도 볼 수 있는 조회성 API — 메인/가게상세/지도 페이지가 토큰 없이 호출
+				.requestMatchers(HttpMethod.GET,
+					"/bakery",
+					"/bakery/map",
+					"/bakery/search",
+					"/bakery/*",
+					"/bread-package/bakery/*",
+					"/favorite/best",
+					"/review/bakery/*",
+					"/review/*/rating",
+					"/uploads/**"
+				).permitAll()
 				.anyRequest().authenticated()
 			)
 			.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class) // ✅ JWT 필터 추가
