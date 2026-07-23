@@ -85,6 +85,8 @@ public class SecurityConfig {
 			"http://i12d102.p.ssafy.io",
 			"https://localhost:5173"  // HTTPS도 추가
 		));
+		// 같은 공유기(내부망)의 폰/태블릿에서 dev 서버로 접속하는 경우 허용
+		configuration.setAllowedOriginPatterns(Arrays.asList("http://192.168.*:5173"));
 		configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
 		configuration.setAllowedHeaders(Arrays.asList("*"));
 		configuration.setExposedHeaders(Arrays.asList("Authorization", "Refresh-Token"));

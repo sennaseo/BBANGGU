@@ -65,7 +65,7 @@ export default defineConfig({
     },
   },
   server: {
-    host: 'localhost',
+    host: true, // 0.0.0.0 — 같은 와이파이의 폰에서 PC IP로 접속 가능
     port: 5173,
     proxy: {
       '/uploads': {
@@ -93,9 +93,6 @@ export default defineConfig({
         secure: false,
         rewrite: (path) => path.replace(/^\/ai/, '/ai')
       }
-    },
-    hmr: {
-      host: 'localhost'  // WebSocket 연결을 위한 호스트 설정
     },
   },
   preview: {
