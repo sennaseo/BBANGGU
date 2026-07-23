@@ -107,9 +107,7 @@ public class UserController {
 		// ✅ UserService에서 로그인 & 토큰 생성
 		Map<String, Object> loginInfo = userService.login(request.getEmail(), request.getPassword());
 		Object accessToken = loginInfo.get("access_token");
-		log.info("🩵 컨트롤러 access_token: " + accessToken);
 		Object refreshToken = loginInfo.get("refresh_token");
-		log.info("🩵 컨트롤러 refresh_token: " + refreshToken);
 
 		// ✅ AccessToken을 HTTP-Only 쿠키에 저장
 		ResponseCookie accessTokenCookie = ResponseCookie.from("access_token", (String)accessToken)

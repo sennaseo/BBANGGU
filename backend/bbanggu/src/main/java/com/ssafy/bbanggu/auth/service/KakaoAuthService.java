@@ -109,7 +109,6 @@ public class KakaoAuthService {
 		try {
 			// ✅ 1. 카카오 토큰 요청
 			String kakaoAccessToken = getKakaoAccessToken(authCode);
-			System.out.println("✅ 카카오 액세스 토큰: " + kakaoAccessToken);
 
 			// ✅ 2. 카카오 사용자 정보 요청
 			KakaoUserInfo kakaoUserInfo = getKakaoUserInfo(kakaoAccessToken);
@@ -127,7 +126,6 @@ public class KakaoAuthService {
 				"role", user.getRole().name()
 			);
 			JwtToken jwtToken = new JwtToken(jwtUtil.createAccessToken(user.getUserId(), additionalClaims), jwtUtil.createRefreshToken(user.getUserId()));
-			System.out.println("✅ JWT 발급 완료: " + jwtToken);
 
 			// ✅ 5. Refresh Token 저장 (즉시 반영)
 			user.setRefreshToken(jwtToken.getRefreshToken());

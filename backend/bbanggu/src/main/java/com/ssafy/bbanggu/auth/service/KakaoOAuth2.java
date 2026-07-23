@@ -51,7 +51,6 @@ public class KakaoOAuth2 {
 
 		try {
 			JsonNode jsonNode = objectMapper.readTree(response.getBody());
-			System.out.println("카카오 Access Token 응답: " + response.getBody());
 			return jsonNode.get("access_token").asText();
 		} catch (Exception e) {
 			throw new RuntimeException("Failed to get Kakao access token", e);
