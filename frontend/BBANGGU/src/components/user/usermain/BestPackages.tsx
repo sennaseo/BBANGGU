@@ -4,6 +4,7 @@ import { useRef } from "react"
 import DraggableScroller from "./DraggableScroller"
 import { useNavigate } from "react-router-dom"
 import type { BakeryInfo } from "../../../store/slices/bakerySlice"
+import { IMAGE_BASE_URL } from "../../../config/env"
 
 interface BestPackagesProps {
   favoritebakery: BakeryInfo[]
@@ -11,7 +12,7 @@ interface BestPackagesProps {
 }
 
 export default function BestPackages({ favoritebakery, toggleFavoriteForUser }: BestPackagesProps) {
-  const imgBaseUrl = import.meta.env.VITE_IMAGE_BASE_URL;
+  const imgBaseUrl = IMAGE_BASE_URL;
   const scrollRef = useRef<HTMLDivElement>(null)
   const navigate = useNavigate()
 

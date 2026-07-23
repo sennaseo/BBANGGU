@@ -4,6 +4,7 @@ import type { ExtendedBakeryType } from "../../../types/bakery"
 import { MapPinIcon } from "@heroicons/react/24/solid"
 import { HeartIcon as HeartOutline } from "@heroicons/react/24/outline"
 import { HeartIcon as HeartSolid } from "@heroicons/react/24/solid"
+import { IMAGE_BASE_URL } from "../../../config/env"
 
 interface BakeryInfoProps {
   bakery: ExtendedBakeryType
@@ -11,7 +12,7 @@ interface BakeryInfoProps {
 }
 
 export default function BakeryInfo({ bakery, onFavoriteUpdate }: BakeryInfoProps) {
-  const imgBaseUrl = import.meta.env.VITE_IMAGE_BASE_URL;
+  const imgBaseUrl = IMAGE_BASE_URL;
   return (
     <div className="py-4">
       <div className="flex items-center justify-between">

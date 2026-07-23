@@ -1,4 +1,6 @@
-const clientKey = "test_ck_d46qopOB896qMYBeYgj53ZmM75y0";
+import { TOSS_CLIENT_KEY } from '../../config/env';
+
+const clientKey = TOSS_CLIENT_KEY;
 
 interface PaymentProps {
   amount: number;

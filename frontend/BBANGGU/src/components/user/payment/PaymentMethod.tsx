@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "../../../store";
 import PaymentButton from "./common/PaymentButton";
+import { TOSS_CLIENT_KEY } from "../../../config/env";
 
 declare global {
   interface Window {
@@ -30,7 +31,7 @@ export function PaymentMethod({
   const requestPayment = async () => {
     setIsProcessing(true);
     onPaymentStart();
-    const clientKey = "test_ck_d46qopOB896qMYBeYgj53ZmM75y0";
+    const clientKey = TOSS_CLIENT_KEY;
     const customerKey = "999";
     const tossPayments = window.TossPayments(clientKey);
 

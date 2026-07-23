@@ -2,6 +2,7 @@ import axios from "axios";
 import { UserType } from "../../../types/bakery";
 import { ApiResponse } from "../../../types/api";
 import { store } from "../../../store";
+import { API_BASE_URL } from "../../../config/env";
 
 interface UpdateUserProfileData {
   name?: string;
@@ -24,7 +25,7 @@ export const profileEditApi = {
             }
 
             const response = await axios.patch<ApiResponse<UserType[]>>(
-                `${import.meta.env.VITE_API_BASE_URL}/user/update`,
+                `${API_BASE_URL}/user/update`,
                 multipartData,
                 {
                     withCredentials: true,

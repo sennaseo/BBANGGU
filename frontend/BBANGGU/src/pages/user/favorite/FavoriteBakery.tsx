@@ -6,9 +6,10 @@ import UserBottomNavigation from '../../../components/user/navigations/bottomnav
 import { getFavoriteBakery } from '../../../services/user/favorite/userFavoriteService';
 import { bakeryDetailApi } from '../../../api/user/detail/bakeryDetailApi';
 import { BakeryInfo } from '../../../store/slices/bakerySlice';
+import { IMAGE_BASE_URL } from '../../../config/env';
 
 export const FavoriteBakery = () => {
-  const imgBaseUrl = import.meta.env.VITE_IMAGE_BASE_URL;
+  const imgBaseUrl = IMAGE_BASE_URL;
   const navigate = useNavigate();
   const [bakeries, setBakeries] = useState<BakeryInfo[]>([]);
 

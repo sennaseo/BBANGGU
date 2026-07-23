@@ -1,6 +1,7 @@
 import axios from 'axios';
+import { API_BASE_URL } from '../../../config/env';
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://i12d102.p.ssafy.io:8081';
+const BASE_URL = API_BASE_URL;
 
 interface ApiResponse {
   message: string;

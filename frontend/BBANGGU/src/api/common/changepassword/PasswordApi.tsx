@@ -1,7 +1,8 @@
 import axios from 'axios';
+import { API_BASE_URL } from '../../../config/env';
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'https://i12d102.p.ssafy.io:8081',
+  baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json'

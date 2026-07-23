@@ -1,7 +1,8 @@
 import axios from 'axios';
 import type { ReviewState } from '../../../../store/slices/reviewSlice';
 import { store } from '../../../../store';
-const BASE_URL = import.meta.env.VITE_API_BASE_URL;
+import { API_BASE_URL } from '../../../../config/env';
+const BASE_URL = API_BASE_URL;
 
 export const fetchUserReviews = async (userId: string): Promise<ReviewState> => {
   try {

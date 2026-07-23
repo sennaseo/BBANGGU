@@ -2,9 +2,8 @@ import axios from 'axios';
 import { ApiResponse } from '../../../../types/response';
 import { store } from '../../../../store';
 import { EchoSave } from '../../../../store/slices/echosaveSlice';
-// const BASE_URL = 'http://127.0.0.1:8080';
-// const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://13.124.56.79:8081';
-const BASE_URL = import.meta.env.VITE_API_BASE_URL;
+import { API_BASE_URL } from '../../../../config/env';
+const BASE_URL = API_BASE_URL;
 
 export const saveReportApi = {
   getSaveReport: async () => {

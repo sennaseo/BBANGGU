@@ -3,6 +3,7 @@ import { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../../../store';
 import { fetchUserInfo } from '../../../store/slices/userSlice';
+import { IMAGE_BASE_URL } from '../../../config/env';
 
 export function ProfileSection() {
   const dispatch = useDispatch();
@@ -17,7 +18,7 @@ export function ProfileSection() {
     }
   }, [dispatch, userInfo]);
 
-  const imgBaseUrl = import.meta.env.VITE_IMAGE_BASE_URL;
+  const imgBaseUrl = IMAGE_BASE_URL;
 
   return (
     <div className="px-6 py-6">

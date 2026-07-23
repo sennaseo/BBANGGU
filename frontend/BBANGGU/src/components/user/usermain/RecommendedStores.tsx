@@ -5,6 +5,7 @@ import {
 import { MapPinIcon, HeartIcon as HeartSolid } from "@heroicons/react/24/solid";
 import { useState } from "react";
 import { BakeryInfo } from "../../../store/slices/bakerySlice";
+import { IMAGE_BASE_URL } from "../../../config/env";
 
 interface RecommendedStoresProps {
   allbakery: BakeryInfo[];
@@ -17,7 +18,7 @@ export default function RecommendedStores({
   onStoreClick,
   toggleFavoriteForUser,
 }: RecommendedStoresProps) {
-  const imgBaseUrl = import.meta.env.VITE_IMAGE_BASE_URL;
+  const imgBaseUrl = IMAGE_BASE_URL;
   console.log(imgBaseUrl);
   const [sortType, setSortType] = useState<string>("distance");
   const validStores = allbakery.filter(

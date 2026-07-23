@@ -3,7 +3,8 @@ import { useSelector } from 'react-redux';
 import { RootState } from '../../../store';
 import type { UserType } from "../../../types/bakery"
 import { mypageApi } from "../../../api/user/mypage/mypageApi";
-// import { useNavigate } from "react-router-dom" 
+import { IMAGE_BASE_URL } from "../../../config/env";
+// import { useNavigate } from "react-router-dom"
 
 interface ProfileSectionProps {
   user?: UserType | null;  // user를 선택적 prop으로 변경
@@ -11,7 +12,7 @@ interface ProfileSectionProps {
 
 export function ProfileSection({ user }: ProfileSectionProps) {
   const [reservationCount, setReservationCount] = useState<number>(0);
-  const imgBaseUrl = import.meta.env.VITE_IMAGE_BASE_URL;
+  const imgBaseUrl = IMAGE_BASE_URL;
   // const navigate = useNavigate();
   // 리덕스에서 사용자 정보 가져오기
   const userInfo = useSelector((state: RootState) => state.user.userInfo)

@@ -1,4 +1,4 @@
-import { defineConfig } from 'vite'
+import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
 import { fileURLToPath } from 'node:url'
 import path from 'path'
@@ -7,7 +7,12 @@ import { VitePWA } from 'vite-plugin-pwa'
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 // https://vite.dev/config/
-export default defineConfig({
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, __dirname, '')
+  const apiTarget = env.VITE_API_BASE_URL || 'http://localhost:8081'
+  const aiTarget = env.VITE_AI_BASE_URL || 'http://localhost:8000'
+
+  return {
   plugins: [
     react(),
     VitePWA({
@@ -69,29 +74,15 @@ export default defineConfig({
     port: 5173,
     proxy: {
       '/uploads': {
-        target: 'https://i12d102.p.ssafy.io',
+        target: apiTarget,
         changeOrigin: true,
         secure: false,
-        configure: (proxy, _options) => {
-          proxy.on('proxyReq', (proxyReq, _req, _res) => {
-            proxyReq.removeHeader('origin');
-            proxyReq.removeHeader('referer');
-          });
-
-          proxy.on('proxyRes', (_proxyRes, _req, res) => {
-            res.removeHeader('Access-Control-Allow-Origin');
-            res.setHeader('Access-Control-Allow-Origin', 'http://localhost:5173');
-            res.setHeader('Access-Control-Allow-Methods', 'GET');
-            res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-            res.setHeader('Access-Control-Allow-Credentials', 'true');
-          });
-        }
       },
       '/ai': {
-        target: 'https://i12d102.p.ssafy.io',
+        target: aiTarget,
         changeOrigin: true,
         secure: false,
-        rewrite: (path) => path.replace(/^\/ai/, '/ai')
+        rewrite: (path) => path.replace(/^\/ai/, '')
       }
     },
   },
@@ -110,5 +101,6 @@ export default defineConfig({
         }
       }
     }
+  }
   }
 })

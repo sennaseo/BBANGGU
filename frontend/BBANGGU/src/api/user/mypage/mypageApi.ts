@@ -2,10 +2,9 @@ import axios from 'axios';
 import { ApiResponse } from '../../../types/response';
 import type { UserType, ReservationType, EchoSaveType } from '../../../types/bakery';
 import { store } from '../../../store';
+import { API_BASE_URL } from '../../../config/env';
 
-// const BASE_URL = 'http://127.0.0.1:8080';
-// const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://13.124.56.79:8081';
-const BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const BASE_URL = API_BASE_URL;
 
 export const mypageApi = {
     getUsersApi: async () => {

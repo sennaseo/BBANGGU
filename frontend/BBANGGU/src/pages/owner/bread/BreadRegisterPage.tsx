@@ -2,12 +2,13 @@ import React, { useState, useEffect, useRef } from 'react';
 import { PlusIcon, TrashIcon, PencilIcon, EllipsisVerticalIcon } from '@heroicons/react/24/outline';
 import { useNavigate } from 'react-router-dom';
 import Header from '../../../components/owner/header/Header';
-import { 
+import {
   Croissant, Cookie, CakeSlice,
   Pizza, Cake,
   Coffee, ChefHat, UtensilsCrossed, Store,
   ShoppingBag, Package, CircleDot, Star
 } from 'lucide-react';
+import { IMAGE_BASE_URL } from '../../../config/env';
 import { registerBread, getBakeryBreads, BreadInfo, updateBread, deleteBread } from '../../../api/owner/bread';
 import { getUserInfo } from '../../../api/user/user';
 import { UserInfo } from '../../../types/user';
@@ -154,7 +155,7 @@ const getFullImageUrl = (imageUrl: string | null): string => {
   if (imageUrl.startsWith('http')) return imageUrl;
   
   // 운영 환경에서 사용되는 URL 형식으로 통일
-  return `http://i12d102.p.ssafy.io${imageUrl}`;
+  return `${IMAGE_BASE_URL}${imageUrl}`;
 };
 
 // 에러 타입 정의

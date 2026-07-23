@@ -11,6 +11,7 @@ import { fetchBakeryDetail } from "../../../services/user/detail/bakeryDetailSer
 import { useState, useEffect, useCallback } from "react"
 import type { ExtendedBakeryType } from "../../../types/bakery"
 import { toggleFavoriteForUser } from "../../../services/user/usermainService"
+import { IMAGE_BASE_URL } from "../../../config/env"
 
 export default function BakeryDetail() {
   const { bakeryId } = useParams<{ bakeryId: string }>()
@@ -19,7 +20,7 @@ export default function BakeryDetail() {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  const imgBaseUrl = import.meta.env.VITE_IMAGE_BASE_URL;
+  const imgBaseUrl = IMAGE_BASE_URL;
 
   const loadData = useCallback(async () => {
     setIsLoading(true)

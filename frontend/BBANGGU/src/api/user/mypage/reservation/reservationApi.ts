@@ -2,7 +2,8 @@ import axios from 'axios';
 import { ApiResponse } from '../../../../types/response';
 import { store } from '../../../../store';
 import { Reservation } from '../../../../store/slices/reservationSlice';
-const BASE_URL = import.meta.env.VITE_API_BASE_URL;
+import { API_BASE_URL } from '../../../../config/env';
+const BASE_URL = API_BASE_URL;
 
 export const reservationApi = {
     getReservationsApi: async (startDate: string, endDate: string) => {
