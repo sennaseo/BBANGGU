@@ -5,52 +5,53 @@ import torch.nn as nn
 import torchvision.models as models
 import torchvision.transforms as transforms
 from PIL import Image
-from torchvision.models import EfficientNet_B7_Weights, EfficientNet_B2_Weights
+
+from ai.classes import CLASS_NAMES
+
+MODEL_PATH = os.getenv("EFFICIENTNET_MODEL_PATH", "./models/efficientnet_b7.pth")
 
 
 def load_model(model_path, num_classes):
-    # model = models.efficientnet_b2(weights=EfficientNet_B2_Weights.DEFAULT)
-    model = models.efficientnet_b7(weights=EfficientNet_B7_Weights.DEFAULT)
+    # weights=None: 사전학습 가중치를 받아봤자 load_state_dict가 전부 덮어쓰므로
+    # 다운로드(네트워크 의존 + 수백MB)를 건너뛰고 구조만 만든다
+    model = models.efficientnet_b7(weights=None)
     model.classifier[1] = nn.Linear(model.classifier[1].in_features, num_classes)
     model.load_state_dict(torch.load(model_path, map_location=torch.device('cpu')))
     model.eval()
     return model
 
 
-def classify(cropped_image_dir: str, class_filter: list = None):
-    model_path = './models/efficientnet_b7.pth'
-    class_names = [
-        'bagel', 'baguette', 'bun', 'cake', 'croissant', 'croquette',
-        'financier', 'pizza', 'pretzel', 'red_bean', 'scone', 'soboro', 'tart', 'white_bread'
-    ]
+# 앱 기동 시 1회만 로드 (기존에는 요청마다 245MB를 디스크에서 재로드했음)
+_model = load_model(MODEL_PATH, num_classes=len(CLASS_NAMES))
 
+_transform = transforms.Compose([
+    transforms.Resize((224, 224)),
+    transforms.ToTensor(),
+    transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+])
+
+
+def classify(cropped_image_dir: str, class_filter: list = None):
     # Validate class_filter
     if class_filter:
         for cls in class_filter:
-            if cls not in class_names:
+            if cls not in CLASS_NAMES:
                 raise ValueError(f"Class '{cls}' in class_filter is not in available class_names")
-
-    model = load_model(model_path, num_classes=len(class_names))
-    transform = transforms.Compose([
-        transforms.Resize((224, 224)),
-        transforms.ToTensor(),
-        transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
-    ])
 
     bread_counts = {}
 
     for img_name in os.listdir(cropped_image_dir):
         img_path = os.path.join(cropped_image_dir, img_name)
         image = Image.open(img_path).convert('RGB')
-        image = transform(image).unsqueeze(0)
+        image = _transform(image).unsqueeze(0)
 
         with torch.no_grad():
-            output = model(image)
+            output = _model(image)
             probabilities = torch.softmax(output, dim=1)[0]  # Convert to probabilities
 
             if class_filter:
                 # Get indices of filtered classes
-                filter_indices = [class_names.index(cls) for cls in class_filter]
+                filter_indices = [CLASS_NAMES.index(cls) for cls in class_filter]
 
                 # Get probabilities only for filtered classes
                 filtered_probs = probabilities[filter_indices]
@@ -60,17 +61,10 @@ def classify(cropped_image_dir: str, class_filter: list = None):
 
                 # Map back to original class name
                 predicted_bread = class_filter[max_filtered_idx]
-
-                # Get the actual probability for logging/threshold purposes
-                confidence = filtered_probs[max_filtered_idx].item()
-
-                # Optionally, you can set a minimum confidence threshold
-                # if confidence < 0.5:  # Example threshold
-                #     continue
             else:
                 # Original behavior when no filter is provided
                 predicted_class = torch.argmax(probabilities).item()
-                predicted_bread = class_names[predicted_class]
+                predicted_bread = CLASS_NAMES[predicted_class]
 
             # Update count in dictionary
             if predicted_bread in bread_counts:

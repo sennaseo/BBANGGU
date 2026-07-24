@@ -1,0 +1,11 @@
+# 빌드 컨텍스트 다이어트 — COPY 대상 외 대용량 파일 제외
+.idea/
+__pycache__/
+cropped_objects/
+util/
+test_main.http
+aiserver.iml
+# 미사용 모델 가중치 (사용하는 것은 yolo_bbanggu.pt, efficientnet_b7.pth 뿐)
+models/best.pt
+models/best_old.pt
+models/efficientnet_b2.pth

@@ -49,6 +49,23 @@ services:
       - bbanggu-network
     restart: always
 
+  ai:
+    build:
+      context: ./bbanggu_ai
+      dockerfile: Dockerfile
+    image: bbanggu-ai
+    container_name: bbanggu-ai
+    ports:
+      - "8000:8000"
+    environment:
+      # /detect가 가게 빵 목록을 백엔드에서 조회 — 컨테이너 네트워크 안에서는 서비스명으로 접근
+      - SPRING_SERVER_URL=http://bbanggu-server:8081
+    depends_on:
+      - app
+    networks:
+      - bbanggu-network
+    restart: unless-stopped
+
   nginx:
     image: nginx:latest
     container_name: bbanggu-nginx
