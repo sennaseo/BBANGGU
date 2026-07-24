@@ -130,9 +130,6 @@ public class ReservationController {
 		log.info("✨ 기간 내 사용자 예약 조회 ✨");
 		List<Map<String, Object>> reservationList = reservationService.getUserReservationList(userDetails, startDate,
 			endDate);
-		if (reservationList.isEmpty()) {
-			ResponseEntity.status(HttpStatus.NO_CONTENT).body(new ApiResponse("기간 내 사용자 예약이 존재하지 않습니다.", null));
-		}
 		return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse("기간 내 사용자 예약 조회가 완료되었습니다.", reservationList));
 	}
 
@@ -172,9 +169,6 @@ public class ReservationController {
 	) {
 		List<ReservationResponse> reservationList = reservationService.getOwnerReservationList(userDetails, bakeryId,
 			startDate, endDate);
-		if (reservationList.isEmpty()) {
-			ResponseEntity.status(HttpStatus.NO_CONTENT).body(new ApiResponse("예약이 없습니다.", null));
-		}
 		return ResponseEntity.ok().body(new ApiResponse("기간 내 가게 예약 조회가 완료되었습니다.", reservationList));
 	}
 

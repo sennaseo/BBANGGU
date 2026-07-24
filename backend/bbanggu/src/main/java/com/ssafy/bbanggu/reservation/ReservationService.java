@@ -369,9 +369,16 @@ public class ReservationService {
 	 */
 	public List<ReservationResponse> getOwnerReservationList(CustomUserDetails userDetails, long bakeryId,
 		LocalDate startDate, LocalDate endDate) {
-		// TODO: bakeryId와 UserId로 소유자 검증 필요
-		//		String token = authorization.replace("Bearer ", "");
-		//		long userId = jwtTokenProvider.getUserIdFromToken(token);
+		// 소유자 검증
+		User user = userRepository.findById(userDetails.getUserId())
+			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+		Bakery bakery = bakeryRepository.findById(bakeryId)
+			.orElseThrow(() -> new CustomException(ErrorCode.BAKERY_NOT_FOUND));
+
+		if (!bakery.getUser().getUserId().equals(user.getUserId())) {
+			throw new CustomException(ErrorCode.USER_NOT_BAKERY_OWNER);
+		}
 
 		LocalDateTime startDateTime = startDate.atStartOfDay();
 		LocalDateTime endDateTime = endDate.atTime(LocalTime.MAX);
@@ -379,9 +386,22 @@ public class ReservationService {
 		List<Reservation> reservationList = reservationRepository.findByBakery_BakeryIdAndCreatedAtBetween(bakeryId,
 			startDateTime, endDateTime);
 		List<ReservationResponse> reservationDTOList = new ArrayList<>();
-		// for (Reservation reservation : reservationList) {
-		// 	reservationDTOList.add(entityToDto(reservation));
-		// }
+		for (Reservation reservation : reservationList) {
+			Review review = reviewRepository.findByReservation_ReservationId(reservation.getReservationId());
+			String reviewStatus = null;
+			if (review != null) {
+				reviewStatus = (review.getDeletedAt() == null) ? "COMPLETED" : "DELETED";
+			}
+			reservationDTOList.add(new ReservationResponse(
+				reservation.getReservationId(),
+				reservation.getBakery().getBakeryId(),
+				reservation.getBakery().getName(),
+				reservation.getCreatedAt(),
+				reservation.getPickupAt(),
+				reservation.getStatus(),
+				reviewStatus
+			));
+		}
 		return reservationDTOList;
 	}
 
