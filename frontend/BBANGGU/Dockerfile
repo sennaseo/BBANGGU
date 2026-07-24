@@ -1,32 +1,17 @@
-FROM node:22.13.0-alpine AS build
-
+# ---- 빌드 스테이지: Vite 프로덕션 빌드 ----
+FROM node:20-alpine AS build
 WORKDIR /app
 
-# 3. 프로젝트 파일 복사
-COPY package*.json ./
+COPY package.json package-lock.json ./
+RUN npm ci
 
-# 4. 의존성 설치
-RUN npm install
-
-# 5. 빌드 실행
 COPY . .
-
+# 카카오맵 JS 키는 빌드 시점에 주입 (compose build args ← 서버 .env)
+ARG VITE_KAKAO_MAP_API_KEY
+ENV VITE_KAKAO_MAP_API_KEY=$VITE_KAKAO_MAP_API_KEY
 RUN npm run build
 
-# 6. 프로덕션 환경을 위한 Nginx 설정
+# ---- 서빙 스테이지: nginx가 정적 파일 + 리버스 프록시 담당 ----
 FROM nginx:alpine
-
-# 7. Nginx 설정 파일 복사 (선택 사항)
-COPY ./nginx.conf /etc/nginx/conf.d/default.conf
-
-# 8. 빌드된 프론트엔드 파일을 Nginx의 웹 서버 디렉토리로 복사
 COPY --from=build /app/dist /usr/share/nginx/html
-
-# 9. Nginx 포트 80을 오픈
-EXPOSE 80
-
-# 10. Nginx 시작
-CMD ["nginx", "-g", "daemon off;"]
-
-
-
+# 프록시 설정은 compose가 ./nginx/conf.d/default.conf 를 마운트한다

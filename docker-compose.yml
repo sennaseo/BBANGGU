@@ -9,7 +9,7 @@ services:
       MYSQL_USER: ${DB_USERNAME}
       MYSQL_PASSWORD: ${DB_PASSWORD}
     ports:
-      - "3306:3306"
+      - "127.0.0.1:3306:3306"  # 로컬 개발용 — 외부 노출 안 함
     volumes:
       - ./backend/bbanggu/mysql/:/docker-entrypoint-initdb.d/
       - mysql_data:/var/lib/mysql
@@ -28,23 +28,23 @@ services:
     build:
       context: ./backend/bbanggu/
       dockerfile: Dockerfile
-      # args:
-    #    command: ./gradlew build && java -jar bbanggu-0.0.1-SNAPSHOT.jar
     image: bbanggu-server
     container_name: bbanggu-server
     depends_on:
       db:
         condition: service_healthy
     ports:
-      - "8081:8081"
+      - "127.0.0.1:8081:8081"  # 직접 접근은 로컬 디버깅용 — 외부는 web(nginx) 경유
     environment:
       - SPRING_DATASOURCE_URL=jdbc:mysql://bbanggu-db:3306/${DB_NAME}?useSSL=false&serverTimezone=Asia/Seoul&allowPublicKeyRetrieval=true
       - SPRING_DATASOURCE_USERNAME=${DB_USERNAME}
       - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
-      - SPRING_JPA_DATABASE_PLATFORM=org.hibernate.dialect.MySQL8Dialect
       - SERVER_PORT=8081
+      - UPLOAD_DIR=/app/uploads
     env_file:
       - .env
+    volumes:
+      - uploads_data:/app/uploads
     networks:
       - bbanggu-network
     restart: always
@@ -56,7 +56,7 @@ services:
     image: bbanggu-ai
     container_name: bbanggu-ai
     ports:
-      - "8000:8000"
+      - "127.0.0.1:8000:8000"
     environment:
       # /detect가 가게 빵 목록을 백엔드에서 조회 — 컨테이너 네트워크 안에서는 서비스명으로 접근
       - SPRING_SERVER_URL=http://bbanggu-server:8081
@@ -66,39 +66,30 @@ services:
       - bbanggu-network
     restart: unless-stopped
 
-  nginx:
-    image: nginx:latest
-    container_name: bbanggu-nginx
-    restart: always
-    volumes:
-      - ./nginx:/etc/nginx
-      - /etc/letsencrypt:/etc/letsencrypt:ro
+  web:
+    build:
+      context: ./frontend/BBANGGU
+      dockerfile: Dockerfile
+      args:
+        - VITE_KAKAO_MAP_API_KEY=${VITE_KAKAO_MAP_API_KEY}
+    image: bbanggu-web
+    container_name: bbanggu-web
     ports:
       - "80:80"
-      - "443:443"
+      # 443은 도메인/인증서 확정 후 개방
+    volumes:
+      - ./nginx/conf.d/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - uploads_data:/var/www/uploads:ro
     depends_on:
       - app
+      - ai
     networks:
       - bbanggu-network
-    healthcheck:
-      test: [ "CMD", "curl", "-f", "http://i12d102.p.ssafy.io:8081" ]
-      interval: 10s
-      retries: 5
-
-  certbot:
-    container_name: certbot
-    image: certbot/certbot
-    restart: unless-stopped
-    volumes:
-      - ./backend/bbanggu/data/certbot/conf:/etc/letsencrypt
-      - ./backend/bbanggu/data/certbot/www:/var/www/certbot
-    depends_on:
-      - nginx
-    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
-
+    restart: always
 
 volumes:
   mysql_data:
+  uploads_data:
 
 networks:
   bbanggu-network:

@@ -1,0 +1,10 @@
+.gradle/
+build/
+data/
+mysql/
+nginx/
+bfg.jar
+.env
+.env.example
+docker-compose.yml
+Dockerfile

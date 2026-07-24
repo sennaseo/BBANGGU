@@ -25,7 +25,7 @@ spring:
       max-request-size: 10MB
   web:
     resources:
-      static-locations: file:/home/ubuntu/uploads/
+      static-locations: file:${UPLOAD_DIR:./uploads}/
   jpa:
     # database-platform: org.hibernate.dialect.MySQL8Dialect
     hibernate:
@@ -53,7 +53,8 @@ spring:
             enable: true
     protocol: smtp
   mvc:
-    content negotiation:
+    static-path-pattern: /uploads/**  # 업로드 이미지는 /uploads/** 로만 정적 서빙
+    contentnegotiation:
       favor-parameter: false
   ai:
     openai:
@@ -91,6 +92,9 @@ jwt:
 toss:
   payments:
     api-key: ${TOSS_API_KEY}
+
+app:
+  upload-dir: ${UPLOAD_DIR:./uploads}
 
 
 
