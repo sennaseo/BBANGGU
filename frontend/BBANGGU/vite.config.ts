@@ -16,13 +16,14 @@ export default defineConfig(({ mode }) => {
   plugins: [
     react(),
     VitePWA({
+      // 자동 등록 스크립트를 주입하지 않는다.
+      // base:'/public' 조합이 등록 스크립트 경로를 '/publicregisterSW.js'로 깨뜨려
+      // (200 text/html = SPA 폴백 index.html) <head>에서 파싱 에러를 내며 앱 마운트를 막았음.
+      // 매니페스트/아이콘 등 PWA 메타는 유지하되 SW 자동 등록만 끈다.
+      injectRegister: false,
       registerType: 'autoUpdate',
-      devOptions: {
-        enabled: true // 개발 환경에서도 PWA 활성화
-      },
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
       scope: '/',
-      base: '/public',
       manifest: {
         name: '빵구앱',
         short_name: '빵구',

@@ -31,28 +31,18 @@ const loadKakaoMapScript = () => {
   });
 };
 
-loadKakaoMapScript()
-  .then(() => {
-    // 서비스 워커 등록 코드 수정
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js')
-        .then(registration => {
-          console.log('서비스 워커가 등록되었습니다:', registration);
-        })
-        .catch(error => {
-          console.log('서비스 워커 등록 실패:', error);
-        });
-    }
+// 카카오맵 SDK는 백그라운드로 로드만 시도한다.
+// 렌더를 이 Promise 안에 두면 SDK 로드가 실패할 때(예: 도메인 미등록) .then이 안 돌아
+// React가 통째로 마운트되지 못하고 흰 화면이 된다. 지도 성공 여부와 앱 구동을 분리한다.
+loadKakaoMapScript().catch((e) => console.error('카카오맵 초기화 중 오류 발생:', e));
 
-    const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
-    root.render(
-      <React.StrictMode>
-        <Provider store={store}>
-          <PersistGate loading={null} persistor={persistor}>
-            <App />
-          </PersistGate>
-        </Provider>
-      </React.StrictMode>
-    )
-  })
-  .catch((e) => console.error('카카오맵 초기화 중 오류 발생:', e));
+const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
+root.render(
+  <React.StrictMode>
+    <Provider store={store}>
+      <PersistGate loading={null} persistor={persistor}>
+        <App />
+      </PersistGate>
+    </Provider>
+  </React.StrictMode>
+)
