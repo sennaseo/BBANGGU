@@ -76,10 +76,12 @@ services:
     container_name: bbanggu-web
     ports:
       - "80:80"
-      # 443은 도메인/인증서 확정 후 개방
+      - "443:443"
     volumes:
       - ./nginx/conf.d/default.conf:/etc/nginx/conf.d/default.conf:ro
       - uploads_data:/var/www/uploads:ro
+      - certbot_conf:/etc/letsencrypt:ro
+      - certbot_www:/var/www/certbot:ro
     depends_on:
       - app
       - ai
@@ -87,9 +89,21 @@ services:
       - bbanggu-network
     restart: always
 
+  # 인증서 발급/갱신 전용 — 평소엔 12시간마다 renew, 최초 발급은 enable-https.sh가 run 으로 호출
+  certbot:
+    image: certbot/certbot
+    container_name: bbanggu-certbot
+    volumes:
+      - certbot_conf:/etc/letsencrypt
+      - certbot_www:/var/www/certbot
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew --webroot -w /var/www/certbot; sleep 12h & wait $${!}; done;'"
+    restart: unless-stopped
+
 volumes:
   mysql_data:
   uploads_data:
+  certbot_conf:
+  certbot_www:
 
 networks:
   bbanggu-network:
