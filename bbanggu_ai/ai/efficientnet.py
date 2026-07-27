@@ -16,7 +16,9 @@ def load_model(model_path, num_classes):
     # 다운로드(네트워크 의존 + 수백MB)를 건너뛰고 구조만 만든다
     model = models.efficientnet_b7(weights=None)
     model.classifier[1] = nn.Linear(model.classifier[1].in_features, num_classes)
-    model.load_state_dict(torch.load(model_path, map_location=torch.device('cpu')))
+    # torch 2.6부터 torch.load의 weights_only 기본값이 True로 바뀜.
+    # 우리가 직접 학습한 신뢰 가능한 가중치이므로 False로 명시 (안 하면 UnpicklingError)
+    model.load_state_dict(torch.load(model_path, map_location=torch.device('cpu'), weights_only=False))
     model.eval()
     return model
 
