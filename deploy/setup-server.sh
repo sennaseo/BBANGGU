@@ -34,10 +34,27 @@ fi
 echo "=== 4. .env 준비 ==="
 if [ ! -f "$HOME/BBANGGU/.env" ]; then
   cp "$HOME/BBANGGU/.env.example" "$HOME/BBANGGU/.env"
-  echo "⚠️  $HOME/BBANGGU/.env 를 열어 값을 채운 뒤 다음을 실행하세요:"
-  echo "    cd ~/BBANGGU && docker compose --env-file .env up -d --build"
+  echo "⚠️  $HOME/BBANGGU/.env 를 열어 값을 채운 뒤 아래 5단계를 실행하세요."
 else
   echo ".env 이미 존재"
 fi
 
-echo "=== 완료 ==="
+echo "=== 5. AI 모델 파일(LFS) 점검 ==="
+# efficientnet_b7.pth 는 .gitattributes 에서 LFS 로 지정돼 있으나 GitHub LFS 쿼터 미사용이라
+# git clone 하면 134바이트 포인터 텍스트로 온다. 실제 파일(약 250MB)은 로컬 PC에서 scp 로 채운다.
+MODEL="$HOME/BBANGGU/bbanggu_ai/models/efficientnet_b7.pth"
+if [ -f "$MODEL" ] && [ "$(stat -c%s "$MODEL")" -lt 1000000 ]; then
+  echo "⚠️  $MODEL 이 LFS 포인터($(stat -c%s "$MODEL") bytes)입니다."
+  echo "    로컬 PC(작업 PC)에서 아래를 실행해 실제 파일을 올리세요:"
+  echo "    scp -i ~/.ssh/bbanggu_oracle \\"
+  echo "        <로컬>/bbanggu_ai/models/efficientnet_b7.pth \\"
+  echo "        ubuntu@<이 서버 IP>:$MODEL"
+else
+  echo "모델 파일 정상 ($([ -f "$MODEL" ] && stat -c%s "$MODEL" || echo 0) bytes)"
+fi
+
+echo ""
+echo "=== 완료. 다음 순서로 기동하세요 ==="
+echo "  1) nano ~/BBANGGU/.env         # 키/주소 채우기 (주소는 이 서버 IP 기준)"
+echo "  2) 위 5번 안내대로 모델 scp (포인터일 때만)"
+echo "  3) cd ~/BBANGGU && docker compose --env-file .env up -d --build"
