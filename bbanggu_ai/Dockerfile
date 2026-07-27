@@ -8,13 +8,18 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         libgl1 libglib2.0-0 \
     && rm -rf /var/lib/apt/lists/*
 
-# 의존성 설치 — torch/torchvision은 CPU 전용 휠 사용 (기본 PyPI는 CUDA 포함 ~2GB+)
-# +cpu 로컬 버전은 파이토치 인덱스에만 있고, 부속 의존성은 PyPI에서 받는다
+# 의존성 설치 — torch는 아키텍처별로 받는 곳이 다르다:
+#   x86_64: PyPI 기본 휠은 CUDA 포함(2GB+)이라 파이토치 CPU 인덱스를 명시
+#   aarch64(ARM, 오라클 A1): 파이토치 CPU 인덱스에 ARM 휠이 없음 → PyPI 기본이 이미 CPU 전용
 COPY requirements.txt /app/
 RUN pip install --no-cache-dir --upgrade pip \
-    && pip install --no-cache-dir torch==2.6.0+cpu torchvision==0.21.0+cpu \
-         --index-url https://download.pytorch.org/whl/cpu \
-         --extra-index-url https://pypi.org/simple \
+    && ARCH="$(uname -m)" \
+    && if [ "$ARCH" = "x86_64" ]; then \
+         pip install --no-cache-dir torch==2.6.0 torchvision==0.21.0 \
+           --index-url https://download.pytorch.org/whl/cpu ; \
+       else \
+         pip install --no-cache-dir torch==2.6.0 torchvision==0.21.0 ; \
+       fi \
     && pip install --no-cache-dir -r requirements.txt
 
 # 애플리케이션 소스와 실제 사용하는 모델 가중치만 복사
