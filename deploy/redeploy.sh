@@ -7,17 +7,30 @@ cd "$HOME/BBANGGU"
 
 CONF=nginx/conf.d/default.conf
 
+MODEL="bbanggu_ai/models/efficientnet_b7.pth"
+MODEL_CACHE="$HOME/.bbanggu-models/efficientnet_b7.pth"
+
+# 실제 모델(대용량)이 있으면 홈에 백업 — git pull 이 LFS 포인터로 덮어도 복원할 수 있게
+if [ -f "$MODEL" ] && [ "$(stat -c%s "$MODEL")" -gt 1000000 ]; then
+  mkdir -p "$(dirname "$MODEL_CACHE")"
+  cp -f "$MODEL" "$MODEL_CACHE"
+fi
+
 echo "=== git pull (로컬 conf 치환은 stash 후 되받음) ==="
 # conf 는 배포 시 도메인이 치환돼 있어 pull 과 충돌한다 → 치운 뒤 pull
 git stash push -q -- "$CONF" 2>/dev/null || true
 git pull origin develop
 git stash drop -q 2>/dev/null || true   # 치환본은 버리고 아래서 다시 치환
 
-# 모델이 LFS 포인터로 덮였는지 확인
-MODEL="bbanggu_ai/models/efficientnet_b7.pth"
+# pull 이 모델을 LFS 포인터로 덮었으면 백업에서 복원
 if [ -f "$MODEL" ] && [ "$(stat -c%s "$MODEL")" -lt 1000000 ]; then
-  echo "⚠️  $MODEL 이 LFS 포인터입니다 — 로컬에서 scp 로 실제 파일을 올린 뒤 다시 실행하세요."
-  exit 1
+  if [ -f "$MODEL_CACHE" ]; then
+    echo "=== 모델이 LFS 포인터로 덮여 백업본에서 복원 ==="
+    cp -f "$MODEL_CACHE" "$MODEL"
+  else
+    echo "⚠️  $MODEL 이 LFS 포인터이고 백업본도 없습니다 — 로컬에서 scp 로 올린 뒤 다시 실행하세요."
+    exit 1
+  fi
 fi
 
 # 도메인 치환 (.env 에 DOMAIN 이 있으면)
