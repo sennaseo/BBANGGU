@@ -1,5 +1,6 @@
 package com.ssafy.bbanggu.auth.controller;
 
+import com.ssafy.bbanggu.auth.security.AuthCookieFactory;
 import com.ssafy.bbanggu.auth.security.JwtTokenProvider;
 import com.ssafy.bbanggu.common.exception.CustomException;
 import com.ssafy.bbanggu.common.exception.ErrorCode;
@@ -23,6 +24,7 @@ import lombok.RequiredArgsConstructor;
 public class AuthenticationController {
 	private final JwtTokenProvider jwtTokenProvider;
 	private final UserRepository userRepository;
+	private final AuthCookieFactory cookieFactory;
 
 	/**
 	 * AccessToken 재발급 API
@@ -64,25 +66,20 @@ public class AuthenticationController {
 			userRepository.save(user.get());
 		}
 
-		// 7️⃣ 새로운 Refresh Token 쿠키 설정
-		ResponseCookie refreshTokenCookie = ResponseCookie.from("refreshToken", newRefreshToken)
-			.httpOnly(true)
-			.secure(true)
-			.path("/")
-			.maxAge(7 * 24 * 60 * 60) // 7일
-			.build();
+		// 7️⃣ 8️⃣ 새로운 토큰 쿠키 설정 (secure 분기·path 제한은 팩토리가 관리)
+		ResponseCookie refreshTokenCookie = cookieFactory.refreshToken(newRefreshToken);
+		ResponseCookie accessTokenCookie = cookieFactory.accessToken(newAccessToken);
 
-		// 8️⃣ 새로운 Access Token 쿠키 설정
-		ResponseCookie accessTokenCookie = ResponseCookie.from("accessToken", newAccessToken)
-			.httpOnly(true)
-			.secure(true)
-			.path("/")
-			.maxAge(30 * 60)
-			.build();
+		// 프론트가 Authorization 헤더 방식으로 access token을 쓰므로 body에도 담아준다
+		// (쿠키만 내리면 JS가 httpOnly 토큰을 못 읽어 헤더에 붙일 수 없음)
+		Map<String, Object> responseData = Map.of(
+			"access_token", newAccessToken,
+			"user_type", user.get().getRole().name()
+		);
 
 		return ResponseEntity.ok()
 			.header(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString())
 			.header(HttpHeaders.SET_COOKIE, accessTokenCookie.toString())
-			.body(new ApiResponse("AccessToken 재발급이 성공적으로 완료되었습니다.", null));
+			.body(new ApiResponse("AccessToken 재발급이 성공적으로 완료되었습니다.", responseData));
 	}
 }

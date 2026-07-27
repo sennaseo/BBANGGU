@@ -95,6 +95,8 @@ toss:
 
 app:
   upload-dir: ${UPLOAD_DIR:./uploads}
+  # 쿠키 Secure 속성 — 운영(HTTPS)은 true, 로컬 HTTP 개발은 false 여야 Secure 쿠키가 저장됨
+  cookie-secure: ${COOKIE_SECURE:false}
 
 
 

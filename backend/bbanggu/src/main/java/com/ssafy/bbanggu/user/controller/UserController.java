@@ -44,6 +44,7 @@ public class UserController {
     private final UserService userService;
     private final EmailService emailAuthService;
 	private final UserRepository userRepository;
+	private final com.ssafy.bbanggu.auth.security.AuthCookieFactory cookieFactory;
 
 
 	/**
@@ -76,23 +77,9 @@ public class UserController {
 		userService.delete(userId);
 
 		// ✅ AccessToken & RefreshToken 쿠키 즉시 만료시키기
-		ResponseCookie expiredAccessToken = ResponseCookie.from("accessToken", "")
-			.httpOnly(true)
-			.secure(true)
-			.path("/")
-			.maxAge(0) // 즉시 만료
-			.build();
-
-		ResponseCookie expiredRefreshToken = ResponseCookie.from("refreshToken", "")
-			.httpOnly(true)
-			.secure(true)
-			.path("/")
-			.maxAge(0) // 즉시 만료
-			.build();
-
 		return ResponseEntity.status(HttpStatus.NO_CONTENT)
-			.header(HttpHeaders.SET_COOKIE, expiredAccessToken.toString())
-			.header(HttpHeaders.SET_COOKIE, expiredRefreshToken.toString())
+			.header(HttpHeaders.SET_COOKIE, cookieFactory.expiredAccessToken().toString())
+			.header(HttpHeaders.SET_COOKIE, cookieFactory.expiredRefreshToken().toString())
 			.body(new ApiResponse("회원탈퇴가 성공적으로 완료되었습니다.", null));
 	}
 
@@ -109,21 +96,10 @@ public class UserController {
 		Object accessToken = loginInfo.get("access_token");
 		Object refreshToken = loginInfo.get("refresh_token");
 
-		// ✅ AccessToken을 HTTP-Only 쿠키에 저장
-		ResponseCookie accessTokenCookie = ResponseCookie.from("access_token", (String)accessToken)
-			.httpOnly(false) // XSS 공격 방지
-			.secure(true) // HTTPS 환경에서만 사용 (로컬 개발 시 false 가능)
-			.path("/") // 모든 API 요청에서 쿠키 전송 가능
-			.maxAge(30 * 60) // 30분 유지
-			.build();
-
-		// ✅ RefreshToken을 HTTP-Only 쿠키에 저장
-		ResponseCookie refreshTokenCookie = ResponseCookie.from("refresh_token", (String)refreshToken)
-			.httpOnly(true)
-			.secure(true)
-			.path("/")
-			.maxAge(7 * 24 * 60 * 60)
-			.build();
+		// ✅ 토큰 쿠키 저장 (쿠키명·secure·path 규칙을 팩토리로 통일 — 기존엔 access_token/refresh_token
+		//    언더스코어 이름이라 refresh 엔드포인트가 읽는 카멜케이스(refreshToken) 쿠키와 안 맞았음)
+		ResponseCookie accessTokenCookie = cookieFactory.accessToken((String)accessToken);
+		ResponseCookie refreshTokenCookie = cookieFactory.refreshToken((String)refreshToken);
 
 		loginInfo.remove("refresh_token");
 
@@ -145,23 +121,9 @@ public class UserController {
 		userService.logout(userId);
 
 		// ✅ AccessToken & RefreshToken 쿠키 즉시 만료시키기
-		ResponseCookie expiredAccessToken = ResponseCookie.from("accessToken", "")
-			.httpOnly(true)
-			.secure(true)
-			.path("/")
-			.maxAge(0) // 즉시 만료
-			.build();
-
-		ResponseCookie expiredRefreshToken = ResponseCookie.from("refreshToken", "")
-			.httpOnly(true)
-			.secure(true)
-			.path("/")
-			.maxAge(0) // 즉시 만료
-			.build();
-
 		return ResponseEntity.ok()
-			.header(HttpHeaders.SET_COOKIE, expiredAccessToken.toString())
-			.header(HttpHeaders.SET_COOKIE, expiredRefreshToken.toString())
+			.header(HttpHeaders.SET_COOKIE, cookieFactory.expiredAccessToken().toString())
+			.header(HttpHeaders.SET_COOKIE, cookieFactory.expiredRefreshToken().toString())
 			.body(new ApiResponse("로그아웃이 완료되었습니다.", null));
     }
 

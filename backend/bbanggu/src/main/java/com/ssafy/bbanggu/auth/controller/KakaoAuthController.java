@@ -5,6 +5,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
 import com.ssafy.bbanggu.auth.dto.JwtToken;
+import com.ssafy.bbanggu.auth.security.AuthCookieFactory;
 import com.ssafy.bbanggu.auth.service.KakaoAuthService;
 import com.ssafy.bbanggu.common.config.KakaoConfig;
 import com.ssafy.bbanggu.common.exception.CustomException;
@@ -27,6 +28,7 @@ public class KakaoAuthController {
 
 	private final KakaoAuthService kakaoAuthService;
 	private final KakaoConfig kakaoConfig;
+	private final AuthCookieFactory cookieFactory;
 
 	/**
 	 * ✅ 1. 카카오 로그인 요청 (Redirect)
@@ -49,25 +51,9 @@ public class KakaoAuthController {
 		try {
 			JwtToken jwtToken = kakaoAuthService.handleKakaoLogin(authCode);
 
-			// ✅ Access Token과 Refresh Token을 쿠키에 저장
-			ResponseCookie accessTokenCookie = ResponseCookie.from("accessToken", jwtToken.getAccessToken())
-				.httpOnly(false)
-				.secure(true)
-				.path("/")
-				.maxAge(30 * 60)
-				.sameSite("Lax")
-				.build();
-
-			ResponseCookie refreshTokenCookie = ResponseCookie.from("refreshToken", jwtToken.getRefreshToken())
-				.httpOnly(true)
-				.secure(true)
-				.path("/")
-				.maxAge(7 * 24 * 60 * 60)
-				.sameSite("Lax")
-				.build();
-
-			response.addHeader(HttpHeaders.SET_COOKIE, accessTokenCookie.toString());
-			response.addHeader(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString());
+			// ✅ Access Token과 Refresh Token을 쿠키에 저장 (secure 분기·path 제한은 팩토리가 관리)
+			response.addHeader(HttpHeaders.SET_COOKIE, cookieFactory.accessToken(jwtToken.getAccessToken()).toString());
+			response.addHeader(HttpHeaders.SET_COOKIE, cookieFactory.refreshToken(jwtToken.getRefreshToken()).toString());
 
 			// ✅ 리다이렉트 URL에 사용자 정보도 함께 전달
 			String redirectUrl = String.format("%s/oauth/kakao/callback?auth=success&token=%s",
