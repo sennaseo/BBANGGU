@@ -28,7 +28,8 @@ docker compose --env-file .env up -d web
 sleep 3
 
 echo "=== 3. certbot 인증서 발급 (webroot) ==="
-docker compose --env-file .env run --rm certbot certonly \
+# compose의 certbot 서비스는 entrypoint를 갱신 루프로 오버라이드했으므로 발급 땐 명시적으로 certbot 실행
+docker compose --env-file .env run --rm --entrypoint certbot certbot certonly \
     --webroot -w /var/www/certbot \
     -d "$DOMAIN" --email "$EMAIL" \
     --agree-tos --no-eff-email --non-interactive
