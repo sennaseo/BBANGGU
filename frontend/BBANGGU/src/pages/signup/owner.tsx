@@ -9,6 +9,8 @@ import { StoreInfoStep } from "./steps/StoreInfoStep"
 import { SettlementInfoStep } from "./steps/SettlementInfoStep"
 import { SignupCompleteStep } from "./steps/SignupCompleteStep"
 import { OwnerApi } from "../../api/common/signup/OwnerApi"
+import { login } from "../../api/common/login/login"
+import { useDispatch } from "react-redux"
 
 type SignupStep = "email" | "password" | "phone" | "store" | "settlement" | "complete"
 
@@ -62,6 +64,7 @@ const initialFormData: FormData = {
 
 export default function OwnerSignupPage() {
   const navigate = useNavigate()
+  const dispatch = useDispatch()
   const [currentStep, setCurrentStep] = useState<SignupStep>("email")
   const [formData, setFormData] = useState<FormData>(initialFormData)
   const [isEmailVerificationSent, setIsEmailVerificationSent] = useState(false)
@@ -156,7 +159,16 @@ export default function OwnerSignupPage() {
           ...prev,
           userId: userResponse.data.userId
         }));
-        
+
+        // 가게/정산 등록 API가 인증 필수라서, 가입 직후 바로 로그인해 토큰을 받아둔다
+        try {
+          await login({ email: formData.email, password: formData.password }, dispatch);
+        } catch {
+          alert('자동 로그인에 실패했습니다. 로그인 후 다시 진행해주세요.');
+          navigate('/login');
+          return;
+        }
+
         setCurrentStep("store");
       } catch (error: any) {
         if (error.code === 1006) {

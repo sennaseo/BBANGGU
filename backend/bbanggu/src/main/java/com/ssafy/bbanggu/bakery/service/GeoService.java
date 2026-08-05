@@ -10,8 +10,8 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ssafy.bbanggu.common.exception.CustomException;
+import com.ssafy.bbanggu.common.exception.ErrorCode;
 
 @Service
 public class GeoService {
@@ -26,7 +26,8 @@ public class GeoService {
 	/**
 	 * 주어진 주소를 기반으로 위도와 경도를 가져오는 메서드
 	 * @param address 변환할 주소
-	 * @return [위도, 경도] 배열 (실패 시 [0.0, 0.0] 반환)
+	 * @return [위도, 경도] 배열
+	 * @throws CustomException 지오코딩 실패 시 (예전엔 [0,0]을 반환해 바다 위에 가게가 찍혔음)
 	 */
 	public double[] getLatLngFromAddress(String address) {
 		try {
@@ -38,8 +39,6 @@ public class GeoService {
 			HttpEntity<String> entity = new HttpEntity<>(headers);
 			ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
 
-			System.out.println("🛰️ Kakao API 응답: " + response.getBody()); // 응답 로그 확인
-
 			JSONObject jsonResponse = new JSONObject(response.getBody());
 			JSONArray documents = jsonResponse.getJSONArray("documents");
 
@@ -47,10 +46,9 @@ public class GeoService {
 			double lat = location.getDouble("y");
 			double lng = location.getDouble("x");
 
-			System.out.println("🛰️ 변환된 위도: " + lat + ", 경도: " + lng);
 			return new double[] {lat, lng};
 		} catch (Exception e) {
-			return new double[] {0.0, 0.0};
+			throw new CustomException(ErrorCode.ADDRESS_GEOCODING_FAILED);
 		}
 	}
 }

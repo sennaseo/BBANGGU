@@ -42,6 +42,7 @@ public enum ErrorCode {
 	BAKERY_IMAGE_UPLOAD_FAILED(2006, HttpStatus.INTERNAL_SERVER_ERROR, "가게 이미지 저장에 실패하였습니다."),
 	BAKERY_BACKGROUND_IMAGE_UPLOAD_FAILED(2007, HttpStatus.INTERNAL_SERVER_ERROR, "가게 배경 이미지 저장에 실패하였습니다."),
 	BAKERY_PICKUP_TABLE_NOT_FOUND(2008, HttpStatus.NOT_FOUND, "해당 가게의 픽업타임이 생성되지 않았습니다."),
+	ADDRESS_GEOCODING_FAILED(2009, HttpStatus.BAD_REQUEST, "주소로 위치(위도/경도)를 찾을 수 없습니다. 주소를 다시 확인해주세요."),
 
 	// ✅ 빵 관련 예외 (2100번대)
 

@@ -201,11 +201,11 @@ public class BakeryService {
 
 	// 가게 추가
 	@Transactional
-	public BakeryCreateDto createBakery(BakeryCreateDto bakeryDto, MultipartFile bakeryImage, MultipartFile bakeryBackgroundImage) {
+	public BakeryCreateDto createBakery(Long userId, BakeryCreateDto bakeryDto, MultipartFile bakeryImage, MultipartFile bakeryBackgroundImage) {
 		validateDuplicateBakery(bakeryDto.name(), bakeryDto.businessRegistrationNumber(), null);
 
-		// 사용자 조회 (userId로 User 찾기)
-		User user = userRepository.findById(bakeryDto.userId())
+		// 사용자 조회 (인증된 userId로 User 찾기 — body의 userId는 신뢰하지 않음)
+		User user = userRepository.findById(userId)
 			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
 		String bakeryImageUrl = null;
@@ -263,9 +263,9 @@ public class BakeryService {
 	 * 가게 정산 정보 등록
 	 */
 	@Transactional
-	public BakerySettlementDto createSettlement(BakerySettlementDto settlement, MultipartFile settlementImage) {
+	public BakerySettlementDto createSettlement(Long userId, BakerySettlementDto settlement, MultipartFile settlementImage) {
 		User user = User.builder()
-			.userId(settlement.userId())
+			.userId(userId)
 			.build();
 
 		String settlementImageFileUrl = null;

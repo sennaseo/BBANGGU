@@ -84,11 +84,13 @@ public class BakeryController {
 	 */
 	@PostMapping
 	public ResponseEntity<ApiResponse> createBakery(
+		@AuthenticationPrincipal CustomUserDetails userDetails,
 		@Valid @RequestPart(name = "bakery", required = false) BakeryCreateDto bakery,
 		@RequestPart(name = "bakeryImage", required = false) MultipartFile bakeryImage,
 		@RequestPart(name = "bakeryBackgroundImage", required = false) MultipartFile bakeryBackgroundImage
 	) {
-		BakeryCreateDto createdBakery = bakeryService.createBakery(bakery, bakeryImage, bakeryBackgroundImage);
+		// 가게 소유자는 요청 body가 아니라 로그인한 사용자로 결정 (남의 userId로 가게 생성 방지)
+		BakeryCreateDto createdBakery = bakeryService.createBakery(userDetails.getUserId(), bakery, bakeryImage, bakeryBackgroundImage);
 		return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse("가게 등록이 완료되었습니다.", createdBakery));
 	}
 
@@ -101,7 +103,7 @@ public class BakeryController {
 		@RequestPart(name = "settlementImage", required = false) MultipartFile settlementImage,
 		@AuthenticationPrincipal CustomUserDetails userDetails
 	) {
-		BakerySettlementDto createSettlement = bakeryService.createSettlement(settlement, settlementImage);
+		BakerySettlementDto createSettlement = bakeryService.createSettlement(userDetails.getUserId(), settlement, settlementImage);
 		return ResponseEntity.status(HttpStatus.CREATED)
 			.body(new ApiResponse("가게 정산 정보 등록이 완료되었습니다.", createSettlement));
 	}

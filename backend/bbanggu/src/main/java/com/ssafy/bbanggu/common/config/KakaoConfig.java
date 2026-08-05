@@ -14,8 +14,6 @@ public class KakaoConfig {
 	private String clientId;
 	private String redirectUri;
 	private String authUri;
-	private String tokenUri;
-	private String userInfoUri;
 	private String frontBaseUrl;
 }
 

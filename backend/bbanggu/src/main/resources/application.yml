@@ -86,8 +86,8 @@ jwt:
     access: ${JWT_SECRET_ACCESS}
     refresh: ${JWT_SECRET_REFRESH}
   expiration:
-    access-token: 604800000 # 900000  # 15분 (밀리초)
-    refresh-token: 604800000 # 7일 (밀리초)
+    access-token: 1800000    # 30분 (밀리초) — AuthCookieFactory의 accessToken 쿠키 maxAge와 일치
+    refresh-token: 604800000 # 7일 (밀리초) — refreshToken 쿠키 maxAge와 일치
 
 toss:
   payments:

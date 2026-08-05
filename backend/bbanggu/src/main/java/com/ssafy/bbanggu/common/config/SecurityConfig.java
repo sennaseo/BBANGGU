@@ -44,9 +44,6 @@ public class SecurityConfig {
 					"/favicon.ico",
 					"/saving/all"
 				).permitAll()
-				// 점주 회원가입 위저드가 로그인(토큰 발급) 전에 가게/정산 등록을 호출하는 구조라 공개로 유지
-				// TODO: 가입 후 자동 로그인으로 바꾸고 이 두 개를 인증 필수로 전환할 것
-				.requestMatchers(HttpMethod.POST, "/bakery", "/bakery/settlement").permitAll()
 				// 게스트(비로그인)도 볼 수 있는 조회성 API — 메인/가게상세/지도 페이지가 토큰 없이 호출
 				.requestMatchers(HttpMethod.GET,
 					"/bakery",
