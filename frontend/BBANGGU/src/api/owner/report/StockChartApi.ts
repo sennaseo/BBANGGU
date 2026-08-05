@@ -1,5 +1,4 @@
 import axios from 'axios';
-import { store } from '../../../store';
 import { API_BASE_URL } from '../../../config/env';
 
 const BASE_URL = API_BASE_URL;
@@ -42,17 +41,10 @@ interface StockDailyResponse {
 
 export const StockChartApi = {
   getYearlyStock: async (bakeryId: number) => {
-    const accessToken = store.getState().auth.accessToken;
     
     try {
       const response = await axios.get<MonthlyStockResponse>(
-        `${BASE_URL}/stock/bakery/${bakeryId}/year`,
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`
-          }
-        }
-      );
+        `${BASE_URL}/stock/bakery/${bakeryId}/year`);
       return response.data;
     } catch (error: any) {
       if (error.response?.status === 401) {
@@ -63,17 +55,10 @@ export const StockChartApi = {
   },
 
   getWeeklyStock: async (bakeryId: number) => {
-    const accessToken = store.getState().auth.accessToken;
     
     try {
       const response = await axios.get<WeeklyStockResponse>(
-        `${BASE_URL}/stock/bakery/${bakeryId}/week`,
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`
-          }
-        }
-      );
+        `${BASE_URL}/stock/bakery/${bakeryId}/week`);
       return response.data;
     } catch (error: any) {
       if (error.response?.status === 401) {
@@ -84,16 +69,9 @@ export const StockChartApi = {
   },
 
   getDailyStocks: async (bakeryId: number) => {
-    const accessToken = store.getState().auth.accessToken;
     try {
       const response = await axios.get<StockDailyResponse>(
-        `${BASE_URL}/stock/bakery/${bakeryId}/day`,
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`
-          }
-        }
-      );
+        `${BASE_URL}/stock/bakery/${bakeryId}/day`);
       return response.data;
     } catch (error: any) {
       if (error.response?.status === 401) {

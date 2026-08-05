@@ -6,13 +6,8 @@ const BASE_URL = API_BASE_URL;
 
 export const favoritebakeryApi = {
   getFavoriteBakery: async () => {
-    const token = store.getState().auth.accessToken;
-    if (token) {    
-      const response = await axios.get(`${BASE_URL}/favorite`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+    if (store.getState().auth.isAuthenticated) {
+      const response = await axios.get(`${BASE_URL}/favorite`);
       return response.data;
     }
     return null;

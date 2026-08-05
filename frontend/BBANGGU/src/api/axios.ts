@@ -9,10 +9,7 @@ const instance = axios.create({
 });
 
 instance.interceptors.request.use((config) => {
-  const token = store.getState().auth.accessToken;
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
+  // 인증은 httpOnly accessToken 쿠키가 담당한다 (withCredentials). Authorization 헤더는 붙이지 않는다.
 
   // FormData인 경우 Content-Type 헤더를 설정하지 않음
   if (!(config.data instanceof FormData)) {
@@ -23,21 +20,21 @@ instance.interceptors.request.use((config) => {
 });
 
 // --- 401 자동 재발급 (refresh) ---
-// 백엔드 /auth/token/refresh 는 refreshToken 쿠키를 검증하고 새 access token을 body로 준다.
-// access token 만료(401) 시 refresh 를 1회만 호출하고, 그동안 들어온 다른 401 요청은
-// 큐에 모아두었다가 재발급이 끝나면 새 토큰으로 한꺼번에 재시도한다.
+// 백엔드 /auth/token/refresh 는 refreshToken 쿠키를 검증하고 새 accessToken 쿠키를 내려준다.
+// 토큰 자체는 JS가 볼 수 없으므로, 여기서는 "재발급 성공 여부"만 알면 된다.
+// accessToken 만료(401) 시 refresh 를 1회만 호출하고, 그동안 들어온 다른 401 요청은
+// 큐에 모아두었다가 재발급이 끝나면 한꺼번에 재시도한다.
 let isRefreshing = false;
-let pendingQueue: Array<(token: string | null) => void> = [];
+let pendingQueue: Array<(ok: boolean) => void> = [];
 
-const flushQueue = (token: string | null) => {
-  pendingQueue.forEach((cb) => cb(token));
+const flushQueue = (ok: boolean) => {
+  pendingQueue.forEach((cb) => cb(ok));
   pendingQueue = [];
 };
 
-const persistToken = (accessToken: string, userType: string | null) => {
-  // store + localStorage 둘 다 갱신 (생 axios 를 쓰는 화면들도 localStorage 를 읽으므로)
-  store.dispatch(loginSuccess({ data: { access_token: accessToken, user_type: userType ?? '' } }));
-  localStorage.setItem('accessToken', accessToken);
+const persistAuth = (userType: string | null) => {
+  // 쿠키는 브라우저가 갱신했다. 앱은 로그인 상태 표시용 정보만 들고 있는다.
+  store.dispatch(loginSuccess({ data: { user_type: userType ?? '' } }));
   if (userType) localStorage.setItem('userType', userType);
   localStorage.setItem('isAuthenticated', 'true');
 };
@@ -65,12 +62,11 @@ instance.interceptors.response.use(
 
     original._retry = true;
 
-    // 이미 다른 요청이 refresh 중이면, 끝날 때까지 기다렸다가 새 토큰으로 재시도
+    // 이미 다른 요청이 refresh 중이면, 끝날 때까지 기다렸다가 재시도
     if (isRefreshing) {
       return new Promise((resolve, reject) => {
-        pendingQueue.push((token) => {
-          if (token) {
-            original.headers.Authorization = `Bearer ${token}`;
+        pendingQueue.push((ok) => {
+          if (ok) {
             resolve(instance(original));
           } else {
             reject(error);
@@ -82,18 +78,15 @@ instance.interceptors.response.use(
     isRefreshing = true;
     try {
       const { data } = await instance.post('/auth/token/refresh');
-      const newToken: string = data?.data?.access_token;
       const userType: string | null = data?.data?.user_type ?? null;
-      if (!newToken) throw new Error('no access_token in refresh response');
 
-      persistToken(newToken, userType);
-      flushQueue(newToken);
+      persistAuth(userType);
+      flushQueue(true);
 
-      original.headers.Authorization = `Bearer ${newToken}`;
       return instance(original);
     } catch (refreshError) {
       // refresh 실패 = refreshToken 만료/무효 → 로그아웃 처리
-      flushQueue(null);
+      flushQueue(false);
       forceLogout();
       return Promise.reject(refreshError);
     } finally {

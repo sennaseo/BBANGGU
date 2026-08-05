@@ -1,10 +1,15 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
+import axios from 'axios'
 import { Provider } from 'react-redux'
 import { store, persistor } from './store'
 import App from './App'
 import './index.css'
 import { PersistGate } from 'redux-persist/integration/react'
+
+// 인증은 httpOnly accessToken 쿠키로만 이루어진다. JS는 토큰을 만지지 않으므로
+// 모든 axios 호출(인스턴스/생 axios 모두)이 쿠키를 실어보내게 전역 기본값을 켠다.
+axios.defaults.withCredentials = true
 
 declare global {
   interface Window {

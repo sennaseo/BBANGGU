@@ -1,14 +1,12 @@
 import axios from 'axios';
 import { ReviewFormData, ReviewResponse } from '../../../../types/bakery';
 import { ApiResponse } from '../../../../types/response';
-import { store } from '../../../../store';
 import { API_BASE_URL } from '../../../../config/env';
 const BASE_URL = API_BASE_URL;
 
 export const writeReviewApi = {
   submitReview: async (review: ReviewFormData & { file?: File }): Promise<ReviewResponse> => {
     try {
-      const token = store.getState().auth.accessToken;
       // FormData로 리뷰 데이터 감싸기
       const formData = new FormData();
       // review 키의 값은 review.json 파일 형태로 전달
@@ -28,9 +26,6 @@ export const writeReviewApi = {
         formData, 
         {
           withCredentials: true,
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
         }
       );
       return response.data.data;

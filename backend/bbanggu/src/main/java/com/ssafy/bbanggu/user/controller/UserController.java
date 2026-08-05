@@ -101,7 +101,9 @@ public class UserController {
 		ResponseCookie accessTokenCookie = cookieFactory.accessToken((String)accessToken);
 		ResponseCookie refreshTokenCookie = cookieFactory.refreshToken((String)refreshToken);
 
+		// 토큰은 httpOnly 쿠키로만 내려간다 — body에 남기면 XSS가 훔칠 수 있어 user_type만 남긴다
 		loginInfo.remove("refresh_token");
+		loginInfo.remove("access_token");
 
 		return ResponseEntity.ok()
 			.header(HttpHeaders.SET_COOKIE, accessTokenCookie.toString())

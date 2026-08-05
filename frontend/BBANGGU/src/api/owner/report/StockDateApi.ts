@@ -1,5 +1,4 @@
 import axios from 'axios';
-import { store } from '../../../store';
 import { API_BASE_URL } from '../../../config/env';
 
 const BASE_URL = API_BASE_URL;
@@ -20,16 +19,9 @@ interface StockDateResponse {
 
 export const StockDateApi = {
   getStocksByDate: async (bakeryId: number, date: string) => {
-    const accessToken = store.getState().auth.accessToken;
     try {
       const response = await axios.get<StockDateResponse>(
-        `${BASE_URL}/stock/bakery/${bakeryId}/${date}/${date}`,
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`
-          }
-        }
-      );
+        `${BASE_URL}/stock/bakery/${bakeryId}/${date}/${date}`);
       return response.data;
     } catch (error: any) {
       if (error.response?.status === 401) {

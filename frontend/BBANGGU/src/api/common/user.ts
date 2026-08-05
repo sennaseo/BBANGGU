@@ -12,14 +12,12 @@ interface UserInfo {
 
 export const getUserInfo = async (userId: number): Promise<UserInfo> => {
   try {
-    const token = localStorage.getItem('accessToken');
-    if (!token) {
+    if (localStorage.getItem('isAuthenticated') !== 'true') {
       throw new Error('로그인이 필요합니다.');
     }
 
     const response = await axios.get<ApiResponse<UserInfo>>(`/user/${userId}`, {
       headers: {
-        'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json',
       }
     });

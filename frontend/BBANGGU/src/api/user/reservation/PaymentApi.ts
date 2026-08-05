@@ -15,14 +15,11 @@ interface ReservationCheckResponse {
 export const ReservationApi = {
   checkReservation: async (bakeryId: number, quantity: number) => {
     try {
-      const accessToken = localStorage.getItem("accessToken");
-
       const response = await axios.post<ReservationCheckResponse>(
         `${BASE_URL}/reservation/check`,
         { bakeryId, quantity },
         {
           headers: {
-            Authorization: `Bearer ${accessToken}`,
             "Content-Type": "application/json",
           },
         }
@@ -38,14 +35,11 @@ export const ReservationApi = {
 
   uncheckReservation: async (reservationId: number, quantity: number) => {
     try {
-      const accessToken = localStorage.getItem("accessToken");
-
       await axios.post<ApiResponse<boolean>>(
         `${BASE_URL}/reservation/uncheck`,
         { reservationId, quantity },
         {
           headers: {
-            Authorization: `Bearer ${accessToken}`,
             "Content-Type": "multipart/form-data",
           },
         }
@@ -63,14 +57,11 @@ export const ReservationApi = {
     amount: number;
   }) => {
     try {
-      const accessToken = localStorage.getItem("accessToken");
-
       const response = await axios.post(
         `${BASE_URL}/reservation`,
         paymentData,
         {
           headers: {
-            Authorization: `Bearer ${accessToken}`,
             "Content-Type": "application/json",
           },
         }

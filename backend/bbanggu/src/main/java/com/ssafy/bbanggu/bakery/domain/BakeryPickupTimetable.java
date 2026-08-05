@@ -2,9 +2,9 @@ package com.ssafy.bbanggu.bakery.domain;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import jakarta.persistence.*;
 
@@ -12,12 +12,12 @@ import com.ssafy.bbanggu.bakery.domain.Bakery;
 import com.ssafy.bbanggu.bakery.dto.BakeryPickupTimetableDto;
 import com.ssafy.bbanggu.bakery.dto.PickupTimeDto;
 
-@Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
 @Getter
+@Setter
 @Table(name = "bakery_pickup_timetable")
 public class BakeryPickupTimetable {
 

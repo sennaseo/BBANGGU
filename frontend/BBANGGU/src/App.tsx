@@ -31,7 +31,6 @@ import FavoriteBakery from "./pages/user/favorite/FavoriteBakery";
 import UserCustomerSupport from "./pages/user/mypage/support/CustomerSupport";
 import PackageLoading from './pages/owner/package/PackageLoading';
 import PackageRegister from './pages/owner/package/PackageRegister';
-import { RecoilRoot } from 'recoil';
 import PackageSalesSetting from './pages/owner/package/PackageSalesSetting';
 import PackageSettingPage from './pages/owner/package/PackageSettingPage';
 import BreadRegisterPage from './pages/owner/bread/BreadRegisterPage';
@@ -48,7 +47,6 @@ import PackagePackingGuide from './pages/owner/package/PackagePackingGuide';
 
 export default function App() {
   return (
-    <RecoilRoot>
     <ProfileProvider>
       <Router>
         <MobileLayout>
@@ -107,6 +105,5 @@ export default function App() {
           </MobileLayout>
         </Router>
       </ProfileProvider>
-    </RecoilRoot>
   );
 }

@@ -16,9 +16,7 @@ interface ApiResponse {
 export const UserAddressApi = {
   updateAddress: async (addressData: AddressUpdateRequest): Promise<ApiResponse> => {
     try {
-      const accessToken = localStorage.getItem('accessToken');
-
-      if (!accessToken) {
+      if (localStorage.getItem('isAuthenticated') !== 'true') {
         throw new Error('로그인이 필요합니다.');
       }
 
@@ -42,7 +40,6 @@ export const UserAddressApi = {
           formData,
           {
             headers: {
-              'Authorization': `Bearer ${accessToken}`,
               'Content-Type': 'multipart/form-data'
             }
           }

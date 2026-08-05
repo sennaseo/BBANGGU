@@ -19,13 +19,12 @@ function MyPage() {
   const navigate = useNavigate();
   
   // const userInfo = useSelector((state: RootState) => state.user.userInfo)
-  // const { accessToken } = useSelector((state: RootState) => state.auth);
 
-  const accessToken = store.getState().auth.accessToken;
+  const isAuthenticated = store.getState().auth.isAuthenticated;
 
   useEffect(() => {
     const fetchUserInfo = async () => {
-      if (!accessToken) {
+      if (!isAuthenticated) {
         dispatch(getLocalStorage());
         return;
       }
@@ -40,7 +39,7 @@ function MyPage() {
     };
 
     fetchUserInfo();
-  }, [dispatch, navigate, accessToken]);
+  }, [dispatch, navigate, isAuthenticated]);
 
   const handleLogout = () => {
     dispatch(logout());

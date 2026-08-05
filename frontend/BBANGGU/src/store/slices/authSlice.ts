@@ -1,20 +1,20 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 interface AuthState {
-  accessToken: string | null;
   userType: string | null;
   isAuthenticated: boolean;
 }
 
 interface LoginResponse {
   data: {
-    access_token: string;
     user_type: string;
   };
 }
 
+// 인증 토큰은 httpOnly 쿠키에만 있다. 옛 버전이 localStorage 에 남긴 토큰은 청소한다.
+localStorage.removeItem('accessToken');
+
 const initialState: AuthState = {
-  accessToken: localStorage.getItem('accessToken') || null,
   userType: localStorage.getItem('userType') || null,
   isAuthenticated: localStorage.getItem('isAuthenticated') === 'true' || false,
 };
@@ -24,27 +24,23 @@ const authSlice = createSlice({
   initialState,
   reducers: {
     loginSuccess: (state, action: PayloadAction<LoginResponse>) => {
-      const { access_token, user_type } = action.payload.data;
-      state.accessToken = access_token;
-      state.userType = user_type;
+      state.userType = action.payload.data.user_type;
       state.isAuthenticated = true;
     },
     logout: (state) => {
-      state.accessToken = null;
       state.userType = null;
       state.isAuthenticated = false;
     },
     getLocalStorage: (state: AuthState) => {
-      state.accessToken = localStorage.getItem('accessToken') || null;
       state.userType = localStorage.getItem('userType') || null;
       state.isAuthenticated = localStorage.getItem('isAuthenticated') === 'true' || false;
     },
     setLocalStorage: (_state: AuthState, action: PayloadAction<AuthState>) => {
-      localStorage.setItem('accessToken', action.payload.accessToken || '');
       localStorage.setItem('userType', action.payload.userType || '');
       localStorage.setItem('isAuthenticated', action.payload.isAuthenticated.toString());
     },
     removeLocalStorage: () => {
+      // 'accessToken' 은 옛 버전 잔재 청소용
       localStorage.removeItem('accessToken');
       localStorage.removeItem('userType');
       localStorage.removeItem('isAuthenticated');

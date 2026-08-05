@@ -26,7 +26,7 @@ export default function PackageSettingPage() {
   const location = useLocation();
   
   // Redux 상태 가져오기
-  const { accessToken } = useSelector((state: RootState) => state.auth);
+  const { isAuthenticated } = useSelector((state: RootState) => state.auth);
 
   const isEditing = location.state?.isEditing;
   const packageData = location.state?.packageData;
@@ -34,7 +34,7 @@ export default function PackageSettingPage() {
   // 권한 체크 및 유저 정보 조회
   useEffect(() => {
     const fetchUserInfo = async () => {
-      if (!accessToken) {
+      if (!isAuthenticated) {
         dispatch(getLocalStorage());
         return;
       }
@@ -68,7 +68,7 @@ export default function PackageSettingPage() {
     };
 
     fetchUserInfo();
-  }, [dispatch, navigate, accessToken]);
+  }, [dispatch, navigate, isAuthenticated]);
 
   // 기본 시간 상수
   const DEFAULT_TIMES = {

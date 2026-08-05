@@ -1,5 +1,4 @@
 import axios from 'axios';
-import { store } from '../../../store';
 import { API_BASE_URL } from '../../../config/env';
 
 
@@ -12,17 +11,11 @@ interface StockAnalysisResponse {
 
 export const StockAnalysisApi = {
   getAnalysis: async (bakeryId: number) => {
-    const accessToken = store.getState().auth.accessToken;
     
     try {
       const response = await axios.post<StockAnalysisResponse>(
         `${BASE_URL}/analyze/${bakeryId}`,
-        {},  // POST 요청이지만 body는 비어있음
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`
-          }
-        }
+        {}  // POST 요청이지만 body는 비어있음
       );
       return response.data;
     } catch (error: any) {

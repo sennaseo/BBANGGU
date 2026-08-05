@@ -15,9 +15,9 @@ import lombok.*;
  * User 엔티티
  * 데이터베이스의 'user' 테이블과 매핑되며, 사용자 정보를 관리
  */
-@Data
-@Entity
 @Getter
+@Setter
+@Entity
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -27,27 +27,22 @@ public class User {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "user_id", columnDefinition = "INT UNSIGNED")
-	@Getter
 	private Long userId; // 사용자 고유 ID (Primary Key)
 
-	@Setter
 	@Column(name = "kakao_id", unique = true, length = 50)
 	private String kakaoId;
 
 	@Column(nullable = false)
-	@Setter
 	private String name;
 
 	@Column(nullable = false, unique = true)
 	private String email;
 
-	@Setter
 	@NotNull
 	@Column(nullable = false)
 	private String password;
 
 	@Column
-	@Setter
 	private String phone;
 
 	@Enumerated(EnumType.STRING)
@@ -55,26 +50,20 @@ public class User {
 	private Role role;
 
 	@Column(name = "profile_image_url")
-	@Setter
 	private String profileImageUrl;
 
-	@Setter
 	@Column(name = "refresh_token", length = 512)
 	private String refreshToken;
 
-	@Setter
 	@Column(name = "address_road")
 	private String addressRoad;
 
-	@Setter
 	@Column(name = "address_detail")
 	private String addressDetail;
 
-	@Setter
 	@Column
 	private Double latitude = 0.0;
 
-	@Setter
 	@Column
 	private Double longitude = 0.0;
 

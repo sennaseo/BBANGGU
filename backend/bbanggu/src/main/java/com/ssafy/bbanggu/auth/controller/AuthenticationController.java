@@ -70,10 +70,8 @@ public class AuthenticationController {
 		ResponseCookie refreshTokenCookie = cookieFactory.refreshToken(newRefreshToken);
 		ResponseCookie accessTokenCookie = cookieFactory.accessToken(newAccessToken);
 
-		// 프론트가 Authorization 헤더 방식으로 access token을 쓰므로 body에도 담아준다
-		// (쿠키만 내리면 JS가 httpOnly 토큰을 못 읽어 헤더에 붙일 수 없음)
+		// 토큰은 httpOnly 쿠키로만 내려간다 — body에 담으면 XSS가 refresh 호출로 토큰을 얻을 수 있음
 		Map<String, Object> responseData = Map.of(
-			"access_token", newAccessToken,
 			"user_type", user.get().getRole().name()
 		);
 

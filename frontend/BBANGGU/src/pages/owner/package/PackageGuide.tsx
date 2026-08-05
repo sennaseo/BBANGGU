@@ -22,13 +22,13 @@ const PackageGuide: React.FC = () => {
   const [bakeryId, setBakeryId] = useState<number | null>(null);
   
   // Redux에서 auth 상태 가져오기
-  const { accessToken } = useSelector((state: RootState) => state.auth);
+  const { isAuthenticated } = useSelector((state: RootState) => state.auth);
   const isLoading = useSelector((state: RootState) => state.package.loading);
 
   // 권한 체크 및 유저 정보 조회
   useEffect(() => {
     const fetchUserInfo = async () => {
-      if (!accessToken) {
+      if (!isAuthenticated) {
         dispatch(getLocalStorage());
         return;
       }
@@ -67,7 +67,7 @@ const PackageGuide: React.FC = () => {
     };
 
     fetchUserInfo();
-  }, [dispatch, navigate, accessToken]);
+  }, [dispatch, navigate, isAuthenticated]);
 
 
   // 이미지 캡쳐 및 분석 처리
@@ -114,8 +114,7 @@ const PackageGuide: React.FC = () => {
         formData,
         {
           headers: {
-            'Content-Type': 'multipart/form-data',
-            'Authorization': `Bearer ${accessToken}`
+            'Content-Type': 'multipart/form-data'
           }
         }
       );

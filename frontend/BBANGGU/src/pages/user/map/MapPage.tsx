@@ -73,16 +73,13 @@ export function MapPage() {
   // 컴포넌트 마운트 시 인증 상태 복원
   useEffect(() => {
     const restoreAuthState = async () => {
-      const accessToken = store.getState().auth.accessToken;
-
-      if (accessToken) {
+      if (store.getState().auth.isAuthenticated) {
         try {
           const userResponse = await getUserInfo();
-          
+
           // auth 슬라이스 업데이트
           dispatch(loginSuccess({
             data: {
-              access_token: accessToken,
               user_type: 'USER',
             }
           }));

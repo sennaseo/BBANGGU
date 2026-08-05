@@ -92,7 +92,6 @@ interface UpdateUserProfileData {
 export const profileEditApi = {
   updateUserProfile: async (formData: UpdateUserProfileData, profileImage?: File): Promise<ApiResponse<UserInfo[]>> => {
       try {
-          const token = store.getState().auth.accessToken;
           const multipartData = new FormData();
 
           multipartData.append("user", new Blob([JSON.stringify(formData)], { type: "application/json" }));
@@ -107,7 +106,6 @@ export const profileEditApi = {
               {
                   withCredentials: true,
                   headers: {
-                      Authorization: `Bearer ${token}`,
                       "Content-Type": "multipart/form-data",
                   },
               }

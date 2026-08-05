@@ -14,24 +14,22 @@ export default function KakaoCallback() {
     const handleKakaoCallback = async () => {
       const searchParams = new URLSearchParams(location.search);
       const auth = searchParams.get('auth');
-      const token = searchParams.get('token');
 
-      if (auth === 'success' && token) {
+      // accessToken 은 리다이렉트 응답에서 httpOnly 쿠키로 이미 세팅됐다.
+      if (auth === 'success') {
         try {
-          // 1. 토큰 정보를 리덕스에 저장
+          // 1. 로그인 상태 저장
           dispatch(loginSuccess({
             data: {
-              access_token: token,
               user_type: 'USER'
             }
           }));
           dispatch(setLocalStorage({
-            accessToken: token,
             userType: 'USER',
             isAuthenticated: true
           }));
 
-          // 2. getUserInfo를 사용하여 사용자 정보 조회 및 저장
+          // 2. 쿠키로 인증된 요청으로 사용자 정보 조회 및 저장
           const userInfo = await getUserInfo();
           dispatch(setUserInfo(userInfo));
 

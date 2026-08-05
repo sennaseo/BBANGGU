@@ -10,24 +10,22 @@ interface ApiResponse {
 
 export const logout = async (): Promise<void> => {
   try {
-    const accessToken = localStorage.getItem('accessToken');
-    
-    if (!accessToken) {
+    if (localStorage.getItem('isAuthenticated') !== 'true') {
       throw new Error('로그인이 필요합니다.');
     }
 
+    // 인증 쿠키는 서버가 만료시킨다.
     await axios.post<ApiResponse>(
       `${BASE_URL}/user/logout`,
       {},  // empty body
       {
         headers: {
-          'Authorization': `Bearer ${accessToken}`,
           'Content-Type': 'application/json',
         }
       }
     );
 
-    // 로컬 스토리지의 토큰 제거
+    // 옛 버전이 남긴 토큰 잔재 청소
     localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
 

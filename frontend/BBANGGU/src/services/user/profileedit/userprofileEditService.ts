@@ -1,7 +1,6 @@
 import axios from "axios";
 import { UserType } from "../../../types/bakery";
 import { ApiResponse } from "../../../types/api";
-import { store } from "../../../store";
 import { API_BASE_URL } from "../../../config/env";
 
 interface UpdateUserProfileData {
@@ -14,7 +13,6 @@ interface UpdateUserProfileData {
 export const profileEditApi = {
     updateUserProfile: async (formData: UpdateUserProfileData, profileImage?: File): Promise<ApiResponse<UserType[]>> => {
         try {
-            const token = store.getState().auth.accessToken;
 
             const multipartData = new FormData();
             multipartData.append("user", JSON.stringify(formData));
@@ -30,7 +28,6 @@ export const profileEditApi = {
                 {
                     withCredentials: true,
                     headers: {
-                        Authorization: `Bearer ${token}`,
                         "Content-Type": "multipart/form-data",
                     },
                 }

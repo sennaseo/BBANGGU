@@ -7,7 +7,7 @@ from collections import defaultdict
 from typing import List
 
 import httpx
-from fastapi import FastAPI, UploadFile, File, Form
+from fastapi import FastAPI, HTTPException, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
@@ -42,6 +42,9 @@ async def detect_breads(images: List[UploadFile]):
 
 @app.post("/detect")
 async def detect_and_classify(images: List[UploadFile] = File(...), bakeryId: int = Form(...)):
+    if not images:
+        raise HTTPException(status_code=400, detail="images가 비어 있습니다. 최소 1개 이상의 이미지를 첨부하세요.")
+
     # 크롭된 이미지 저장할 폴더 생성(요청마다 다른 폴더 생성함)
     unique_id = str(uuid.uuid4())
     cropped_image_dir = os.path.join("cropped_objects", unique_id)
@@ -58,11 +61,27 @@ async def detect_and_classify(images: List[UploadFile] = File(...), bakeryId: in
         async with httpx.AsyncClient() as client:
             response = await client.get(f"{SPRING_SERVER_URL}/bread/bakery/{bakeryId}")
             bakery_breads = response.json()
-            for bread in bakery_breads:
-                category_id = bread['breadCategoryId']
-                category_name = CLASS_NAMES[int(category_id) - 1]  # id가 1부터 시작해서 1 뺌
-                class_filter.append(category_name)
-                category_infos[category_name] = bread['price']
+            if not isinstance(bakery_breads, list):
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"bakeryId={bakeryId}에 대한 빵 정보를 가져올 수 없습니다. bakeryId를 확인하세요.",
+                )
+            try:
+                for bread in bakery_breads:
+                    category_id = bread['breadCategoryId']
+                    category_name = CLASS_NAMES[int(category_id) - 1]  # id가 1부터 시작해서 1 뺌
+                    class_filter.append(category_name)
+                    category_infos[category_name] = bread['price']
+            except (KeyError, TypeError, ValueError):
+                raise HTTPException(
+                    status_code=400,
+                    detail="빵 정보 형식이 올바르지 않습니다 (breadCategoryId/price 누락 또는 형식 오류).",
+                )
+            except IndexError:
+                raise HTTPException(
+                    status_code=400,
+                    detail="breadCategoryId 값이 유효한 범위를 벗어났습니다.",
+                )
 
         # efficientNet으로 분류
         classified_breads = efficientnet.classify(cropped_image_dir, class_filter)

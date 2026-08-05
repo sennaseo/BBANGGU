@@ -1,5 +1,4 @@
 import axios from 'axios';
-import { store } from '../../../store';
 import { API_BASE_URL } from '../../../config/env';
 
 const BASE_URL = API_BASE_URL;
@@ -28,18 +27,12 @@ export const MapApi = {
   },
   getBakeryList: async () => {
     try {
-      const accessToken = store.getState().auth.accessToken;
-      
       // 1. 가게 위치 정보 조회
       const locationResponse = await axios.get(`${BASE_URL}/bakery/map`);
       const locationData = locationResponse.data;
-      
+
       // 2. 가게 상세 정보 조회
-      const detailResponse = await axios.get(`${BASE_URL}/bakery`, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`
-        }
-      });
+      const detailResponse = await axios.get(`${BASE_URL}/bakery`);
       const detailData = detailResponse.data.data;
       
       // 3. 두 데이터 합치기

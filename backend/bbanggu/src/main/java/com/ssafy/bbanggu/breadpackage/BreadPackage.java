@@ -2,8 +2,9 @@ package com.ssafy.bbanggu.breadpackage;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
@@ -12,7 +13,8 @@ import org.hibernate.annotations.CreationTimestamp;
 
 import com.ssafy.bbanggu.bakery.domain.Bakery;
 
-@Data
+@Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor

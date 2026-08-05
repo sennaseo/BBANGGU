@@ -1,8 +1,6 @@
 package com.ssafy.bbanggu.auth.controller;
 
 import java.io.IOException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 
 import com.ssafy.bbanggu.auth.dto.JwtToken;
 import com.ssafy.bbanggu.auth.security.AuthCookieFactory;
@@ -55,10 +53,8 @@ public class KakaoAuthController {
 			response.addHeader(HttpHeaders.SET_COOKIE, cookieFactory.accessToken(jwtToken.getAccessToken()).toString());
 			response.addHeader(HttpHeaders.SET_COOKIE, cookieFactory.refreshToken(jwtToken.getRefreshToken()).toString());
 
-			// ✅ 리다이렉트 URL에 사용자 정보도 함께 전달
-			String redirectUrl = String.format("%s/oauth/kakao/callback?auth=success&token=%s",
-				kakaoConfig.getFrontBaseUrl(),
-				URLEncoder.encode(jwtToken.getAccessToken(), StandardCharsets.UTF_8));
+			// ✅ 토큰은 httpOnly 쿠키로만 전달 — URL 쿼리에 실으면 브라우저 히스토리·로그에 남는다
+			String redirectUrl = kakaoConfig.getFrontBaseUrl() + "/oauth/kakao/callback?auth=success";
 
 			response.setStatus(HttpServletResponse.SC_FOUND);
 			response.setHeader("Location", redirectUrl);

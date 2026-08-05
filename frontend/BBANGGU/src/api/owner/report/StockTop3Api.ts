@@ -1,5 +1,4 @@
 import axios from 'axios';
-import { store } from '../../../store';
 import { API_BASE_URL } from '../../../config/env';
 
 const BASE_URL = API_BASE_URL;
@@ -16,17 +15,10 @@ interface StockTop3Response {
 
 export const StockTop3Api = {
   getTop3Stocks: async (bakeryId: number, period: Period): Promise<StockTop3Response> => {
-    const accessToken = store.getState().auth.accessToken;
     
     try {
       const response = await axios.get<StockTop3Response>(
-        `${BASE_URL}/stock/bakery/${bakeryId}/top3/${period}`,
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`
-          }
-        }
-      );
+        `${BASE_URL}/stock/bakery/${bakeryId}/top3/${period}`);
       return response.data;
     } catch (error: any) {
       if (error.response?.status === 401) {

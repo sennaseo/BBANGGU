@@ -1,7 +1,6 @@
 import axios from 'axios';
 import { ApiResponse } from '../../../types/response';
 import type { UserType, ReservationType, EchoSaveType } from '../../../types/bakery';
-import { store } from '../../../store';
 import { API_BASE_URL } from '../../../config/env';
 
 const BASE_URL = API_BASE_URL;
@@ -9,14 +8,10 @@ const BASE_URL = API_BASE_URL;
 export const mypageApi = {
     getUsersApi: async () => {
       try {
-        const token = store.getState().auth.accessToken;
         const response = await axios.get<ApiResponse<UserType[]>>(
           `${BASE_URL}/user`,
           {
             withCredentials: true,
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
           }
         );
         return response.data.data;
@@ -28,7 +23,6 @@ export const mypageApi = {
 
     getReservationsApi: async () => {
       try {
-        const token = store.getState().auth.accessToken;
 
         // 오늘 날짜를 yyyy-mm-dd 형식으로 생성
         const today = new Date();
@@ -41,9 +35,6 @@ export const mypageApi = {
           `${BASE_URL}/reservation/${formattedDate}/${formattedDate}`,
           {
             withCredentials: true,
-            headers: {
-              Authorization: `Bearer ${token}`,
-            }
           }
         );
         return response.data.data;
@@ -55,14 +46,10 @@ export const mypageApi = {
 
     getEchoSavesApi: async () => {
       try {
-        const token = store.getState().auth.accessToken;
         const response = await axios.get<ApiResponse<EchoSaveType[]>>(
           `${BASE_URL}/saving`,
           {
             withCredentials: true,
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
           }
         );
         return response.data.data;
@@ -74,16 +61,12 @@ export const mypageApi = {
     
     getCompletedReservationsCountApi: async () => {
       try {
-        const token = store.getState().auth.accessToken;
     
         // ✅ 백엔드에서 "COMPLETED" 상태의 예약 개수 반환하는 API 호출
         const response = await axios.get<ApiResponse<{ count: number }>>(
           `${BASE_URL}/reservation/user/total`, 
           {
             withCredentials: true,
-            headers: {
-              Authorization: `Bearer ${token}`,
-            }
           }
         );
         return response.data.data;

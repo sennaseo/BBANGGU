@@ -2,7 +2,6 @@ import axios from "axios";
 import { ApiResponse } from "../../../types/response";
 import type { PackageType, PackageResponse } from "../../../types/bakery";
 import type { BakeryInfo } from "../../../store/slices/bakerySlice";
-import { store } from "../../../store";
 import { API_BASE_URL } from "../../../config/env";
 
 const BASE_URL = API_BASE_URL;
@@ -10,22 +9,10 @@ const BASE_URL = API_BASE_URL;
 export const mainApi = {
   getAllBakeries: async () => {
     try {
-      const token = store.getState().auth.accessToken;
-      let response;
-      if (token) {
-        response = await axios.get<ApiResponse<BakeryInfo[]>>(
-          `${BASE_URL}/bakery`,
-          {
-            withCredentials: true,
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
-      } else {
-        response = await axios.get<ApiResponse<BakeryInfo[]>>(
-          `${BASE_URL}/bakery`,
-          { withCredentials: true }
-        );
-      }
+      const response = await axios.get<ApiResponse<BakeryInfo[]>>(
+        `${BASE_URL}/bakery`,
+        { withCredentials: true }
+      );
 
       response.data.data.forEach((bakery: BakeryInfo) => {
         bakery.package = { data: [] };
@@ -52,22 +39,10 @@ export const mainApi = {
   // bakeryId 기반으로 bread-package 데이터를 가져오는 API
   getPackagesByBakeryId: async (bakeryId: number): Promise<PackageType[]> => {
     try {
-      const token = store.getState().auth.accessToken;
-      let response;
-      if (token) {
-        response = await axios.get<PackageResponse>(
-          `${BASE_URL}/bread-package/bakery/${bakeryId}`,
-          {
-            withCredentials: true,
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
-      } else {
-        response = await axios.get<PackageResponse>(
-          `${BASE_URL}/bread-package/bakery/${bakeryId}`,
-          { withCredentials: true }
-        );
-      }
+      const response = await axios.get<PackageResponse>(
+        `${BASE_URL}/bread-package/bakery/${bakeryId}`,
+        { withCredentials: true }
+      );
       const packages = response.data.data;
       if (!packages || packages.length === 0) {
         // console.warn(`패키지 데이터 없음 - 가게(${bakeryId})의 패키지 정보가 없습니다.`);
@@ -91,11 +66,10 @@ export const mainApi = {
   // /favorite/{bakeryId} 엔드포인트를 호출하여 좋아요 토글 처리하는 API 함수 추가
   toggleFavorite: async (bakeryId: number): Promise<boolean> => {
     try {
-      const token = store.getState().auth.accessToken;
       const response = await axios.post(
         `${BASE_URL}/favorite/${bakeryId}`,
         {},
-        { withCredentials: true, headers: { Authorization: `Bearer ${token}` } }
+        { withCredentials: true }
       );
       return response.data.data;
     } catch (error) {
@@ -109,12 +83,11 @@ export const mainApi = {
   // 관심가게 삭제 API: /favorite/{bakeryId}에 DELETE 요청
   deleteFavorite: async (bakeryId: number): Promise<boolean> => {
     try {
-      const token = store.getState().auth.accessToken;
       const response = await axios.delete(`${BASE_URL}/favorite/${bakeryId}`, {
-        withCredentials: false,
+        // 인증 쿠키가 실려야 하므로 true (기존 false 는 헤더 토큰 시절의 잔재)
+        withCredentials: true,
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
         },
       });
       return response.data.data;
@@ -130,22 +103,10 @@ export const mainApi = {
   // 좋아요가 가장 많은 가게 조회 API (/favorite/best)
   getFavoriteBest: async () => {
     try {
-      const token = store.getState().auth.accessToken;
-      let response;
-      if (token) {
-        response = await axios.get<ApiResponse<BakeryInfo[]>>(
-          `${BASE_URL}/favorite/best`,
-          {
-            withCredentials: true,
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
-      } else {
-        response = await axios.get<ApiResponse<BakeryInfo[]>>(
-          `${BASE_URL}/favorite/best`,
-          { withCredentials: true }
-        );
-      }
+      const response = await axios.get<ApiResponse<BakeryInfo[]>>(
+        `${BASE_URL}/favorite/best`,
+        { withCredentials: true }
+      );
       return response.data;
     } catch (error) {
       console.error(
@@ -158,10 +119,9 @@ export const mainApi = {
   },
   searchBakery: async (keyword: string) => {
     try {
-      const token = store.getState().auth.accessToken;
       const response = await axios.get<ApiResponse<BakeryInfo[]>>(
         `${BASE_URL}/bakery/search?keyword=${keyword}`,
-        { withCredentials: true, headers: { Authorization: `Bearer ${token}` } }
+        { withCredentials: true }
       );
       return response.data;
     } catch (error) {

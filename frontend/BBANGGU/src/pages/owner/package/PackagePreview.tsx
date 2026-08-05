@@ -38,7 +38,6 @@ const PackagePreview: React.FC = () => {
   const dispatch = useDispatch();
   const [bakeryId, setBakeryId] = useState<number | null>(null);
   const items = useSelector((state: RootState) => state.package.items);
-  const { accessToken } = useSelector((state: RootState) => state.auth);
   const [newItemIds, setNewItemIds] = useState<string[]>([]);
   const isLoading = useSelector((state: RootState) => state.package.loading);
 
@@ -148,7 +147,6 @@ const PackagePreview: React.FC = () => {
             {
               headers: {
                 'Content-Type': 'multipart/form-data',
-                'Authorization': `Bearer ${accessToken}`
               }
             }
           );
@@ -275,7 +273,6 @@ const PackagePreview: React.FC = () => {
         requestData,
         {
           headers: {
-            'Authorization': `Bearer ${accessToken}`,
             'Content-Type': 'application/json'
           }
         }

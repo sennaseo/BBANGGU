@@ -23,9 +23,9 @@ public class AuthCookieFactory {
 		this.secure = secure;
 	}
 
-	/** access token 쿠키 (프론트는 헤더 방식이라 httpOnly=false 로 JS가 읽을 수 있게 둔다) */
+	/** access token 쿠키 — httpOnly라 JS(XSS)가 훔칠 수 없다. 백엔드 필터가 쿠키에서 직접 읽는다 */
 	public ResponseCookie accessToken(String value) {
-		return base("accessToken", value, false, "/", ACCESS_MAX_AGE);
+		return base("accessToken", value, true, "/", ACCESS_MAX_AGE);
 	}
 
 	/** refresh token 쿠키 (httpOnly + refresh 경로로 path 제한) */
@@ -35,7 +35,7 @@ public class AuthCookieFactory {
 
 	/** 로그아웃 시 즉시 만료(maxAge=0) — path 는 발급 때와 동일해야 브라우저가 지운다 */
 	public ResponseCookie expiredAccessToken() {
-		return base("accessToken", "", false, "/", 0);
+		return base("accessToken", "", true, "/", 0);
 	}
 
 	public ResponseCookie expiredRefreshToken() {

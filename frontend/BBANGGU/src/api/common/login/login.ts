@@ -24,34 +24,11 @@ export const login = async (loginData: LoginRequest, dispatch: Dispatch): Promis
       }
     );
 
-    // // 쿠키에서 토큰 가져오기
-    // const getCookie = (name: string): string | null => {
-    //   const matches = document.cookie.match(new RegExp(
-    //     `(?:^|; )${name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1')}=([^;]*)`
-    //   ));
-    //   return matches ? decodeURIComponent(matches[1]) : null;
-    // };
+    // accessToken 은 httpOnly 쿠키로 내려온다. body 에는 user_type 만 있다.
+    const userType: string = response.data.data.user_type;
 
-    // const accessToken = getCookie('accessToken');
-    const accessToken = response.data.data.access_token;
-
-    if (accessToken) {
-      instance.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
-      // Redux 스토어에 저장
-      dispatch(loginSuccess({
-        data: {
-          access_token: accessToken,
-          user_type: response.data.data.userType
-        }
-      }));
-      dispatch(setLocalStorage(
-        {
-          accessToken: accessToken,
-          userType: response.data.data.userType,
-          isAuthenticated: true
-        }
-      ));
-    }
+    dispatch(loginSuccess({ data: { user_type: userType } }));
+    dispatch(setLocalStorage({ userType, isAuthenticated: true }));
   } catch (error) {
     if (axios.isAxiosError(error)) {
       const errorData = error.response?.data;
