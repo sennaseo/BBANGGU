@@ -223,7 +223,6 @@ public class ReservationService {
 		// 결제 취소
 		ResponseEntity<String> response = paymentService.cancelPayment(reservation.getPaymentKey(),
 			request.cancelReason());
-		System.out.println(response.getBody());
 
 		// 해당 예약의 상태를 "CANCELED"로 변경
 		reservation.setStatus("CANCELED");
@@ -429,7 +428,7 @@ public class ReservationService {
 		String status = "COMPLETE";
 		int updatedCount = reservationRepository.updateMissedReservations(bakeryId, now, status);
 		if (updatedCount > 0) {
-			System.out.println("🚀 [" + bakeryId + "] 노쇼 예약 자동 처리 완료! (업데이트된 예약 수: " + updatedCount + ")");
+			log.info("🚀 [{}] 노쇼 예약 자동 처리 완료! (업데이트된 예약 수: {})", bakeryId, updatedCount);
 		}
 	}
 

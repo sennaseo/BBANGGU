@@ -18,7 +18,6 @@ const userSlice = createSlice({
   initialState,
   reducers: {
     setUserInfo: (state, action: PayloadAction<UserInfo>) => {
-      console.log('Setting user info:', action.payload);
       state.userInfo = action.payload;
 
       // ✅ localStorage에 저장 (새로고침 대비)

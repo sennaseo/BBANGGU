@@ -81,7 +81,6 @@ export default function CustomerSignupPage() {
 
   const handlePhoneVerification = () => {
     // TODO: Implement phone verification logic
-    console.log("Sending verification SMS to:", formData.phone)
     setIsPhoneVerificationSent(true)
   }
 

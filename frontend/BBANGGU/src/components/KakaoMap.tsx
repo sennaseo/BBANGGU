@@ -6,16 +6,12 @@ function KakaoMap() {
   useEffect(() => {
     const loadKakaoMap = async () => {
       try {
-        console.log('카카오맵 로딩 시작');
-        
         if (!window.kakao) {
-          console.log('카카오 스크립트 로드 중...');
           const script = document.createElement('script');
           script.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${import.meta.env.VITE_KAKAO_MAP_API_KEY}&autoload=false`;
-          
+
           await new Promise((resolve, reject) => {
             script.onload = () => {
-              console.log('카카오 스크립트 로드 완료');
               resolve(null);
             };
             script.onerror = (error) => {
@@ -31,9 +27,7 @@ function KakaoMap() {
           return;
         }
 
-        console.log('카카오맵 초기화 시작');
         window.kakao.maps.load(() => {
-          console.log('카카오맵 로드 콜백 실행');
           if (!mapContainer.current) {
             console.error('맵 컨테이너가 없습니다');
             return;
@@ -45,8 +39,7 @@ function KakaoMap() {
           };
           
           try {
-            const map = new window.kakao.maps.Map(mapContainer.current, options);
-            console.log('지도가 생성되었습니다:', map);
+            new window.kakao.maps.Map(mapContainer.current, options);
           } catch (error) {
             console.error('지도 생성 중 오류:', error);
           }
@@ -68,8 +61,6 @@ function KakaoMap() {
       }
     };
   }, []);
-
-  console.log('API KEY:', import.meta.env.VITE_KAKAO_MAP_API_KEY);
 
   return (
     <div 

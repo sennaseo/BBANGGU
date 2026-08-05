@@ -17,10 +17,6 @@ export const ReservationApi = {
     try {
       const accessToken = localStorage.getItem("accessToken");
 
-      console.log("===== 예약 검증 요청 =====");
-      console.log("요청 데이터:", { bakeryId, quantity });
-      console.log("토큰:", accessToken?.substring(0, 10) + "...");
-
       const response = await axios.post<ReservationCheckResponse>(
         `${BASE_URL}/reservation/check`,
         { bakeryId, quantity },
@@ -31,9 +27,6 @@ export const ReservationApi = {
           },
         }
       );
-
-      console.log("===== 예약 검증 응답 =====");
-      console.log("응답 데이터:", response.data);
 
       return response.data;
     } catch (error: any) {
@@ -47,12 +40,7 @@ export const ReservationApi = {
     try {
       const accessToken = localStorage.getItem("accessToken");
 
-      console.log("===== pending 취소 요청 =====");
-      console.log("reservationId : ", reservationId);
-      console.log("quantity : ", quantity);
-      console.log("토큰:", accessToken?.substring(0, 10) + "...");
-
-      const response = await axios.post<ApiResponse<boolean>>(
+      await axios.post<ApiResponse<boolean>>(
         `${BASE_URL}/reservation/uncheck`,
         { reservationId, quantity },
         {
@@ -62,8 +50,6 @@ export const ReservationApi = {
           },
         }
       );
-
-      console.log("응답 메시지: ", response.data.message);
     } catch (error: any) {
       console.error("에러: ", error);
       throw error;
@@ -78,13 +64,6 @@ export const ReservationApi = {
   }) => {
     try {
       const accessToken = localStorage.getItem("accessToken");
-
-      console.log("===== 예약 생성 요청 데이터 =====", {
-        ...paymentData,
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
 
       const response = await axios.post(
         `${BASE_URL}/reservation`,

@@ -13,7 +13,7 @@ from pydantic import BaseModel
 
 from ai import yolo, efficientnet
 from ai.classes import CLASS_NAMES
-from ai.pacakge_maker import distribute_breads
+from ai.package_maker import distribute_breads
 
 # 백엔드(Spring) 주소 — 로컬은 기본값, 도커에서는 compose가 컨테이너 주소를 주입
 SPRING_SERVER_URL = os.getenv("SPRING_SERVER_URL", "http://localhost:8081")

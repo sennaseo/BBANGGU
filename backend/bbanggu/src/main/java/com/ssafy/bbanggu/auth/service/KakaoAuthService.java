@@ -112,14 +112,10 @@ public class KakaoAuthService {
 
 			// ✅ 2. 카카오 사용자 정보 요청
 			KakaoUserInfo kakaoUserInfo = getKakaoUserInfo(kakaoAccessToken);
-			System.out.println("✅ 카카오 사용자 정보: " + kakaoUserInfo);
 
 			// ✅ 3. DB에서 사용자 조회 (`kakaoId` 기준으로 검증!)
 			User user = userRepository.findByKakaoId(kakaoUserInfo.getKakaoId())
-				.orElseGet(() -> {
-					System.out.println("✅ 신규 카카오 사용자 회원가입: " + kakaoUserInfo.getEmail());
-					return registerNewKakaoUser(kakaoUserInfo);
-				});
+				.orElseGet(() -> registerNewKakaoUser(kakaoUserInfo));
 
 			// ✅ 4. JWT 발급
 			Map<String, Object> additionalClaims = Map.of(
@@ -134,8 +130,6 @@ public class KakaoAuthService {
 			return jwtToken;
 
 		} catch (Exception e) {
-			System.err.println("❌ 카카오 로그인 중 오류 발생: " + e.getMessage());
-			e.printStackTrace();
 			throw new CustomException(ErrorCode.KAKAO_AUTH_FAILED);
 		}
 	}

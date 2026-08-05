@@ -55,8 +55,6 @@ export const updatePickupTime = async (bakeryId: number, startTime: string, endT
       [dayOfWeek]: { startTime, endTime }
     };
 
-    console.log('Updating pickup time:', data);
-    
     const response = await instance.put<ApiResponse<void>>(
       `/bakery/${bakeryId}/pickup`,
       data

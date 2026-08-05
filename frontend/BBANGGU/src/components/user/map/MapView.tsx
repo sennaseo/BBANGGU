@@ -42,8 +42,6 @@ export function MapView({ bakeries = [], onMarkerClick, userAddress }: MapViewPr
       });
     }
     else {
-      console.log("userAddress is null, set address to current location");
-
       navigator.geolocation.getCurrentPosition((pos) => {
         setCenter({ lat: pos.coords.latitude, lng: pos.coords.longitude });
         setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude });

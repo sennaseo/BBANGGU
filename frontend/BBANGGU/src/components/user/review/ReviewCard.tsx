@@ -7,9 +7,6 @@ interface ReviewCardProps {
 
 export default function ReviewCard({ review, user }: ReviewCardProps) {
   const timeAgo = new Date(review.createdAt).toLocaleDateString()
-  console.log("user", user);
-  console.log("review", review);
-  console.log("timeAgo", timeAgo);
   return (
     <div className="px-5 py-4 border-b border-[#F2F2F2] last:border-b-0">
       <div className="flex items-center justify-between mb-4">

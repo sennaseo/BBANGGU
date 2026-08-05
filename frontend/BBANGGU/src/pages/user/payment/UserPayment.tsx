@@ -53,7 +53,6 @@ export function UserPayment() {
     const handlePopState = async (event: PopStateEvent) => {
       if (isProcessingPayment) {
         event.preventDefault();
-        console.log("뒤로가기 이벤트 핸들러");
 
         try {
           // // 진행 중인 결제 취소

@@ -34,7 +34,6 @@ public class BreadController {
 		try {
 			ObjectMapper objectMapper = new ObjectMapper();
 			BreadDTO breadDto = objectMapper.readValue(breadDtoJson, BreadDTO.class);
-			System.out.println("mapper");
 			Bread insertedBread = breadService.insertBread(breadDto, file);
 			return ResponseEntity.ok("빵 등록 성공: ID = " + insertedBread.getBreadId());
 		} catch (IOException e) {
@@ -80,7 +79,6 @@ public class BreadController {
 		@RequestPart("bread") String breadDtoJson,
 		@RequestPart(value = "breadImage", required = false) MultipartFile file) {
 		try {
-			System.out.println("dto: " + breadDtoJson);
 			// 기존 bread 삭제 처리
 			breadService.deleteBread(breadId);
 			// Json을 BreadDTO로 변환

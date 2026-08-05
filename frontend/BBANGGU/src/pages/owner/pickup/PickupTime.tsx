@@ -101,19 +101,15 @@ function PickupTime() {
   
       selectedDays.forEach(day => {
         const engDay = dayMapping[day as keyof typeof dayMapping];
-        console.log("engDay", engDay);
         if (timeData[day]) {
           requestData[engDay] = timeData[day];
         }else{
-          console.log('hi');
           requestData[engDay] = {
             startTime: "",
             endTime: ""
           };
         }
       });
-
-      console.log("requestData", requestData);
 
       await updatePickupTime(bakeryId, requestData);
       alert('픽업 시간이 성공적으로 수정되었습니다.');

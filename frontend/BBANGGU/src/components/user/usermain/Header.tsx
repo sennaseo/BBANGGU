@@ -7,7 +7,6 @@ export default function Header() {
   const navigate = useNavigate()
   const userInfo = useSelector((state: RootState) => state.user.userInfo)
   if (!userInfo) {
-    console.log('userInfo', userInfo);
     // navigate('/login')
   }
   const userId = userInfo?.userId

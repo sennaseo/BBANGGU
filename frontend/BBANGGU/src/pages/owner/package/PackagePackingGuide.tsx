@@ -25,7 +25,6 @@ const PackagePackingGuide: React.FC = () => {
 
   // 디버깅을 위한 로그 추가
   useEffect(() => {
-    console.log('PackingGuide received state:', location.state);
     if (!location.state) {
       alert('잘못된 접근입니다.');
       navigate(-1);
@@ -47,7 +46,6 @@ const PackagePackingGuide: React.FC = () => {
   // 버튼 클릭 핸들러 수정
   const handleComplete = () => {
     const totalPrice = price * quantity;
-    console.log('Calculating totalPrice:', { price, quantity, totalPrice });
 
     navigate('/owner/package/sales-setting', {
       state: {

@@ -71,7 +71,6 @@ public class KakaoOAuth2 {
 
 		try {
 			JsonNode jsonNode = objectMapper.readTree(response.getBody());
-			System.out.println("카카오 사용자 정보 응답: " + response.getBody());
 
 			String kakaoId = jsonNode.get("id").asText();
 			String nickname = jsonNode.path("properties").path("nickname").asText();

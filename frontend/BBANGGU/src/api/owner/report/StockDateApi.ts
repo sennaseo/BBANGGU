@@ -21,7 +21,6 @@ interface StockDateResponse {
 export const StockDateApi = {
   getStocksByDate: async (bakeryId: number, date: string) => {
     const accessToken = store.getState().auth.accessToken;
-    console.log("accessToken#@#!$O)*#@)(*@!)(#*@!)", accessToken);
     try {
       const response = await axios.get<StockDateResponse>(
         `${BASE_URL}/stock/bakery/${bakeryId}/${date}/${date}`,

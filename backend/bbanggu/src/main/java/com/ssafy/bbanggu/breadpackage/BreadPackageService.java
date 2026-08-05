@@ -196,7 +196,7 @@ public class BreadPackageService {
 		LocalDateTime now = LocalDateTime.now();
 		int updatedCount = breadPackageRepository.deleteExpiredPackages(bakeryId, now);
 		if (updatedCount > 0) {
-			System.out.println("🗑️ [" + bakeryId + "] 하루 지난 빵꾸러미 삭제 완료! (삭제된 패키지 수: " + updatedCount + ")");
+			log.info("🗑️ [{}] 하루 지난 빵꾸러미 삭제 완료! (삭제된 패키지 수: {})", bakeryId, updatedCount);
 		}
 	}
 

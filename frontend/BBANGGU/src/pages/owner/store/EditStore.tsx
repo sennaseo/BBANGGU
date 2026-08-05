@@ -40,7 +40,6 @@ export function EditStore() {
       try {
         const data = await getBakeryByUserId();
         setBakeryInfo(data);
-        console.log(data);
         // 가게 정보를 폼 데이터에 설정
         if (data) {
           if (data) {
@@ -108,7 +107,6 @@ export function EditStore() {
   
     try {
 
-      console.log("🖼️ 폼 데이터:", formData);
       // 가게 프로필 이미지 파일
       let profileImageFile: File | undefined = undefined;
   
@@ -126,10 +124,6 @@ export function EditStore() {
           const blob = await res.blob();
           bakeryBackgroundImgFile = new File([blob], `bakeryBackgroundImg.${blob.type.split("/")[1] || "jpg"}`, { type: blob.type })
       }
-  
-      // 이미지 파일들이 제대로 변환되었는지 로그로 확인
-      console.log('프로필 이미지:', profileImageFile);
-      console.log('배경 이미지:', bakeryBackgroundImgFile);
   
       const updateData: UpdateBakeryRequest = {
         name: formData.name,

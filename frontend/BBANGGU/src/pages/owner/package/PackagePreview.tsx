@@ -76,8 +76,7 @@ const PackagePreview: React.FC = () => {
 
   useEffect(() => {
     const analyzedItems = location.state?.analyzedItems;
-    console.log('초기 분석 데이터:', analyzedItems);
-    
+
     if (analyzedItems && items.length === 0) {
       const breadList = analyzedItems.map((item: { 
         name: string; 
@@ -86,12 +85,7 @@ const PackagePreview: React.FC = () => {
         breadId: number;
       }) => {
         const category = BREAD_CATEGORIES.find(cat => cat.id === item.breadId);
-        console.log('매칭 시도:', {
-          breadId: item.breadId,
-          foundCategory: category,
-          allCategories: BREAD_CATEGORIES.map(c => ({ id: c.id, name: c.name }))
-        });
-        
+
         return {
           name: item.name,
           count: item.count,
@@ -102,7 +96,6 @@ const PackagePreview: React.FC = () => {
           categoryName: category?.name
         };
       });
-      console.log('변환된 빵 목록:', breadList);
       dispatch(setItems(breadList));
       
       if (analyzedItems[0]) {
@@ -159,12 +152,6 @@ const PackagePreview: React.FC = () => {
               }
             }
           );
-
-          console.log('추가 촬영 응답:', {
-            rawData: response.data,
-            status: response.status,
-            headers: response.headers
-          });
 
           const analyzedItems = response.data;
           if (Array.isArray(analyzedItems) && analyzedItems.length > 0) {
@@ -283,17 +270,6 @@ const PackagePreview: React.FC = () => {
         breadId: item.breadId
       }));
 
-      // 요청 데이터 로그
-      console.log('빵꾸러미 조합 요청 데이터:', {
-        url: '/ai/generate-package',
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-          'Content-Type': 'application/json'
-        },
-        requestData
-      });
-
       const response = await axios.post<BreadCombination[][]>(
         '/ai/generate-package',
         requestData,
@@ -304,9 +280,6 @@ const PackagePreview: React.FC = () => {
           }
         }
       );
-
-      // 응답 데이터 로그
-      console.log('빵꾸러미 조합 응답 데이터:', response.data);
 
       // PackageLoading로 이동하면서 데이터 전달
       navigate('/owner/package/loading', {

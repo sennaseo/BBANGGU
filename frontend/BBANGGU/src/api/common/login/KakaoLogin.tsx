@@ -14,8 +14,7 @@ export const getKakaoLoginUrl = async (): Promise<KakaoLoginResponse> => {
         withCredentials: true,
       }
     );
-    
-    console.log('Kakao Login Response:', response); // 디버깅용
+
     return response.data;
   } catch (error) {
     console.error('Kakao Login Error:', error); // 디버깅용

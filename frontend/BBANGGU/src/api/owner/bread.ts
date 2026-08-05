@@ -64,14 +64,6 @@ export const registerBread = async (
       formData.append('breadImage', breadImage);
     }
 
-    // FormData 내용 로깅 (타입 에러 해결)
-    console.log('=== FormData 내용 ===');
-    const requestData: Record<string, any> = {};
-    formData.forEach((value, key) => {
-      requestData[key] = value;
-    });
-    console.log(requestData);
-
     const response = await instance.post('/bread', formData);
     return response.data;
   } catch (error: any) {
@@ -113,14 +105,6 @@ export const updateBread = async (
     if (breadImage) {
       formData.append('breadImage', breadImage);
     }
-
-    // FormData 내용 로깅 (타입 에러 해결)
-    console.log('=== FormData 내용 ===');
-    const requestData: Record<string, any> = {};
-    formData.forEach((value, key) => {
-      requestData[key] = value;
-    });
-    console.log(requestData);
 
     const response = await instance.put(`/bread/${breadId}`, formData);
     return response.data;

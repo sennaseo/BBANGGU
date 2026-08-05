@@ -25,17 +25,8 @@ export function TopSection({ storeName }: TopSectionProps) {
   const { userInfo } = useSelector((state: RootState) => state.user);
 
   useEffect(() => {
-    console.log('Redux userInfo:', userInfo);
-    
-    const localStorageUserInfo = localStorage.getItem('userInfo');
-    console.log('localStorage userInfo:', localStorageUserInfo ? JSON.parse(localStorageUserInfo) : null);
-    
     const fetchTop3 = async () => {
       if (!userInfo?.bakeryId) {
-        console.log('bakeryId 누락 디버깅:');
-        console.log('- userInfo 전체:', userInfo);
-        console.log('- bakeryId 값:', userInfo?.bakeryId);
-        console.log('- userInfo 타입:', typeof userInfo);
         setError('베이커리 정보가 없습니다.');
         setTopProducts([]);
         setTotalInventory(0);
@@ -46,11 +37,9 @@ export function TopSection({ storeName }: TopSectionProps) {
       setError(null);
       try {
         const response = await StockTop3Api.getTop3Stocks(userInfo.bakeryId, period);
-        console.log('Top3 API 응답:', response);
-        
+
         // undefined 체크를 먼저 수행
         if (!response?.data?.top3) {
-          console.log('top3 데이터가 없습니다');
           setTopProducts([]);
           setTotalInventory(0);
           return;
@@ -61,8 +50,6 @@ export function TopSection({ storeName }: TopSectionProps) {
           name: name as string,
           count: count as number
         }));
-        
-        console.log('변환된 products:', products);  // 변환된 데이터 확인
         
         setTopProducts(products);
         setTotalInventory(response.data.total || 0);

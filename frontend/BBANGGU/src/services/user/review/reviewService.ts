@@ -3,9 +3,7 @@ import { BakeryRating, ReviewType } from "../../../types/bakery";
 
 export async function getReviews(bakeryId: number): Promise<ReviewType[]> {
     try {
-        console.log("📌 리뷰 데이터 조회 시작!!")
         const reviews = await reviewApi.getReviews(bakeryId);
-        console.log("📌 가져온 리뷰 데이터:", reviews);
         return reviews.map(review => ({
             ...review,
             formattedDate: new Date(review.createdAt).toLocaleString() // 날짜 포맷팅 추가
@@ -51,9 +49,7 @@ export async function deleteReview(reviewId: number): Promise<void> {
 export async function getReviewByReservationId(userInfo: string, reservationId: string): Promise<ReviewType | undefined> {
     try {
         const reviews = await reviewApi.getUserReviews(userInfo);
-        console.log("reviews", reviews);
         const review = reviews.data.find(review => review.reservationId.toString() === reservationId);
-        console.log("review", review);
         return review;
     } catch (error) {
         console.error("리뷰 조회 실패:", error);

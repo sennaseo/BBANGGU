@@ -22,7 +22,6 @@ const profileEditApi = {
                 }
             );
 
-            console.log("✅ PATCH 요청 성공: ", response.data);
             return response.data;
         } catch (error) {
             console.error("❌ 유저 프로필 수정 실패:", error);

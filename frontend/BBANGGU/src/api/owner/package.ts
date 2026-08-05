@@ -54,21 +54,9 @@ interface RegisterPackageRequest {
 // 오늘의 빵꾸러미 조회 API
 export const getBakeryPackages = async (bakeryId: number) => {
   try {
-    console.log("빵꾸러미 API 호출:", {
-      url: `/bread-package/bakery/${bakeryId}`, // URL 경로 수정
-      bakeryId,
-    });
-
     const response = await instance.get<PackageResponse>(
       `/bread-package/bakery/${bakeryId}`
     );
-
-    // 응답 데이터 로깅
-    console.log("빵꾸러미 API 응답:", {
-      status: response.status,
-      data: response.data,
-      raw: response,
-    });
 
     return response.data;
   } catch (error) {
@@ -89,11 +77,6 @@ export const registerPackage = async (
   data: RegisterPackageRequest
 ): Promise<void> => {
   try {
-    console.log("빵꾸러미 등록 API 호출:", {
-      url: "/bread-package",
-      data,
-    });
-
     const response = await instance.post<ApiResponse<void>>(
       "/bread-package",
       data
@@ -111,7 +94,6 @@ export const getPickupTime = async (bakeryId: number) => {
     const response = await instance.get<PickupTimeResponse>(
       `/bakery/${bakeryId}/pickup`
     );
-    console.log("픽업 시간 조회 응답:", response.data);
     return response.data;
   } catch (error) {
     console.error("픽업 시간 조회 실패:", error);
@@ -125,7 +107,6 @@ export const updatePickupTime = async (
   pickupTime: PickupTimeUpdateRequest
 ) => {
   try {
-    console.log("픽업 시간 수정 요청:", pickupTime);
     const response = await instance.put(
       `/bakery/${bakeryId}/pickup`,
       pickupTime
@@ -154,13 +135,6 @@ export const updatePackage = async (
   packageData: PackageUpdateRequest
 ) => {
   try {
-    console.log("수정 요청 URL:", `/bread-package/${packageId}`);
-    console.log("수정 요청 데이터:", JSON.stringify(packageData, null, 2));
-    console.log(
-      "Authorization:",
-      instance.defaults.headers.common["Authorization"]
-    );
-
     const response = await instance.put(
       `/bread-package/${packageId}`,
       packageData

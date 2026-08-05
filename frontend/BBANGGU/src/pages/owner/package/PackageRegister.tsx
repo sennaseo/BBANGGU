@@ -443,12 +443,6 @@ const PackageRegister: React.FC = () => {
                 ? calculatePrice() 
                 : calculateManualPrice();
               
-              console.log('Navigating with values:', {
-                mode: registrationMode,
-                price: calculatedPrice,
-                quantity: packageCount
-              });
-
               navigate('/owner/package/packing-guide', {
                 state: {
                   mode: registrationMode,

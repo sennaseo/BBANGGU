@@ -80,7 +80,6 @@ export default function OwnerSignupPage() {
 
   useEffect(() => {
     if ((currentStep === "store" || currentStep === "settlement") && mainRef.current) {
-      console.log("Scrolling to top:", mainRef.current);
       setTimeout(() => {
         if (mainRef.current) {
           mainRef.current.scrollTo({ top: 0, behavior: "smooth" }); // ✅ 확실하게 스크롤 적용
@@ -139,7 +138,6 @@ export default function OwnerSignupPage() {
 
   const handlePhoneVerification = () => {
     // TODO: Implement phone verification logic
-    console.log("Sending verification SMS to:", formData.phone)
     setIsPhoneVerificationSent(true)
   }
 
@@ -207,14 +205,11 @@ export default function OwnerSignupPage() {
         bakeryImageUrl = new File([blob], 'store-photo.jpg', { type: blob.type });
       }
   
-      console.log('Store data being sent to API:', storeData);  // API로 보내는 데이터 확인
-  
-      const response = await OwnerApi.registerStore({
+      await OwnerApi.registerStore({
         ...storeData,
         bakeryImage: bakeryImageUrl,  // File 객체로 전달
       });
-  
-      console.log('API response:', response);  // API 응답 확인
+
       setCurrentStep("settlement");
     } catch (error: any) {
       console.error('Store registration error details:', error.response?.data || error);
@@ -238,9 +233,6 @@ export default function OwnerSignupPage() {
         accountNumber: formData.accountNumber,
         emailForTaxInvoice: formData.taxEmail,
       };
-      console.log("🔹 정산 정보:", settlementData);
-      console.log("image", formData.businessLicenseFileUrl)
-  
       // 🔹 JSON 데이터를 Blob으로 변환 후 추가
       formDataToSend.append(
         "settlement",
@@ -262,12 +254,9 @@ export default function OwnerSignupPage() {
         }
       }
   
-      console.log("Settlement data being sent:", settlementData);
-  
       // 🔹 API 호출 (FormData를 그대로 전달)
-      const response = await OwnerApi.registerSettlement(formDataToSend);
-      console.log("Settlement registration response:", response);
-  
+      await OwnerApi.registerSettlement(formDataToSend);
+
       setCurrentStep("complete");
     } catch (error: any) {
       console.error("Settlement registration error:", error.response?.data || error);

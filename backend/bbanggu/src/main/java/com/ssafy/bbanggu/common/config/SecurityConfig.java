@@ -17,9 +17,11 @@ import com.ssafy.bbanggu.auth.security.JwtAuthenticationFilter;
 
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.Arrays;
 
+@Slf4j
 @Configuration
 @RequiredArgsConstructor
 public class SecurityConfig {
@@ -62,7 +64,7 @@ public class SecurityConfig {
 			.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // ✅ 세션 사용 안 함 (JWT만 사용)
 			.exceptionHandling(exception -> exception
 				.authenticationEntryPoint((request, response, authException) -> {
-					System.out.println("❌ 인증 실패: " + authException.getMessage());
+					log.debug("인증 실패: {}", authException.getMessage());
 
 					// ✅ JSON 응답 설정
 					response.setContentType("application/json");

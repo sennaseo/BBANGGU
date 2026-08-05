@@ -59,10 +59,6 @@ export function PaymentMethod({
       },
     };
 
-    console.log("결제 요청 데이터:", paymentData);
-    console.log("사용자 정보:", userInfo);
-    console.log("변환된 전화번호:", phoneNumber);
-
     try {
       const payment = tossPayments.payment({ customerKey });
       await payment.requestPayment(paymentData);

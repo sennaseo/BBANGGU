@@ -17,8 +17,7 @@ export const UserAddressApi = {
   updateAddress: async (addressData: AddressUpdateRequest): Promise<ApiResponse> => {
     try {
       const accessToken = localStorage.getItem('accessToken');
-      console.log('===== 주소 업데이트 요청 시작 =====');
-      
+
       if (!accessToken) {
         throw new Error('로그인이 필요합니다.');
       }
@@ -37,11 +36,6 @@ export const UserAddressApi = {
         type: 'application/json'
       }));
 
-      console.log('전송 데이터 확인:', {
-        formData_entries: Array.from(formData.entries()),
-        address_data: addressJson
-      });
-
       try {
         const response = await axios.patch<ApiResponse>(
           `${BASE_URL}/user/update`,
@@ -54,7 +48,6 @@ export const UserAddressApi = {
           }
         );
 
-        console.log('API 응답 성공:', response.data);
         return response.data;
 
       } catch (axiosError: any) {

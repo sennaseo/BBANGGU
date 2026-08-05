@@ -39,7 +39,6 @@ export default function UserMyPage() {
     try {
       setIsLoading(true);
       const updatedProfile = await getUserProfile();
-      console.log("📌 최신 유저 데이터:", updatedProfile);
 
       if (
         updatedProfile?.[0] &&
@@ -58,8 +57,6 @@ export default function UserMyPage() {
             role: "USER",
           })
         );
-      } else {
-        console.log("⚡ 유저 정보 변경 없음, Redux 업데이트 생략");
       }
 
       setReservationData({
@@ -125,10 +122,8 @@ export default function UserMyPage() {
 
   const handleLogoutConfirm = async () => {
     try {
-      console.log("로그아웃 시작");
-      const response = await logout();
+      await logout();
       dispatch(removeLocalStorage());
-      console.log("로그아웃 성공:", response);
       dispatch(authLogout());
       dispatch(clearUserInfo());
       setIsLogoutModalOpen(false);

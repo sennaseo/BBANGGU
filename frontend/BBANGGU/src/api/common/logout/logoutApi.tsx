@@ -16,11 +16,6 @@ export const logout = async (): Promise<void> => {
       throw new Error('로그인이 필요합니다.');
     }
 
-    console.log('로그아웃 요청:', {
-      url: `${BASE_URL}/user/logout`,
-      token: accessToken.substring(0, 10) + '...'
-    });
-
     await axios.post<ApiResponse>(
       `${BASE_URL}/user/logout`,
       {},  // empty body

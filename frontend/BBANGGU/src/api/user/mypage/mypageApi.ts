@@ -46,7 +46,6 @@ export const mypageApi = {
             }
           }
         );
-        console.log("예약 데이터", response.data.data);
         return response.data.data;
       } catch (error) {
         console.error('예약 목록 조회 실패:', error);
@@ -66,7 +65,6 @@ export const mypageApi = {
             },
           }
         );
-        console.log("절약 데이터", response.data.data);
         return response.data.data;
       } catch (error) {
         console.error('절약 데이터 조회 실패:', error);
@@ -88,8 +86,6 @@ export const mypageApi = {
             }
           }
         );
-        
-        console.log("완료된 예약 개수:", response.data.data);
         return response.data.data;
       } catch (error) {
         console.error('완료된 예약 개수 조회 실패:', error);

@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react"
+import { useMemo } from "react"
 import type { Reservation } from "../../../store/slices/reservationSlice"
 import { ChevronRight } from "lucide-react"
 import { useNavigate, useParams } from "react-router-dom"
@@ -17,19 +17,6 @@ export function ReservationList({ reservations = [] }: ReservationListProps) {
     return reservations.length > 0 ? reservations : []
   }, [reservations])
   const { userId } = useParams<{ userId: string }>()
-
-  useEffect(() => {
-    if (
-      data.length === 0 ||
-      data.every(
-        (reservation) =>
-          reservation.status.toLowerCase() === "completed" || reservation.status.toLowerCase() === "canceled"
-      )
-    ) {
-      console.log("reservation", data)
-      return; // bakeryList가 비어있거나 예약 데이터가 없거나 모든 예약이 완료/취소 상태이면 실행하지 않음
-    }
-  }, [data]); // bakeryList가 변경될 때만 실행
 
   const getStatusLabel = (status: Reservation["status"]) => {
     switch (status.toLowerCase()) {
@@ -84,14 +71,12 @@ export function ReservationList({ reservations = [] }: ReservationListProps) {
       <p className="text-white text-sm mt-1">오늘의 첫 주문을 시작해보세요!</p>
     </div>
   )
-  console.log("data", data)
 
   const currentReservations = data.filter(
     reservation =>
       reservation.status.toLowerCase() !== "completed" &&
       reservation.status.toLowerCase() !== "canceled"
   );
-  console.log("currentReservations", currentReservations)
   return (
     <div className="flex flex-col">
       {currentReservations.length > 0 ? (

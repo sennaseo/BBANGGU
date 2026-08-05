@@ -24,8 +24,6 @@ export const login = async (loginData: LoginRequest, dispatch: Dispatch): Promis
       }
     );
 
-    console.log(response.data.data);
-
     // // 쿠키에서 토큰 가져오기
     // const getCookie = (name: string): string | null => {
     //   const matches = document.cookie.match(new RegExp(
@@ -36,9 +34,6 @@ export const login = async (loginData: LoginRequest, dispatch: Dispatch): Promis
 
     // const accessToken = getCookie('accessToken');
     const accessToken = response.data.data.access_token;
-
-    console.log(accessToken);
-    console.log(response.data.data.user_type);
 
     if (accessToken) {
       instance.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
@@ -59,7 +54,6 @@ export const login = async (loginData: LoginRequest, dispatch: Dispatch): Promis
     }
   } catch (error) {
     if (axios.isAxiosError(error)) {
-      console.log('Error Response:', error.response);
       const errorData = error.response?.data;
 
       if (error.response?.status === 403) {

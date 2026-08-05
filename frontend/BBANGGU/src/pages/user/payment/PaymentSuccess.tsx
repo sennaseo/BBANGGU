@@ -1,6 +1,4 @@
 import { useNavigate, useSearchParams } from "react-router-dom"
-import { useSelector } from 'react-redux'
-import { RootState } from '../../../store'
 import PaymentButton from "../../../components/user/payment/common/PaymentButton"
 import { ReservationApi } from '../../../api/user/reservation/PaymentApi'
 import { useState } from "react"
@@ -8,30 +6,17 @@ import { useState } from "react"
 export function PaymentSuccess() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
-  const userInfo = useSelector((state: RootState) => state.user.userInfo)
   const [error, setError] = useState<string | null>(null)
-  
+
   // localStorage에서 userInfo 가져오기
   const localStorageUserInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
-  
-  // userInfo 상태 확인을 위한 로그
-  console.log('===== 현재 userInfo 상태 =====', userInfo);
-  console.log('===== localStorage의 userInfo =====', localStorageUserInfo);
-  
+
   // sessionStorage에서 reservationId 가져오기
   const storedReservationId = sessionStorage.getItem('currentReservationId');
-  console.log('===== sessionStorage에서 가져온 reservationId =====', storedReservationId);
-  
+
   const paymentKey = searchParams.get('paymentKey')
   const orderId = searchParams.get('orderId')
   const amount = searchParams.get('amount')
-
-  console.log('===== 결제 완료 페이지 데이터 =====', {
-    storedReservationId,
-    paymentKey,
-    orderId,
-    amount
-  });
 
   const handleHomeClick = async () => {
     try {
@@ -46,13 +31,6 @@ export function PaymentSuccess() {
       }
 
       const parsedReservationId = parseInt(storedReservationId)
-      
-      console.log('===== 예약 생성 요청 데이터 =====', {
-        reservationId: parsedReservationId,
-        paymentKey,
-        orderId,
-        amount: Number(amount)
-      });
 
       const response = await ReservationApi.createReservation({
         reservationId: parsedReservationId,
@@ -61,13 +39,9 @@ export function PaymentSuccess() {
         amount: Number(amount)
       })
 
-      console.log('===== 예약 생성 응답 =====', response.data);
-
       if (response.data.status === 'CONFIRMED') {
-        console.log('예약 생성 성공!');
         // 성공 후 sessionStorage 클리어
         sessionStorage.removeItem('currentReservationId');
-        console.log('===== sessionStorage에서 reservationId 제거 =====');
         navigate('/user')
       }
     } catch (error: any) {

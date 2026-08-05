@@ -57,17 +57,11 @@ interface CancelResponse {
 
 export const getTodayReservations = async (bakeryId: number) => {
   try {
-    console.log('예약 조회 API 호출:', {
-      url: `/reservation/${bakeryId}`,
-      bakeryId
-    });
-
     // 단순히 bakeryId path parameter로만 요청
     const response = await axiosInstance.get<ReservationResponse>(
       `/reservation/${bakeryId}`
     );
-    
-    console.log('예약 조회 응답:', response.data);
+
     return response.data;
   } catch (error) {
     console.error('예약 조회 실패:', error);
@@ -98,9 +92,7 @@ export const completePickup = async (reservationId: number) => {
 // 예약 취소 API
 export const cancelReservation = async (data: { reservationId: number; cancelReason: string }) => {
   try {
-    console.log('취소 요청 데이터:', data);
     const response = await axiosInstance.post<CancelResponse>('/reservation/cancel', data);
-    console.log('취소 응답:', response.data);
     return response.data;
   } catch (error) {
     console.error('예약 취소 실패:', error);

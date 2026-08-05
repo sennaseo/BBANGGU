@@ -59,8 +59,6 @@ export const AuthApi = {
         userType: userData.role
       };
       
-      console.log('Final register data:', registerData);
-      
       const response = await api.post('/user/register', registerData);
       return response.data;
     } catch (error: any) {

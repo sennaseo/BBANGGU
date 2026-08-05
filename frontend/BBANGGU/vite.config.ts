@@ -24,42 +24,9 @@ export default defineConfig(({ mode }) => {
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
       scope: '/',
-      manifest: {
-        name: '빵구앱',
-        short_name: '빵구',
-        description: '소비기한 임박 빵 할인 서비스',
-        theme_color: '#FF9F43',
-        background_color: '#ffffff',
-        display: 'standalone',
-        display_override: ["standalone", "fullscreen"],
-        prefer_related_applications: false,
-        icons: [
-          {
-            src: '/icon/icon-192x192.png',
-            sizes: '192x192',
-            type: 'image/png',
-            purpose: 'any maskable'
-          },
-          {
-            src: '/icon/icon-512x512.png',
-            sizes: '512x512',
-            type: 'image/png',
-            purpose: 'any maskable'
-          },
-          {
-            src: '/apple-touch-icon.png',  // iOS용 아이콘 추가
-            sizes: '180x180',
-            type: 'image/png'
-          }
-        ],
-        shortcuts: [
-          {
-            name: "빵 등록하기",
-            url: "/owner/bread/register",
-            icons: [{ src: "/icon/icon-192x192.png", sizes: "192x192" }]
-          }
-        ]
-      },
+      // 매니페스트는 index.html이 링크하는 public/manifest.json 하나만 쓴다
+      // (플러그인이 manifest.webmanifest를 또 만들어 이중화되던 것 정리)
+      manifest: false,
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg}']
       }

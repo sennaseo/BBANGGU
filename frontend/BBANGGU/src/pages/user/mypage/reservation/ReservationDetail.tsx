@@ -82,7 +82,6 @@ export function ReservationDetail() {
       setShowCancelModal(false);
     }
   };
-  console.log("e", reservation)
   return (
     <div className="flex flex-col min-h-screen bg-[#F9F9F9] pb-[80px] relative max-w-[480px] mx-auto">
       {/* 헤더 */}

@@ -51,26 +51,22 @@ const OwnerMainPage: React.FC = () => {
 
         // 2. 베이커리 정보 가져오기
         const bakeryData = await getBakeryByOwner();
-        console.log("베이커리 정보:", bakeryData);
 
         // 3. 오늘의 빵꾸러미 정보 가져오기
         try {
           const packageResponse = await getBakeryPackages(bakeryData.bakeryId);
-          console.log("빵꾸러미 조회 결과:", packageResponse);
 
           if (
             packageResponse &&
             packageResponse.data &&
             packageResponse.data.length > 0
           ) {
-            console.log("빵꾸러미 데이터:", packageResponse.data[0]); // 첫 번째 빵꾸러미 사용
             packageResponse.data[0].savedMoney =
               packageResponse.data[0].price *
               (packageResponse.data[0].initialQuantity -
                 packageResponse.data[0].quantity);
             setCurrentPackage(packageResponse.data[0]);
           } else {
-            console.log("빵꾸러미 없음");
             setCurrentPackage(null);
           }
         } catch (error) {

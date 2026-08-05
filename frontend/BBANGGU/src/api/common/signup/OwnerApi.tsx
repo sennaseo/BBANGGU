@@ -62,11 +62,6 @@ export const OwnerApi = {
         formData.append("bakeryBackgroundImage", storeData.bakeryBackgroundImage);
       }
 
-      // 📌 FormData 확인 (디버깅용)
-      formData.forEach((value, key) => {
-        console.log(`${key}:`, value);
-      });
-
       // 📌 API 요청 (headers에서 "Content-Type" 설정 제거 → Axios가 자동 설정)
       const response = await instance.post<BakeryInfo>(
         `/bakery`,

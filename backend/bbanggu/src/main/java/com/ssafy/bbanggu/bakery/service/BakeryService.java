@@ -357,8 +357,6 @@ public class BakeryService {
 		bakery.setUpdatedAt(LocalDateTime.now());
 
 		Bakery updatedBakery = bakeryRepository.save(bakery);
-		System.out.println("✅ bakeryImageUrl: " + updatedBakery.getBakeryImageUrl());
-		System.out.println("✅ bakeryBackgroundImgUrl: " + updatedBakery.getBakeryBackgroundImgUrl());
 		return BakeryDto.from(updatedBakery);
 	}
 

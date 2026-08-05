@@ -29,7 +29,6 @@ const PackageGuide: React.FC = () => {
   useEffect(() => {
     const fetchUserInfo = async () => {
       if (!accessToken) {
-        console.log('No access token found, getting from localStorage');
         dispatch(getLocalStorage());
         return;
       }
@@ -74,15 +73,12 @@ const PackageGuide: React.FC = () => {
   // 이미지 캡쳐 및 분석 처리
   const handleCapture = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    console.log('Current bakeryId:', bakeryId);  // bakeryId 상태 확인
-    
+
     if (!file) {
-      console.log('No file selected');
       return;
     }
-    
+
     if (!bakeryId) {
-      console.log('No bakeryId found, fetching user info again...');
       try {
         const userData = await getUserInfo();
         if (userData.bakeryId) {
@@ -113,21 +109,6 @@ const PackageGuide: React.FC = () => {
       formData.append('images', compressedFile);
       formData.append('bakeryId', bakeryId.toString());
 
-      // 요청 데이터 확인
-      console.log('Request Data:', {
-        url: '/ai/detect',
-        bakeryId,
-        fileInfo: {
-          name: compressedFile.name,
-          type: compressedFile.type,
-          size: compressedFile.size
-        },
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-          'Content-Type': 'multipart/form-data'
-        }
-      });
-
       const response = await axios.post(
         '/ai/detect',
         formData,
@@ -138,9 +119,6 @@ const PackageGuide: React.FC = () => {
           }
         }
       );
-
-      // 응답 데이터 확인
-      console.log('Response Data:', response.data);
 
       const analyzedItems = response.data;
       if (Array.isArray(analyzedItems) && analyzedItems.length > 0) {

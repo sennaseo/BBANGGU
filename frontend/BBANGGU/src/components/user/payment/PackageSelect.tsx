@@ -45,25 +45,16 @@ export function PackageSelect({ onConfirm, bakeryData }: PackageSelectProps) {
     try {
       if (!bakeryData) return;
 
-      console.log("===== 구매하기 버튼 클릭 =====");
-      console.log("가게 정보:", bakeryData);
-      console.log("선택 수량:", quantity);
-
       // 예약 가능 여부 검증
       const response = await ReservationApi.checkReservation(
         bakeryData.bakeryId,
         quantity
       );
-      console.log("예약 검증 성공:", response);
 
       // sessionStorage에 reservationId 저장
       sessionStorage.setItem(
         "currentReservationId",
         response.data.reservationId.toString()
-      );
-      console.log(
-        "===== sessionStorage에 reservationId 저장 =====",
-        response.data.reservationId
       );
 
       // 검증 성공 시 reservationId와 함께 다음 단계로

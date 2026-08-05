@@ -40,7 +40,6 @@ export function MapPage() {
   const dispatch = useDispatch<AppDispatch>();
   const { bakeryList, loading, error: bakeryError } = useSelector((state: RootState) => state.bakery);
   const { userInfo } = useSelector((state: RootState) => state.user);
-  const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated);
   const [userAddress, setUserAddress] = useState<string>("위치를 설정해주세요");
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredBakeries, setFilteredBakeries] = useState<BakeryInfo[]>([]);
@@ -64,17 +63,6 @@ export function MapPage() {
     dispatch(fetchBakeryList());
   }, [dispatch]);
 
-  // bakeryList가 변경될 때마다 콘솔에 출력
-  useEffect(() => {
-    console.log('현재 저장된 가게 정보:', bakeryList);
-  }, [bakeryList]);
-
-  useEffect(() => {
-    // 로그인 상태 확인
-    console.log('현재 로그인한 사용자:', userInfo);
-    console.log('로그인 상태:', isAuthenticated);
-  }, [userInfo, isAuthenticated]);
-
   // 컴포넌트 마운트 시 사용자 주소 설정
   useEffect(() => {
     if (userInfo?.addressRoad) {
@@ -86,16 +74,9 @@ export function MapPage() {
   useEffect(() => {
     const restoreAuthState = async () => {
       const accessToken = store.getState().auth.accessToken;
-      
-      console.log('인증 상태 복원 시작:', {
-        현재인증상태: isAuthenticated,
-        토큰존재여부: !!accessToken,
-        현재유저정보: userInfo
-      });
-      
+
       if (accessToken) {
         try {
-          console.log('토큰 존재, 사용자 정보 조회 시도');
           const userResponse = await getUserInfo();
           
           // auth 슬라이스 업데이트
@@ -110,17 +91,10 @@ export function MapPage() {
           dispatch(setUserInfo({
             ...userResponse,
           }));
-          
-          console.log('인증 상태 복원 완료:', {
-            사용자정보: userResponse,
-            새인증상태: true
-          });
         } catch (error) {
           console.error('인증 상태 복원 실패:', error);
           // window.location.href = '/login';
         }
-      } else {
-        console.log('토큰 없음, 로그인 필요');
       }
     };
 
@@ -177,11 +151,6 @@ export function MapPage() {
 
       setIsLoading(true);
       setError(null);
-
-      console.log('주소 업데이트 시도:', {
-        도로명주소: address,
-        상세주소: addressDetail
-      });
 
       const updateResponse = await UserAddressApi.updateAddress({
         addressRoad: address,

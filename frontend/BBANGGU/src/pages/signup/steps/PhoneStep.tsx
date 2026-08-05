@@ -35,13 +35,8 @@ export function PhoneStep({
   };
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // 여기서 로그 추가
-    console.log('PhoneStep - 입력된 값:', e.target.value);
-    
     const formattedNumber = formatPhoneNumber(e.target.value);
-    // 형식화된 값 로그
-    console.log('PhoneStep - 형식화된 값:', formattedNumber);
-    
+
     onChange({
       ...e,
       target: {

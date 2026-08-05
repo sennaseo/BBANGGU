@@ -36,7 +36,6 @@ export default function UserMain() {
         const favoritebakeryResult = await fetchBestFavoriteStores()
         setAllBakeriesData(allBakeryResult.allbakery)
         setFavoritebakery(favoritebakeryResult.favoritebakery)
-        console.log("favoritebakery", favoritebakeryResult.favoritebakery)
         setSearchResults([])
       } catch (err) {
         setError(err as Error)

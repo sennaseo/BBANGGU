@@ -28,8 +28,6 @@ export function SignupCompleteStep({
 
     try {
 
-      const accessToken = store.getState().auth.accessToken;
-      console.log('accessToken', accessToken)
       dispatch(logout())
       dispatch(removeLocalStorage())
 
@@ -38,15 +36,9 @@ export function SignupCompleteStep({
 
       // 4. 사용자 정보 가져오기
       const userResponse = await getUserInfo()
-      console.log('4. 사용자 정보 응답:', userResponse)
-      
-      // 5. Redux store에 저장되는 데이터 확인
-      console.log('5. Redux store에 저장될 데이터:', userResponse)
       dispatch(setUserInfo(userResponse))
-      
-      // 6. 최종 Redux 상태 확인
+
       const state = store.getState()
-      console.log('6. 최종 Redux 상태:', state)
 
       // 사용자 역할에 따른 리다이렉션
       if (state.user.userInfo?.role === 'OWNER') {

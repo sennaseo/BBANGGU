@@ -19,7 +19,6 @@ export default function RecommendedStores({
   toggleFavoriteForUser,
 }: RecommendedStoresProps) {
   const imgBaseUrl = IMAGE_BASE_URL;
-  console.log(imgBaseUrl);
   const [sortType, setSortType] = useState<string>("distance");
   const validStores = allbakery.filter(
     (store): store is BakeryInfo =>

@@ -188,7 +188,6 @@ export const CustomerList: React.FC<CustomerListProps> = ({ bakeryId, onReservat
         setIsLoading(true);
         // 예약 정보 조회
         const response = await getTodayReservations(bakeryId);
-        console.log('예약 조회 결과:', response);
 
         if (response.data.infos) {
           setReservations(response.data.infos);
@@ -322,11 +321,6 @@ export const CustomerList: React.FC<CustomerListProps> = ({ bakeryId, onReservat
 
   // 주문 취소 처리 함수 수정
   const handleCancelReservation = (reservationId: number) => {
-    console.log('취소할 예약 데이터:', {
-      reservationId,
-      reservation: reservations.find(r => r.reservationId === reservationId)
-    });
-
     setSelectedReservationId(reservationId);
     setIsCancelModalOpen(true);
   };

@@ -34,7 +34,6 @@ function MyPage() {
         await getUserInfo();
         const bakery = await getBakeryByUserId();
         store.dispatch(setBakeryId(bakery.bakeryId));
-        // console.log("store.getState().user.userInfo", store.getState().user.userInfo);
       } catch (error) {
         console.error('Error fetching user info:', error);
       }

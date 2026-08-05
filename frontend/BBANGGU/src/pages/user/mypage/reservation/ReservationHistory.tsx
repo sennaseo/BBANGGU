@@ -116,7 +116,6 @@ export function ReservationHistory() {
         </div>
       )
     }
-    console.log("reservation", reservation)
     return (
       <>
         <div 

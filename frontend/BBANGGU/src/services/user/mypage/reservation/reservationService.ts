@@ -3,7 +3,6 @@ import { reservationApi } from "../../../../api/user/mypage/reservation/reservat
 export const getReservations = async (startDate: string, endDate: string) => {
         try {
             const response = await reservationApi.getReservationsApi(startDate, endDate);
-            console.log("response", response)
             return response;
         } catch (error) {
             console.error('예약 조회 실패:', error);
@@ -24,8 +23,6 @@ export const getReservationDetail = async (reservationId: number) => {
 export async function deleteReservation(reservationId: number, cancelReason: string): Promise<boolean> {
     try {
         const response = await reservationApi.deleteReservation(reservationId, cancelReason);
-        console.log("reservationId", reservationId)
-        console.log("cancelReason", cancelReason)
         return response;
     } catch (error) {
         console.error('예약 취소 실패:', error);

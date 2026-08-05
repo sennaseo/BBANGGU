@@ -20,7 +20,6 @@ interface BreadPackageInfoProps {
 export const BreadPackageInfo: React.FC<BreadPackageInfoProps> = ({
   currentPackage,
 }) => {
-  console.log("currentPackage", currentPackage);
   // const [showMenu, setShowMenu] = useState(false);  // 주석처리
 
   // 안전한 숫자 변환 함수

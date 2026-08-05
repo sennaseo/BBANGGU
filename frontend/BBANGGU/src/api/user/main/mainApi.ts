@@ -43,7 +43,6 @@ export const mainApi = {
           });
       });
 
-      console.log("getAllBakeries", response.data);
       return response.data;
     } catch (error) {
       console.error("베이커리 목록 조회 실패:", error);
@@ -98,7 +97,6 @@ export const mainApi = {
         {},
         { withCredentials: true, headers: { Authorization: `Bearer ${token}` } }
       );
-      console.log("toggleFavorite", response.data.data);
       return response.data.data;
     } catch (error) {
       if (axios.isAxiosError(error)) {
@@ -119,7 +117,6 @@ export const mainApi = {
           Authorization: `Bearer ${token}`,
         },
       });
-      console.log("deleteFavorite", response.data.data);
       return response.data.data;
     } catch (error) {
       if (axios.isAxiosError(error)) {

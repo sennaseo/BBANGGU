@@ -49,7 +49,6 @@ const PackageSalesSetting: React.FC = () => {
   const location = useLocation();
   
   useEffect(() => {
-    console.log('PackageSalesSetting received state:', location.state);
     if (!location.state) {
       alert('잘못된 접근입니다.');
       navigate(-1);
@@ -93,7 +92,6 @@ const PackageSalesSetting: React.FC = () => {
           // 픽업 시간 조회
           try {
             const pickupTime = await getPickupTime(bakeryData.bakeryId);
-            console.log('Fetched pickup time:', pickupTime);
             setStartTime(pickupTime.startTime);
             setEndTime(pickupTime.endTime);
           } catch (error) {
@@ -143,7 +141,6 @@ const PackageSalesSetting: React.FC = () => {
         quantity
       };
 
-      console.log('빵꾸러미 등록 요청:', packageData);
       await registerPackage(packageData);
 
       // 2. 픽업 시간 설정
@@ -159,7 +156,6 @@ const PackageSalesSetting: React.FC = () => {
     } catch (error) {
       console.error('패키지 등록 실패:', error);
       if (axios.isAxiosError(error)) {
-        console.log('에러 응답:', error.response?.data);
         alert(error.response?.data?.message || '패키지 등록에 실패했습니다.');
       }
     }

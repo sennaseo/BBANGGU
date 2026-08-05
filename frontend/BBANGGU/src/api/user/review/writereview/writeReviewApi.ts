@@ -23,11 +23,6 @@ export const writeReviewApi = {
       if (review.file) {
         formData.append("reviewImage", review.file, review.file.name);
       }
-      // 디버깅: FormData에 담긴 내용 확인
-      for (const pair of formData.entries()) {
-        console.log(pair[0], pair[1]);
-      }
-
       const response = await axios.post<ApiResponse<ReviewResponse>>(
         `${BASE_URL}/review`, 
         formData, 

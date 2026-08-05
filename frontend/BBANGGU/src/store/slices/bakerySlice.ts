@@ -50,9 +50,7 @@ const initialState: BakeryState = {
 export const fetchBakeryList = createAsyncThunk(
   "bakery/fetchBakeryList",
   async () => {
-    console.log("fetchBakeryList 시작");
     const response = await MapApi.getBakeryList();
-    console.log("받아온 가게 목록:", response.data);
     return response.data;
   }
 );

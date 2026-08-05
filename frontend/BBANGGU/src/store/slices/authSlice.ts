@@ -39,11 +39,10 @@ const authSlice = createSlice({
       state.userType = localStorage.getItem('userType') || null;
       state.isAuthenticated = localStorage.getItem('isAuthenticated') === 'true' || false;
     },
-    setLocalStorage: (state: AuthState, action: PayloadAction<AuthState>) => {
+    setLocalStorage: (_state: AuthState, action: PayloadAction<AuthState>) => {
       localStorage.setItem('accessToken', action.payload.accessToken || '');
       localStorage.setItem('userType', action.payload.userType || '');
       localStorage.setItem('isAuthenticated', action.payload.isAuthenticated.toString());
-      console.log(state);
     },
     removeLocalStorage: () => {
       localStorage.removeItem('accessToken');

@@ -41,11 +41,8 @@ export function ReviewDetail() {
       }
       const reservationData = await reservationApi.getReservationDetailApi(Number(reservationId));
       const review = await getReviewByReservationId(userInfo.toString(), reservationId);
-      console.log("reservation", reservation);
       if (reservation?.reviewStatus?.toLowerCase() === 'completed') {
         try {
-          console.log("review", review);
-          console.log("reservation", reservationData);
         if (reservationData.reviewStatus === null) {
           return;
         }

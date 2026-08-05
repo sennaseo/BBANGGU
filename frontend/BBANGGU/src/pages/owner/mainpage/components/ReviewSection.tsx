@@ -58,7 +58,6 @@ export const ReviewSection: React.FC = () => {
       if (!bakeryId) return;
 
       try {
-        console.log("📌 리뷰 데이터 조회 시작 !!!")
         setIsLoading(true);
         const [reviewsData, ratingData] = await Promise.all([
           reviewApi.getReviews(bakeryId),
@@ -69,7 +68,6 @@ export const ReviewSection: React.FC = () => {
           ...review,
           profileImageUrl: review.profileImageUrl || "/default-profile.png"
         }));
-        console.log("📌 조회된 리뷰 데이터:", reviewsData);
 
         setReviews(processedReviews);
         setBakeryRating(ratingData);

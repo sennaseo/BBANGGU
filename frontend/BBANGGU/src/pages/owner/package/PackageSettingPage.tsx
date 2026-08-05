@@ -130,8 +130,7 @@ export default function PackageSettingPage() {
 
       try {
         const response = await getPickupTime(form.bakeryId);
-        console.log('픽업 시간 응답:', response); // 디버깅용
-        
+
         if (response && response.data) {
           const pickupTimeData = response.data;
           setForm(prev => ({
@@ -192,13 +191,6 @@ export default function PackageSettingPage() {
              defaultPickupTime.endTime !== form.endTime)) {
           
           const currentDay = getCurrentDay();
-          console.log('픽업 시간 수정 요청:', {
-            bakeryId: form.bakeryId,
-            [currentDay]: {
-              startTime: form.startTime,
-              endTime: form.endTime
-            }
-          });
 
           await updatePickupTime(form.bakeryId, {
             [currentDay]: {

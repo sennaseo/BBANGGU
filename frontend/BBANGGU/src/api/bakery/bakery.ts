@@ -74,11 +74,6 @@ export const updateBakery = async (
       formData.append("bakeryBackgroundImage", storeImage);
     }
 
-    // FormData 내용 확인 (디버깅용)
-    formData.forEach((value, key) => {
-      console.log(`${key}:`, value);
-    });
-
     // 📌 API 요청 (headers에서 'Content-Type' 제거 → Axios가 자동 설정)
     const response = await instance.patch(`/bakery/${bakeryId}`, formData, {
       headers: {
